@@ -51,7 +51,7 @@ protected:
 	CDjVuDoc* m_pDoc;
 	CImageList m_imageList;
 
-	void ActivateBookmark(HTREEITEM hItem);
+	void GoToBookmark(HTREEITEM hItem);
 	int InitBookmarks(GP<DjVmNav> bookmarks, HTREEITEM hParent, int nPos, int nCount = -1);
 
 	list<GUTF8String> m_links;

@@ -22,6 +22,9 @@
 
 #define WM_PAGE_DECODED (WM_USER + 18)
 
+class CDjVuView;
+
+
 struct PageInfo
 {
 	PageInfo() : szPage(0, 0), nDPI(0) {}
@@ -61,6 +64,8 @@ public:
 	int GetPageFromId(const GUTF8String& strPageId) const;
 
 	GP<DjVmNav> GetBookmarks() { return m_pDjVuDoc->get_bookmarks(); }
+
+	CDjVuView* GetDjVuView();
 
 // Overrides
 public:

@@ -102,14 +102,14 @@ int CBookmarksView::InitBookmarks(GP<DjVmNav> bookmarks, HTREEITEM hParent, int 
 	return nPos;
 }
 
-void CBookmarksView::ActivateBookmark(HTREEITEM hItem)
+void CBookmarksView::GoToBookmark(HTREEITEM hItem)
 {
 	GUTF8String* url = (GUTF8String*)GetTreeCtrl().GetItemData(hItem);
 
 	if (url->length() > 0)
 	{
 		CDjVuView* pView = ((CChildFrame*)GetParentFrame())->GetDjVuView();
-		pView->GoToURL(*url, pView->GetCurrentPage());
+		pView->GoToURL(*url);
 	}
 }
 
@@ -121,7 +121,7 @@ void CBookmarksView::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
 	{
 		HTREEITEM hItem = pNMTreeView->itemNew.hItem;
 		if (hItem != NULL)
-			ActivateBookmark(hItem);
+			GoToBookmark(hItem);
 	}
 
 	*pResult = 0;
@@ -135,7 +135,7 @@ void CBookmarksView::OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult)
 	{
 		HTREEITEM hItem = GetTreeCtrl().GetSelectedItem();
 		if (hItem != NULL)
-			ActivateBookmark(hItem);
+			GoToBookmark(hItem);
 
 		*pResult = 0;
 	}

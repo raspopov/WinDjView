@@ -35,6 +35,8 @@ CString FormatDouble(double fValue);
 void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, double& value, double def = 0.0, LPCTSTR pszSuffix = NULL);
 void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0, LPCTSTR pszSuffix = NULL);
 
+class CDjVuDoc;
+
 
 // CDjViewApp
 
@@ -52,7 +54,7 @@ public:
 	virtual int ExitInstance();
 	bool RegisterShellFileTypes();
 
-	void OpenDocument(const CString& strPathName, const GUTF8String& strPage);
+	CDjVuDoc* OpenDocument(const CString& strPathName, const GUTF8String& strPage);
 
 // Implementation
 protected:

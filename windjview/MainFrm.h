@@ -49,6 +49,8 @@ public:
 	void UpdatePageCombo(CDjVuView* pView);
 	void UpdateZoomCombo(int nZoomType, double fZoom);
 
+	void AddToHistory(CDjVuView* pView, int nPage);
+
 // Overrides
 public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
@@ -72,6 +74,18 @@ protected:
 
 	CFont m_font;
 
+	struct HistoryPos
+	{
+		CString strFileName;
+		int nPage;
+
+		bool operator==(const HistoryPos& rhs) const { return strFileName == rhs.strFileName && nPage == rhs.nPage; }
+		bool operator!=(const HistoryPos& rhs) const { return !(*this == rhs); }
+	};
+	list<HistoryPos> m_history;
+	list<HistoryPos>::iterator m_historyPos;
+	void GoToHistoryPos(const HistoryPos& pos);
+
 protected:
 // Generated message map functions
 	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
@@ -91,6 +105,10 @@ protected:
 	afx_msg void OnHelpContents();
 	afx_msg void OnUpdateWindowList(CCmdUI *pCmdUI);
 	afx_msg void OnActivateWindow(UINT nID);
+	afx_msg void OnViewBack();
+	afx_msg void OnUpdateViewBack(CCmdUI *pCmdUI);
+	afx_msg void OnViewForward();
+	afx_msg void OnUpdateViewForward(CCmdUI *pCmdUI);
 	DECLARE_MESSAGE_MAP()
 };
 

@@ -88,10 +88,6 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND(ID_EXPORT_PAGE, OnExportPage)
 	ON_COMMAND(ID_FIND_STRING, OnFindString)
 	ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNeedText)
-	ON_COMMAND(ID_VIEW_BACK, OnViewBack)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_BACK, OnUpdateViewBack)
-	ON_COMMAND(ID_VIEW_FORWARD, OnViewForward)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_FORWARD, OnUpdateViewForward)
 	ON_COMMAND(ID_ZOOM_IN, OnViewZoomIn)
 	ON_COMMAND(ID_ZOOM_OUT, OnViewZoomOut)
 	ON_UPDATE_COMMAND_UI(ID_ZOOM_IN, OnUpdateViewZoomIn)
@@ -104,8 +100,7 @@ CDjVuView::CDjVuView()
 	: m_nPage(-1), m_nPageCount(0), m_nZoomType(ZoomPercent), m_fZoom(100.0),
 	  m_nLayout(SinglePage), m_nRotate(0), m_bDragging(false),
 	  m_pRenderThread(NULL), m_bInsideUpdateView(false), m_bClick(false),
-	  m_historyPos(m_history.end()), m_evtRendered(false, true),
-	  m_nPendingPage(-1), m_nClickedPage(-1)
+	  m_evtRendered(false, true), m_nPendingPage(-1), m_nClickedPage(-1)
 {
 }
 
@@ -144,7 +139,7 @@ void CDjVuView::OnDraw(CDC* pDC)
 	// all drawing can be done in natural coordinates. Unfortunately,
 	// this does not work in Win98, because in this OS coordinates
 	// cannot be larger than 32767. So we will subtract scroll position
-	// explicitely.
+	// explicitly.
 	pDC->SetViewportOrg(CPoint(0, 0));
 
 	if (m_nLayout == SinglePage)
@@ -371,10 +366,47 @@ void CDjVuView::OnInitialUpdate()
 	m_pages.resize(m_nPageCount);
 	m_nPage = 0;
 
+	Page& page = m_pages[0];
+	page.Init(GetDocument()->GetPageInfo(0));
+	if (page.pAnt != NULL)
+		ReadZoomSettings(page.pAnt);
+
 	m_pRenderThread = new CRenderThread(GetDocument(), this);
 
 	UpdateView(RECALC);
 	RenderPage(0);
+}
+
+void CDjVuView::ReadZoomSettings(GP<DjVuANT> pAnt)
+{
+	switch (pAnt->zoom)
+	{
+	case DjVuANT::ZOOM_STRETCH:
+		m_nZoomType = ZoomStretch;
+		break;
+
+	case DjVuANT::ZOOM_ONE2ONE:
+		m_nZoomType = ZoomActualSize;
+		break;
+
+	case DjVuANT::ZOOM_WIDTH:
+		m_nZoomType = ZoomFitWidth;
+		break;
+
+	case DjVuANT::ZOOM_PAGE:
+		m_nZoomType = ZoomFitPage;
+		break;
+	}
+
+	if (pAnt->zoom > 0)
+	{
+		m_fZoom = pAnt->zoom;
+
+		if (m_fZoom < 10.0)
+			m_fZoom = 10.0;
+		if (m_fZoom > 800.0)
+			m_fZoom = 800.0;
+	}
 }
 
 BOOL CDjVuView::OnEraseBkgnd(CDC* pDC)
@@ -2652,7 +2684,7 @@ BOOL CDjVuView::PreTranslateMessage(MSG* pMsg)
 	return CMyScrollView::PreTranslateMessage(pMsg);
 }
 
-void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, bool bAddToHistory)
+void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory)
 {
 	if (nLinkPage == -1)
 		nLinkPage = GetCurrentPage();
@@ -2698,7 +2730,7 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, bool bAddToHistor
 		if (nPage < 0)
 			nPage = 0;
 
-		GoToPage(nPage, nLinkPage, bAddToHistory);
+		GoToPage(nPage, nLinkPage, nAddToHistory);
 		return;
 	}
 
@@ -2735,6 +2767,10 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, bool bAddToHistor
 		if (file.Open(strPathName, CFile::modeRead | CFile::shareDenyWrite))
 		{
 			file.Close();
+
+			if (nAddToHistory & AddSource)
+				GetMainFrame()->AddToHistory(this, nLinkPage);
+
 			theApp.OpenDocument(strPathName, strPage);
 			return;
 		}
@@ -2747,6 +2783,10 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, bool bAddToHistor
 		if (file.Open(strPathName, CFile::modeRead | CFile::shareDenyWrite))
 		{
 			file.Close();
+
+			if (nAddToHistory & AddSource)
+				GetMainFrame()->AddToHistory(this, nLinkPage);
+
 			theApp.OpenDocument(strPathName, strPage);
 			return;
 		}
@@ -2756,72 +2796,18 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, bool bAddToHistor
 	::ShellExecute(NULL, "open", (const char*)url, NULL, NULL, SW_SHOWNORMAL);
 }
 
-void CDjVuView::GoToPage(int nPage, int nLinkPage, bool bAddToHistory)
+void CDjVuView::GoToPage(int nPage, int nLinkPage, int nAddToHistory)
 {
 	if (nLinkPage == -1)
 		nLinkPage = GetCurrentPage();
 
-	if (bAddToHistory)
-	{
-		if (!m_history.empty())
-		{
-			++m_historyPos;
-			m_history.erase(m_historyPos, m_history.end());
-		}
+	if (nAddToHistory & AddSource)
+		GetMainFrame()->AddToHistory(this, nLinkPage);
 
-		View entry;
-		entry.nPage = nLinkPage;
-		if (m_history.empty() || m_history.back() != entry)
-			m_history.push_back(entry);
-
-		entry.nPage = nPage;
-		m_history.push_back(entry);
-
-		m_historyPos = m_history.end();
-		--m_historyPos;
-	}
+	if (nAddToHistory & AddTarget)
+		GetMainFrame()->AddToHistory(this, nPage);
 
 	RenderPage(nPage);
-}
-
-void CDjVuView::OnViewBack()
-{
-	if (m_history.empty() || m_historyPos == m_history.begin())
-		return;
-
-	const View& view = *(--m_historyPos);
-	RenderPage(view.nPage);
-}
-
-void CDjVuView::OnUpdateViewBack(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(!m_history.empty() && m_historyPos != m_history.begin());
-}
-
-void CDjVuView::OnViewForward()
-{
-	if (m_history.empty())
-		return;
-
-	list<View>::iterator it = m_history.end();
-	if (m_historyPos == m_history.end() || m_historyPos == --it)
-		return;
-
-	const View& view = *(++m_historyPos);
-	RenderPage(view.nPage);
-}
-
-void CDjVuView::OnUpdateViewForward(CCmdUI* pCmdUI)
-{
-	if (m_history.empty())
-	{
-		pCmdUI->Enable(false);
-	}
-	else
-	{
-		list<View>::iterator it = m_history.end();
-		pCmdUI->Enable(m_historyPos != m_history.end() && m_historyPos != --it);
-	}
 }
 
 void CDjVuView::OnViewZoomIn()

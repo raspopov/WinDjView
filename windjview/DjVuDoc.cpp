@@ -23,6 +23,7 @@
 
 #include "ChildFrm.h"
 #include "DjVuDoc.h"
+#include "DjVuView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -131,9 +132,7 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	GP<ByteStream> pStream = pDataPool->get_stream();
 	GP<IFFByteStream> iff = IFFByteStream::create(pStream);
 
-	POSITION pos = GetFirstViewPosition();
-	ASSERT(pos != NULL);
-	CView* pView = GetNextView(pos);
+	CDjVuView* pView = GetDjVuView();
 	CChildFrame* pFrame = (CChildFrame*)pView->GetParentFrame();
 	pFrame->CreateNavPanes();
 
@@ -404,4 +403,13 @@ void CDjVuDoc::SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU)
 		SetTitle(szTitle);
 	}
 #endif
+}
+
+CDjVuView* CDjVuDoc::GetDjVuView()
+{
+	POSITION pos = GetFirstViewPosition();
+	ASSERT(pos != NULL);
+
+	CDjVuView* pView = (CDjVuView*)GetNextView(pos);
+	return pView;
 }

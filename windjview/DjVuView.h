@@ -48,8 +48,14 @@ public:
 
 // Operations
 public:
-	void GoToPage(int nPage, int nLinkPage = -1, bool bAddToHistory = true);
-	void GoToURL(const GUTF8String& url, int nLinkPage = -1, bool bAddToHistory = true);
+	enum AddToHistory
+	{
+		DoNotAdd = 0,
+		AddSource = 1,
+		AddTarget = 2
+	};
+	void GoToPage(int nPage, int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
+	void GoToURL(const GUTF8String& url, int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
 
 	int GetPageCount() const { return m_nPageCount; }
 	int GetCurrentPage() const;
@@ -195,6 +201,7 @@ protected:
 	void UpdatePagesFromBottom(int nTop, int nBottom);
 	void DeleteBitmaps();
 	int GetPageFromPoint(CPoint point);
+	void ReadZoomSettings(GP<DjVuANT> pAnt);
 
 	enum UpdateType
 	{
@@ -219,17 +226,6 @@ protected:
 	int m_nLinkPage;
 	GP<GMapArea> GetHyperlinkFromPoint(CPoint point, int* pnPage = NULL);
 	void UpdateActiveHyperlink(CPoint point);
-
-	struct View
-	{
-		int nPage;
-		int nTopOffset, nLeftOffset;
-
-		bool operator==(const View& rhs) const { return nPage == rhs.nPage; }
-		bool operator!=(const View& rhs) const { return !(*this == rhs); }
-	};
-	list<View> m_history;
-	list<View>::iterator m_historyPos;
 
 	int m_nClickedPage;
 	bool m_bDragging;
@@ -257,10 +253,6 @@ protected:
 	afx_msg void OnUpdateViewNextpage(CCmdUI *pCmdUI);
 	afx_msg void OnViewPreviouspage();
 	afx_msg void OnUpdateViewPreviouspage(CCmdUI *pCmdUI);
-	afx_msg void OnViewBack();
-	afx_msg void OnUpdateViewBack(CCmdUI *pCmdUI);
-	afx_msg void OnViewForward();
-	afx_msg void OnUpdateViewForward(CCmdUI *pCmdUI);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnRotateLeft();

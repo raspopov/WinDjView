@@ -73,6 +73,10 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIND, OnUpdateViewFind)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ACTIVATE_FIRST, OnUpdateWindowList)
 	ON_COMMAND_RANGE(ID_WINDOW_ACTIVATE_FIRST, ID_WINDOW_ACTIVATE_LAST, OnActivateWindow)
+	ON_COMMAND(ID_VIEW_BACK, OnViewBack)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_BACK, OnUpdateViewBack)
+	ON_COMMAND(ID_VIEW_FORWARD, OnViewForward)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_FORWARD, OnUpdateViewForward)
 #ifdef ELIBRA_READER
 	ON_COMMAND(ID_HELP_CONTENTS, OnHelpContents)
 	ON_COMMAND(IDC_STATIC_LINK, OnGoToHomepage)
@@ -88,7 +92,7 @@ static UINT indicators[] =
 // CMainFrame construction/destruction
 
 CMainFrame::CMainFrame()
-	: m_pFindDlg(NULL), m_bFirstShow(true)
+	: m_pFindDlg(NULL), m_bFirstShow(true), m_historyPos(m_history.end())
 {
 }
 
@@ -659,10 +663,7 @@ void CMainFrame::OnActivateWindow(UINT nID)
 			CDocument* pDoc = pTemplate->GetNextDoc(posDoc);
 			if (nDoc == nActivateDoc)
 			{
-				POSITION pos = pDoc->GetFirstViewPosition();
-				ASSERT(pos != NULL);
-
-				CView* pView = pDoc->GetNextView(pos);
+				CDjVuView* pView = ((CDjVuDoc*)pDoc)->GetDjVuView();
 				CFrameWnd* pFrame = pView->GetParentFrame();
 				pFrame->ActivateFrame();
 			}
@@ -670,4 +671,76 @@ void CMainFrame::OnActivateWindow(UINT nID)
 			++nDoc;
 		}
 	}
+}
+
+void CMainFrame::GoToHistoryPos(const HistoryPos& pos)
+{
+	CDjVuDoc* pDoc = theApp.OpenDocument(pos.strFileName, "");
+	if (pDoc == NULL)
+	{
+		AfxMessageBox(_T("Failed to open document\n") + pos.strFileName, MB_ICONERROR | MB_OK);
+		return;
+	}
+
+	CDjVuView* pView = pDoc->GetDjVuView();
+	pView->GoToPage(pos.nPage, -1, CDjVuView::DoNotAdd);
+}
+
+void CMainFrame::OnViewBack()
+{
+	if (m_history.empty() || m_historyPos == m_history.begin())
+		return;
+
+	const HistoryPos& pos = *(--m_historyPos);
+	GoToHistoryPos(pos);
+}
+
+void CMainFrame::OnUpdateViewBack(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(!m_history.empty() && m_historyPos != m_history.begin());
+}
+
+void CMainFrame::OnViewForward()
+{
+	if (m_history.empty())
+		return;
+
+	list<HistoryPos>::iterator it = m_history.end();
+	if (m_historyPos == m_history.end() || m_historyPos == --it)
+		return;
+
+	const HistoryPos& pos = *(++m_historyPos);
+	GoToHistoryPos(pos);
+}
+
+void CMainFrame::OnUpdateViewForward(CCmdUI* pCmdUI)
+{
+	if (m_history.empty())
+	{
+		pCmdUI->Enable(false);
+	}
+	else
+	{
+		list<HistoryPos>::iterator it = m_history.end();
+		pCmdUI->Enable(m_historyPos != m_history.end() && m_historyPos != --it);
+	}
+}
+
+void CMainFrame::AddToHistory(CDjVuView* pView, int nPage)
+{
+	if (!m_history.empty())
+	{
+		++m_historyPos;
+		m_history.erase(m_historyPos, m_history.end());
+	}
+
+	HistoryPos pos;
+	pos.strFileName = pView->GetDocument()->GetPathName();
+	pos.nPage = nPage;
+
+	if (m_history.empty() || m_history.back() != pos)
+		m_history.push_back(pos);
+
+	m_historyPos = m_history.end();
+	--m_historyPos;
 }

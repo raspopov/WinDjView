@@ -556,11 +556,9 @@ void CDjViewApp::OnFileSettings()
 			while (posDoc != NULL)
 			{
 				CDocument* pDoc = pTemplate->GetNextDoc(posDoc);
-				POSITION pos = pDoc->GetFirstViewPosition();
-				ASSERT(pos != NULL);
-
-				CView* pView = pDoc->GetNextView(pos);
+				CDjVuView* pView = ((CDjVuDoc*)pDoc)->GetDjVuView();
 				CChildFrame* pFrame = (CChildFrame*)pView->GetParentFrame();
+
 				if (pFrame->GetThumbnailsView() != NULL)
 					pFrame->GetThumbnailsView()->OnSettingsChanged();
 			}
@@ -568,34 +566,28 @@ void CDjViewApp::OnFileSettings()
 	}
 }
 
-void CDjViewApp::OpenDocument(const CString& strPathName, const GUTF8String& strPage)
+CDjVuDoc* CDjViewApp::OpenDocument(const CString& strPathName, const GUTF8String& strPage)
 {
-	bool bAddToHistory = true;
-
 	CDjVuDoc* pDoc = (CDjVuDoc*)FindOpenDocument(strPathName);
 	if (pDoc == NULL)
-	{
 		pDoc = (CDjVuDoc*)OpenDocumentFile(strPathName);
-		bAddToHistory = false;
-	}
 
 	if (pDoc == NULL)
 	{
-		AfxMessageBox("Error opening link " + strPathName);
-		return;
+		AfxMessageBox(_T("Failed to open document\n") + strPathName);
+		return NULL;
 	}
 
-	POSITION pos = pDoc->GetFirstViewPosition();
-	ASSERT(pos != NULL);
-	CDjVuView* pView = (CDjVuView*)pDoc->GetNextView(pos);
-
+	CDjVuView* pView = pDoc->GetDjVuView();
 	CFrameWnd* pFrame = pView->GetParentFrame();
 	pFrame->ActivateFrame();
 
 	if (strPage.length() > 0)
 	{
-		pView->GoToURL(strPage, pView->GetCurrentPage(), bAddToHistory);
+		pView->GoToURL(strPage, -1, CDjVuView::AddTarget);
 	}
+
+	return pDoc;
 }
 
 CDocument* CDjViewApp::FindOpenDocument(LPCTSTR lpszFileName)
