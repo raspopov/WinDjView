@@ -100,7 +100,7 @@ CDjVuView::CDjVuView()
 	: m_nPage(-1), m_nPageCount(0), m_nZoomType(ZoomPercent), m_fZoom(100.0),
 	  m_nLayout(SinglePage), m_nRotate(0), m_bDragging(false),
 	  m_pRenderThread(NULL), m_bInsideUpdateView(false), m_bClick(false),
-	  m_historyPos(m_history.end())
+	  m_historyPos(m_history.end()), m_evtRendered(false, true)
 {
 }
 
@@ -187,18 +187,7 @@ void CDjVuView::DrawPage(CDC* pDC, int nPage)
 			for (GPosition pos = page.pAnt->map_areas; pos; ++pos)
 			{
 				GP<GMapArea> pArea = page.pAnt->map_areas[pos];
-				CRect rcArea = TranslatePageRect(nPage, pArea->get_bound_rect());
-
-				rcArea.OffsetRect(-GetDeviceScrollPosition());
-
-				CPoint points[] = { rcArea.TopLeft(), CPoint(rcArea.right, rcArea.top),
-					rcArea.BottomRight(), CPoint(rcArea.left, rcArea.bottom), rcArea.TopLeft() };
-
-				CPen pen(PS_SOLID, 1, RGB(0, 255, 0));
-				CPen pen2(PS_SOLID, 1, RGB(255, 0, 0));
-				CPen* pOldPen = pDC->SelectObject(pArea == m_pActiveLink ? &pen2 : &pen);
-				pDC->Polyline((LPPOINT)points, 5);
-				pDC->SelectObject(pOldPen);
+				DrawMapArea(pDC, pArea, nPage, !!(pArea == m_pActiveLink));
 			}
 		}
 
@@ -215,6 +204,41 @@ void CDjVuView::DrawPage(CDC* pDC, int nPage)
 	else
 	{
 		DrawWhite(pDC, nPage);
+	}
+}
+
+void CDjVuView::DrawMapArea(CDC* pDC, GP<GMapArea> pArea, int nPage, bool bActive)
+{
+	if (pArea->border_type == GMapArea::NO_BORDER ||
+			!bActive && !pArea->border_always_visible)
+		return;
+
+	CRect rcArea = TranslatePageRect(nPage, pArea->get_bound_rect());
+	rcArea.OffsetRect(-GetDeviceScrollPosition());
+	CPoint points[] = { rcArea.TopLeft(), CPoint(rcArea.right, rcArea.top),
+		rcArea.BottomRight(), CPoint(rcArea.left, rcArea.bottom), rcArea.TopLeft() };
+
+	if (pArea->border_type == GMapArea::SOLID_BORDER)
+	{
+		DWORD dwColor = pArea->border_color;
+		COLORREF crBorder = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
+		CPen pen(PS_SOLID, 1, crBorder);
+		CPen* pOldPen = pDC->SelectObject(&pen);
+		pDC->Polyline((LPPOINT)points, 5);
+		pDC->SelectObject(pOldPen);
+	}
+	else
+	{
+		// Draw XOR border
+		CRect rcHorz(rcArea.TopLeft(), CSize(rcArea.Width() + 1, 1));
+		pDC->InvertRect(rcHorz);
+		rcHorz.OffsetRect(0, rcArea.Height());
+		pDC->InvertRect(rcHorz);
+
+		CRect rcVert(rcArea.TopLeft() + CPoint(0, 1), CSize(1, rcArea.Height() - 1));
+		pDC->InvertRect(rcVert);
+		rcVert.OffsetRect(rcArea.Width(), 0);
+		pDC->InvertRect(rcVert);
 	}
 }
 
@@ -457,6 +481,7 @@ void CDjVuView::OnInitialUpdate()
 	m_nPage = 0;
 
 	UpdateView(RECALC);
+
 	RenderPage(0);
 }
 
@@ -466,7 +491,7 @@ BOOL CDjVuView::OnEraseBkgnd(CDC* pDC)
 	return true;
 }
 
-void CDjVuView::RenderPage(int nPage)
+void CDjVuView::RenderPage(int nPage, int nTimeout)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
 	Page& page = m_pages[nPage];
@@ -491,7 +516,12 @@ void CDjVuView::RenderPage(int nPage)
 
 		int nUpdatedPos = page.ptOffset.y - 1;
 		OnScrollBy(CPoint(GetScrollPos(SB_HORZ), nUpdatedPos) - GetScrollPosition());
+
+		m_evtRendered.ResetEvent();
 		UpdateVisiblePages();
+
+		if (nTimeout != -1 && m_pages[nPage].pBitmap == NULL)
+			::WaitForSingleObject(m_evtRendered, nTimeout);
 	}
 
 	GetMainFrame()->UpdatePageCombo(GetCurrentPage());
@@ -1783,7 +1813,8 @@ LRESULT CDjVuView::OnRenderFinished(WPARAM wParam, LPARAM lParam)
 
 	page.DeleteBitmap();
 	page.pBitmap = pBitmap;
-
+	m_evtRendered.SetEvent();
+	
 	InvalidatePage(nPage);
 	UpdateWindow();
 
@@ -2537,7 +2568,7 @@ void CDjVuView::EnsureSelectionVisible(int nPage, const DjVuSelection& selection
 {
 	if (m_nPage != nPage)
 	{
-		RenderPage(nPage);
+		RenderPage(nPage, 500);
 	}
 
 	CRect rcClient;
@@ -2633,7 +2664,7 @@ void CDjVuView::UpdateActiveHyperlink(CPoint point)
 			CRect rcArea = TranslatePageRect(m_nLinkPage, m_pActiveLink->get_bound_rect());
 			rcArea.InflateRect(0, 0, 1, 1);
 			rcArea.OffsetRect(-GetScrollPosition());
-			InvalidateRect(rcArea, FALSE);
+			InvalidateRect(rcArea);
 		}
 
 		m_pActiveLink = pHyperlink;
@@ -2645,7 +2676,7 @@ void CDjVuView::UpdateActiveHyperlink(CPoint point)
 			CRect rcArea = TranslatePageRect(nPage, m_pActiveLink->get_bound_rect());
 			rcArea.InflateRect(0, 0, 1, 1);
 			rcArea.OffsetRect(-GetScrollPosition());
-			InvalidateRect(rcArea, FALSE);
+			InvalidateRect(rcArea);
 		}
 	}
 }
@@ -2721,7 +2752,7 @@ BOOL CDjVuView::PreTranslateMessage(MSG* pMsg)
 	return CScrollView::PreTranslateMessage(pMsg);
 }
 
-void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage)
+void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, bool bAddToHistory)
 {
 	if (url[0] == '#')
 	{
@@ -2764,7 +2795,7 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage)
 		if (nPage < 0)
 			nPage = 0;
 
-		GoToPage(nPage, nLinkPage);
+		GoToPage(nPage, nLinkPage, bAddToHistory);
 		return;
 	}
 
@@ -2774,7 +2805,7 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage)
 	GUTF8String strPage, strURL = url;
 	if (nPos != -1)
 	{
-		strPage = url.substr(nPos, url.length() - nPos - 1);
+		strPage = url.substr(nPos, url.length() - nPos);
 		strURL = strURL.substr(0, nPos);
 	}
 
@@ -2818,24 +2849,27 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage)
 	::ShellExecute(NULL, "open", (const char*)url, NULL, NULL, SW_SHOWNORMAL);
 }
 
-void CDjVuView::GoToPage(int nPage, int nLinkPage)
+void CDjVuView::GoToPage(int nPage, int nLinkPage, bool bAddToHistory)
 {
-	if (!m_history.empty())
+	if (bAddToHistory)
 	{
-		++m_historyPos;
-		m_history.erase(m_historyPos, m_history.end());
-	}
+		if (!m_history.empty())
+		{
+			++m_historyPos;
+			m_history.erase(m_historyPos, m_history.end());
+		}
 
-	View entry;
-	entry.nPage = nLinkPage;
-	if (m_history.empty() || m_history.back() != entry)
+		View entry;
+		entry.nPage = nLinkPage;
+		if (m_history.empty() || m_history.back() != entry)
+			m_history.push_back(entry);
+
+		entry.nPage = nPage;
 		m_history.push_back(entry);
 
-	entry.nPage = nPage;
-	m_history.push_back(entry);
-
-	m_historyPos = m_history.end();
-	--m_historyPos;
+		m_historyPos = m_history.end();
+		--m_historyPos;
+	}
 
 	RenderPage(nPage);
 }

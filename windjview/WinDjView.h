@@ -55,6 +55,7 @@ protected:
 	void LoadSettings();
 	void SaveSettings();
 	void EnableShellOpen();
+	CDocument* FindOpenDocument(LPCTSTR lpszFileName);
 
 // Generated message map functions
 	afx_msg void OnAppAbout();

@@ -47,7 +47,7 @@ public:
 
 // Operations
 public:
-	void RenderPage(int nPage);
+	void RenderPage(int nPage, int nTimeout = -1);
 	int GetPageCount() const { return m_nPageCount; }
 	int GetCurrentPage() const;
 	int GetZoomType() const { return m_nZoomType; }
@@ -55,6 +55,7 @@ public:
 	void ZoomTo(int nZoomType, double fZoom = 100.0);
 	int GetLayout() const { return m_nLayout; }
 	int GetRotate() const { return m_nRotate; }
+	void GoToURL(const GUTF8String& url, int nLinkPage, bool bAddToHistory = true);
 
 	enum ZoomType
 	{
@@ -94,6 +95,7 @@ public:
 protected:
 	CToolTipCtrl m_toolTip;
 	CRenderThread* m_pRenderThread;
+	CEvent m_evtRendered;
 
 	int m_nPage, m_nPageCount;
 	CSize m_szDisplay;
@@ -104,6 +106,7 @@ protected:
 	void DrawOffscreen(CDC* pDC, int nPage);
 	void DrawStretch(CDC* pDC, int nPage);
 	void InvalidatePage(int nPage);
+	void DrawMapArea(CDC* pDC, GP<GMapArea> pArea, int nPage, bool bActive);
 
 	int m_nZoomType;
 	double m_fZoom;
@@ -218,8 +221,7 @@ protected:
 	int m_nLinkPage;
 	GP<GMapArea> GetHyperlinkFromPoint(CPoint point, int* pnPage = NULL);
 	void UpdateActiveHyperlink(CPoint point);
-	void GoToURL(const GUTF8String& url, int nLinkPage);
-	void GoToPage(int nPage, int nLinkPage);
+	void GoToPage(int nPage, int nLinkPage, bool bAddToHistory = true);
 
 	struct View
 	{

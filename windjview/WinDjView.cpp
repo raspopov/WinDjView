@@ -502,5 +502,62 @@ void CDjViewApp::OnFileSettings()
 
 void CDjViewApp::OpenDocument(const CString& strPathName, const GUTF8String& strPage)
 {
-	AfxMessageBox(strPathName);
+	bool bAddToHistory = true;
+
+	CDjVuDoc* pDoc = (CDjVuDoc*)FindOpenDocument(strPathName);
+	if (pDoc == NULL)
+	{
+		pDoc = (CDjVuDoc*)OpenDocumentFile(strPathName);
+		bAddToHistory = false;
+	}
+
+	if (pDoc == NULL)
+	{
+		AfxMessageBox("Error opening link " + strPathName);
+		return;
+	}
+
+	POSITION pos = pDoc->GetFirstViewPosition();
+	ASSERT(pos != NULL);
+	CDjVuView* pView = (CDjVuView*)pDoc->GetNextView(pos);
+
+	CFrameWnd* pFrame = pView->GetParentFrame();
+	pFrame->ActivateFrame();
+
+	if (strPage.length() > 0)
+	{
+		pView->GoToURL(strPage, pView->GetCurrentPage(), bAddToHistory);
+	}
+}
+
+CDocument* CDjViewApp::FindOpenDocument(LPCTSTR lpszFileName)
+{
+	TCHAR szPath[_MAX_PATH], szTemp[_MAX_PATH];
+	ASSERT(lstrlen(lpszFileName) < _countof(szPath));
+	if (lpszFileName[0] == '\"')
+		++lpszFileName;
+	lstrcpyn(szTemp, lpszFileName, _MAX_PATH);
+	LPTSTR lpszLast = _tcsrchr(szTemp, '\"');
+	if (lpszLast != NULL)
+		*lpszLast = 0;
+
+	if (!AfxFullPath(szPath, szTemp))
+	{
+		ASSERT(FALSE);
+		return NULL; // We won't open the file. MFC requires paths with
+		// length < _MAX_PATH
+	}
+
+	POSITION pos = GetFirstDocTemplatePosition();
+	while (pos != NULL)
+	{
+		CDocTemplate* pTemplate = (CDocTemplate*)GetNextDocTemplate(pos);
+		ASSERT_KINDOF(CDocTemplate, pTemplate);
+
+		CDocument* pDocument = NULL;
+		if (pTemplate->MatchDocType(szPath, pDocument) == CDocTemplate::yesAlreadyOpen)
+			return pDocument;
+	}
+
+	return NULL;
 }
