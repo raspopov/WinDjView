@@ -26,6 +26,7 @@
 #include "MyBitmapButton.h"
 #include "FindDlg.h"
 class CDjVuView;
+class CFullscreenWnd;
 
 
 class CMainFrame : public CMDIFrameWnd
@@ -38,6 +39,7 @@ public:
 public:
 	CMyComboBox m_cboPage, m_cboZoom;
 	CFindDlg* m_pFindDlg;
+	CFullscreenWnd* m_pFullscreenWnd;
 
 #ifdef ELIBRA_READER
 	CMyBitmapButton m_btnLink;
@@ -50,11 +52,14 @@ public:
 	void UpdateZoomCombo(int nZoomType, double fZoom);
 
 	void AddToHistory(CDjVuView* pView, int nPage);
+	void SetFullscreenWnd(CFullscreenWnd* pWnd) { m_pFullscreenWnd = pWnd; }
 
 // Overrides
-public:
+protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
+	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
+	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 
 // Implementation
 public:
@@ -87,7 +92,7 @@ protected:
 	void GoToHistoryPos(const HistoryPos& pos);
 
 protected:
-// Generated message map functions
+	// Generated message map functions
 	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -110,8 +115,10 @@ protected:
 	afx_msg void OnViewForward();
 	afx_msg void OnUpdateViewForward(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateStatusAdjust(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateStatusMode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateStatusPage(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateStatusSize(CCmdUI* pCmdUI);
+	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	DECLARE_MESSAGE_MAP()
 };
 

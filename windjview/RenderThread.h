@@ -22,8 +22,9 @@
 
 #define WM_RENDER_FINISHED (WM_USER + 17)
 
+#include "DjVuView.h"
+
 class CDjVuDoc;
-class CDjVuView;
 class CDIB;
 
 class CRenderThread
@@ -33,12 +34,12 @@ public:
 	~CRenderThread();
 	void Stop();
 
-	void AddJob(int nPage, int nRotate, const CRect& rcAll, const CRect& rcClip);
+	void AddJob(int nPage, int nRotate, const CRect& rect, int nDisplayMode = CDjVuView::Color);
 	void AddDecodeJob(int nPage);
 	void AddReadInfoJob(int nPage);
 	void AddCleanupJob(int nPage);
 
-	static CDIB* Render(GP<DjVuImage> pImage, const GRect& rcClip, const GRect& rcAll);
+	static CDIB* Render(GP<DjVuImage> pImage, const GRect& rect, int nDisplayMode = CDjVuView::Color);
 
 	void PauseJobs();
 	void ResumeJobs();
@@ -59,8 +60,8 @@ private:
 	{
 		int nPage;
 		int nRotate;
-		CRect rcAll;
-		CRect rcClip;
+		int nDisplayMode;
+		CRect rect;
 		JobType type;
 	};
 	list<Job> m_jobs;

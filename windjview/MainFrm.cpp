@@ -27,6 +27,7 @@
 #include "ChildFrm.h"
 #include "AppSettings.h"
 #include "ThumbnailsView.h"
+#include "FullscreenWnd.h"
 
 #include <dde.h>
 
@@ -78,8 +79,10 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_COMMAND(ID_VIEW_FORWARD, OnViewForward)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FORWARD, OnUpdateViewForward)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_ADJUST, OnUpdateStatusAdjust)
+	ON_UPDATE_COMMAND_UI(ID_INDICATOR_MODE, OnUpdateStatusMode)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_PAGE, OnUpdateStatusPage)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_SIZE, OnUpdateStatusSize)
+	ON_WM_SETFOCUS()
 #ifdef ELIBRA_READER
 	ON_COMMAND(ID_HELP_CONTENTS, OnHelpContents)
 	ON_COMMAND(IDC_STATIC_LINK, OnGoToHomepage)
@@ -92,6 +95,7 @@ static UINT indicators[] =
 #ifndef ELIBRA_READER
 	,
 	ID_INDICATOR_ADJUST,
+	ID_INDICATOR_MODE,
 	ID_INDICATOR_PAGE,
 	ID_INDICATOR_SIZE
 #endif
@@ -101,7 +105,8 @@ static UINT indicators[] =
 // CMainFrame construction/destruction
 
 CMainFrame::CMainFrame()
-	: m_pFindDlg(NULL), m_bFirstShow(true), m_historyPos(m_history.end())
+	: m_pFindDlg(NULL), m_bFirstShow(true), m_historyPos(m_history.end()),
+	  m_pFullscreenWnd(NULL)
 {
 }
 
@@ -403,6 +408,9 @@ void CMainFrame::UpdateZoomCombo(int nZoomType, double fZoom)
 
 void CMainFrame::UpdatePageCombo(CDjVuView* pView)
 {
+	if (pView->GetMode() == CDjVuView::Fullscreen)
+		return;
+
 	if (pView->GetPageCount() != m_cboPage.GetCount())
 	{
 		m_cboPage.ResetContent();
@@ -705,7 +713,8 @@ void CMainFrame::OnViewBack()
 
 void CMainFrame::OnUpdateViewBack(CCmdUI* pCmdUI)
 {
-	pCmdUI->Enable(!m_history.empty() && m_historyPos != m_history.begin());
+	pCmdUI->Enable(m_pFullscreenWnd == NULL && !m_history.empty()
+		&& m_historyPos != m_history.begin());
 }
 
 void CMainFrame::OnViewForward()
@@ -723,7 +732,7 @@ void CMainFrame::OnViewForward()
 
 void CMainFrame::OnUpdateViewForward(CCmdUI* pCmdUI)
 {
-	if (m_history.empty())
+	if (m_pFullscreenWnd != NULL || m_history.empty())
 	{
 		pCmdUI->Enable(false);
 	}
@@ -797,6 +806,55 @@ void CMainFrame::OnUpdateStatusAdjust(CCmdUI* pCmdUI)
 	}
 }
 
+void CMainFrame::OnUpdateStatusMode(CCmdUI* pCmdUI)
+{
+	static CString strMessage;
+
+	CString strNewMessage;
+	CMDIChildWnd* pActive = MDIGetActive();
+	if (pActive != NULL)
+	{
+		CDjVuView* pView = (CDjVuView*)pActive->GetActiveView();
+		ASSERT(pView);
+
+		int nMode = pView->GetDisplayMode();
+		switch (nMode)
+		{
+		case CDjVuView::BlackAndWhite:
+			strNewMessage = _T("  Black & White  ");
+			break;
+
+		case CDjVuView::Foreground:
+			strNewMessage = _T("  Foreground  ");
+			break;
+
+		case CDjVuView::Background:
+			strNewMessage = _T("  Background  ");
+			break;
+		}
+	}
+
+	if (strNewMessage.IsEmpty())
+	{
+		m_wndStatusBar.SetPaneInfo(2, ID_INDICATOR_MODE, SBPS_DISABLED | SBPS_NOBORDERS, 0);
+		pCmdUI->Enable(false);
+		strMessage.Empty();
+	}
+	else if (strMessage != strNewMessage)
+	{
+		CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
+
+		strMessage = strNewMessage;
+		pCmdUI->SetText(strMessage);
+		status.SetText(strMessage, 2, 0);
+
+		CWindowDC dc(&status);
+		CFont* pOldFont = dc.SelectObject(status.GetFont());
+		m_wndStatusBar.SetPaneInfo(2, ID_INDICATOR_MODE, 0, dc.GetTextExtent(strMessage).cx + 2);
+		dc.SelectObject(pOldFont);
+	}
+}
+
 void CMainFrame::OnUpdateStatusPage(CCmdUI* pCmdUI)
 {
 	static CString strMessage;
@@ -804,7 +862,7 @@ void CMainFrame::OnUpdateStatusPage(CCmdUI* pCmdUI)
 	CMDIChildWnd* pActive = MDIGetActive();
 	if (pActive == NULL)
 	{
-		m_wndStatusBar.SetPaneInfo(2, ID_INDICATOR_PAGE, SBPS_DISABLED | SBPS_NOBORDERS, 0);
+		m_wndStatusBar.SetPaneInfo(3, ID_INDICATOR_PAGE, SBPS_DISABLED | SBPS_NOBORDERS, 0);
 		pCmdUI->Enable(false);
 		strMessage.Empty();
 		return;
@@ -822,11 +880,11 @@ void CMainFrame::OnUpdateStatusPage(CCmdUI* pCmdUI)
 
 		strMessage = strNewMessage;
 		pCmdUI->SetText(strMessage);
-		status.SetText(strMessage, 2, 0);
+		status.SetText(strMessage, 3, 0);
 
 		CWindowDC dc(&status);
 		CFont* pOldFont = dc.SelectObject(status.GetFont());
-		m_wndStatusBar.SetPaneInfo(2, ID_INDICATOR_PAGE, 0, dc.GetTextExtent(strMessage).cx + 2);
+		m_wndStatusBar.SetPaneInfo(3, ID_INDICATOR_PAGE, 0, dc.GetTextExtent(strMessage).cx + 2);
 		dc.SelectObject(pOldFont);
 	}
 }
@@ -838,7 +896,7 @@ void CMainFrame::OnUpdateStatusSize(CCmdUI* pCmdUI)
 	CMDIChildWnd* pActive = MDIGetActive();
 	if (pActive == NULL)
 	{
-		m_wndStatusBar.SetPaneInfo(3, ID_INDICATOR_SIZE, SBPS_DISABLED | SBPS_NOBORDERS, 0);
+		m_wndStatusBar.SetPaneInfo(4, ID_INDICATOR_SIZE, SBPS_DISABLED | SBPS_NOBORDERS, 0);
 		pCmdUI->Enable(false);
 		strMessage.Empty();
 		return;
@@ -863,11 +921,39 @@ void CMainFrame::OnUpdateStatusSize(CCmdUI* pCmdUI)
 
 		strMessage = strNewMessage;
 		pCmdUI->SetText(strMessage);
-		status.SetText(strMessage, 3, 0);
+		status.SetText(strMessage, 4, 0);
 
 		CWindowDC dc(&status);
 		CFont* pOldFont = dc.SelectObject(status.GetFont());
-		m_wndStatusBar.SetPaneInfo(3, ID_INDICATOR_SIZE, 0, dc.GetTextExtent(strMessage).cx + 2);
+		m_wndStatusBar.SetPaneInfo(4, ID_INDICATOR_SIZE, 0, dc.GetTextExtent(strMessage).cx + 2);
 		dc.SelectObject(pOldFont);
 	}
+}
+
+BOOL CMainFrame::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+	if (m_pFullscreenWnd != NULL)
+		return m_pFullscreenWnd->GetView()->SendMessage(WM_COMMAND, wParam, lParam);
+
+	return CMDIFrameWnd::OnCommand(wParam, lParam);
+}
+
+BOOL CMainFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
+{
+	if (m_pFullscreenWnd != NULL)
+		return m_pFullscreenWnd->GetView()->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+
+	return CMDIFrameWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+}
+
+void CMainFrame::OnSetFocus(CWnd* pOldWnd)
+{
+	if (m_pFullscreenWnd != NULL)
+	{
+		m_pFullscreenWnd->SetForegroundWindow();
+		m_pFullscreenWnd->SetFocus();
+		return;
+	}
+
+	CMDIFrameWnd::OnSetFocus(pOldWnd);
 }

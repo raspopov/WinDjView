@@ -20,29 +20,31 @@
 
 #pragma once
 
+class CDjVuView;
 
-// CFindDlg dialog
 
-class CFindDlg : public CDialog
+// CFullscreenWnd
+
+class CFullscreenWnd : public CWnd
 {
-	DECLARE_DYNAMIC(CFindDlg)
+	DECLARE_DYNAMIC(CFullscreenWnd)
 
 public:
-	CFindDlg(CWnd* pParent = NULL);
-	virtual ~CFindDlg();
+	CFullscreenWnd(CDjVuView* pOwner);
+	virtual ~CFullscreenWnd();
 
-	void SetStatusText(const CString& strStatus);
-
-// Dialog Data
-	enum { IDD = IDD_FIND };
-	CString m_strFind;
-	BOOL m_bMatchCase;
+	BOOL Create();
+	void SetView(CDjVuView* pView);
+	CDjVuView* GetView() const { return m_pView; }
+	CDjVuView* GetOwner() const { return m_pOwner; }
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	virtual void OnOK();
-	virtual void OnCancel();
-	afx_msg void OnClose();
-	afx_msg void OnFindAll();
+	CDjVuView* m_pView;
+	CDjVuView* m_pOwner;
+	int m_nWidth, m_nHeight;
+
+	afx_msg void OnDestroy();
+	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	DECLARE_MESSAGE_MAP()
 };

@@ -39,8 +39,10 @@ public:
 	static const int s_nTopMargin = 22;
 	static const int s_nMinExpandedWidth = 100;
 
+// Operations
 public:
 	int AddTab(const CString& strName, CWnd* pWnd);
+	void ActivateTab(int nTab);
 
 // Implementation
 protected:
@@ -58,7 +60,6 @@ protected:
 	void UpdateCloseButton(bool bLButtonDown);
 	void UpdateCloseButtonImpl(bool bPressed, bool bActive, const CRect& rcButton);
 	int GetTabFromPoint(CPoint point);
-	void ActivateTab(int nTab);
 	void UpdateTabSizes();
 	bool PtInTab(int nTab, CPoint point);
 	CToolTipCtrl m_toolTip;

@@ -226,6 +226,9 @@
 				RelativePath=".\FindDlg.cpp">
 			</File>
 			<File
+				RelativePath=".\FullscreenWnd.cpp">
+			</File>
+			<File
 				RelativePath=".\MainFrm.cpp">
 			</File>
 			<File
@@ -260,6 +263,9 @@
 			</File>
 			<File
 				RelativePath=".\RenderThread.cpp">
+			</File>
+			<File
+				RelativePath=".\SearchResultsView.cpp">
 			</File>
 			<File
 				RelativePath=".\SettingsDlg.cpp">
@@ -327,6 +333,9 @@
 				RelativePath=".\FindDlg.h">
 			</File>
 			<File
+				RelativePath=".\FullscreenWnd.h">
+			</File>
+			<File
 				RelativePath=".\MainFrm.h">
 			</File>
 			<File
@@ -364,6 +373,9 @@
 			</File>
 			<File
 				RelativePath=".\Resource.h">
+			</File>
+			<File
+				RelativePath=".\SearchResultsView.h">
 			</File>
 			<File
 				RelativePath=".\SettingsDlg.h">

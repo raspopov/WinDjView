@@ -35,6 +35,9 @@ inline bool IsStandardZoom(int nZoomType, double fZoom)
 
 typedef GList<DjVuTXT::Zone*> DjVuSelection;
 
+CString MakeANSIString(const GUTF8String& text);
+CString MakePreviewString(const GUTF8String& text, int nStart, int nEnd);
+
 
 class CDjVuView : public CMyScrollView
 {
@@ -45,6 +48,7 @@ protected: // create from serialization only
 // Attributes
 public:
 	CDjVuDoc* GetDocument() const;
+	void SetDocument(CDjVuDoc* pDoc) { m_pDocument = pDoc; }
 
 // Operations
 public:
@@ -56,6 +60,8 @@ public:
 	};
 	void GoToPage(int nPage, int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
 	void GoToURL(const GUTF8String& url, int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
+	void GoToSelection(int nPage, int nStartPos, int nEndPos,
+		int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
 
 	int GetPageCount() const { return m_nPageCount; }
 	int GetCurrentPage() const;
@@ -67,6 +73,8 @@ public:
 
 	GUTF8String GetFullText();
 	void StopDecoding();
+	void RestartThread();
+	void UpdatePageInfo(CDjVuView* pView);
 
 	CSize GetPageSize(int nPage) const { return m_pages[nPage].GetSize(m_nRotate); }
 	int GetPageDPI(int nPage) const { return m_pages[nPage].info.nDPI; }
@@ -90,6 +98,25 @@ public:
 	};
 
 	double GetZoom(ZoomType nZoomType) const;
+
+	enum DisplayMode
+	{
+		Color = 0,
+		BlackAndWhite = 1,
+		Background = 2,
+		Foreground = 3
+	};
+
+	int GetDisplayMode() const { return m_nDisplayMode; }
+
+	enum Mode
+	{
+		Drag = 0,
+		Select = 1,
+		Fullscreen = 2
+	};
+
+	int GetMode() const { return m_nMode; }
 
 // Overrides
 public:
@@ -130,6 +157,7 @@ protected:
 	int m_nZoomType;
 	double m_fZoom;
 	int m_nLayout;
+	int m_nDisplayMode;
 	int m_nRotate;
 
 	double m_fGamma;
@@ -240,15 +268,12 @@ protected:
 	GP<GMapArea> GetHyperlinkFromPoint(CPoint point, int* pnPage = NULL);
 	void UpdateActiveHyperlink(CPoint point);
 
-	enum Mode
-	{
-		DRAG = 0,
-		SELECT = 1
-	};
 	int m_nMode;
 	int m_nSelStartPos;
 	CPoint TranslateToDjVuCoord(int nPage, const CPoint& point);
 	int GetTextPosFromPoint(int nPage, const CPoint& point);
+	void GetTextPosFromTop(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos);
+	void GetTextPosFromBottom(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos);
 	void FindSelectionZones(DjVuSelection& list, DjVuTXT* pText, int nStart, int nEnd);
 	void SelectTextRange(int nPage, int nStart, int nEnd, bool& bInfoLoaded, CWaitCursor*& pWaitCursor);
 	GUTF8String GetSelectedText();
@@ -293,6 +318,7 @@ protected:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnFilePrint();
 	afx_msg void OnViewLayout(UINT nID);
 	afx_msg void OnUpdateViewLayout(CCmdUI* pCmdUI);
@@ -301,6 +327,7 @@ protected:
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnExportPage();
 	afx_msg void OnFindString();
+	afx_msg void OnFindAll();
 	afx_msg BOOL OnToolTipNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnViewZoomIn();
 	afx_msg void OnViewZoomOut();
@@ -312,6 +339,10 @@ protected:
 	afx_msg void OnUpdateEditCopy(CCmdUI* pCmdUI);
 	afx_msg void OnFileExportText();
 	afx_msg void OnUpdateFileExportText(CCmdUI* pCmdUI);
+	afx_msg void OnViewDisplay(UINT nID);
+	afx_msg void OnUpdateViewDisplay(CCmdUI* pCmdUI);
+	afx_msg void OnViewFullscreen();
+	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
 	DECLARE_MESSAGE_MAP()
 };
 

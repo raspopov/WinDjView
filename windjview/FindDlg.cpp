@@ -22,7 +22,6 @@
 #include "WinDjView.h"
 #include "FindDlg.h"
 #include "MainFrm.h"
-#include ".\finddlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -50,6 +49,7 @@ void CFindDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CFindDlg, CDialog)
+	ON_BN_CLICKED(IDC_FIND_ALL, OnFindAll)
 	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
@@ -75,4 +75,23 @@ void CFindDlg::OnClose()
 {
 	GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
 	ShowWindow(SW_HIDE);
+}
+
+void CFindDlg::OnFindAll()
+{
+	if (!UpdateData())
+		return;
+
+	SetStatusText(_T("Searching"));
+	GetDlgItem(IDC_SEARCH_STATUS)->ShowWindow(SW_SHOW);
+
+	GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
+	GetMainFrame()->SendMessage(WM_COMMAND, ID_FIND_ALL);
+
+	GetDlgItem(IDC_SEARCH_STATUS)->ShowWindow(SW_HIDE);
+}
+
+void CFindDlg::SetStatusText(const CString& strStatus)
+{
+	GetDlgItem(IDC_SEARCH_STATUS)->SetWindowText(strStatus);
 }

@@ -149,12 +149,9 @@ void CRenderThread::Render(Job& job)
 	{
 		pImage->set_rotate(job.nRotate);
 
-		GRect rcAll(job.rcAll.left, job.rcAll.top, job.rcAll.Width(), job.rcAll.Height());
-		GRect rcClip(job.rcClip.left, job.rcClip.top, job.rcClip.Width(), job.rcClip.Height());
-		if (rcAll.isempty() || rcClip.isempty() || !rcAll.contains(rcClip))
-			return;
-
-		pBitmap = Render(pImage, rcClip, rcAll);
+		GRect rect(job.rect.left, job.rect.top, job.rect.Width(), job.rect.Height());
+		if (!rect.isempty())
+			pBitmap = Render(pImage, rect, job.nDisplayMode);
 	}
 
 	if (pBitmap == NULL || pBitmap->m_hObject == NULL)
@@ -169,25 +166,32 @@ void CRenderThread::Render(Job& job)
 		m_pOwner->PostMessage(WM_RENDER_FINISHED, job.nPage, reinterpret_cast<LPARAM>(pBitmap));
 }
 
-CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const GRect& rcClip, const GRect& rcAll)
+CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const GRect& rect, int nDisplayMode)
 {
 	GP<GBitmap> pGBitmap;
 	GP<GPixmap> pGPixmap;
 
-	if (pImage->is_legal_photo() || pImage->is_legal_compound())
+	switch (nDisplayMode)
 	{
-		pGPixmap = pImage->get_pixmap(rcClip, rcAll);
-	}
-	else if (pImage->is_legal_bilevel())
-	{
-		pGBitmap = pImage->get_bitmap(rcClip, rcAll, 4);
-	}
-	else
-	{
-		// Try to get both
-		pGPixmap = pImage->get_pixmap(rcClip, rcAll);
+	case CDjVuView::BlackAndWhite:
+		pGBitmap = pImage->get_bitmap(rect, rect, 4);
+		break;
+
+	case CDjVuView::Foreground:
+		pGPixmap = pImage->get_fg_pixmap(rect, rect);
 		if (pGPixmap == NULL)
-			pGBitmap = pImage->get_bitmap(rcClip, rcAll, 4);
+			pGBitmap = pImage->get_bitmap(rect, rect, 4);
+		break;
+
+	case CDjVuView::Background:
+		pGPixmap = pImage->get_bg_pixmap(rect, rect);
+		break;
+
+	case CDjVuView::Color:
+	default:
+		pGPixmap = pImage->get_pixmap(rect, rect);
+		if (pGPixmap == NULL)
+			pGBitmap = pImage->get_bitmap(rect, rect, 4);
 	}
 
 	CDIB* pBitmap = NULL;
@@ -200,13 +204,13 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const GRect& rcClip, const GRe
 	return pBitmap;
 }
 
-void CRenderThread::AddJob(int nPage, int nRotate, const CRect& rcAll, const CRect& rcClip)
+void CRenderThread::AddJob(int nPage, int nRotate, const CRect& rect, int nDisplayMode)
 {
 	Job job;
 	job.nPage = nPage;
 	job.nRotate = nRotate;
-	job.rcAll = rcAll;
-	job.rcClip = rcClip;
+	job.nDisplayMode = nDisplayMode;
+	job.rect = rect;
 	job.type = RENDER;
 
 	AddJob(job);
@@ -245,7 +249,7 @@ void CRenderThread::AddJob(const Job& job)
 
 	if (m_currentJob.nPage == job.nPage && m_currentJob.type == RENDER &&
 		job.type == RENDER && job.nRotate == m_currentJob.nRotate && 
-		job.rcAll == m_currentJob.rcAll && job.rcClip == m_currentJob.rcClip)
+		job.rect == m_currentJob.rect && job.nDisplayMode == m_currentJob.nDisplayMode)
 	{
 		m_lock.Unlock();
 		return;

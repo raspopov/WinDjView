@@ -193,6 +193,8 @@ BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
+        MENUITEM "&Fullscreen\tCtrl+L",         ID_VIEW_FULLSCREEN
+        MENUITEM SEPARATOR
         MENUITEM "Fit &Page\tCtrl+0",           ID_ZOOM_FITPAGE
         MENUITEM "Fit &Width\tCtrl+2",          ID_ZOOM_FITWIDTH
         MENUITEM "Str&etch\tCtrl+3",            ID_ZOOM_STRETCH
@@ -231,6 +233,13 @@ BEGIN
         BEGIN
             MENUITEM "&Single Page",                ID_LAYOUT_SINGLEPAGE
             MENUITEM "&Continuous",                 ID_LAYOUT_CONTINUOUS
+        END
+        POPUP "Display"
+        BEGIN
+            MENUITEM "&Color",                      ID_DISPLAY_COLOR
+            MENUITEM "Black && &White",             ID_DISPLAY_BW
+            MENUITEM "&Background",                 ID_DISPLAY_BACKGROUND
+            MENUITEM "&Foreground",                 ID_DISPLAY_FOREGROUND
         END
         MENUITEM SEPARATOR
         MENUITEM "&Find...\tCtrl+F",            ID_VIEW_FIND
@@ -295,6 +304,8 @@ BEGIN
     VK_OEM_MINUS,   ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
     "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
+    VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
 END
 
 
@@ -472,7 +483,7 @@ BEGIN
                     7,180,92,18
 END
 
-IDD_FIND DIALOGEX 0, 0, 287, 45
+IDD_FIND DIALOGEX 0, 0, 287, 64
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "Find"
@@ -481,9 +492,12 @@ BEGIN
     LTEXT           "Fi&nd what:",IDC_STATIC,7,7,35,12,SS_CENTERIMAGE
     EDITTEXT        IDC_FIND,59,7,161,12,ES_AUTOHSCROLL
     CONTROL         "Match &case",IDC_MATCH_CASE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,27,64,8
-    DEFPUSHBUTTON   "Find Next",IDOK,230,7,50,14
-    PUSHBUTTON      "Close",IDCANCEL,230,24,50,14
+                    WS_TABSTOP,7,28,64,8
+    DEFPUSHBUTTON   "&Find Next",IDOK,230,7,50,14
+    PUSHBUTTON      "Find &All",IDC_FIND_ALL,230,25,50,14
+    PUSHBUTTON      "Close",IDCANCEL,230,43,50,14
+    LTEXT           "Searching page 1 of 10...",IDC_SEARCH_STATUS,7,48,214,9,
+                    NOT WS_VISIBLE
 END
 
 IDD_UPDATE DIALOGEX 0, 0, 167, 34
@@ -588,7 +602,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 280
         TOPMARGIN, 7
-        BOTTOMMARGIN, 38
+        BOTTOMMARGIN, 57
     END
 
     IDD_UPDATE, DIALOG
@@ -791,6 +805,11 @@ END
 STRINGTABLE 
 BEGIN
     ID_CHECK_FOR_UPDATE     "Checks program website for available updates\nCheck for update"
+    ID_DISPLAY_COLOR        "Display document in original color"
+    ID_DISPLAY_BW           "Display document in black and white"
+    ID_DISPLAY_BACKGROUND   "Display document background"
+    ID_DISPLAY_FOREGROUND   "Display document foreground"
+    ID_VIEW_FULLSCREEN      "Opens the document in fullscreen mode\nFullscreen"
 END
 
 STRINGTABLE 
@@ -798,6 +817,7 @@ BEGIN
     ID_INDICATOR_PAGE       "  Page %d of %d  "
     ID_INDICATOR_SIZE       "  %s x %s %s  "
     ID_INDICATOR_ADJUST     "  Adjusted  "
+    ID_INDICATOR_MODE       "  Display Mode  "
 END
 
 #endif    // English (U.S.) resources

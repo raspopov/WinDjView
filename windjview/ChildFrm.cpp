@@ -26,6 +26,7 @@
 #include "DjVuView.h"
 #include "ThumbnailsView.h"
 #include "BookmarksView.h"
+#include "SearchResultsView.h"
 #include "NavPane.h"
 #include "AppSettings.h"
 
@@ -55,6 +56,7 @@ CChildFrame::CChildFrame()
 	m_bCreated = false;
 	m_pThumbnailsView = NULL;
 	m_pBookmarksView = NULL;
+	m_pResultsView = NULL;
 }
 
 CChildFrame::~CChildFrame()
@@ -275,9 +277,35 @@ BOOL CChildFrame::OnEraseBkgnd(CDC* pDC)
 
 void CChildFrame::OnClose()
 {
+	if (GetMainFrame()->m_pFullscreenWnd != NULL)
+		return;
+
 	// Begin process of stopping all threads simultaneously for faster closing
 	GetDjVuView()->StopDecoding();
 	GetThumbnailsView()->StopDecoding();
 
 	CMDIChildWnd::OnClose();
+}
+
+CSearchResultsView* CChildFrame::GetResultsView()
+{
+	CNavPaneWnd* pNavPane = GetNavPane();
+
+	if (m_pResultsView == NULL)
+	{
+		CDjVuDoc* pDoc = GetActiveDocument();
+
+		m_pResultsView = new CSearchResultsView();
+		m_pResultsView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
+			| TVS_HASBUTTONS | TVS_DISABLEDRAGDROP | TVS_INFOTIP
+			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 3);
+		m_nResultsTab = pNavPane->AddTab(_T("Search Results"), m_pResultsView);
+		m_pResultsView->SetDocument(pDoc);
+		m_pResultsView->OnInitialUpdate();
+	}
+
+	pNavPane->ActivateTab(m_nResultsTab);
+	pNavPane->UpdateWindow();
+
+	return m_pResultsView;
 }
