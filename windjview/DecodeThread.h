@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004 Andrew Zhezherun
+//	Copyright (C) 2004-2005 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 
 #pragma once
 
-class CDjVuDoc;
+#include "DjVuDoc.h"
 
 class CDecodeThread
 {
@@ -28,16 +28,32 @@ public:
 	CDecodeThread(CDjVuDoc* pDoc);
 	~CDecodeThread();
 
-	void MoveToFront(int nPage);
+	void AddJob(int nPage, bool bReadInfo = false);
+
+	void StartDecodePage(int nPage);
+	static PageInfo ReadPageInfo(GP<DjVuDocument> pDjVuDoc, int nPage);
 
 private:
 	HANDLE m_hThread;
 	CEvent m_stop;
 	CEvent m_finished;
+	CEvent m_jobReady;
 	CDjVuDoc* m_pDoc;
 
 	CCriticalSection m_lock;
-	list<int> m_jobs;
+
+	struct Job
+	{
+		Job(int page, bool readInfo) : nPage(page), bReadInfo(readInfo) {}
+
+		int nPage;
+		bool bReadInfo;
+
+		bool operator==(int page) const { return nPage == page; }
+	};
+
+	list<Job> m_jobs;
+	Job currentJob;
 
 	static DWORD WINAPI DecodeThreadProc(LPVOID pvData);
 };

@@ -211,6 +211,8 @@ BEGIN
             MENUITEM "&Single Page",                ID_LAYOUT_SINGLEPAGE
             MENUITEM "&Continuous",                 ID_LAYOUT_CONTINUOUS
         END
+        MENUITEM SEPARATOR
+        MENUITEM "&Find...\tCtrl+F",            ID_VIEW_FIND
     END
     POPUP "&Window"
     BEGIN
@@ -411,6 +413,20 @@ BEGIN
                     7,71,92,18
 END
 
+IDD_FIND DIALOGEX 0, 0, 287, 45
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Find"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Fi&nd what:",IDC_STATIC,7,7,35,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_FIND,59,7,161,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Find Next",IDOK,230,7,50,14
+    PUSHBUTTON      "Close",IDCANCEL,230,24,50,14
+    CONTROL         "Match &case",IDC_MATCH_CASE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,27,64,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -497,6 +513,14 @@ BEGIN
         RIGHTMARGIN, 212
         TOPMARGIN, 7
         BOTTOMMARGIN, 85
+    END
+
+    IDD_FIND, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 280
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 38
     END
 END
 #endif    // APSTUDIO_INVOKED

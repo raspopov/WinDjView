@@ -159,6 +159,9 @@
 				RelativePath=".\Drawing.cpp">
 			</File>
 			<File
+				RelativePath=".\FindDlg.cpp">
+			</File>
+			<File
 				RelativePath=".\MainFrm.cpp">
 			</File>
 			<File
@@ -225,6 +228,9 @@
 			</File>
 			<File
 				RelativePath=".\Drawing.h">
+			</File>
+			<File
+				RelativePath=".\FindDlg.h">
 			</File>
 			<File
 				RelativePath=".\MainFrm.h">

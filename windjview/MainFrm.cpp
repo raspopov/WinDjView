@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004 Andrew Zhezherun
+//	Copyright (C) 2004-2005 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -120,6 +120,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	CRect rcCombo;
 	m_wndToolBar.GetItemRect(nComboPage, rcCombo);
 	rcCombo.DeflateRect(3, 0);
+	rcCombo.bottom += 400;
 
 	// Create bold font for combo boxes in toolbar
 	CFont fnt;
@@ -141,6 +142,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_wndToolBar.GetItemRect(nComboZoom, rcCombo);
 	rcCombo.DeflateRect(8, 0, 3, 0);
+	rcCombo.bottom += 400;
 
 	m_cboZoom.Create(WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_VSCROLL | CBS_DROPDOWN,
 		rcCombo, &m_wndToolBar, IDC_ZOOM);
@@ -346,7 +348,10 @@ void CMainFrame::UpdatePageCombo(int nPage, int nPages)
 		}
 	}
 
-	m_cboPage.SetCurSel(nPage);
+	if (m_cboPage.GetCurSel() != nPage)
+	{
+		m_cboPage.SetCurSel(nPage);
+	}
 }
 
 void CMainFrame::OnChangeZoom()

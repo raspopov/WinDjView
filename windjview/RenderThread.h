@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004 Andrew Zhezherun
+//	Copyright (C) 2004-2005 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -32,17 +32,26 @@ public:
 	~CRenderThread();
 
 	void AddJob(int nPage, int nRotate, const CRect& rcAll, const CRect& rcClip);
+	void AddDecodeJob(int nPage);
+	void AddCleanupJob(int nPage);
 	void RemoveFromQueue(int nPage);
 
 	static CDIB* Render(GP<DjVuImage> pImage, const GRect& rcClip, const GRect& rcAll);
 
+	void PauseJobs();
+	void ResumeJobs();
+
 private:
+	HANDLE m_hThread;
 	CCriticalSection m_lock;
 	CEvent m_stop;
 	CEvent m_finished;
 	CEvent m_jobReady;
 	CWnd* m_pOwner;
 	CDjVuDoc* m_pDoc;
+	bool m_bPaused;
+
+	enum JobType { RENDER, DECODE, CLEANUP };
 
 	struct Job
 	{
@@ -50,10 +59,15 @@ private:
 		int nRotate;
 		CRect rcAll;
 		CRect rcClip;
+		JobType type;
 	};
 
 	list<Job> m_jobs;
+	vector<list<Job>::iterator> m_pages;
+	Job currentJob;
 
 	static DWORD WINAPI RenderThreadProc(LPVOID pvData);
 	void Render(Job& job);
+	void AddJob(const Job& job);
+	void RemoveFromQueueImpl(int nPage);
 };

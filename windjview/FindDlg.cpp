@@ -20,45 +20,31 @@
 
 #include "stdafx.h"
 #include "WinDjView.h"
-#include "MyEdit.h"
+#include "FindDlg.h"
 
 
-// CMyEdit
+// CFindDlg dialog
 
-IMPLEMENT_DYNAMIC(CMyEdit, CEdit)
-CMyEdit::CMyEdit()
-{
-	m_nType = EditNormal;
-}
-
-CMyEdit::~CMyEdit()
+IMPLEMENT_DYNAMIC(CFindDlg, CDialog)
+CFindDlg::CFindDlg(CWnd* pParent)
+	: CDialog(CFindDlg::IDD, pParent), m_strFind(_T("")), m_bMatchCase(FALSE)
 {
 }
 
+CFindDlg::~CFindDlg()
+{
+}
 
-BEGIN_MESSAGE_MAP(CMyEdit, CEdit)
-	ON_WM_CHAR()
+void CFindDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_FIND, m_strFind);
+	DDX_Check(pDX, IDC_MATCH_CASE, m_bMatchCase);
+}
+
+
+BEGIN_MESSAGE_MAP(CFindDlg, CDialog)
 END_MESSAGE_MAP()
 
 
-
-// CMyEdit message handlers
-
-
-void CMyEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (m_nType == EditReal)
-	{
-		if ((nChar < '0' || nChar > '9') && nChar != '.' && nChar != VK_BACK &&
-				(!m_bPercent || nChar != '%'))
-			return;
-	}
-	else if (m_nType == EditInteger)
-	{
-		if ((nChar < '0' || nChar > '9') && nChar != VK_BACK &&
-				(!m_bPercent || nChar != '%'))
-			return;
-	}
-
-	CEdit::OnChar(nChar, nRepCnt, nFlags);
-}
+// CFindDlg message handlers

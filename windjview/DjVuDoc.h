@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004 Andrew Zhezherun
+//	Copyright (C) 2004-2005 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -22,6 +22,21 @@
 
 #define WM_PAGE_DECODED (WM_USER + 18)
 
+struct PageInfo
+{
+	PageInfo() : szPage(0, 0), nDPI(0) {}
+	PageInfo(GP<DjVuImage> pImage)
+	{
+		pImage->set_rotate(0);
+		szPage = CSize(pImage->get_width(), pImage->get_height());
+		nDPI = pImage->get_dpi();
+		pTextStream = pImage->get_text();
+	}
+
+	CSize szPage;
+	int nDPI;
+	GP<ByteStream> pTextStream;
+};
 
 class CDjVuDoc : public CDocument
 {
@@ -33,8 +48,11 @@ protected: // create from serialization only
 public:
 	int GetPageCount() { return m_pDjVuDoc->get_pages_num(); }
 	GP<DjVuImage> GetPage(int nPage);
-	void PageDecoded(int nPage, GP<DjVuImage> pImage);
-	bool GetPageInfo(int nPage, CSize& szPage, int& nDPI);
+	void PageDecoded(int nPage, GP<DjVuImage> pImage, const PageInfo& info);
+	PageInfo GetPageInfo(int nPage);
+	void RemoveFromCache(int nPage);
+
+	bool HasText() const { return m_bHasText; }
 
 // Overrides
 public:
@@ -49,12 +67,23 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
+
 protected:
 	friend class CDecodeThread;
 	CDecodeThread* m_pThread;
 
+	struct PageData
+	{
+		PageData() : pImage(NULL), bHasInfo(false) {}
+
+		GP<DjVuImage> pImage;
+		PageInfo info;
+		bool bHasInfo;
+	};
+
 	GP<DjVuDocument> m_pDjVuDoc;
-	vector<GP<DjVuImage> > m_pages;
+	vector<PageData> m_pages;
+	bool m_bHasText;
 
 	CCriticalSection m_lock;
 	CEvent m_pageReady;

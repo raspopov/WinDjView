@@ -18,47 +18,28 @@
 
 // $Id$
 
-#include "stdafx.h"
-#include "WinDjView.h"
-#include "MyEdit.h"
+#pragma once
+
+#define WM_FIND_NEXT (WM_USER+20)
 
 
-// CMyEdit
+// CFindDlg dialog
 
-IMPLEMENT_DYNAMIC(CMyEdit, CEdit)
-CMyEdit::CMyEdit()
+class CFindDlg : public CDialog
 {
-	m_nType = EditNormal;
-}
+	DECLARE_DYNAMIC(CFindDlg)
 
-CMyEdit::~CMyEdit()
-{
-}
+public:
+	CFindDlg(CWnd* pParent = NULL);
+	virtual ~CFindDlg();
 
+// Dialog Data
+	enum { IDD = IDD_FIND };
+	CString m_strFind;
+	BOOL m_bMatchCase;
 
-BEGIN_MESSAGE_MAP(CMyEdit, CEdit)
-	ON_WM_CHAR()
-END_MESSAGE_MAP()
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-
-
-// CMyEdit message handlers
-
-
-void CMyEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (m_nType == EditReal)
-	{
-		if ((nChar < '0' || nChar > '9') && nChar != '.' && nChar != VK_BACK &&
-				(!m_bPercent || nChar != '%'))
-			return;
-	}
-	else if (m_nType == EditInteger)
-	{
-		if ((nChar < '0' || nChar > '9') && nChar != VK_BACK &&
-				(!m_bPercent || nChar != '%'))
-			return;
-	}
-
-	CEdit::OnChar(nChar, nRepCnt, nFlags);
-}
+	DECLARE_MESSAGE_MAP()
+};

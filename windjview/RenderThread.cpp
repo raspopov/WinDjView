@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004 Andrew Zhezherun
+//	Copyright (C) 2004-2005 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -33,17 +33,20 @@
 // CRenderThread class
 
 CRenderThread::CRenderThread(CDjVuDoc* pDoc, CWnd* pOwner)
-	: m_pOwner(pOwner), m_pDoc(pDoc)
+	: m_pOwner(pOwner), m_pDoc(pDoc), m_bPaused(false)
 {
+	currentJob.nPage = -1;
+
 	DWORD dwThreadId;
-	HANDLE hThread = ::CreateThread(NULL, 0, RenderThreadProc, this, 0, &dwThreadId);
-	::SetThreadPriority(hThread, THREAD_PRIORITY_BELOW_NORMAL);
+	m_hThread = ::CreateThread(NULL, 0, RenderThreadProc, this, 0, &dwThreadId);
+	::SetThreadPriority(m_hThread, THREAD_PRIORITY_BELOW_NORMAL);
 }
 
 CRenderThread::~CRenderThread()
 {
 	m_stop.SetEvent();
 	::WaitForSingleObject(m_finished.m_hObject, INFINITE);
+	::CloseHandle(m_hThread);
 }
 
 DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
@@ -62,14 +65,31 @@ DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 		}
 
 		Job job = pData->m_jobs.front();
+		pData->currentJob = job;
 		pData->m_jobs.pop_front();
+		pData->m_pages[job.nPage] = pData->m_jobs.end();
 
 		if (!pData->m_jobs.empty())
 			pData->m_jobReady.SetEvent();
 
 		pData->m_lock.Unlock();
 
-		pData->Render(job);
+		switch (job.type)
+		{
+		case RENDER:
+			pData->Render(job);
+			break;
+
+		case DECODE:
+			pData->m_pDoc->GetPage(job.nPage);
+			break;
+
+		case CLEANUP:
+			pData->m_pDoc->RemoveFromCache(job.nPage);
+			break;
+		}
+
+		pData->currentJob.nPage = -1;
 
 		if (::WaitForSingleObject(pData->m_stop.m_hObject, 0) == WAIT_OBJECT_0)
 			break;
@@ -79,53 +99,48 @@ DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 	return 0;
 }
 
-void CRenderThread::AddJob(int nPage, int nRotate, const CRect& rcAll, const CRect& rcClip)
+void CRenderThread::PauseJobs()
 {
-	Job job;
-	job.nPage = nPage;
-	job.nRotate = nRotate;
-	job.rcAll = rcAll;
-	job.rcClip = rcClip;
+	m_bPaused = true;
+}
+
+void CRenderThread::ResumeJobs()
+{
+	m_bPaused = false;
 
 	m_lock.Lock();
-
-	// Delete jobs with the same nPage
-	list<Job>::iterator it = m_jobs.begin();
-	while (it != m_jobs.end())
-	{
-		if ((*it).nPage == nPage)
-			m_jobs.erase(it++);
-		else
-			++it;
-	}
-
-	m_jobs.push_front(job);
-
+	bool bHasJobs = !m_jobs.empty();
 	m_lock.Unlock();
 
-	m_jobReady.SetEvent();
+	if (bHasJobs)
+		m_jobReady.SetEvent();
 }
 
 void CRenderThread::RemoveFromQueue(int nPage)
 {
 	m_lock.Lock();
-
-	// Delete jobs with the same nPage
-	list<Job>::iterator it = m_jobs.begin();
-	while (it != m_jobs.end())
-	{
-		if ((*it).nPage == nPage)
-			m_jobs.erase(it++);
-		else
-			++it;
-	}
-
+	RemoveFromQueueImpl(nPage);
 	m_lock.Unlock();
+}
+
+void CRenderThread::RemoveFromQueueImpl(int nPage)
+{
+	// Delete jobs with the same nPage
+	if (static_cast<int>(m_pages.size()) < nPage + 1)
+		return;
+
+	list<Job>::iterator it = m_pages[nPage];
+	if (it != m_jobs.end())
+	{
+		m_jobs.erase(it);
+		m_pages[nPage] = m_jobs.end();
+	}
 }
 
 void CRenderThread::Render(Job& job)
 {
 	GP<DjVuImage> pImage = m_pDoc->GetPage(job.nPage);
+
 	pImage->set_rotate(job.nRotate);
 
 	GRect rcAll(job.rcAll.left, job.rcAll.top, job.rcAll.Width(), job.rcAll.Height());
@@ -173,4 +188,57 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const GRect& rcClip, const GRe
 		pBitmap = RenderBitmap(*pGBitmap);
 
 	return pBitmap;
+}
+
+void CRenderThread::AddJob(int nPage, int nRotate, const CRect& rcAll, const CRect& rcClip)
+{
+	Job job;
+	job.nPage = nPage;
+	job.nRotate = nRotate;
+	job.rcAll = rcAll;
+	job.rcClip = rcClip;
+	job.type = RENDER;
+
+	AddJob(job);
+}
+
+void CRenderThread::AddDecodeJob(int nPage)
+{
+	Job job;
+	job.nPage = nPage;
+	job.type = DECODE;
+
+	AddJob(job);
+}
+
+void CRenderThread::AddCleanupJob(int nPage)
+{
+	Job job;
+	job.nPage = nPage;
+	job.type = CLEANUP;
+
+	AddJob(job);
+}
+
+void CRenderThread::AddJob(const Job& job)
+{
+	m_lock.Lock();
+
+	if (currentJob.nPage == job.nPage && job.type == RENDER && currentJob.type == RENDER)
+	{
+		m_lock.Unlock();
+		return;
+	}
+
+	RemoveFromQueue(job.nPage);
+	m_jobs.push_front(job);
+	
+	if (static_cast<int>(m_pages.size()) < job.nPage + 1)
+		m_pages.resize(job.nPage + 1, m_jobs.end());
+	m_pages[job.nPage] = m_jobs.begin();
+
+	m_lock.Unlock();
+
+	if (!m_bPaused)
+		m_jobReady.SetEvent();
 }

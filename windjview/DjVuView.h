@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004 Andrew Zhezherun
+//	Copyright (C) 2004-2005 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -146,6 +146,8 @@ protected:
 
 	void SetScrollSizesNoRepaint(const CSize& szTotal,
 		const CSize& szPage, const CSize& szLine);
+	void SetScrollSizes(const CSize& szTotal,
+		const CSize& szPage, const CSize& szLine);
 	void UpdateBarsNoRepaint();
 	void ScrollToPositionNoRepaint(CPoint pt);
 
@@ -157,6 +159,7 @@ protected:
 	};
 	void UpdateView(UpdateType updateType = TOP);
 	void UpdateVisiblePages();
+	void UpdatePageCache(int nPage, const CRect& rcClient);
 	bool m_bInsideUpdateView;
 
 	int m_nClickedPage;
@@ -195,9 +198,10 @@ protected:
 	afx_msg LRESULT OnPageDecoded(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnDestroy();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
-	DECLARE_MESSAGE_MAP()
-public:
 	afx_msg void OnExportPage();
+	afx_msg void OnViewFind();
+	afx_msg void OnUpdateViewFind(CCmdUI *pCmdUI);
+	DECLARE_MESSAGE_MAP()
 };
 
 

@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004 Andrew Zhezherun
+//	Copyright (C) 2004-2005 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ END_MESSAGE_MAP()
 CDjVuDoc::CDjVuDoc()
 {
 	m_pThread = NULL;
+	m_bHasText = false;
 }
 
 CDjVuDoc::~CDjVuDoc()
@@ -109,7 +110,7 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	G_ENDCATCH;
 
 	m_pages.clear();
-	m_pages.resize(m_pDjVuDoc->get_pages_num(), NULL);
+	m_pages.resize(m_pDjVuDoc->get_pages_num());
 
 	m_pThread = new CDecodeThread(this);
 	GetPage(0);
@@ -122,7 +123,8 @@ GP<DjVuImage> CDjVuDoc::GetPage(int nPage)
 	ASSERT(nPage >= 0 && nPage < m_pDjVuDoc->get_pages_num());
 
 	m_lock.Lock();
-	GP<DjVuImage> pImage = m_pages[nPage];
+	const PageData& data = m_pages[nPage];
+	GP<DjVuImage> pImage = data.pImage;
 	if (pImage != NULL)
 	{
 		m_lock.Unlock();
@@ -132,30 +134,63 @@ GP<DjVuImage> CDjVuDoc::GetPage(int nPage)
 	::InterlockedExchange(&m_nPagePending, nPage);
 	m_lock.Unlock();
 
-	m_pThread->MoveToFront(nPage);
+	m_pThread->StartDecodePage(nPage);
 
 	::WaitForSingleObject(m_pageReady.m_hObject, INFINITE);
 
 	m_lock.Lock();
-	pImage = m_pages[nPage];
+	pImage = m_pages[nPage].pImage;
 	m_lock.Unlock();
+/*
+	GP<DjVuAnno> pAnno = pImage->get_decoded_anno();
+	GP<DjVuANT> pAnt = NULL;
+	if (pAnno != NULL)
+		pAnt = pAnno->ant;
 
+	if (pAnt != NULL)
+	{
+		GMap<GUTF8String, GUTF8String>& meta = pAnt->metadata;
+		GPosition pos = meta.firstpos();
+		while (pos)
+		{
+			const GUTF8String* pKey = meta.next(pos);
+			GUTF8String value = meta[*pKey];
+			TRACE("%s=%s\n", (const char*)(*pKey), (const char*)value);
+		}
+	}
+*/
 	ASSERT(pImage != NULL);
 	return pImage;
 }
 
-void CDjVuDoc::PageDecoded(int nPage, GP<DjVuImage> pImage)
+void CDjVuDoc::PageDecoded(int nPage, GP<DjVuImage> pImage, const PageInfo& info)
 {
 	ASSERT(nPage >= 0 && nPage < m_pDjVuDoc->get_pages_num());
 
 	m_lock.Lock();
-	ASSERT(m_pages[nPage] == NULL);
-	m_pages[nPage] = pImage;
+	if (pImage != NULL)
+	{
+		ASSERT(m_pages[nPage].pImage == NULL);
+		m_pages[nPage].pImage = pImage;
+	}
+
+	m_pages[nPage].info = info;
+	m_pages[nPage].bHasInfo = true;
 	m_lock.Unlock();
 
-	if (::InterlockedCompareExchange(&m_nPagePending, -1, nPage) == nPage)
+	if (info.pTextStream != NULL)
+		m_bHasText = true;
+
+	if (::InterlockedCompareExchange(&m_nPagePending, nPage, nPage) == nPage)
 	{
-		m_pageReady.SetEvent();
+		// If pImage is NULL, this means that when StartDecodePage executed,
+		// the page was already being decoded, so it added a new entry to the
+		// job list, and we must wait for the next job finish.
+		if (pImage != NULL)
+		{
+			::InterlockedExchange(&m_nPagePending, -1);
+			m_pageReady.SetEvent();
+		}
 	}
 
 	POSITION pos = GetFirstViewPosition();
@@ -166,75 +201,31 @@ void CDjVuDoc::PageDecoded(int nPage, GP<DjVuImage> pImage)
 	}
 }
 
-bool CDjVuDoc::GetPageInfo(int nPage, CSize& szPage, int& nDPI)
+PageInfo CDjVuDoc::GetPageInfo(int nPage)
 {
-	ASSERT(nPage >= 0 && nPage < m_pDjVuDoc->get_pages_num());
-	szPage.cx = szPage.cy = nDPI = 0;
+	m_lock.Lock();
 
-	G_TRY
+	if (m_pages[nPage].bHasInfo)
 	{
-		// Get raw data from the document and decode only page info chunk
-		GP<DjVuFile> file(m_pDjVuDoc->get_djvu_file(nPage));
-		GP<DataPool> pool = file->get_init_data_pool();
-		GP<ByteStream> stream = pool->get_stream();
-		GP<IFFByteStream> iff(IFFByteStream::create(stream));
-
-		// Check file format
-		GUTF8String chkid;
-		if (!iff->get_chunk(chkid) ||
-			(chkid != "FORM:DJVI" && chkid != "FORM:DJVU" &&
-			 chkid != "FORM:PM44" && chkid != "FORM:BM44"))
-		{
-			return false;
-		}
-
-		// Find chunk with page info
-		while (iff->get_chunk(chkid) != 0)
-		{
-			if (chkid == "INFO")
-			{
-				// Get page dimensions and resolution from info chunk
-				GP<ByteStream> chunk_stream = iff->get_bytestream();
-
-				GP<DjVuInfo> info = DjVuInfo::create();
-				info->decode(*chunk_stream);
-
-				// Check data for consistency
-				szPage.cx = max(info->width, 0);
-				szPage.cy = max(info->height, 0);
-				nDPI = max(info->dpi, 0);
-				return true;
-			}
-			else if (chkid == "PM44" || chkid == "BM44")
-			{
-				// Get image dimensions and resolution from bitmap chunk
-				GP<ByteStream> chunk_stream = iff->get_bytestream();
-
-				UINT serial = chunk_stream->read8();
-				UINT slices = chunk_stream->read8();
-				UINT major = chunk_stream->read8();
-				UINT minor = chunk_stream->read8();
-
-				UINT xhi = chunk_stream->read8();
-				UINT xlo = chunk_stream->read8();
-				UINT yhi = chunk_stream->read8();
-				UINT ylo = chunk_stream->read8();
-
-				szPage.cx = (xhi << 8) | xlo;
-				szPage.cy = (yhi << 8) | ylo;
-				nDPI = 100;
-				return true;
-			}
-
-			// Close chunk
-			iff->seek_close_chunk();
-		}
+		PageInfo info = m_pages[nPage].info;
+		m_lock.Unlock();
+		return info;
 	}
-	G_CATCH(ex)
-	{
-		ex;
-	}
-	G_ENDCATCH;
 
-	return false;
+	m_lock.Unlock();
+
+	PageInfo info = CDecodeThread::ReadPageInfo(m_pDjVuDoc, nPage);
+	m_lock.Lock();
+	m_pages[nPage].info = info;
+	m_pages[nPage].bHasInfo = true;
+	m_lock.Unlock();
+
+	return info;
+}
+
+void CDjVuDoc::RemoveFromCache(int nPage)
+{
+	m_lock.Lock();
+	m_pages[nPage].pImage = NULL;
+	m_lock.Unlock();
 }

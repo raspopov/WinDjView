@@ -1,0 +1,35 @@
+WinDjView changes history
+Copyright (C) 2004-2005 Andrew Zhezherun
+----------------------------------------
+
+Changes in version 0.3:
++ Significantly reduced memory usage due to new caching algorithm
+  (+/- 2 screens are stored as bitmaps, +/- 10 screens are stored
+  in a decoded form for faster rendering).
+- Fixed continuous mode in Windows 98.
+- Fixed mouse wheel scrolling in Windows 98.
+- Fixed combo boxes on the toolbar in Windows 2000.
+
+Changes in version 0.2.3:
+- Fixed opening read-only files (i.e. off a CDROM).
+
+Changes in version 0.2.2:
++ Additional bitmaps are cached (+/- one screen) for more seamless scrolling
+  in continuous mode.
++ Pages can be exported to .bmp files.
++ WinDjView can associate itself with .djvu/.djv files in Explorer.
++ In single page mode, when no scrollbars are visible, mouse wheel
+  switches to next/previous page.
+- Fixed horizontal centering in continuous view when switching from
+  Actual Size mode to Zoom 100%.
+
+Changes in version 0.2.1:
+- Fixed several bugs in continuous mode.
+
+Changes in version 0.2:
++ Added continuous page display mode.
++ Improved speed; next/previous pages should display faster.
+- Removed non-functional "Print Preview" command
+  (may be added in future releases).
+
+First public release: version 0.1
