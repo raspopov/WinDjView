@@ -71,6 +71,7 @@
 #define IDC_STATIC_LINK                 1037
 #define IDC_STATIC_LIB_LINK             1038
 #define IDC_ASSOCIATE                   1039
+#define IDC_FULLSCREEN_CLICKS           1040
 #define IDC_STATIC_ABOUT                1041
 #define IDC_FIND                        1042
 #define IDC_ADJUST_DISPLAY              1043
@@ -144,7 +145,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        148
-#define _APS_NEXT_COMMAND_VALUE         32859
+#define _APS_NEXT_COMMAND_VALUE         32868
 #define _APS_NEXT_CONTROL_VALUE         1051
 #define _APS_NEXT_SYMED_VALUE           109
 #endif

@@ -5,6 +5,10 @@ Copyright (C) 2004-2005 Andrew Zhezherun
 Changes in version 0.3.3:
 + Improved keyboard navigation in fullscreen mode.
 + Show all links works in fullscreen mode.
++ Added zoom in/out in fullscreen mode.
++ Added zoom in/out with Ctrl+Mouse Wheel.
++ Added option to enable/disable switching pages in fullscreen mode
+  by mouse clicks.
 * Fixed crash when exiting fullscreen mode on Windows 98.
 * Fixed window positioning when task bar is always visible.
 * Fixed wrong resulution of first page in single page layout.

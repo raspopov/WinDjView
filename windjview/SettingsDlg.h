@@ -37,6 +37,7 @@ public:
 	enum { IDD = IDD_SETTINGS };
 	BOOL m_bRestoreAssocs;
 	BOOL m_bGenAllThumbnails;
+	BOOL m_bFullscreenClicks;
 	CStatic m_ctlAbout;
 	BOOL m_bAdjustDisplay;
 	CSliderCtrl m_sliderBrightness;

@@ -67,6 +67,7 @@ struct CAppSettings
 
 	static bool bRestoreAssocs;
 	static bool bGenAllThumbnails;
+	static bool bFullscreenClicks;
 
 	static CDisplaySettings displaySettings;
 

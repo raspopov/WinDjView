@@ -50,6 +50,7 @@ int CAppSettings::nNavPaneWidth = 200;
 
 bool CAppSettings::bRestoreAssocs = false;
 bool CAppSettings::bGenAllThumbnails = true;
+bool CAppSettings::bFullscreenClicks = true;
 
 CDisplaySettings CAppSettings::displaySettings;
 

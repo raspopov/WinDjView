@@ -97,8 +97,11 @@ BOOL CFullscreenWnd::PreTranslateMessage(MSG* pMsg)
 {
 	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
 	{
+		CDjVuView* pOwner = m_pOwner;
 		DestroyWindow();
-		return TRUE;
+		pOwner->SetFocus();
+
+		return true;
 	}
 
 	return CWnd::PreTranslateMessage(pMsg);

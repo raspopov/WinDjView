@@ -37,6 +37,7 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent)
 {
 	m_bRestoreAssocs = CAppSettings::bRestoreAssocs;
 	m_bGenAllThumbnails = CAppSettings::bGenAllThumbnails;
+	m_bFullscreenClicks = CAppSettings::bFullscreenClicks;
 
 	m_displaySettings = CAppSettings::displaySettings;
 	m_bAdjustDisplay = m_displaySettings.bAdjustDisplay;
@@ -51,6 +52,7 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_RESTORE_ASSOCS, m_bRestoreAssocs);
 	DDX_Check(pDX, IDC_GEN_ALL_THUMBNAILS, m_bGenAllThumbnails);
+	DDX_Check(pDX, IDC_FULLSCREEN_CLICKS, m_bFullscreenClicks);
 	DDX_Control(pDX, IDC_STATIC_ABOUT, m_ctlAbout);
 
 #ifndef ELIBRA_READER
@@ -103,6 +105,7 @@ void CSettingsDlg::OnOK()
 
 	CAppSettings::bRestoreAssocs = !!m_bRestoreAssocs;
 	CAppSettings::bGenAllThumbnails = !!m_bGenAllThumbnails;
+	CAppSettings::bFullscreenClicks = !!m_bFullscreenClicks;
 
 	m_displaySettings.bAdjustDisplay = !!m_bAdjustDisplay;
 	CAppSettings::displaySettings = m_displaySettings;

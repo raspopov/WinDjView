@@ -349,13 +349,13 @@ void CDjVuView::DrawPage(CDC* pDC, int nPage)
 		page.pBitmap->Draw(pDC, page.ptOffset - ptScrollPos, page.szDisplay);
 	}
 
-	// Draw border
 	CRect rcBorder(page.ptOffset, page.szDisplay);
-	rcBorder.InflateRect(1, 1);
-	FrameRect(pDC, rcBorder - ptScrollPos, clrFrame);
-
 	if (m_nMode != Fullscreen)
 	{
+		// Draw border
+		rcBorder.InflateRect(1, 1);
+		FrameRect(pDC, rcBorder - ptScrollPos, clrFrame);
+
 		// Draw shadow
 		CRect rcWhiteBar(CPoint(rcBorder.left, rcBorder.bottom),
 				CSize(c_nPageShadow + 1, c_nPageShadow));
@@ -843,9 +843,9 @@ CSize CDjVuView::CalcPageSize(const CSize& szPage, int nDPI)
 	if (szPage.cx <= 0 || szPage.cy <= 0)
 		return szDisplay;
 
-	CSize szFrame(2, 2);
+	CSize szFrame(0, 0);
 	if (m_nMode != Fullscreen)
-		szFrame += CSize(c_nPageShadow, c_nPageShadow);
+		szFrame += CSize(2 + c_nPageShadow, 2 + c_nPageShadow);
 
 	CRect rcClient;
 	GetClientRect(rcClient);
@@ -901,11 +901,15 @@ void CDjVuView::UpdatePageSize(int nPage)
 	Page& page = m_pages[nPage];
 	CSize szPage = page.GetSize(m_nRotate);
 
-	page.ptOffset = CPoint(1, 1);
+	page.ptOffset = CPoint(0, 0);
 	page.szDisplay = CalcPageSize(szPage, page.info.nDPI);
-	page.rcDisplay = CRect(CPoint(0, 0), page.szDisplay + CSize(2, 2));
+	page.rcDisplay = CRect(CPoint(0, 0), page.szDisplay);
+
 	if (m_nMode != Fullscreen)
-		page.rcDisplay.InflateRect(0, 0, c_nPageShadow, c_nPageShadow);
+	{
+		page.ptOffset = CPoint(1, 1);
+		page.rcDisplay.InflateRect(1, 1, 1 + c_nPageShadow, 1 + c_nPageShadow);
+	}
 
 	CRect rcClient;
 	GetClientRect(rcClient);
@@ -1101,12 +1105,6 @@ void CDjVuView::OnViewZoom(UINT nID)
 
 void CDjVuView::OnUpdateViewZoom(CCmdUI* pCmdUI)
 {
-	if (m_nMode == Fullscreen)
-	{
-		pCmdUI->Enable(false);
-		return;
-	}
-
 	switch (pCmdUI->m_nID)
 	{
 	case ID_ZOOM_50:
@@ -1191,7 +1189,11 @@ double CDjVuView::GetZoom(ZoomType nZoomType) const
 	GetClientRect(rcClient);
 
 	CSize szDisplay;
-	CSize szFrame(c_nPageShadow + 2, c_nPageShadow + 2);
+
+	CSize szFrame(0, 0);
+	if (m_nMode != Fullscreen)
+		szFrame += CSize(2 + c_nPageShadow, 2 + c_nPageShadow);
+
 	switch (nZoomType)
 	{
 	case ZoomFitWidth:
@@ -1479,7 +1481,7 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 
 	if (nHitTest == HTCLIENT)
 	{
-		if (m_nMode == Drag)
+		if (m_nMode == Drag || m_nMode == Fullscreen && !CAppSettings::bFullscreenClicks)
 		{
 			if (m_totalDev.cx > rcClient.Width() || m_totalDev.cy > rcClient.Height())
 			{
@@ -1520,7 +1522,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 		return;
 	}
 
-	if (m_nMode == Drag
+	if ((m_nMode == Drag || (m_nMode == Fullscreen && !CAppSettings::bFullscreenClicks))
 			&& (m_totalDev.cx > rcClient.Width() || m_totalDev.cy > rcClient.Height()))
 	{
 		UpdateActiveHyperlink(CPoint(-1, -1));
@@ -1552,7 +1554,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 
 		m_nSelStartPos = GetTextPosFromPoint(m_nStartPage, point);
 	}
-	else if (m_nMode == Fullscreen)
+	else if (m_nMode == Fullscreen && CAppSettings::bFullscreenClicks)
 	{
 		UpdateActiveHyperlink(CPoint(-1, -1));
 		SetCapture();
@@ -1716,7 +1718,7 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 		return;
 	}
 
-	if (m_nMode == Drag)
+	if (m_nMode == Drag || m_nMode == Fullscreen && !CAppSettings::bFullscreenClicks)
 	{
 		if (m_pActiveLink != NULL)
 			return;
@@ -1963,7 +1965,7 @@ int CDjVuView::GetPageFromPoint(CPoint point)
 
 void CDjVuView::OnRButtonDown(UINT nFlags, CPoint point)
 {
-	if (m_nMode == Fullscreen)
+	if (m_nMode == Fullscreen && CAppSettings::bFullscreenClicks)
 	{
 		OnViewPreviouspage();
 		return;
@@ -1974,7 +1976,7 @@ void CDjVuView::OnRButtonDown(UINT nFlags, CPoint point)
 
 void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 {
-	if (m_nMode == Fullscreen)
+	if (m_nMode == Fullscreen && CAppSettings::bFullscreenClicks)
 		return;
 
 #ifndef ELIBRA_READER
@@ -2575,9 +2577,16 @@ UINT GetMouseScrollLines()
 
 BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 {
-	// we don't handle anything but scrolling
 	if ((nFlags & MK_CONTROL) != 0)
-		return false;
+	{
+		// Zoom in/out
+		if (zDelta < 0)
+			OnViewZoomIn();
+		else if (zDelta > 0)
+			OnViewZoomOut();
+
+		return true;
+	}
 
 	CWnd* pWnd = WindowFromPoint(point);
 	if (pWnd != this && !IsChild(pWnd) && GetMainFrame()->IsChild(pWnd) &&
@@ -2683,7 +2692,9 @@ void CDjVuView::OnExportPage()
 	CFileDialog dlg(false, "bmp", strFileName, OFN_OVERWRITEPROMPT |
 		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST, szFilter);
 
-	if (dlg.DoModal() != IDOK)
+	UINT nResult = dlg.DoModal();
+	SetFocus();
+	if (nResult != IDOK)
 		return;
 
 	CWaitCursor wait;
@@ -3394,6 +3405,7 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory
 			{
 				CDjVuView* pOwner = ((CFullscreenWnd*)GetParent())->GetOwner();
 				GetParent()->DestroyWindow();
+				pOwner->SetFocus();
 
 				if (nAddToHistory & AddSource)
 					GetMainFrame()->AddToHistory(pOwner, nLinkPage);
@@ -3421,6 +3433,7 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory
 			{
 				CDjVuView* pOwner = ((CFullscreenWnd*)GetParent())->GetOwner();
 				GetParent()->DestroyWindow();
+				pOwner->SetFocus();
 
 				if (nAddToHistory & AddSource)
 					GetMainFrame()->AddToHistory(pOwner, nLinkPage);
@@ -3521,12 +3534,12 @@ void CDjVuView::OnViewZoomOut()
 
 void CDjVuView::OnUpdateViewZoomIn(CCmdUI* pCmdUI)
 {
-	pCmdUI->Enable(m_nMode != Fullscreen && GetZoom() < 800);
+	pCmdUI->Enable(GetZoom() < 800);
 }
 
 void CDjVuView::OnUpdateViewZoomOut(CCmdUI* pCmdUI)
 {
-	pCmdUI->Enable(m_nMode != Fullscreen && GetZoom() > 10);
+	pCmdUI->Enable(GetZoom() > 10);
 }
 
 void CDjVuView::StopDecoding()
@@ -3811,7 +3824,9 @@ void CDjVuView::OnViewFullscreen()
 {
 	if (m_nMode == Fullscreen)
 	{
+		CDjVuView* pOwner = ((CFullscreenWnd*)GetParent())->GetOwner();
 		GetParent()->DestroyWindow();
+		pOwner->SetFocus();
 		return;
 	}
 

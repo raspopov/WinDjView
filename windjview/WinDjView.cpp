@@ -60,6 +60,7 @@ const TCHAR* s_pszContrast = _T("contrast");
 const TCHAR* s_pszGlobalSettings = _T("Settings");
 const TCHAR* s_pszRestoreAssocs = _T("assocs");
 const TCHAR* s_pszGenAllThumbnails = _T("gen-all-thumbs");
+const TCHAR* s_pszFullscreenClicks = _T("fullscreen-clicks");
 
 const TCHAR* s_pszPrintSettings = _T("Print");
 const TCHAR* s_pszMarginLeft = _T("m-left");
@@ -378,6 +379,7 @@ void CDjViewApp::LoadSettings()
 
 	CAppSettings::bRestoreAssocs = !!GetProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, 0);
 	CAppSettings::bGenAllThumbnails = !!GetProfileInt(s_pszGlobalSettings, s_pszGenAllThumbnails, 1);
+	CAppSettings::bFullscreenClicks = !!GetProfileInt(s_pszGlobalSettings, s_pszFullscreenClicks, 1);
 
 	CDisplaySettings& ds = CAppSettings::displaySettings;
 	ds.bAdjustDisplay = !!GetProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, 0);
@@ -414,6 +416,7 @@ void CDjViewApp::SaveSettings()
 
 	WriteProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, CAppSettings::bRestoreAssocs);
 	WriteProfileInt(s_pszGlobalSettings, s_pszGenAllThumbnails, CAppSettings::bGenAllThumbnails);
+	WriteProfileInt(s_pszGlobalSettings, s_pszFullscreenClicks, CAppSettings::bFullscreenClicks);
 
 	CDisplaySettings& ds = CAppSettings::displaySettings;
 	WriteProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, ds.bAdjustDisplay);
