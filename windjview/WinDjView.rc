@@ -121,6 +121,9 @@ BEGIN
     BUTTON      ID_VIEW_NEXTPAGE
     BUTTON      ID_VIEW_LASTPAGE
     SEPARATOR
+    BUTTON      ID_LAYOUT_SINGLEPAGE
+    BUTTON      ID_LAYOUT_CONTINUOUS
+    SEPARATOR
     BUTTON      ID_ROTATE_LEFT
     BUTTON      ID_ROTATE_RIGHT
 END
@@ -254,7 +257,7 @@ CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,10,9,20,20
-    LTEXT           "WinDjView Version 0.1",IDC_STATIC,40,10,119,8,
+    LTEXT           "WinDjView Version 0.2",IDC_STATIC,40,10,119,8,
                     SS_NOPREFIX
     LTEXT           "Copyright (C) 2004 Andrew Zhezherun",IDC_STATIC,40,22,
                     130,8
@@ -609,7 +612,7 @@ END
 STRINGTABLE 
 BEGIN
     ID_LAYOUT_SINGLEPAGE    "Single page layout\nSingle Page"
-    ID_LAYOUT_CONTINUOUS    "Continuous layout\nContinuous"
+    ID_LAYOUT_CONTINUOUS    "Continuous page layout\nContinuous"
 END
 
 #endif    // English (U.S.) resources

@@ -1,4 +1,4 @@
-//	WinDjView 0.1
+//	WinDjView
 //	Copyright (C) 2004 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 #include "WinDjView.h"
 #include "MyToolBar.h"
 
-#include "../src/mfc/afximpl.h"
+#include <../src/mfc/afximpl.h>
 
 
 // CMyToolBar

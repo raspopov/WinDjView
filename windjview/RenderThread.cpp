@@ -1,4 +1,4 @@
-//	WinDjView 0.1
+//	WinDjView
 //	Copyright (C) 2004 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
@@ -70,6 +70,9 @@ DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 		pData->m_lock.Unlock();
 
 		pData->Render(job);
+
+		if (::WaitForSingleObject(pData->m_stop.m_hObject, 0) == WAIT_OBJECT_0)
+			break;
 	}
 
 	pData->m_finished.SetEvent();
@@ -86,12 +89,38 @@ void CRenderThread::AddJob(int nPage, int nRotate, CRect rcAll, CRect rcClip)
 
 	m_lock.Lock();
 
-	m_jobs.clear();
+	// Delete jobs with the same nPage
+	list<Job>::iterator it = m_jobs.begin();
+	while (it != m_jobs.end())
+	{
+		if ((*it).nPage == nPage)
+			m_jobs.erase(it++);
+		else
+			++it;
+	}
+
 	m_jobs.push_front(job);
 
 	m_lock.Unlock();
 
 	m_jobReady.SetEvent();
+}
+
+void CRenderThread::RemoveFromQueue(int nPage)
+{
+	m_lock.Lock();
+
+	// Delete jobs with the same nPage
+	list<Job>::iterator it = m_jobs.begin();
+	while (it != m_jobs.end())
+	{
+		if ((*it).nPage == nPage)
+			m_jobs.erase(it++);
+		else
+			++it;
+	}
+
+	m_lock.Unlock();
 }
 
 void CRenderThread::Render(Job& job)

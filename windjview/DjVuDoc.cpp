@@ -1,4 +1,4 @@
-//	WinDjView 0.1
+//	WinDjView
 //	Copyright (C) 2004 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
@@ -155,7 +155,6 @@ void CDjVuDoc::PageDecoded(int nPage, GP<DjVuImage> pImage)
 
 	if (::InterlockedCompareExchange(&m_nPagePending, -1, nPage) == nPage)
 	{
-		TRACE("Pending page decoded: %d\n", nPage);
 		m_pageReady.SetEvent();
 	}
 
@@ -170,6 +169,7 @@ void CDjVuDoc::PageDecoded(int nPage, GP<DjVuImage> pImage)
 bool CDjVuDoc::GetPageInfo(int nPage, CSize& szPage, int& nDPI)
 {
 	ASSERT(nPage >= 0 && nPage < m_pDjVuDoc->get_pages_num());
+	szPage.cx = szPage.cy = nDPI = 0;
 
 	G_TRY
 	{
@@ -185,7 +185,6 @@ bool CDjVuDoc::GetPageInfo(int nPage, CSize& szPage, int& nDPI)
 			(chkid != "FORM:DJVI" && chkid != "FORM:DJVU" &&
 			 chkid != "FORM:PM44" && chkid != "FORM:BM44"))
 		{
-			szPage.cx = szPage.cy = nDPI = 0;
 			return false;
 		}
 
@@ -216,6 +215,5 @@ bool CDjVuDoc::GetPageInfo(int nPage, CSize& szPage, int& nDPI)
 	}
 	G_ENDCATCH;
 
-	szPage.cx = szPage.cy = nDPI = 0;
 	return false;
 }

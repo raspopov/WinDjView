@@ -1,4 +1,4 @@
-//	WinDjView 0.1
+//	WinDjView
 //	Copyright (C) 2004 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
@@ -151,12 +151,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
-	if( !CMDIFrameWnd::PreCreateWindow(cs) )
-		return FALSE;
-	// TODO: Modify the Window class or styles here by modifying
-	//  the CREATESTRUCT cs
+	if (!CMDIFrameWnd::PreCreateWindow(cs))
+		return false;
 
-	return TRUE;
+	return true;
 }
 
 

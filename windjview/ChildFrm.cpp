@@ -1,4 +1,4 @@
-//	WinDjView 0.1
+//	WinDjView
 //	Copyright (C) 2004 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
@@ -92,7 +92,7 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 
 		cboPage.EnableWindow(true);
 		int nPages = pView->GetPageCount();
-		int nPage = pView->GetCurrentPage();
+		int nPage = pView->GetTopPage();
 		GetMainFrame()->UpdatePageCombo(nPage, nPages);
 
 		cboZoom.EnableWindow(true);

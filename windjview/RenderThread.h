@@ -1,4 +1,4 @@
-//	WinDjView 0.1
+//	WinDjView
 //	Copyright (C) 2004 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,7 @@ public:
 	~CRenderThread();
 
 	void AddJob(int nPage, int nRotate, CRect rcAll, CRect rcClip);
+	void RemoveFromQueue(int nPage);
 
 private:
 	CCriticalSection m_lock;

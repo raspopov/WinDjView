@@ -1,4 +1,4 @@
-//	WinDjView 0.1
+//	WinDjView
 //	Copyright (C) 2004 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
@@ -19,9 +19,6 @@
 // $Id$
 
 #pragma once
-
-#include "RenderThread.h"
-class CDecodeThread;
 
 #define WM_PAGE_DECODED (WM_USER + 18)
 
@@ -53,8 +50,8 @@ public:
 #endif
 
 protected:
-	CDecodeThread* m_pThread;
 	friend class CDecodeThread;
+	CDecodeThread* m_pThread;
 
 	GP<DjVuDocument> m_pDjVuDoc;
 	vector<GP<DjVuImage> > m_pages;

@@ -1,4 +1,4 @@
-//	WinDjView 0.1
+//	WinDjView
 //	Copyright (C) 2004 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
@@ -46,7 +46,7 @@ public:
 public:
 	void RenderPage(int nPage);
 	int GetPageCount() const { return m_nPageCount; }
-	int GetCurrentPage() const { return m_nPage; }
+	int GetTopPage() const;
 	int GetZoomType() const { return m_nZoomType; }
 	double GetZoom() const;
 	void ZoomTo(int nZoomType, double fZoom = 100.0);
@@ -73,6 +73,7 @@ public:
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual void OnInitialUpdate();
+	virtual BOOL OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll = TRUE);
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 
 protected:
@@ -92,9 +93,11 @@ protected:
 	int m_nPage, m_nPageCount;
 	CSize m_szDisplay;
 
+	void DrawPage(CDC* pDC, int nPage);
 	void DrawWhite(CDC* pDC, int nPage);
 	void DrawOffscreen(CDC* pDC, int nPage);
 	void DrawStretch(CDC* pDC, int nPage);
+	void InvalidatePage(int nPage);
 
 	int m_nZoomType;
 	double m_fZoom;
@@ -104,7 +107,7 @@ protected:
 	struct Page
 	{
 		Page() :
-			bSizeLoaded(false), szPage(0, 0), nDPI(0), szDisplayPage(0, 0),
+			bSizeLoaded(false), szPage(0, 0), nDPI(0), szDisplay(0, 0),
 			ptOffset(0, 0), pBitmap(NULL) {}
 		~Page() { delete pBitmap; }
 
@@ -119,8 +122,10 @@ protected:
 		bool bSizeLoaded;
 		CSize szPage;
 		int nDPI;
-		CSize szDisplayPage;
+
 		CPoint ptOffset;
+		CSize szDisplay;
+		CRect rcDisplay;
 		CDIB* pBitmap;
 
 		void DeleteBitmap()
@@ -131,17 +136,37 @@ protected:
 	};
 	vector<Page> m_pages;
 
-	CSize CalcPageSize(const CSize& szPage, int nDPI);
 	void UpdatePageSize();
-	void UpdateView();
+	CSize CalcPageSize(const CSize& szPage, int nDPI);
+	void UpdatePageSizes(int nTop, int nScroll = 0);
+	bool UpdatePagesFromTop(int nTop, int nBottom);
+	void UpdatePagesFromBottom(int nTop, int nBottom);
+	void DeleteBitmaps(int nKeep = -1);
+	int GetPageFromPoint(CPoint point);
 
+	void SetScrollSizesNoRepaint(const CSize& szTotal,
+		const CSize& szPage, const CSize& szLine);
+	void UpdateBarsNoRepaint();
+	void ScrollToPositionNoRepaint(CPoint pt);
+
+	enum UpdateType
+	{
+		TOP = 0,
+		BOTTOM = 1,
+		RECALC = 2
+	};
+	void UpdateView(UpdateType updateType = TOP);
+	void UpdateVisiblePages();
+
+	int m_nClickedPage;
 	bool m_bDragging;
 	CPoint m_ptStart, m_ptStartPos;
+	int m_nStartPage;
 	static HCURSOR hCursorHand;
 	static HCURSOR hCursorDrag;
 
 // Generated message map functions
-	afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
+	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	afx_msg void OnPageInformation();
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnViewZoom(UINT nID);
@@ -168,6 +193,7 @@ protected:
 	afx_msg LRESULT OnRenderFinished(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnPageDecoded(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnDestroy();
+	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	DECLARE_MESSAGE_MAP()
 };
 
