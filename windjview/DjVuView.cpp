@@ -1464,7 +1464,7 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 	if (m_bClick)
 	{
 		CPoint ptCursor;
-		::GetCursorPos(&m_ptClick);
+		::GetCursorPos(&ptCursor);
 		if (m_ptClick != ptCursor)
 			m_bClick = false;
 	}

@@ -3,6 +3,8 @@ Copyright (C) 2004-2005 Andrew Zhezherun
 ----------------------------------------
 
 Changes in version 0.3:
++ Added text searching.
++ Added hyperlink support.
 + Significantly reduced memory usage due to new caching algorithm
   (+/- 2 screens are stored as bitmaps, +/- 10 screens are stored
   in a decoded form for faster rendering).
