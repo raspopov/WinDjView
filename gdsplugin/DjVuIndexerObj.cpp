@@ -21,9 +21,6 @@
 #include "stdafx.h"
 #include "DjVuIndexerObj.h"
 
-
-DEFINE_GUID(ImageFormatPNG, 0xb96b3caf,0x0728,0x11d3,0x9d,0x7b,0x00,0x00,0xf8,0x1e,0xf3,0x2e);
-
 const int nThumbnailWidth = 109;
 const int nThumbnailHeight = 75;
 
@@ -33,7 +30,7 @@ CStringW ReadPageText(GP<DjVuDocument> pDoc, int nPage)
 	ATLASSERT(nPage >= 0 && nPage < pDoc->get_pages_num());
 	CStringW strText;
 
-	G_TRY
+	try
 	{
 		// Get raw data from the document and decode only page info chunk
 		GP<DjVuFile> file(pDoc->get_djvu_file(nPage));
@@ -80,103 +77,53 @@ CStringW ReadPageText(GP<DjVuDocument> pDoc, int nPage)
 			iff->seek_close_chunk();
 		}
 	}
-	G_CATCH(ex)
+	catch (...)
 	{
-		ex;
 	}
-	G_ENDCATCH;
 
 	return strText;
 }
 
-HBITMAP RenderPixmap(GPixmap& pm)
+FIBITMAP* RenderThumbnail(GPixmap& pm)
 {
-	BITMAPINFOHEADER bmih;
+	FIBITMAP* pBitmap = FreeImage_AllocateT(FIT_BITMAP, nThumbnailWidth, nThumbnailHeight, 24);
 
-	bmih.biSize = sizeof(BITMAPINFOHEADER);
-	bmih.biWidth = pm.columns();
-	bmih.biHeight = pm.rows();
-	bmih.biBitCount = 24;
-	bmih.biCompression = BI_RGB;
-	bmih.biClrUsed = 0;
-	bmih.biPlanes = 1;
-	bmih.biSizeImage = 0;
-	bmih.biXPelsPerMeter = 0;
-	bmih.biYPelsPerMeter = 0;
-	bmih.biClrImportant = 0;
+	LPBYTE pBits = FreeImage_GetBits(pBitmap);
+	BITMAPINFO* pBMI = FreeImage_GetInfo(pBitmap);
 
-	LPBYTE pBits;
-	HBITMAP hBitmap = ::CreateDIBSection(NULL, (LPBITMAPINFO)&bmih,
-		DIB_RGB_COLORS, (VOID**)&pBits, NULL, 0);
+	pBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	pBMI->bmiHeader.biWidth = nThumbnailWidth;
+	pBMI->bmiHeader.biHeight = nThumbnailHeight;
+	pBMI->bmiHeader.biBitCount = 24;
+	pBMI->bmiHeader.biCompression = BI_RGB;
+	pBMI->bmiHeader.biClrUsed = 0;
+	pBMI->bmiHeader.biPlanes = 1;
+	pBMI->bmiHeader.biSizeImage = 0;
+	pBMI->bmiHeader.biXPelsPerMeter = 0;
+	pBMI->bmiHeader.biYPelsPerMeter = 0;
+	pBMI->bmiHeader.biClrImportant = 0;
 
-	if (hBitmap == NULL)
-		return NULL;
+	size_t nLeft = (nThumbnailWidth - pm.columns()) / 2;
+	size_t nTop = (nThumbnailHeight - pm.rows()) / 2;
 
 	LPBYTE pNextBit = pBits;
-	for (size_t y = 0; y < pm.rows(); ++y)
+	for (size_t y = 0; y < nThumbnailHeight; ++y)
 	{
-		memcpy(pNextBit, pm[y], pm.columns()*3);
+		if (y >= nTop && y < nTop + pm.rows())
+		{
+			memset(pNextBit, 0xff, nLeft*3);
+			memcpy(pNextBit + nLeft*3, pm[y - nTop], pm.columns()*3);
+			memset(pNextBit + (nLeft + pm.columns())*3, 0xff, (nThumbnailWidth - nLeft - pm.columns())*3);
+		}
+		else
+			memset(pNextBit, 0xff, nThumbnailWidth*3);
 
-		pNextBit += pm.columns()*3;
+		pNextBit += nThumbnailWidth*3;
 		while ((pNextBit - pBits) % 4 != 0)
 			++pNextBit;
 	}
 
-	return hBitmap;
-}
-
-HBITMAP RenderBitmap(GBitmap& bm)
-{
-	LPBITMAPINFO pBMI;
-
-	int nPaletteEntries = bm.get_grays();
-
-	pBMI = (LPBITMAPINFO)malloc(
-		sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)*nPaletteEntries);
-	BITMAPINFOHEADER& bmih = pBMI->bmiHeader;
-
-	bmih.biSize = sizeof(BITMAPINFOHEADER);
-	bmih.biWidth = bm.columns();
-	bmih.biHeight = bm.rows();
-	bmih.biBitCount = 8;
-	bmih.biCompression = BI_RGB;
-	bmih.biClrUsed = nPaletteEntries;
-	bmih.biPlanes = 1;
-	bmih.biSizeImage = 0;
-	bmih.biXPelsPerMeter = 0;
-	bmih.biYPelsPerMeter = 0;
-	bmih.biClrImportant = 0;
-
-	// Create palette for the bitmap
-	int color = 0xff0000;
-	int decrement = color/(nPaletteEntries - 1);
-	for (int i = 0; i < nPaletteEntries; ++i)
-	{
-		int level = color >> 16;
-		pBMI->bmiColors[i].rgbBlue = level;
-		pBMI->bmiColors[i].rgbGreen = level;
-		pBMI->bmiColors[i].rgbRed = level;
-		color -= decrement;
-	}
-
-	LPBYTE pBits;
-	HBITMAP hBitmap = ::CreateDIBSection(NULL, pBMI, DIB_RGB_COLORS, (VOID**)&pBits, NULL, 0);
-	free(pBMI);
-
-	if (hBitmap == NULL)
-		return NULL;
-
-	LPBYTE pNextBit = pBits;
-	for (size_t y = 0; y < bm.rows(); ++y)
-	{
-		memcpy(pNextBit, bm[y], bm.columns());
-
-		pNextBit += bm.columns();
-		while ((pNextBit - pBits) % 4 != 0)
-			++pNextBit;
-	}
-
-	return hBitmap;
+	return pBitmap;
 }
 
 void CreateImageThumbnail(GP<DjVuImage> pImage,
@@ -197,70 +144,39 @@ void CreateImageThumbnail(GP<DjVuImage> pImage,
 		nImageWidth = nImageHeight * nPageWidth / nPageHeight;
 	}
 
-	GP<GBitmap> pGBitmap;
-	GP<GPixmap> pGPixmap;
-
 	GRect rect(0, 0, nImageWidth, nImageHeight);
-	pGPixmap = pImage->get_pixmap(rect, rect);
+	GP<GPixmap> pGPixmap = pImage->get_pixmap(rect, rect);
 	if (pGPixmap == NULL)
-		pGBitmap = pImage->get_bitmap(rect, rect, 4);
-
-	HBITMAP hBitmap = NULL;
-
-	if (pGPixmap != NULL)
-		hBitmap = RenderPixmap(*pGPixmap);
-	else if (pGBitmap != NULL)
-		hBitmap = RenderBitmap(*pGBitmap);
-
-	if (hBitmap == NULL)
-		return;
-
-	CImage thumbnail;
-	thumbnail.Create(nThumbnailWidth, nThumbnailHeight, 24);
-
-	HDC dcThumb = thumbnail.GetDC();
-	::SetBkColor(dcThumb, RGB(255, 255, 255));
-	CRect rcAll(0, 0, nThumbnailWidth, nThumbnailHeight);
-	::ExtTextOut(dcThumb, 0, 0, ETO_OPAQUE, &rcAll, NULL, 0, NULL);
-
-	CImage image;
-	image.Attach(hBitmap, CImage::DIBOR_BOTTOMUP);
-	image.Draw(dcThumb, (nThumbnailWidth - nImageWidth) / 2, (nThumbnailHeight - nImageHeight) / 2);
-	thumbnail.ReleaseDC();
-
-	IStream* pStream = NULL;
-	HRESULT hr = CreateStreamOnHGlobal(NULL, TRUE, &pStream);
-	if (FAILED(hr))
-		return;
-
-	strThumbnailFormat = L"image/png";
-	hr = thumbnail.Save(pStream, ImageFormatPNG);
-	if (FAILED(hr))
-		return;
-
-	try
 	{
-		IStreamPtr pStreamPtr = pStream;
-		pStream->Release();
-
-		STATSTG stat;
-		pStreamPtr->Stat(&stat, STATFLAG_NONAME);
-
-		ULARGE_INTEGER nSize, nPos;
-		LARGE_INTEGER nZero = { 0 };
-		pStreamPtr->Seek(nZero, STREAM_SEEK_CUR, &nSize);
-		pStreamPtr->Seek(nZero, STREAM_SEEK_SET, &nPos);
-
-		nThumbnailSize = static_cast<int>(nSize.QuadPart);
-		pThumbnailData = new BYTE[nThumbnailSize];
-
-		ULONG nRead;
-		pStreamPtr->Read(pThumbnailData, nThumbnailSize, &nRead);
+		GP<GBitmap> pGBitmap = pImage->get_bitmap(rect, rect, 4);
+		if (pGBitmap != NULL)
+			pGPixmap = GPixmap::create(*pGBitmap);
 	}
-	catch (_com_error& e)
+
+	if (pGPixmap == NULL)
+		return;
+
+	FreeImage_Initialise(true);
+	FIMEMORY* pMem = FreeImage_OpenMemory();
+
+	FIBITMAP* pBitmap = RenderThumbnail(*pGPixmap);
+	if (FreeImage_SaveToMemory(FIF_PNG, pBitmap, pMem, 0))
 	{
-		e;
+		LPBYTE pBytes;
+		DWORD nLength;
+		if (FreeImage_AcquireMemory(pMem, &pBytes, &nLength))
+		{
+			pThumbnailData = new BYTE[nLength];
+			nThumbnailSize = nLength;
+			memcpy(pThumbnailData, pBytes, nLength);
+			strThumbnailFormat = L"image/png";
+		}
 	}
+
+	FreeImage_CloseMemory(pMem);
+
+	FreeImage_Unload(pBitmap);
+	FreeImage_DeInitialise();
 }
 
 void ReadDjVuFile(BSTR fullPath, CStringW& strText,
@@ -271,17 +187,15 @@ void ReadDjVuFile(BSTR fullPath, CStringW& strText,
 	::WideCharToMultiByte(CP_UTF8, 0, fullPath, -1, CStrBufA(strFileName, nSize + 1), nSize, NULL, NULL);
 
 	GP<DjVuDocument> pDoc = NULL;
-	G_TRY
+	try
 	{
 		pDoc = DjVuDocument::create("file://" + GUTF8String(strFileName));
 		pDoc->wait_for_complete_init();
 	}
-	G_CATCH(ex)
+	catch (...)
 	{
-		ex;
 		_com_issue_error(E_FAIL);
 	}
-	G_ENDCATCH;
 
 	int nPageCount = pDoc->get_pages_num();
 	if (nPageCount == 0)
@@ -291,18 +205,16 @@ void ReadDjVuFile(BSTR fullPath, CStringW& strText,
 	for (int nPage = 0; nPage < nPageCount; ++nPage)
 		strText += ReadPageText(pDoc, nPage);
 
-	G_TRY
+	try
 	{
 		GP<DjVuImage> pImage = pDoc->get_page(0);
 		CreateImageThumbnail(pImage, pThumbnailData, nThumbnailSize, strThumbnailFormat);
 	}
-	G_CATCH(ex)
+	catch (...)
 	{
-		ex;
 		delete[] pThumbnailData;
 		pThumbnailData = NULL;
 	}
-	G_ENDCATCH;
 }
 
 
@@ -310,6 +222,8 @@ void ReadDjVuFile(BSTR fullPath, CStringW& strText,
 
 STDMETHODIMP CDjVuIndexerObj::HandleFile(BSTR fullPath, IDispatch* pFactory)
 {
+	ATLTRACE("File: %S\n", fullPath);
+
 	try
 	{
 		IGoogleDesktopSearchEventFactoryPtr spEventFactory(pFactory);

@@ -45,8 +45,6 @@
 #include <atlctl.h>
 #include <atlhost.h>
 #include <atlsafe.h>
-#include <atlstr.h>
-#include <atlimage.h>
 
 using namespace ATL;
 
@@ -65,3 +63,6 @@ using namespace GoogleDesktopSearchAPILib;
 #include "../libdjvu/DjVuText.h"
 #include "../libdjvu/GPixmap.h"
 #include "../libdjvu/GBitmap.h"
+
+#define FREEIMAGE_LIB
+#include "FreeImage.h"

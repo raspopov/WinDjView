@@ -1,0 +1,10 @@
+To compile Google Desktop Search DjVu Plugin, you'll need to
+download and build the following libraries:
+
+1. FreeImage.lib static library
+   An included patch 'Plugin.cpp.patch' should applied
+   to reduce DjVu plugin file size
+   (http://freeimage.sourceforge.net)
+
+2. libdjvu.lib library included with WinDjView sources
+   (http://windjview.sourceforge.net)

@@ -1,0 +1,38 @@
+--- Plugin.cpp	Sat Dec 04 19:56:56 2004
++++ Plugin.cpp	Sat Mar 26 00:11:49 2005
+@@ -217,7 +217,23 @@
+ 		s_plugins = new PluginList;
+ 
+ 		if (s_plugins) {
+-			s_plugins->AddNode(InitBMP);
++			// We need only PNG plugin!
++			s_plugins->AddNode(InitPNG, NULL, "0");
++			s_plugins->AddNode(InitPNG, NULL, "1");
++			s_plugins->AddNode(InitPNG, NULL, "2");
++			s_plugins->AddNode(InitPNG, NULL, "3");
++			s_plugins->AddNode(InitPNG, NULL, "4");
++			s_plugins->AddNode(InitPNG, NULL, "5");
++			s_plugins->AddNode(InitPNG, NULL, "6");
++			s_plugins->AddNode(InitPNG, NULL, "7");
++			s_plugins->AddNode(InitPNG, NULL, "8");
++			s_plugins->AddNode(InitPNG, NULL, "9");
++			s_plugins->AddNode(InitPNG, NULL, "10");
++			s_plugins->AddNode(InitPNG, NULL, "11");
++			s_plugins->AddNode(InitPNG, NULL, "12");
++			s_plugins->AddNode(InitPNG);
++
++/*			s_plugins->AddNode(InitBMP);
+ 			s_plugins->AddNode(InitICO);
+ 			s_plugins->AddNode(InitJPEG);
+ 			s_plugins->AddNode(InitMNG, NULL, "JNG", "JPEG Network Graphics", "jng", "");
+@@ -242,8 +258,8 @@
+ 			s_plugins->AddNode(InitXBM);
+ 			s_plugins->AddNode(InitXPM);
+ 			s_plugins->AddNode(InitDDS);
+-	        s_plugins->AddNode(InitGIF);
+-			
++			s_plugins->AddNode(InitGIF);
++*/			
+ 			// external plugin initialization
+ 
+ #ifdef WIN32
