@@ -46,5 +46,6 @@ protected:
 	afx_msg void OnDestroy();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()
 };

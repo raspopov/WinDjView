@@ -322,7 +322,7 @@ CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,10,9,20,20
-    LTEXT           "WinDjView Version 0.3.2",IDC_STATIC,40,7,119,8,
+    LTEXT           "WinDjView Version 0.3.3",IDC_STATIC,40,7,119,8,
                     SS_NOPREFIX
     LTEXT           "Copyright (C) 2004-2005 Andrew Zhezherun",IDC_STATIC,40,
                     19,149,8
@@ -480,7 +480,7 @@ BEGIN
     LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,15,155,45,9
     CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,154,131,
                     12
-    LTEXT           "WinDjView 0.3.2\nby Andrew Zhezherun",IDC_STATIC_ABOUT,
+    LTEXT           "WinDjView 0.3.3\nby Andrew Zhezherun",IDC_STATIC_ABOUT,
                     7,177,92,18
 END
 
@@ -517,8 +517,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,2,0
- PRODUCTVERSION 0,3,2,0
+ FILEVERSION 0,3,3,0
+ PRODUCTVERSION 0,3,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -531,21 +531,21 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904e4"
+        BLOCK "04090000"
         BEGIN
             VALUE "CompanyName", "Andrew Zhezherun"
             VALUE "FileDescription", "WinDjView"
-            VALUE "FileVersion", "0.3.2"
+            VALUE "FileVersion", "0.3.3"
             VALUE "InternalName", "WinDjView.exe"
             VALUE "LegalCopyright", "Copyright (C) 2004-2005 Andrew Zhezherun.  All rights reserved."
             VALUE "OriginalFilename", "WinDjView.exe"
             VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "0.3.2"
+            VALUE "ProductVersion", "0.3.3"
         END
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x409, 1252
+        VALUE "Translation", 0x409, 0
     END
 END
 

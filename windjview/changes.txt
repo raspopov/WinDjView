@@ -2,6 +2,9 @@ WinDjView changes history
 Copyright (C) 2004-2005 Andrew Zhezherun
 ----------------------------------------
 
+Changes in version 0.3.3:
+- Show all links works in fullscreen mode.
+
 Changes in version 0.3.2:
 + Added "Find All" button which displays search results in a list.
 + Added fullscreen mode.

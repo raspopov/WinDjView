@@ -1021,5 +1021,8 @@ LRESULT CMainFrame::OnShowAllLinks(WPARAM wParam, LPARAM lParam)
 		}
 	}
 
+	if (m_pFullscreenWnd != NULL)
+		m_pFullscreenWnd->GetView()->ShowAllLinks(wParam != 0);
+
 	return 0;
 }

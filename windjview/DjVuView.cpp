@@ -417,7 +417,7 @@ void CDjVuView::OnInitialUpdate()
 	if (m_toolTip.Create(this, TTS_ALWAYSTIP) && m_toolTip.AddTool(this))
 	{
 		m_toolTip.SendMessage(TTM_SETMAXTIPWIDTH, 0, SHRT_MAX);
-		m_toolTip.Activate(FALSE);
+		m_toolTip.Activate(false);
 	}
 
 	m_nPageCount = GetDocument()->GetPageCount();
@@ -1529,6 +1529,10 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 	}
 	else if (m_nMode == Fullscreen)
 	{
+		UpdateActiveHyperlink(CPoint(-1, -1));
+		SetCapture();
+		m_bDragging = true;
+
 		OnViewNextpage();
 	}
 
@@ -3180,7 +3184,7 @@ void CDjVuView::UpdateActiveHyperlink(CPoint point)
 	{
 		if (m_pActiveLink != NULL)
 		{
-			m_toolTip.Activate(FALSE);
+			m_toolTip.Activate(false);
 			CRect rcArea = TranslatePageRect(m_nLinkPage, m_pActiveLink->get_bound_rect());
 			rcArea.InflateRect(0, 0, 1, 1);
 			rcArea.OffsetRect(-GetScrollPosition());
@@ -3192,7 +3196,7 @@ void CDjVuView::UpdateActiveHyperlink(CPoint point)
 
 		if (m_pActiveLink != NULL)
 		{
-			m_toolTip.Activate(TRUE);
+			m_toolTip.Activate(true);
 			CRect rcArea = TranslatePageRect(nPage, m_pActiveLink->get_bound_rect());
 			rcArea.InflateRect(0, 0, 1, 1);
 			rcArea.OffsetRect(-GetScrollPosition());
@@ -3264,14 +3268,13 @@ BOOL CDjVuView::OnToolTipNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
 		::strcpy(pTTT->szText, strTip);
 	}
 	else
-        pTTT->szText[0] = '\0';
+		pTTT->szText[0] = '\0';
 
 	return TRUE;
 }
 
 BOOL CDjVuView::PreTranslateMessage(MSG* pMsg)
 {
-	// if (::IsWindow(m_toolTip.m_hWnd) && pMsg->hwnd == m_hWnd)
 	if (::IsWindow(m_toolTip.m_hWnd))
 		m_toolTip.RelayEvent(pMsg);
 

@@ -105,3 +105,9 @@ void CFullscreenWnd::OnSetFocus(CWnd* pOldWnd)
 
 	CWnd::OnSetFocus(pOldWnd);
 }
+
+void CFullscreenWnd::PostNcDestroy()
+{
+	// Should be created on heap
+	delete this;
+}
