@@ -7,6 +7,7 @@
 #define IDD_PRINT                       9
 #define IDD_ABOUTBOX                    100
 #define ID_FIND_STRING                  101
+#define ID_STOP_TRACKING                102
 #define IDR_MAINFRAME                   128
 #define IDR_DjVuTYPE                    129
 #define IDC_CURSOR_HAND                 132
@@ -96,8 +97,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        141
-#define _APS_NEXT_COMMAND_VALUE         32821
+#define _APS_NEXT_COMMAND_VALUE         32824
 #define _APS_NEXT_CONTROL_VALUE         1043
-#define _APS_NEXT_SYMED_VALUE           102
+#define _APS_NEXT_SYMED_VALUE           103
 #endif
 #endif

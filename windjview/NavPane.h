@@ -21,25 +21,35 @@
 #pragma once
 
 
-// CFindDlg dialog
+// CNavPaneWnd
 
-class CFindDlg : public CDialog
+class CNavPaneWnd : public CWnd
 {
-	DECLARE_DYNAMIC(CFindDlg)
+	DECLARE_DYNCREATE(CNavPaneWnd)
 
 public:
-	CFindDlg(CWnd* pParent = NULL);
-	virtual ~CFindDlg();
+	CNavPaneWnd();
+	virtual ~CNavPaneWnd();
 
-// Dialog Data
-	enum { IDD = IDD_FIND };
-	CString m_strFind;
-	BOOL m_bMatchCase;
+// Attributes
+public:
+	static const int s_nHorzBorderWidth;
+	static const int s_nVertBorderHeight;
+	
+// Implementation
+public:
+	CWnd* GetChildWnd() const;
+	void SetChildWnd(CWnd* pWnd);
+	int GetMinWidth() const;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	virtual void OnOK();
-	afx_msg void OnClose();
+	CWnd* m_pChildWnd;
+	int m_nDefPaneWidth;
+	int m_nLockPos;
+
+	// Generated message map functions
+	afx_msg void OnPaint();
+	afx_msg void OnWindowPosChanged(WINDOWPOS FAR* lpwndpos);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	DECLARE_MESSAGE_MAP()
-	virtual void OnCancel();
 };

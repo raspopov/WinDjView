@@ -25,6 +25,10 @@
 #include "AppSettings.h"
 #include "MainFrm.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 
 // CSettingsDlg dialog
 

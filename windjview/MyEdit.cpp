@@ -19,8 +19,11 @@
 // $Id$
 
 #include "stdafx.h"
-#include "WinDjView.h"
 #include "MyEdit.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 
 // CMyEdit

@@ -24,6 +24,7 @@
 #include "ChildFrm.h"
 #include "MainFrm.h"
 #include "DjVuView.h"
+#include "NavPane.h"
 #include "AppSettings.h"
 
 #ifdef _DEBUG
@@ -38,6 +39,8 @@ IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWnd)
 BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 	ON_WM_MDIACTIVATE()
 	ON_WM_WINDOWPOSCHANGED()
+	ON_MESSAGE_VOID(ID_STOP_TRACKING, OnStopTracking)
+	ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
 
 
@@ -45,18 +48,20 @@ END_MESSAGE_MAP()
 
 CChildFrame::CChildFrame()
 {
-	// TODO: add member initialization code here
+	m_nNavPaneWidth = CAppSettings::nNavPaneWidth;
+
+	m_bCreated = false;
 }
 
 CChildFrame::~CChildFrame()
 {
+	CAppSettings::nNavPaneWidth = m_nNavPaneWidth;
 }
 
 
 BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
-	// TODO: Modify the Window class or styles here by modifying the CREATESTRUCT cs
-	if( !CMDIChildWnd::PreCreateWindow(cs) )
+	if (!CMDIChildWnd::PreCreateWindow(cs))
 		return FALSE;
 
 	return TRUE;
@@ -90,7 +95,7 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 
 	if (bActivate)
 	{
-		CDjVuView* pView = (CDjVuView*)GetActiveView();
+		CDjVuView* pView = GetDjVuView();
 
 		cboPage.EnableWindow(true);
 		int nPages = pView->GetPageCount();
@@ -117,9 +122,10 @@ void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 	CMDIChildWnd::OnWindowPosChanged(lpwndpos);
 
 	if (IsWindowVisible() && !IsIconic())
-	{
 		CAppSettings::bChildMaximized = !!IsZoomed();
-	}
+
+	if (m_bCreated)
+		UpdateNavPane();
 }
 
 void CChildFrame::ActivateFrame(int nCmdShow)
@@ -128,4 +134,88 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 		nCmdShow = SW_SHOWMAXIMIZED;
 
 	CMDIChildWnd::ActivateFrame(nCmdShow);
+}
+
+BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
+{
+	m_wndSplitter.CreateStatic(this, 1, 2);
+
+	m_wndSplitter.CreateView(0, 0, RUNTIME_CLASS(CNavPaneWnd),
+		CSize(m_nNavPaneWidth, 0), pContext);
+	m_wndSplitter.CreateView(0, 1, RUNTIME_CLASS(CDjVuView),
+		CSize(0, 0), pContext);
+
+	SetActiveView(GetDjVuView());
+
+	m_bCreated = true;
+	UpdateNavPane();
+
+	return TRUE;
+}
+
+void CChildFrame::UpdateNavPane()
+{
+	m_wndSplitter.AllowTracking(CAppSettings::bShowNavPane);
+	m_wndSplitter.HideSplitter(!CAppSettings::bShowNavPane);
+
+	UpdateNavPaneWidth();
+}
+
+void CChildFrame::UpdateNavPaneWidth()
+{
+	int nWidth = (CAppSettings::bShowNavPane ? m_nNavPaneWidth : 0);
+
+	m_wndSplitter.SetColumnInfo(0, nWidth, 0);
+	m_wndSplitter.RecalcLayout();
+}
+
+void CChildFrame::OnStopTracking()
+{
+	if (CAppSettings::bShowNavPane)
+	{
+		int cxMin;
+		m_wndSplitter.GetColumnInfo(0, m_nNavPaneWidth, cxMin);
+	}
+}
+
+CDjVuView* CChildFrame::GetDjVuView()
+{
+	return static_cast<CDjVuView*>(m_wndSplitter.GetPane(0, 1));
+}
+
+CNavPaneWnd* CChildFrame::GetNavPane()
+{
+	return static_cast<CNavPaneWnd*>(m_wndSplitter.GetPane(0, 0));
+}
+
+void CChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
+{
+	// update our parent window first
+	GetMDIFrame()->OnUpdateFrameTitle(bAddToTitle);
+
+	if ((GetStyle() & FWS_ADDTOTITLE) == 0)
+		return;     // leave child window alone!
+
+	CDocument* pDocument = GetActiveDocument();
+	if (bAddToTitle)
+	{
+		TCHAR szText[256 + _MAX_PATH];
+		if (pDocument == NULL)
+			lstrcpyn(szText, m_strTitle, _countof(szText));
+		else
+			lstrcpyn(szText, pDocument->GetTitle(), _countof(szText));
+
+		// set title if changed, but don't remove completely
+		AfxSetWindowText(m_hWnd, szText);
+	}
+}
+
+CDocument* CChildFrame::GetActiveDocument()
+{
+	return GetDjVuView()->GetDocument();
+}
+
+BOOL CChildFrame::OnEraseBkgnd(CDC* pDC)
+{
+	return true;
 }

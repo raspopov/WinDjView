@@ -42,6 +42,9 @@ struct CAppSettings
 
 	static bool bRestoreAssocs;
 
+	static bool bShowNavPane;
+	static int nNavPaneWidth;
+
 	static CPrintSettings printSettings;
 
 	// The following settings are not stored in registry

@@ -21,6 +21,7 @@
 #pragma once
 
 #include "MyToolBar.h"
+#include "MyStatusBar.h"
 #include "MyComboBox.h"
 #include "FindDlg.h"
 
@@ -35,11 +36,12 @@ public:
 public:
 	CMyComboBox m_cboPage, m_cboZoom;
 	CFindDlg* m_pFindDlg;
-	void UpdatePageCombo(int nPage, int nPages = -1);
-	void UpdateZoomCombo(int nZoomType, double fZoom);
 
 // Operations
 public:
+	void HilightStatusMessage(LPCTSTR pszMessage);
+	void UpdatePageCombo(int nPage, int nPages = -1);
+	void UpdateZoomCombo(int nZoomType, double fZoom);
 
 // Overrides
 public:
@@ -55,7 +57,7 @@ public:
 
 protected:
 	// control bar embedded members
-	CStatusBar m_wndStatusBar;
+	CMyStatusBar m_wndStatusBar;
 	CMyToolBar m_wndToolBar;
 
 	bool m_bFirstShow;

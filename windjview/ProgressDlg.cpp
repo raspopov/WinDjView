@@ -22,6 +22,10 @@
 #include "WinDjView.h"
 #include "ProgressDlg.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 
 // CProgressDlg dialog
 

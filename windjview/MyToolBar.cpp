@@ -19,10 +19,11 @@
 // $Id$
 
 #include "stdafx.h"
-#include "WinDjView.h"
 #include "MyToolBar.h"
 
-#include <../src/mfc/afximpl.h>
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 
 // CMyToolBar

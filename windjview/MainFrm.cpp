@@ -24,6 +24,7 @@
 #include "DjVuDoc.h"
 
 #include "MainFrm.h"
+#include "ChildFrm.h"
 #include "AppSettings.h"
 
 #include <dde.h>
@@ -269,11 +270,11 @@ void CMainFrame::OnShowWindow(BOOL bShow, UINT nStatus)
 
 void CMainFrame::OnChangePage()
 {
-	CMDIChildWnd* pFrame = MDIGetActive();
+	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
 	if (pFrame == NULL)
 		return;
 
-	CDjVuView* pView = (CDjVuView*)pFrame->GetActiveView();
+	CDjVuView* pView = pFrame->GetDjVuView();
 
 	int nPage = m_cboPage.GetCurSel();
 	if (nPage >= 0 && nPage < pView->GetPageCount())
@@ -284,11 +285,11 @@ void CMainFrame::OnChangePage()
 
 void CMainFrame::OnChangePageEdit()
 {
-	CMDIChildWnd* pFrame = MDIGetActive();
+	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
 	if (pFrame == NULL)
 		return;
 
-	CDjVuView* pView = (CDjVuView*)pFrame->GetActiveView();
+	CDjVuView* pView = pFrame->GetDjVuView();
 
 	CString strPage;
 	m_cboPage.GetWindowText(strPage);
@@ -305,11 +306,11 @@ void CMainFrame::OnChangePageEdit()
 
 void CMainFrame::OnCancelChangePageZoom()
 {
-	CMDIChildWnd* pFrame = MDIGetActive();
+	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
 	if (pFrame == NULL)
 		return;
 
-	CDjVuView* pView = (CDjVuView*)pFrame->GetActiveView();
+	CDjVuView* pView = pFrame->GetDjVuView();
 	pView->SetFocus();
 }
 
@@ -364,11 +365,11 @@ void CMainFrame::UpdatePageCombo(int nPage, int nPages)
 
 void CMainFrame::OnChangeZoom()
 {
-	CMDIChildWnd* pFrame = MDIGetActive();
+	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
 	if (pFrame == NULL)
 		return;
 
-	CDjVuView* pView = (CDjVuView*)pFrame->GetActiveView();
+	CDjVuView* pView = pFrame->GetDjVuView();
 
 	int nSel = m_cboZoom.GetCurSel();
 	CString strZoom;
@@ -396,11 +397,11 @@ void CMainFrame::OnChangeZoom()
 
 void CMainFrame::OnChangeZoomEdit()
 {
-	CMDIChildWnd* pFrame = MDIGetActive();
+	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
 	if (pFrame == NULL)
 		return;
 
-	CDjVuView* pView = (CDjVuView*)pFrame->GetActiveView();
+	CDjVuView* pView = pFrame->GetDjVuView();
 
 	CString strZoom;
 	m_cboZoom.GetWindowText(strZoom);
@@ -497,4 +498,15 @@ void CMainFrame::OnUpdateViewFind(CCmdUI *pCmdUI)
 
 	CDjVuDoc* pDoc = (CDjVuDoc*)pFrame->GetActiveDocument();
 	pCmdUI->Enable(pDoc->HasText());
+}
+
+void CMainFrame::HilightStatusMessage(LPCTSTR pszMessage)
+{
+	CControlBar* pBar = GetControlBar(ID_VIEW_STATUS_BAR);
+	if (pBar)
+		ShowControlBar(pBar, TRUE, FALSE);
+
+	CAppSettings::bStatusBar = true;
+
+	m_wndStatusBar.SetHilightMessage(pszMessage);
 }

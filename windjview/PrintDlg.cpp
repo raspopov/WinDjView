@@ -27,6 +27,11 @@
 
 #include "AppSettings.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
 CString GetStatusString(DWORD dwStatus)
 {
 	vector<CString> status;

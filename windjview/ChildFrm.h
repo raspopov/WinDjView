@@ -20,6 +20,12 @@
 
 #pragma once
 
+#include "MySplitterWnd.h"
+class CDjVuView;
+class CNavPaneWnd;
+
+
+// CChildFrame
 
 class CChildFrame : public CMDIChildWnd
 {
@@ -31,6 +37,13 @@ public:
 public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual void ActivateFrame(int nCmdShow = -1);
+	CDjVuView* GetDjVuView();
+	CNavPaneWnd* GetNavPane();
+	virtual CDocument* GetActiveDocument();
+
+protected:
+	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
+	virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
 
 // Implementation
 public:
@@ -41,8 +54,17 @@ public:
 #endif
 
 protected:
+	int m_nNavPaneWidth;
+	bool m_bCreated;
+
+	CMySplitterWnd m_wndSplitter;
+	void UpdateNavPaneWidth();
+	void UpdateNavPane();
+
 // Generated message map functions
 	afx_msg void OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeactivateWnd);
 	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
+	afx_msg void OnStopTracking();
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	DECLARE_MESSAGE_MAP()
 };

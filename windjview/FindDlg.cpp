@@ -24,6 +24,10 @@
 #include "MainFrm.h"
 #include ".\finddlg.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 
 // CFindDlg dialog
 
@@ -57,10 +61,18 @@ void CFindDlg::OnOK()
 	if (!UpdateData())
 		return;
 
+	GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
 	GetMainFrame()->SendMessage(WM_COMMAND, ID_FIND_STRING);
+}
+
+void CFindDlg::OnCancel()
+{
+	GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
+	ShowWindow(SW_HIDE);
 }
 
 void CFindDlg::OnClose()
 {
+	GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
 	ShowWindow(SW_HIDE);
 }

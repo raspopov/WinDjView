@@ -118,6 +118,30 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 	GetPage(0);
 
+	// Read bookmarks
+	GP<DataPool> pDataPool = m_pDjVuDoc->get_init_data_pool();
+	GP<ByteStream> pStream = pDataPool->get_stream();
+	GP<IFFByteStream> iff = IFFByteStream::create(pStream);
+
+	GUTF8String chkid;
+	if (iff->get_chunk(chkid) != 0)
+	{
+		if (chkid == "FORM:DJVM")
+		{
+			while (iff->get_chunk(chkid) != 0)
+			{
+				if (chkid == "NAVM")
+				{
+					TRACE("Got bookmarks here!\n");
+				}
+
+				iff->close_chunk();
+			}
+		}
+
+		iff->close_chunk();
+	}
+
 	return true;
 }
 

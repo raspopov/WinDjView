@@ -21,25 +21,29 @@
 #pragma once
 
 
-// CFindDlg dialog
+// CMyStatusBar
 
-class CFindDlg : public CDialog
+class CMyStatusBar : public CStatusBar
 {
-	DECLARE_DYNAMIC(CFindDlg)
+	DECLARE_DYNAMIC(CMyStatusBar)
 
 public:
-	CFindDlg(CWnd* pParent = NULL);
-	virtual ~CFindDlg();
+	CMyStatusBar();
+	virtual ~CMyStatusBar();
 
-// Dialog Data
-	enum { IDD = IDD_FIND };
-	CString m_strFind;
-	BOOL m_bMatchCase;
+// Operations
+public:
+	void SetHilightMessage(LPCTSTR pszMessage);
 
+// Overrides
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	virtual void OnOK();
-	afx_msg void OnClose();
+	virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItem);
+
+// Implementation
+protected:
+	CString m_strHilightMsg;
+
+// Generated message map functions
 	DECLARE_MESSAGE_MAP()
-	virtual void OnCancel();
+	afx_msg LRESULT OnSetText(WPARAM wParam, LPARAM lParam);
 };

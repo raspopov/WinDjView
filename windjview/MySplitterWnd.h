@@ -21,25 +21,43 @@
 #pragma once
 
 
-// CFindDlg dialog
+// CMySplitterWnd
 
-class CFindDlg : public CDialog
+class CMySplitterWnd : public CSplitterWnd
 {
-	DECLARE_DYNAMIC(CFindDlg)
+	DECLARE_DYNAMIC(CMySplitterWnd)
 
 public:
-	CFindDlg(CWnd* pParent = NULL);
-	virtual ~CFindDlg();
+	CMySplitterWnd();
+	virtual ~CMySplitterWnd();
 
-// Dialog Data
-	enum { IDD = IDD_FIND };
-	CString m_strFind;
-	BOOL m_bMatchCase;
+// Operations
+public:
+	void AllowTracking(bool bAllow = true) { m_bAllowTracking = bAllow; }
+	void HideSplitter(bool bHide = true);
 
+	int GetSplitterWidth() { return m_cxSplitter; }
+	int GetSplitterHeight() { return m_cySplitter; }
+
+// Overrides
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	virtual void OnOK();
-	afx_msg void OnClose();
+	virtual void StopTracking(BOOL bAccept);
+	virtual int HitTest(CPoint pt) const;
+
+	virtual void TrackRowSize(int y, int row);
+	virtual void TrackColumnSize(int x, int col);
+	virtual void DrawAllSplitBars(CDC* pDC, int cxInside, int cyInside);
+
+// Implementation
+protected:
+	bool m_bAllowTracking;
+	bool m_bHideSplitter;
+
+	int m_cxOrigSplitter;
+	int m_cxOrigSplitterGap;
+	int m_cyOrigSplitter;
+	int m_cyOrigSplitterGap;
+
+// Generated message map functions
 	DECLARE_MESSAGE_MAP()
-	virtual void OnCancel();
 };

@@ -2188,9 +2188,9 @@ BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint /*point*/)
 	if ((nFlags & MK_CONTROL) != 0)
 		return false;
 
-	// if the parent is a splitter, it will handle the message
-	if (GetParentSplitter(this, true))
-		return false;
+//	// if the parent is a splitter, it will handle the message
+//	if (GetParentSplitter(this, true))
+//		return false;
 
 	BOOL bHasHorzBar, bHasVertBar;
 	CheckScrollBars(bHasHorzBar, bHasVertBar);
@@ -2525,6 +2525,7 @@ void CDjVuView::OnFindString()
 		{
 			PageInfo info = GetDocument()->GetPageInfo(nPage);
 			page.Init(info);
+			UpdateView();
 		}
 
 		page.DecodeText();
@@ -2570,13 +2571,18 @@ void CDjVuView::OnFindString()
 				{
 					EnsureSelectionVisible(nPage, page.selection);
 				}
-				break;
+
+				GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
+				return;
 			}
 		}
 
 		nStartPos = 0;
 		++nPage;
 	}
+
+	GetMainFrame()->HilightStatusMessage(_T("Search string not found"));
+	::MessageBeep(MB_OK);
 }
 
 CRect CDjVuView::GetSelectionRect(int nPage, const DjVuSelection& selection) const
@@ -2618,9 +2624,24 @@ bool CDjVuView::IsSelectionVisible(int nPage, const DjVuSelection& selection)
 	rcClient.OffsetRect(ptScroll);
 
 	CRect rcSel = GetSelectionRect(nPage, selection);
-
 	rcClient.IntersectRect(rcClient, rcSel);
-	return !!(rcClient == rcSel);
+
+	if (rcClient != rcSel)
+		return false;
+
+	CFindDlg* pDlg = GetMainFrame()->m_pFindDlg;
+	if (pDlg != NULL && pDlg->IsWindowVisible())
+	{
+		CRect rcFindDlg;
+		pDlg->GetWindowRect(rcFindDlg);
+		ScreenToClient(rcFindDlg);
+		rcFindDlg.OffsetRect(ptScroll);
+
+		if (rcFindDlg.IntersectRect(rcFindDlg, rcSel))
+			return false;
+	}
+
+	return true;
 }
 
 void CDjVuView::EnsureSelectionVisible(int nPage, const DjVuSelection& selection)
@@ -2640,23 +2661,48 @@ void CDjVuView::EnsureSelectionVisible(int nPage, const DjVuSelection& selection
 
 	CRect rcSel = GetSelectionRect(nPage, selection);
 
-	CPoint ptScrollBy(0, 0);
-
+	// Scroll vertically
+	int nTopPos = rcClient.top;
 	if (rcSel.top < rcClient.top)
 	{
-		int nTop = max(page.rcDisplay.top, static_cast<int>(rcSel.top - 0.3*nHeight));
-		ptScrollBy.y = nTop - GetScrollPos(SB_VERT);
+		nTopPos = max(page.rcDisplay.top, static_cast<int>(rcSel.top - 0.3*nHeight));
+		if (nTopPos + rcClient.Height() < rcSel.bottom)
+			nTopPos = rcSel.bottom - rcClient.Height();
+		nTopPos = min(rcSel.top, nTopPos);
 	}
 	else if (rcSel.bottom > rcClient.bottom)
 	{
-		int nBottom;
-		if (m_nLayout == SinglePage)
-			nBottom = min(page.rcDisplay.bottom, static_cast<int>(rcSel.bottom + 0.3*nHeight));
-		else
-			nBottom = min(m_szDisplay.cy, static_cast<int>(rcSel.bottom + 0.3*nHeight));
-
-		ptScrollBy.y = nBottom - rcClient.Height() - GetScrollPos(SB_VERT);
+		int nBottom = min(m_szDisplay.cy, static_cast<int>(rcSel.bottom + 0.3*nHeight));
+		nTopPos = min(rcSel.top, nBottom - rcClient.Height());
 	}
+
+	rcClient.OffsetRect(0, nTopPos - ptScroll.y);
+
+	// Further scroll the document if selection is obscured by the Find dialog
+	CFindDlg* pDlg = GetMainFrame()->m_pFindDlg;
+	ASSERT(pDlg != NULL);
+	CRect rcFindDlg;
+	pDlg->GetWindowRect(rcFindDlg);
+	ScreenToClient(rcFindDlg);
+	rcFindDlg.OffsetRect(0, nTopPos);
+
+	if (rcSel.bottom > rcFindDlg.top && rcSel.top < rcFindDlg.bottom)
+	{
+		int nTopSpace = rcFindDlg.top - rcClient.top;
+		int nBottomSpace = rcClient.bottom - rcFindDlg.bottom;
+		if (nTopSpace >= rcSel.Height() || nTopSpace >= nBottomSpace && nTopSpace > 0)
+		{
+			nTopPos = max(0, rcSel.top - (nTopSpace - rcSel.Height())/2);
+			nTopPos = min(rcSel.top, nTopPos);
+		}
+		else if (nBottomSpace > 0)
+		{
+			int nBottom = rcSel.bottom + (nBottomSpace - rcSel.Height())/2;
+			nTopPos = min(rcSel.top - (rcFindDlg.bottom - rcClient.top), nBottom - rcClient.Height());
+		}
+	}
+
+	CPoint ptScrollBy(0, nTopPos - GetScrollPos(SB_VERT));
 
 	UpdatePageSizes(GetScrollPos(SB_VERT), ptScrollBy.y);
 	OnScrollBy(ptScrollBy);

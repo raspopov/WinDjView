@@ -22,7 +22,10 @@
 #include "WinDjView.h"
 #include "ZoomDlg.h"
 
-#include "PrintDlg.h"
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 
 // CCustomZoomDlg dialog
 

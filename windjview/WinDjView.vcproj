@@ -168,7 +168,16 @@
 				RelativePath=".\MyEdit.cpp">
 			</File>
 			<File
+				RelativePath=".\MySplitterWnd.cpp">
+			</File>
+			<File
+				RelativePath=".\MyStatusBar.cpp">
+			</File>
+			<File
 				RelativePath=".\MyToolBar.cpp">
+			</File>
+			<File
+				RelativePath=".\NavPane.cpp">
 			</File>
 			<File
 				RelativePath=".\PrintDlg.cpp">
@@ -236,7 +245,16 @@
 				RelativePath=".\MyEdit.h">
 			</File>
 			<File
+				RelativePath=".\MySplitterWnd.h">
+			</File>
+			<File
+				RelativePath=".\MyStatusBar.h">
+			</File>
+			<File
 				RelativePath=".\MyToolBar.h">
+			</File>
+			<File
+				RelativePath=".\NavPane.h">
 			</File>
 			<File
 				RelativePath=".\PrintDlg.h">

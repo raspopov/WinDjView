@@ -117,7 +117,8 @@ protected:
 	{
 		Page() :
 			bInfoLoaded(false), szDisplay(0, 0), ptOffset(0, 0),
-			pBitmap(NULL), bTextDecoded(false), bAnnoDecoded(false) {}
+			pBitmap(NULL), bTextDecoded(false), bAnnoDecoded(false),
+			nSelStart(-1), nSelEnd(-1) {}
 		~Page() { delete pBitmap; }
 
 		CSize GetSize(int nRotate) const
