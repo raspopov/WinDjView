@@ -180,6 +180,9 @@
 				RelativePath=".\RenderThread.cpp">
 			</File>
 			<File
+				RelativePath=".\SettingsDlg.cpp">
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -246,6 +249,9 @@
 			</File>
 			<File
 				RelativePath=".\Resource.h">
+			</File>
+			<File
+				RelativePath=".\SettingsDlg.h">
 			</File>
 			<File
 				RelativePath=".\stdafx.h">

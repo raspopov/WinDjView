@@ -23,6 +23,7 @@
 #define WM_RENDER_FINISHED (WM_USER + 17)
 
 class CDjVuDoc;
+class CDIB;
 
 class CRenderThread
 {
@@ -30,8 +31,10 @@ public:
 	CRenderThread(CDjVuDoc* pDoc, CWnd* pOwner);
 	~CRenderThread();
 
-	void AddJob(int nPage, int nRotate, CRect rcAll, CRect rcClip);
+	void AddJob(int nPage, int nRotate, const CRect& rcAll, const CRect& rcClip);
 	void RemoveFromQueue(int nPage);
+
+	static CDIB* Render(GP<DjVuImage> pImage, const GRect& rcClip, const GRect& rcAll);
 
 private:
 	CCriticalSection m_lock;

@@ -14,6 +14,7 @@
 #define IDD_ZOOM                        136
 #define IDR_POPUP                       137
 #define IDC_CURSOR_LINK                 139
+#define IDD_SETTINGS                    140
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -50,8 +51,11 @@
 #define IDC_STATIC_TEXT                 1033
 #define IDC_CHECK1                      1035
 #define IDC_REVERSE                     1035
+#define IDC_RESTORE_ASSOCS              1035
 #define IDC_STATIC_LINK                 1037
 #define IDC_STATIC_LIB_LINK             1038
+#define IDC_ASSOCIATE                   1039
+#define IDC_STATIC_ABOUT                1041
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_ZOOM_50                      32777
@@ -77,15 +81,16 @@
 #define ID_VIEW_LAYOUT                  32810
 #define ID_LAYOUT_SINGLEPAGE            32811
 #define ID_LAYOUT_CONTINUOUS            32812
-#define ID_HELP_ASSOCIATE                32814
+#define ID_FILE_SETTINGS                32813
+#define ID_EXPORT_PAGE                  32815
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        140
-#define _APS_NEXT_COMMAND_VALUE         32815
-#define _APS_NEXT_CONTROL_VALUE         1039
+#define _APS_NEXT_RESOURCE_VALUE        141
+#define _APS_NEXT_COMMAND_VALUE         32816
+#define _APS_NEXT_CONTROL_VALUE         1042
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

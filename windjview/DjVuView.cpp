@@ -33,8 +33,6 @@
 
 #include "RenderThread.h"
 
-#include <../src/mfc/afximpl.h>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -85,6 +83,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CScrollView)
 	ON_MESSAGE(WM_PAGE_DECODED, OnPageDecoded)
 	ON_WM_DESTROY()
 	ON_WM_MOUSEWHEEL()
+	ON_COMMAND(ID_EXPORT_PAGE, OnExportPage)
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -2106,4 +2105,45 @@ void CDjVuView::ScrollToPositionNoRepaint(CPoint pt)
 
 	SetScrollPos(SB_HORZ, pt.x);
 	SetScrollPos(SB_VERT, pt.y);
+}
+
+void CDjVuView::OnExportPage()
+{
+	CString strFileName;
+	strFileName.Format(_T("p%04d.bmp"), m_nClickedPage);
+
+	const TCHAR szFilter[] = "Bitmap Files (*.bmp)|*.bmp|All Files (*.*)|*.*||";
+
+	CFileDialog dlg(false, "bmp", strFileName, OFN_OVERWRITEPROMPT |
+		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST, szFilter);
+
+	if (dlg.DoModal() != IDOK)
+		return;
+
+	CWaitCursor wait;
+	strFileName = dlg.GetPathName();
+
+	GP<DjVuImage> pImage = GetDocument()->GetPage(m_nClickedPage);
+	pImage->set_rotate(m_nRotate);
+
+	GRect rect(0, 0, pImage->get_width(), pImage->get_height());
+	CDIB* pBitmap = CRenderThread::Render(pImage, rect, rect);
+
+	if (pBitmap != NULL && pBitmap->m_hObject != NULL)
+	{
+		CDIB* pNewBitmap = pBitmap->ReduceColors();
+		if (pNewBitmap != NULL && pNewBitmap->m_hObject != NULL)
+		{
+			delete pBitmap;
+			pBitmap = pNewBitmap;
+		}
+		else
+		{
+			delete pNewBitmap;
+		}
+
+		pBitmap->Save(strFileName);
+	}
+
+	delete pBitmap;
 }

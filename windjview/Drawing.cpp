@@ -314,6 +314,32 @@ void CDIB::DrawDC(CDC* pDC, const CPoint& ptOffset, const CRect& rcPart)
 	dcSrc.SelectObject(pOldBmpSrc);
 }
 
+void CDIB::Save(LPCTSTR pszPathName) const
+{
+	CFile file;
+	if (!file.Open(pszPathName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive))
+		return;
+
+	BITMAPFILEHEADER hdr;
+	hdr.bfType = 'MB';
+	hdr.bfReserved1 = 0;
+	hdr.bfReserved2 = 0;
+
+	DWORD dwHeaderSize = sizeof(BITMAPINFOHEADER) +
+		sizeof(RGBQUAD)*m_pBMI->bmiHeader.biClrUsed;
+	DWORD dwBitCount = m_pBMI->bmiHeader.biWidth * m_pBMI->bmiHeader.biBitCount;
+	dwBitCount = (((dwBitCount + 31) / 32) * 4) * m_pBMI->bmiHeader.biHeight;
+
+	hdr.bfOffBits = sizeof(BITMAPFILEHEADER) + dwHeaderSize;
+	hdr.bfSize = hdr.bfOffBits + dwBitCount;
+
+	file.Write(&hdr, sizeof(hdr));
+	file.Write(m_pBMI, dwHeaderSize);
+	file.Write(m_pBits, dwBitCount);
+
+	file.Close();
+}
+
 CRect FindContentRect(GP<DjVuImage> pImage)
 {
 	CRect rcResult(0, 0, 0, 0);

@@ -79,7 +79,7 @@ DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 	return 0;
 }
 
-void CRenderThread::AddJob(int nPage, int nRotate, CRect rcAll, CRect rcClip)
+void CRenderThread::AddJob(int nPage, int nRotate, const CRect& rcAll, const CRect& rcClip)
 {
 	Job job;
 	job.nPage = nPage;
@@ -133,6 +133,19 @@ void CRenderThread::Render(Job& job)
 	if (rcAll.isempty() || rcClip.isempty() || !rcAll.contains(rcClip))
 		return;
 
+	CDIB* pBitmap = Render(pImage, rcClip, rcAll);
+
+	if (pBitmap == NULL || pBitmap->m_hObject == NULL)
+	{
+		delete pBitmap;
+		return;
+	}
+
+	m_pOwner->PostMessage(WM_RENDER_FINISHED, job.nPage, reinterpret_cast<LPARAM>(pBitmap));
+}
+
+CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const GRect& rcClip, const GRect& rcAll)
+{
 	GP<GBitmap> pGBitmap;
 	GP<GPixmap> pGPixmap;
 
@@ -159,11 +172,5 @@ void CRenderThread::Render(Job& job)
 	else if (pGBitmap != NULL)
 		pBitmap = RenderBitmap(*pGBitmap);
 
-	if (pBitmap == NULL || pBitmap->m_hObject == NULL)
-	{
-		delete pBitmap;
-		return;
-	}
-
-	m_pOwner->PostMessage(WM_RENDER_FINISHED, job.nPage, reinterpret_cast<LPARAM>(pBitmap));
+	return pBitmap;
 }

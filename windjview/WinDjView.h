@@ -46,6 +46,7 @@ public:
 public:
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
+	bool RegisterShellFileTypes();
 
 // Implementation
 protected:
@@ -55,7 +56,7 @@ protected:
 
 // Generated message map functions
 	afx_msg void OnAppAbout();
-	afx_msg void OnHelpAssociate();
+	afx_msg void OnFileSettings();
 	DECLARE_MESSAGE_MAP()
 };
 

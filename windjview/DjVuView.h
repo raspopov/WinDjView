@@ -196,6 +196,8 @@ protected:
 	afx_msg void OnDestroy();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnExportPage();
 };
 
 

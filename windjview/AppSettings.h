@@ -40,6 +40,8 @@ struct CAppSettings
 	static double fDefaultZoom;
 	static int nDefaultLayout;
 
+	static bool bRestoreAssocs;
+
 	static CPrintSettings printSettings;
 
 	// The following settings are not stored in registry

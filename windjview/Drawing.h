@@ -43,6 +43,7 @@ public:
 	static CDIB* CreateDIB(int nWidth, int nHeight, int nBitCount);
 
 	CDIB* ReduceColors();
+	void Save(LPCTSTR pszPathName) const;
 
 protected:
 	CDIB() : CBitmap(), m_pBits(NULL), m_pBMI(NULL),

@@ -26,6 +26,7 @@
 #include "DjVuDoc.h"
 #include "DjVuView.h"
 #include "AppSettings.h"
+#include "SettingsDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -45,6 +46,9 @@ const TCHAR* s_pszZoom = _T("zoom");
 const TCHAR* s_pszZoomPercent = _T("%");
 const TCHAR* s_pszLayout = _T("layout");
 
+const TCHAR* s_pszGlobalSettings = _T("Settings");
+const TCHAR* s_pszRestoreAssocs = _T("assocs");
+
 const TCHAR* s_pszPrintSettings = _T("Print");
 const TCHAR* s_pszMarginLeft = _T("m-left");
 const TCHAR* s_pszMarginTop = _T("m-top");
@@ -59,10 +63,10 @@ const TCHAR* s_pszCenterImage = _T("center");
 
 BEGIN_MESSAGE_MAP(CDjViewApp, CWinApp)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
-	ON_COMMAND(ID_HELP_ASSOCIATE, OnHelpAssociate)
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
+	ON_COMMAND(ID_FILE_SETTINGS, OnFileSettings)
 END_MESSAGE_MAP()
 
 
@@ -70,8 +74,6 @@ END_MESSAGE_MAP()
 
 CDjViewApp::CDjViewApp()
 {
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
 }
 
 
@@ -95,8 +97,6 @@ BOOL CDjViewApp::InitInstance()
 	// of your final executable, you should remove from the following
 	// the specific initialization routines you do not need
 	// Change the registry key under which our settings are stored
-	// TODO: You should modify this string to be something appropriate
-	// such as the name of your company or organization
 	SetRegistryKey(_T("Andrew Zhezherun"));
 
 	LoadStdProfileSettings(10);  // Load standard INI file options (including MRU)
@@ -126,6 +126,9 @@ BOOL CDjViewApp::InitInstance()
 
 	// Enable DDE Execute open
 	EnableShellOpen();
+
+	if (CAppSettings::bRestoreAssocs)
+		RegisterShellFileTypes();
 
 	// Parse command line for standard shell commands, DDE, file open
 	CCommandLineInfo cmdInfo;
@@ -320,6 +323,8 @@ void CDjViewApp::LoadSettings()
 	CAppSettings::fDefaultZoom = GetProfileDouble(s_pszDisplaySettings, s_pszZoomPercent, 100.0);
 	CAppSettings::nDefaultLayout = GetProfileInt(s_pszDisplaySettings, s_pszLayout, 0);
 
+	CAppSettings::bRestoreAssocs = !!GetProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, 0);
+
 	CPrintSettings& ps = CAppSettings::printSettings;
 	ps.fMarginLeft = GetProfileDouble(s_pszPrintSettings, s_pszMarginLeft, 0.0);
 	ps.fMarginTop = GetProfileDouble(s_pszPrintSettings, s_pszMarginTop, 0.0);
@@ -343,6 +348,8 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySettings, s_pszZoom, CAppSettings::nDefaultZoomType);
 	WriteProfileDouble(s_pszDisplaySettings, s_pszZoomPercent, CAppSettings::fDefaultZoom);
 	WriteProfileInt(s_pszDisplaySettings, s_pszLayout, CAppSettings::nDefaultLayout);
+
+	WriteProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, CAppSettings::bRestoreAssocs);
 
 	CPrintSettings& ps = CAppSettings::printSettings;
 	WriteProfileDouble(s_pszPrintSettings, s_pszMarginLeft, ps.fMarginLeft);
@@ -374,96 +381,121 @@ bool SetRegKey(LPCTSTR lpszKey, LPCTSTR lpszValue)
 	return true;
 }
 
-void CDjViewApp::OnHelpAssociate()
+bool CDjViewApp::RegisterShellFileTypes()
 {
-	if (AfxMessageBox(
-		_T("Press OK to associate WinDjView with *.djvu/*.djv files ")
-		_T("in windows shell.\n\nNote:\nTo restore original association, ")
-		_T("use corresponding command in the application\n")
-		_T("you want to use. The easiest way to restore association ")
-		_T("with DjVu IE plugin\nmight be reinstalling it."),
-		MB_ICONEXCLAMATION | MB_OKCANCEL) == IDOK)
+	bool bSuccess = true;
+	CString strPathName, strTemp;
+
+	GetModuleFileName(m_hInstance, strPathName.GetBuffer(_MAX_PATH), _MAX_PATH);
+	strPathName.ReleaseBuffer();
+
+	POSITION pos = GetFirstDocTemplatePosition();
+	for (int nTemplateIndex = 1; pos != NULL; nTemplateIndex++)
 	{
-		// From CDocManager::RegisterShellFileTypes()
+		CDocTemplate* pTemplate = GetNextDocTemplate(pos);
 
-		CString strPathName, strTemp;
+		CString strOpenCommandLine;
+		strOpenCommandLine.Format(_T("\"%s\""), strPathName);
 
-		GetModuleFileName(m_hInstance, strPathName.GetBuffer(_MAX_PATH), _MAX_PATH);
-		strPathName.ReleaseBuffer();
+		CString strDefaultIconCommandLine;
+		strDefaultIconCommandLine.Format(_T("\"%s\",0"), strPathName, 0);
 
-		POSITION pos = GetFirstDocTemplatePosition();
-		for (int nTemplateIndex = 1; pos != NULL; nTemplateIndex++)
+		CString strFilterExt, strFileTypeId, strFileTypeName;
+		if (pTemplate->GetDocString(strFileTypeId,
+			CDocTemplate::regFileTypeId) && !strFileTypeId.IsEmpty())
 		{
-			CDocTemplate* pTemplate = GetNextDocTemplate(pos);
+			// enough info to register it
+			if (!pTemplate->GetDocString(strFileTypeName,
+				CDocTemplate::regFileTypeName))
+				strFileTypeName = strFileTypeId;    // use id name
 
-			CString strOpenCommandLine = '"' + strPathName + '"';
+			ASSERT(strFileTypeId.Find(' ') == -1);  // no spaces allowed
 
-			CString strFilterExt, strFileTypeId, strFileTypeName;
-			if (pTemplate->GetDocString(strFileTypeId,
-				CDocTemplate::regFileTypeId) && !strFileTypeId.IsEmpty())
+			// first register the type ID of our server
+			if (!SetRegKey(strFileTypeId, strFileTypeName))
 			{
-				// enough info to register it
-				if (!pTemplate->GetDocString(strFileTypeName,
-					CDocTemplate::regFileTypeName))
-					strFileTypeName = strFileTypeId;    // use id name
+				bSuccess = false;
+				continue;
+			}
 
-				ASSERT(strFileTypeId.Find(' ') == -1);  // no spaces allowed
+			strTemp.Format(_T("%s\\DefaultIcon"), (LPCTSTR)strFileTypeId);
+			if (!SetRegKey(strTemp, strDefaultIconCommandLine))
+			{
+				bSuccess = false;
+				continue;
+			}
 
-				// first register the type ID of our server
-				if (!SetRegKey(strFileTypeId, strFileTypeName))
-					continue;
+			strTemp.Format(_T("%s\\shell\\open\\%s"), (LPCTSTR)strFileTypeId,
+				(LPCTSTR)_T("ddeexec"));
+			if (!SetRegKey(strTemp, _T("[open(\"%1\")]")))
+			{
+				bSuccess = false;
+				continue;
+			}
 
-				strTemp.Format(_T("%s\\shell\\open\\%s"), (LPCTSTR)strFileTypeId,
-					(LPCTSTR)_T("ddeexec"));
-				if (!SetRegKey(strTemp, _T("[open(\"%1\")]")))
-					continue;
+			strTemp.Format(_T("%s\\shell\\open\\%s\\Application"), (LPCTSTR)strFileTypeId,
+				(LPCTSTR)_T("ddeexec"));
+			if (!SetRegKey(strTemp, _T("WinDjView")))
+			{
+				bSuccess = false;
+				continue;
+			}
 
-				strTemp.Format(_T("%s\\shell\\open\\%s\\Application"), (LPCTSTR)strFileTypeId,
-					(LPCTSTR)_T("ddeexec"));
-				if (!SetRegKey(strTemp, _T("WinDjView")))
-					continue;
+			strTemp.Format(_T("%s\\shell\\open\\%s\\Topic"), (LPCTSTR)strFileTypeId,
+				(LPCTSTR)_T("ddeexec"));
+			if (!SetRegKey(strTemp, _T("System")))
+			{
+				bSuccess = false;
+				continue;
+			}
 
-				strTemp.Format(_T("%s\\shell\\open\\%s\\Topic"), (LPCTSTR)strFileTypeId,
-					(LPCTSTR)_T("ddeexec"));
-				if (!SetRegKey(strTemp, _T("System")))
-					continue;
+			strOpenCommandLine += _T(" \"%1\"");
 
-				strOpenCommandLine += _T(" \"%1\"");
+			// path\shell\open\command = path filename
+			strTemp.Format(_T("%s\\shell\\open\\%s"), (LPCTSTR)strFileTypeId,
+				_T("command"));
+			if (!SetRegKey(strTemp, strOpenCommandLine))
+			{
+				bSuccess = false;
+				continue;
+			}
 
-				// path\shell\open\command = path filename
-				strTemp.Format(_T("%s\\shell\\open\\%s"), (LPCTSTR)strFileTypeId,
-					_T("command"));
-				if (!SetRegKey(strTemp, strOpenCommandLine))
-					continue;
+			CString strExtensions;
+			pTemplate->GetDocString(strExtensions, CDocTemplate::filterExt);
 
-				CString strExtensions;
-				pTemplate->GetDocString(strExtensions, CDocTemplate::filterExt);
+			int nExt = 0;
+			while (AfxExtractSubString(strFilterExt, strExtensions, nExt++, ';') &&
+				!strFilterExt.IsEmpty())
+			{
+				ASSERT(strFilterExt[0] == '.');
 
-				int nExt = 0;
-				while (AfxExtractSubString(strFilterExt, strExtensions, nExt++, ';') &&
-					!strFilterExt.IsEmpty())
+				LONG lSize = _MAX_PATH * 2;
+				LONG lResult = ::RegQueryValue(HKEY_CLASSES_ROOT, strFilterExt,
+					strTemp.GetBuffer(lSize), &lSize);
+				strTemp.ReleaseBuffer();
+
+				if (lResult != ERROR_SUCCESS || strTemp.IsEmpty() ||
+					strTemp != strFileTypeId)
 				{
-					ASSERT(strFilterExt[0] == '.');
-
-					LONG lSize = _MAX_PATH * 2;
-					LONG lResult = ::RegQueryValue(HKEY_CLASSES_ROOT, strFilterExt,
-						strTemp.GetBuffer(lSize), &lSize);
-					strTemp.ReleaseBuffer();
-
-					if (lResult != ERROR_SUCCESS || strTemp.IsEmpty() ||
-						strTemp != strFileTypeId)
+					// no association for that suffix
+					if (!SetRegKey(strFilterExt, strFileTypeId))
 					{
-						// no association for that suffix
-						if (!SetRegKey(strFilterExt, strFileTypeId))
-							continue;
+						bSuccess = false;
+						continue;
 					}
 				}
 			}
 		}
+	}
 
-		AfxMessageBox(
-			_T("Now you will be able to open .djvu files ")
-			_T("with WinDjView\nby double-clicking them in ")
-			_T("the explorer."), MB_ICONINFORMATION | MB_OK);
+	return bSuccess;
+}
+
+void CDjViewApp::OnFileSettings()
+{
+	CSettingsDlg dlg;
+	if (dlg.DoModal() == IDOK)
+	{
+		SaveSettings();
 	}
 }
