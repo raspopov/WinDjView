@@ -24,6 +24,7 @@
 #include "RenderThread.h"
 #include "Drawing.h"
 #include "DjVuDoc.h"
+#include "DjVuView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -32,7 +33,7 @@
 
 // CRenderThread class
 
-CRenderThread::CRenderThread(CDjVuDoc* pDoc, CWnd* pOwner)
+CRenderThread::CRenderThread(CDjVuDoc* pDoc, CDjVuView* pOwner)
 	: m_pOwner(pOwner), m_pDoc(pDoc), m_bPaused(false)
 {
 	currentJob.nPage = -1;
@@ -156,7 +157,10 @@ void CRenderThread::Render(Job& job)
 		return;
 	}
 
-	m_pOwner->PostMessage(WM_RENDER_FINISHED, job.nPage, reinterpret_cast<LPARAM>(pBitmap));
+	if (m_pOwner->m_nPendingPage == job.nPage)
+		m_pOwner->OnRenderFinished(job.nPage, reinterpret_cast<LPARAM>(pBitmap));
+	else
+		m_pOwner->PostMessage(WM_RENDER_FINISHED, job.nPage, reinterpret_cast<LPARAM>(pBitmap));
 }
 
 CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const GRect& rcClip, const GRect& rcAll)

@@ -100,7 +100,8 @@ CDjVuView::CDjVuView()
 	: m_nPage(-1), m_nPageCount(0), m_nZoomType(ZoomPercent), m_fZoom(100.0),
 	  m_nLayout(SinglePage), m_nRotate(0), m_bDragging(false),
 	  m_pRenderThread(NULL), m_bInsideUpdateView(false), m_bClick(false),
-	  m_historyPos(m_history.end()), m_evtRendered(false, true)
+	  m_historyPos(m_history.end()), m_evtRendered(false, true),
+	  m_nPendingPage(-1)
 {
 }
 
@@ -496,6 +497,9 @@ void CDjVuView::RenderPage(int nPage, int nTimeout)
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
 	Page& page = m_pages[nPage];
 
+	m_nPendingPage = nPage;
+	m_evtRendered.ResetEvent();
+
 	if (m_nLayout == SinglePage)
 	{
 		m_nPage = nPage;
@@ -507,7 +511,7 @@ void CDjVuView::RenderPage(int nPage, int nTimeout)
 		}
 
 		UpdateView();
-		OnScrollBy(CPoint(GetScrollPos(SB_HORZ), 0) - GetScrollPosition());
+		ScrollToPositionNoRepaint(CPoint(GetScrollPos(SB_HORZ), 0));
 		UpdatePagesCache();
 	}
 	else
@@ -515,14 +519,13 @@ void CDjVuView::RenderPage(int nPage, int nTimeout)
 		UpdatePageSizes(page.ptOffset.y);
 
 		int nUpdatedPos = page.ptOffset.y - 1;
-		OnScrollBy(CPoint(GetScrollPos(SB_HORZ), nUpdatedPos) - GetScrollPosition());
-
-		m_evtRendered.ResetEvent();
+		ScrollToPositionNoRepaint(CPoint(GetScrollPos(SB_HORZ), nUpdatedPos));
 		UpdateVisiblePages();
-
-		if (nTimeout != -1 && m_pages[nPage].pBitmap == NULL)
-			::WaitForSingleObject(m_evtRendered, nTimeout);
 	}
+
+	if (nTimeout != -1 && m_pages[nPage].pBitmap == NULL)
+		::WaitForSingleObject(m_evtRendered, nTimeout);
+	m_nPendingPage = -1;
 
 	GetMainFrame()->UpdatePageCombo(GetCurrentPage());
 
@@ -1351,7 +1354,7 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	if (hCursorDrag == NULL)
 		hCursorDrag = AfxGetApp()->LoadCursor(IDC_CURSOR_DRAG);
 	if (hCursorLink == NULL)
-		hCursorLink = ::LoadCursor(0, MAKEINTRESOURCE(32649)); // IDC_HAND
+		hCursorLink = ::LoadCursor(0, IDC_HAND);
 
 	CRect rcClient;
 	GetClientRect(rcClient);
@@ -1801,8 +1804,6 @@ LRESULT CDjVuView::OnRenderFinished(WPARAM wParam, LPARAM lParam)
 	CDIB* pBitmap = reinterpret_cast<CDIB*>(lParam);
 	int nPage = (int)wParam;
 	Page& page = m_pages[nPage];
-
-	TRACE("Render finished: %d\n", nPage);
 
 	if (page.pBitmap != NULL && page.szDisplay == page.pBitmap->GetSize())
 	{
@@ -2568,7 +2569,7 @@ void CDjVuView::EnsureSelectionVisible(int nPage, const DjVuSelection& selection
 {
 	if (m_nPage != nPage)
 	{
-		RenderPage(nPage, 500);
+		RenderPage(nPage, 1000);
 	}
 
 	CRect rcClient;

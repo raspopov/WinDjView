@@ -245,7 +245,12 @@ protected:
 	static HCURSOR hCursorDrag;
 	static HCURSOR hCursorLink;
 
-// Generated message map functions
+public:
+	int m_nPendingPage;
+	afx_msg LRESULT OnRenderFinished(WPARAM wParam, LPARAM lParam);
+
+	// Generated message map functions
+protected:
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	afx_msg void OnPageInformation();
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
@@ -274,7 +279,6 @@ protected:
 	afx_msg void OnFilePrint();
 	afx_msg void OnViewLayout(UINT nID);
 	afx_msg void OnUpdateViewLayout(CCmdUI* pCmdUI);
-	afx_msg LRESULT OnRenderFinished(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnPageDecoded(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnDestroy();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);

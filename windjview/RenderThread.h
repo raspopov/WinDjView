@@ -23,12 +23,13 @@
 #define WM_RENDER_FINISHED (WM_USER + 17)
 
 class CDjVuDoc;
+class CDjVuView;
 class CDIB;
 
 class CRenderThread
 {
 public:
-	CRenderThread(CDjVuDoc* pDoc, CWnd* pOwner);
+	CRenderThread(CDjVuDoc* pDoc, CDjVuView* pOwner);
 	~CRenderThread();
 
 	void AddJob(int nPage, int nRotate, const CRect& rcAll, const CRect& rcClip);
@@ -47,7 +48,7 @@ private:
 	CEvent m_stop;
 	CEvent m_finished;
 	CEvent m_jobReady;
-	CWnd* m_pOwner;
+	CDjVuView* m_pOwner;
 	CDjVuDoc* m_pDoc;
 	bool m_bPaused;
 
