@@ -121,14 +121,16 @@ GP<DjVuImage> CDjVuDoc::GetPage(int nPage)
 {
 	ASSERT(nPage >= 0 && nPage < m_pDjVuDoc->get_pages_num());
 
-	::InterlockedExchange(&m_nPagePending, nPage);
-
 	m_lock.Lock();
 	GP<DjVuImage> pImage = m_pages[nPage];
-	m_lock.Unlock();
-
 	if (pImage != NULL)
+	{
+		m_lock.Unlock();
 		return pImage;
+	}
+
+	::InterlockedExchange(&m_nPagePending, nPage);
+	m_lock.Unlock();
 
 	m_pThread->MoveToFront(nPage);
 
@@ -163,4 +165,57 @@ void CDjVuDoc::PageDecoded(int nPage, GP<DjVuImage> pImage)
 		CView* pView = GetNextView(pos);
 		pView->PostMessage(WM_PAGE_DECODED, nPage);
 	}
+}
+
+bool CDjVuDoc::GetPageInfo(int nPage, CSize& szPage, int& nDPI)
+{
+	ASSERT(nPage >= 0 && nPage < m_pDjVuDoc->get_pages_num());
+
+	G_TRY
+	{
+		// Get raw data from the document and decode only page info chunk
+		GP<DjVuFile> file(m_pDjVuDoc->get_djvu_file(nPage));
+		GP<DataPool> pool = file->get_init_data_pool();
+		GP<ByteStream> stream = pool->get_stream();
+		GP<IFFByteStream> iff(IFFByteStream::create(stream));
+
+		// Check file format
+		GUTF8String chkid;
+		if (!iff->get_chunk(chkid) ||
+			(chkid != "FORM:DJVI" && chkid != "FORM:DJVU" &&
+			 chkid != "FORM:PM44" && chkid != "FORM:BM44"))
+		{
+			szPage.cx = szPage.cy = nDPI = 0;
+			return false;
+		}
+
+		// Find chunk with page info
+		while (iff->get_chunk(chkid) != 0)
+		{
+			// Decode and get chunk description
+			if (chkid == "INFO")
+			{
+				GP<DjVuInfo> info = DjVuInfo::create();
+				GP<ByteStream> chunk_stream = iff->get_bytestream();
+				info->decode(*chunk_stream);
+
+				// Check data for consistency
+				szPage.cx = max(info->width, 0);
+				szPage.cy = max(info->height, 0);
+				nDPI = max(info->dpi, 0);
+				return true;
+			}
+
+			// Close chunk
+			iff->seek_close_chunk();
+		}
+	}
+	G_CATCH(ex)
+	{
+		ex;
+	}
+	G_ENDCATCH;
+
+	szPage.cx = szPage.cy = nDPI = 0;
+	return false;
 }

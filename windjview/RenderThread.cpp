@@ -23,6 +23,7 @@
 
 #include "RenderThread.h"
 #include "Drawing.h"
+#include "DjVuDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -31,8 +32,8 @@
 
 // CRenderThread class
 
-CRenderThread::CRenderThread(CWnd* pOwner)
-	: m_pOwner(pOwner)
+CRenderThread::CRenderThread(CDjVuDoc* pDoc, CWnd* pOwner)
+	: m_pOwner(pOwner), m_pDoc(pDoc)
 {
 	DWORD dwThreadId;
 	HANDLE hThread = ::CreateThread(NULL, 0, RenderThreadProc, this, 0, &dwThreadId);
@@ -75,50 +76,51 @@ DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 	return 0;
 }
 
-DWORD CRenderThread::AddJob(GP<DjVuImage> pImage, CRect rcAll, CRect rcClip, bool bClearQueue)
+void CRenderThread::AddJob(int nPage, int nRotate, CRect rcAll, CRect rcClip)
 {
-	static DWORD nCode = 0;
-
 	Job job;
-	job.pImage = pImage;
+	job.nPage = nPage;
+	job.nRotate = nRotate;
 	job.rcAll = rcAll;
 	job.rcClip = rcClip;
-	job.nCode = nCode;
 
 	m_lock.Lock();
 
-	if (bClearQueue)
-		m_jobs.clear();
-	m_jobs.push_back(job);
+	m_jobs.clear();
+	m_jobs.push_front(job);
 
 	m_lock.Unlock();
 
 	m_jobReady.SetEvent();
-	return nCode++;
 }
 
 void CRenderThread::Render(Job& job)
 {
-	GP<GBitmap> pGBitmap;
-	GP<GPixmap> pGPixmap;
+	GP<DjVuImage> pImage = m_pDoc->GetPage(job.nPage);
+	pImage->set_rotate(job.nRotate);
 
 	GRect rcAll(job.rcAll.left, job.rcAll.top, job.rcAll.Width(), job.rcAll.Height());
 	GRect rcClip(job.rcClip.left, job.rcClip.top, job.rcClip.Width(), job.rcClip.Height());
+	if (rcAll.isempty() || rcClip.isempty() || !rcAll.contains(rcClip))
+		return;
 
-	if (job.pImage->is_legal_photo() || job.pImage->is_legal_compound())
+	GP<GBitmap> pGBitmap;
+	GP<GPixmap> pGPixmap;
+
+	if (pImage->is_legal_photo() || pImage->is_legal_compound())
 	{
-		pGPixmap = job.pImage->get_pixmap(rcClip, rcAll);
+		pGPixmap = pImage->get_pixmap(rcClip, rcAll);
 	}
-	else if (job.pImage->is_legal_bilevel())
+	else if (pImage->is_legal_bilevel())
 	{
-		pGBitmap = job.pImage->get_bitmap(rcClip, rcAll, 4);
+		pGBitmap = pImage->get_bitmap(rcClip, rcAll, 4);
 	}
 	else
 	{
 		// Try to get both
-		pGPixmap = job.pImage->get_pixmap(rcClip, rcAll);
+		pGPixmap = pImage->get_pixmap(rcClip, rcAll);
 		if (pGPixmap == NULL)
-			pGBitmap = job.pImage->get_bitmap(rcClip, rcAll, 4);
+			pGBitmap = pImage->get_bitmap(rcClip, rcAll, 4);
 	}
 
 	CDIB* pBitmap = NULL;
@@ -134,5 +136,5 @@ void CRenderThread::Render(Job& job)
 		return;
 	}
 
-	m_pOwner->PostMessage(WM_RENDER_FINISHED, job.nCode, reinterpret_cast<LPARAM>(pBitmap));
+	m_pOwner->PostMessage(WM_RENDER_FINISHED, job.nPage, reinterpret_cast<LPARAM>(pBitmap));
 }

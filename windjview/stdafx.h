@@ -79,4 +79,5 @@ using namespace std;
 #include "libdjvu/DjVuImage.h"
 #include "libdjvu/GBitmap.h"
 #include "libdjvu/GScaler.h"
-
+#include "libdjvu/IFFByteStream.h"
+#include "libdjvu/DataPool.h"

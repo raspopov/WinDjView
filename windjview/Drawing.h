@@ -32,6 +32,7 @@ public:
 
 	int GetWidth() const { return m_pBMI->bmiHeader.biWidth; }
 	int GetHeight() const { return m_pBMI->bmiHeader.biHeight; }
+	CSize GetSize() const { return CSize(GetWidth(), GetHeight()); }
 	LPBYTE GetBits() { return m_pBits; }
 	int GetBitsPerPixel() const { return m_pBMI->bmiHeader.biBitCount; }
 	int GetColorCount() const { return m_pBMI->bmiHeader.biClrUsed; }

@@ -22,13 +22,15 @@
 
 #define WM_RENDER_FINISHED (WM_USER + 17)
 
+class CDjVuDoc;
+
 class CRenderThread
 {
 public:
-	CRenderThread(CWnd* pOwner);
+	CRenderThread(CDjVuDoc* pDoc, CWnd* pOwner);
 	~CRenderThread();
 
-	DWORD AddJob(GP<DjVuImage> pImage, CRect rcAll, CRect rcClip, bool bClearQueue = false);
+	void AddJob(int nPage, int nRotate, CRect rcAll, CRect rcClip);
 
 private:
 	CCriticalSection m_lock;
@@ -36,13 +38,14 @@ private:
 	CEvent m_finished;
 	CEvent m_jobReady;
 	CWnd* m_pOwner;
+	CDjVuDoc* m_pDoc;
 
 	struct Job
 	{
-		GP<DjVuImage> pImage;
+		int nPage;
+		int nRotate;
 		CRect rcAll;
 		CRect rcClip;
-		DWORD nCode;
 	};
 
 	list<Job> m_jobs;

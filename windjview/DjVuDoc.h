@@ -36,12 +36,13 @@ protected: // create from serialization only
 public:
 	int GetPageCount() { return m_pDjVuDoc->get_pages_num(); }
 	GP<DjVuImage> GetPage(int nPage);
+	void PageDecoded(int nPage, GP<DjVuImage> pImage);
+	bool GetPageInfo(int nPage, CSize& szPage, int& nDPI);
 
 // Overrides
 public:
 	virtual BOOL OnNewDocument();
 	virtual void Serialize(CArchive& ar);
-	void PageDecoded(int nPage, GP<DjVuImage> pImage);
 
 // Implementation
 public:

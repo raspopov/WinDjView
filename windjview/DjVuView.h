@@ -20,10 +20,10 @@
 
 #pragma once
 
+#include "Drawing.h"
 class CDjVuDoc;
 class CPrintDlg;
 class CRenderThread;
-class CDIB;
 
 inline bool IsStandardZoom(int nZoomType, double fZoom)
 {
@@ -88,19 +88,13 @@ public:
 
 protected:
 	CRenderThread* m_pRenderThread;
-	DWORD m_nImageCode;
-	bool m_bRendered;
-
-	CDIB* m_pBitmap;
 
 	int m_nPage, m_nPageCount;
-	GP<DjVuImage> m_pImage;
-	CSize m_szPage, m_szDisplay, m_szDisplayPage;
-	CPoint m_ptPageOffset;
+	CSize m_szDisplay;
 
-	void DrawWhite(CDC* pDC);
-	void DrawOffscreen(CDC* pDC);
-	void DrawStretch(CDC* pDC);
+	void DrawWhite(CDC* pDC, int nPage);
+	void DrawOffscreen(CDC* pDC, int nPage);
+	void DrawStretch(CDC* pDC, int nPage);
 
 	int m_nZoomType;
 	double m_fZoom;
@@ -109,14 +103,35 @@ protected:
 
 	struct Page
 	{
-		GP<DjVuImage> pImage;
+		Page() :
+			bSizeLoaded(false), szPage(0, 0), nDPI(0), szDisplayPage(0, 0),
+			ptOffset(0, 0), pBitmap(NULL) {}
+		~Page() { delete pBitmap; }
+
+		CSize GetSize(int nRotate) const
+		{
+			CSize sz(szPage);
+			if ((nRotate % 2) == 1)
+				swap(sz.cx, sz.cy);
+			return sz;
+		}
+
+		bool bSizeLoaded;
 		CSize szPage;
+		int nDPI;
 		CSize szDisplayPage;
+		CPoint ptOffset;
 		CDIB* pBitmap;
+
+		void DeleteBitmap()
+		{
+			delete pBitmap;
+			pBitmap = NULL;
+		}
 	};
 	vector<Page> m_pages;
 
-	CSize CalcPageSize(GP<DjVuImage> pImage);
+	CSize CalcPageSize(const CSize& szPage, int nDPI);
 	void UpdatePageSize();
 	void UpdateView();
 
