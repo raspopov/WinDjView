@@ -41,6 +41,15 @@ public:
 	CDjVuDoc* GetDocument() const { return m_pDoc; }
 	void SetDocument(CDjVuDoc* pDoc) { m_pDoc = pDoc; }
 
+	int GetCurrentPage() const { return m_nCurrentPage; }
+
+	void SetCurrentPage(int nPage);
+	void SetSelectedPage(int nPage);
+	void EnsureVisible(int nPage);
+
+	void SetRotate(int nRotate);
+	int GetRotate() const { return m_nRotate; }
+
 // Overrides
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
@@ -61,8 +70,10 @@ protected:
 	CDjVuDoc* m_pDoc;
 	bool m_bInsideUpdateView;
 	CFont m_font;
-	int m_nSelectedPage;
+	int m_nSelectedPage, m_nCurrentPage;
 	bool m_bVisible;
+	int m_nRotate;
+	int m_nPagesInRow;
 
 	enum UpdateType
 	{
@@ -70,6 +81,7 @@ protected:
 		RECALC = 1
 	};
 	void UpdateView(UpdateType updateType = TOP);
+	void RecalcPageRects(int nPage);
 	void UpdateVisiblePages();
 	void UpdatePage(int nPage, CThumbnailsThread* pThread);
 	bool InvalidatePage(int nPage);
@@ -81,7 +93,7 @@ protected:
 		Page() : pBitmap(NULL) {}
 		~Page() { delete pBitmap; }
 
-		CRect rcDisplay, rcPage;
+		CRect rcDisplay, rcPage, rcBitmap, rcNumber;
 		CDIB* pBitmap;
 
 		void DeleteBitmap()
@@ -100,6 +112,7 @@ protected:
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnKillFocus(CWnd* pNewWnd);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint point);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);

@@ -44,6 +44,8 @@ public:
 	virtual CDjVuDoc* GetActiveDocument();
 	void CreateNavPanes();
 
+	CThumbnailsView* GetThumbnailsView() { return m_pThumbnailsView; }
+
 protected:
 	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
 	virtual void OnUpdateFrameTitle(BOOL bAddToTitle);

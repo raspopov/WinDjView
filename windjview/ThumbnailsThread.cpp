@@ -35,7 +35,7 @@
 // CThumbnailsThread class
 
 CThumbnailsThread::CThumbnailsThread(CDjVuDoc* pDoc, CThumbnailsView* pOwner, bool bIdle)
-	: m_pOwner(pOwner), m_pDoc(pDoc), m_bPaused(false)
+	: m_pOwner(pOwner), m_pDoc(pDoc), m_bPaused(false), m_bRejectCurrentJob(false)
 {
 	m_currentJob.nPage = -1;
 
@@ -71,13 +71,16 @@ DWORD WINAPI CThumbnailsThread::RenderThreadProc(LPVOID pvData)
 		pData->m_currentJob = job;
 		pData->m_jobs.pop_front();
 		bool bHasMoreJobs = !pData->m_jobs.empty();
+		pData->m_bRejectCurrentJob = false;
 		pData->m_lock.Unlock();
 
 		pData->Render(job);
 
+		pData->m_lock.Lock();
 		pData->m_currentJob.nPage = -1;
 		if (bHasMoreJobs && !pData->m_bPaused)
 			pData->m_jobReady.SetEvent();
+		pData->m_lock.Unlock();
 
 		if (::WaitForSingleObject(pData->m_stop.m_hObject, 0) == WAIT_OBJECT_0)
 			break;
@@ -157,7 +160,13 @@ void CThumbnailsThread::Render(Job& job)
 		pBitmap = NULL;
 	}
 
-	m_pOwner->PostMessage(WM_RENDER_THUMB_FINISHED, job.nPage, reinterpret_cast<LPARAM>(pBitmap));
+	m_lock.Lock();
+	if (!m_bRejectCurrentJob && ::IsWindow(m_pOwner->m_hWnd))
+	{
+		m_pOwner->PostMessage(WM_RENDER_THUMB_FINISHED,
+			job.nPage, reinterpret_cast<LPARAM>(pBitmap));
+	}
+	m_lock.Unlock();
 }
 
 void CThumbnailsThread::AddJob(int nPage, int nRotate)
@@ -179,4 +188,12 @@ void CThumbnailsThread::AddJob(int nPage, int nRotate)
 
 	if (!m_bPaused)
 		m_jobReady.SetEvent();
+}
+
+void CThumbnailsThread::RejectCurrentJob()
+{
+	m_lock.Lock();
+	if (m_currentJob.nPage != -1)
+		m_bRejectCurrentJob = true;
+	m_lock.Unlock();
 }

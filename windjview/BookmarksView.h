@@ -60,5 +60,6 @@ protected:
 	afx_msg void OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
+	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint point);
 	DECLARE_MESSAGE_MAP()
 };

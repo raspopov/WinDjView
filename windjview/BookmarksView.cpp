@@ -24,6 +24,7 @@
 #include "DjVuDoc.h"
 #include "ChildFrm.h"
 #include "DjVuView.h"
+#include "MainFrm.h"
 
 
 // CBookmarksView
@@ -34,6 +35,7 @@ BEGIN_MESSAGE_MAP(CBookmarksView, CTreeView)
 	ON_NOTIFY_REFLECT(TVN_SELCHANGED, OnSelChanged)
 	ON_NOTIFY_REFLECT(TVN_KEYDOWN, OnKeyDown)
 	ON_WM_MOUSEACTIVATE()
+	ON_WM_MOUSEWHEEL()
 END_MESSAGE_MAP()
 
 CBookmarksView::CBookmarksView()
@@ -72,6 +74,8 @@ void CBookmarksView::OnInitialUpdate()
 	bitmap.LoadBitmap(IDB_BOOKMARKS);
 	m_imageList.Add(&bitmap, RGB(192, 64, 32));
 	GetTreeCtrl().SetImageList(&m_imageList, TVSIL_NORMAL);
+
+	GetTreeCtrl().SetItemHeight(20);
 
 	InitBookmarks(GetDocument()->GetBookmarks(), TVI_ROOT, 0);
 }
@@ -127,7 +131,7 @@ void CBookmarksView::OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMTVKEYDOWN pTVKeyDown = reinterpret_cast<LPNMTVKEYDOWN>(pNMHDR);
 
-	if (pTVKeyDown->wVKey == VK_RETURN)
+	if (pTVKeyDown->wVKey == VK_RETURN || pTVKeyDown->wVKey == VK_SPACE)
 	{
 		HTREEITEM hItem = GetTreeCtrl().GetSelectedItem();
 		if (hItem != NULL)
@@ -151,4 +155,14 @@ int CBookmarksView::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT messa
 	// set focus to this view, but don't notify the parent frame
 	OnActivateView(TRUE, this, this);
 	return nResult;
+}
+
+BOOL CBookmarksView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
+{
+	CWnd* pWnd = WindowFromPoint(point);
+	if (pWnd != this && !IsChild(pWnd) && GetMainFrame()->IsChild(pWnd) &&
+			pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
+		return true;
+
+	return CTreeView::OnMouseWheel(nFlags, zDelta, point);
 }

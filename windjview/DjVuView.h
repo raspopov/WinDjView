@@ -75,6 +75,8 @@ public:
 		Continuous = 1
 	};
 
+	double GetZoom(ZoomType nZoomType) const;
+
 // Overrides
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
@@ -278,6 +280,10 @@ protected:
 	afx_msg void OnExportPage();
 	afx_msg void OnFindString();
 	afx_msg BOOL OnToolTipNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnViewZoomIn();
+	afx_msg void OnViewZoomOut();
+	afx_msg void OnUpdateViewZoomIn(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateViewZoomOut(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 };
 

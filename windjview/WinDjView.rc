@@ -130,6 +130,9 @@ BEGIN
     BUTTON      ID_LAYOUT_SINGLEPAGE
     BUTTON      ID_LAYOUT_CONTINUOUS
     SEPARATOR
+    BUTTON      ID_ZOOM_OUT
+    SEPARATOR
+    BUTTON      ID_ZOOM_IN
     BUTTON      ID_ZOOM_100
     BUTTON      ID_ZOOM_FITPAGE
     BUTTON      ID_ZOOM_FITWIDTH
@@ -187,26 +190,33 @@ BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
-        MENUITEM "&Previous Page\tCtrl+PgDn",   ID_VIEW_PREVIOUSPAGE
-        MENUITEM "&Next Page\tCtrl+PgUp",       ID_VIEW_NEXTPAGE
-        MENUITEM "Previous &View\tAlt+Left",    ID_VIEW_BACK
-        MENUITEM "N&ext View\tAlt+Right",       ID_VIEW_FORWARD
-        MENUITEM SEPARATOR
+        MENUITEM "Fit &Page\tCtrl+0",           ID_ZOOM_FITPAGE
+        MENUITEM "Fit &Width\tCtrl+2",          ID_ZOOM_FITWIDTH
+        MENUITEM "Str&etch\tCtrl+3",            ID_ZOOM_STRETCH
+        MENUITEM "&Actual Size\tCtrl+4",        ID_ZOOM_ACTUALSIZE
         POPUP "&Zoom"
         BEGIN
+            MENUITEM "Zoom In\tCtrl+Plus",          ID_ZOOM_IN
+            MENUITEM "Zoom Out\tCtrl+Minus",        ID_ZOOM_OUT
+            MENUITEM SEPARATOR
             MENUITEM "&50%",                        ID_ZOOM_50
             MENUITEM "&75%",                        ID_ZOOM_75
-            MENUITEM "&100%",                       ID_ZOOM_100
+            MENUITEM "&100%\tCtrl+1",               ID_ZOOM_100
             MENUITEM "&200%",                       ID_ZOOM_200
             MENUITEM "&400%",                       ID_ZOOM_400
             MENUITEM SEPARATOR
-            MENUITEM "Fit &Width",                  ID_ZOOM_FITWIDTH
-            MENUITEM "Fit &Height",                 ID_ZOOM_FITHEIGHT
-            MENUITEM "Fit &Page",                   ID_ZOOM_FITPAGE
-            MENUITEM "&Actual Size",                ID_ZOOM_ACTUALSIZE
-            MENUITEM "&Stretch",                    ID_ZOOM_STRETCH
+            MENUITEM "&Custom...\tCtrl+M",          ID_ZOOM_CUSTOM
+        END
+        MENUITEM SEPARATOR
+        POPUP "&Go To"
+        BEGIN
+            MENUITEM "&First Page\tCtrl+Home",      ID_VIEW_PREVIOUSPAGE
+            MENUITEM "&Previous Page\tCtrl+PgDn",   ID_VIEW_PREVIOUSPAGE
+            MENUITEM "&Next Page\tCtrl+PgUp",       ID_VIEW_NEXTPAGE
+            MENUITEM "&Last Page\tCtrl+End",        ID_VIEW_NEXTPAGE
             MENUITEM SEPARATOR
-            MENUITEM "&Custom...",                  ID_ZOOM_CUSTOM
+            MENUITEM "Previous &View\tAlt+Left Arrow", ID_VIEW_BACK
+            MENUITEM "N&ext View\tAlt+Right Arrow", ID_VIEW_FORWARD
         END
         POPUP "&Rotate"
         BEGIN
@@ -214,7 +224,7 @@ BEGIN
             MENUITEM "&Right",                      ID_ROTATE_RIGHT
             MENUITEM "&180°",                       ID_ROTATE_180
         END
-        POPUP "Layout"
+        POPUP "&Layout"
         BEGIN
             MENUITEM "&Single Page",                ID_LAYOUT_SINGLEPAGE
             MENUITEM "&Continuous",                 ID_LAYOUT_CONTINUOUS
@@ -258,13 +268,25 @@ BEGIN
     "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_LEFT,        ID_VIEW_BACK,           VIRTKEY, ALT, NOINVERT
     "F",            ID_VIEW_FIND,           VIRTKEY, CONTROL, NOINVERT
     VK_HOME,        ID_VIEW_FIRSTPAGE,      VIRTKEY, CONTROL, NOINVERT
+    VK_RIGHT,       ID_VIEW_FORWARD,        VIRTKEY, ALT, NOINVERT
     VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, CONTROL, NOINVERT
     VK_NEXT,        ID_VIEW_NEXTPAGE,       VIRTKEY, CONTROL, NOINVERT
     VK_PRIOR,       ID_VIEW_PREVIOUSPAGE,   VIRTKEY, CONTROL, NOINVERT
-    VK_LEFT,        ID_VIEW_BACK,           VIRTKEY, ALT, NOINVERT
-    VK_RIGHT,       ID_VIEW_FORWARD,        VIRTKEY, ALT, NOINVERT
+    "1",            ID_ZOOM_100,            VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_ZOOM_ACTUALSIZE,     VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
+    "0",            ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_PLUS,    ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_PLUS,    ID_ZOOM_IN,             VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    VK_OEM_MINUS,   ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
 END
 
 
@@ -287,8 +309,8 @@ BEGIN
     DEFPUSHBUTTON   "Close",IDOK,193,7,50,14,WS_GROUP
     LTEXT           "Project homepage:",IDC_STATIC,40,39,64,8
     LTEXT           "DjVuLibre homepage:",IDC_STATIC,40,51,72,8
-    LTEXT           "http://sourceforge.net/projects/windjview",
-                    IDC_STATIC_LINK,106,39,139,8
+    LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,106,
+                    39,139,8
     LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,114,51,
                     131,8
 END
@@ -719,6 +741,8 @@ BEGIN
     ID_WINDOW_ACTIVATE_13   "Activate this window"
     ID_WINDOW_ACTIVATE_14   "Activate this window"
     ID_WINDOW_ACTIVATE_LAST "Activate this window"
+    ID_ZOOM_IN              "Zoom In\nZoom In"
+    ID_ZOOM_OUT             "Zoom Out\nZoom Out"
 END
 
 #endif    // English (U.S.) resources

@@ -91,9 +91,8 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 		CDjVuView* pView = GetDjVuView();
 
 		cboPage.EnableWindow(true);
-		int nPages = pView->GetPageCount();
 		int nPage = pView->GetCurrentPage();
-		GetMainFrame()->UpdatePageCombo(nPage, nPages);
+		GetMainFrame()->UpdatePageCombo(pView);
 
 		cboZoom.EnableWindow(true);
 		int nZoomType = pView->GetZoomType();

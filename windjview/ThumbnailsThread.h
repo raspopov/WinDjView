@@ -41,6 +41,8 @@ public:
 	void ResumeJobs();
 	void ClearQueue();
 
+	void RejectCurrentJob();
+
 private:
 	HANDLE m_hThread;
 	CCriticalSection m_lock;
@@ -59,6 +61,7 @@ private:
 	};
 	list<Job> m_jobs;
 	Job m_currentJob;
+	bool m_bRejectCurrentJob;
 
 	static DWORD WINAPI RenderThreadProc(LPVOID pvData);
 	void Render(Job& job);

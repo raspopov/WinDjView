@@ -25,6 +25,7 @@
 #include "MyComboBox.h"
 #include "MyBitmapButton.h"
 #include "FindDlg.h"
+class CDjVuView;
 
 
 class CMainFrame : public CMDIFrameWnd
@@ -45,7 +46,7 @@ public:
 // Operations
 public:
 	void HilightStatusMessage(LPCTSTR pszMessage);
-	void UpdatePageCombo(int nPage, int nPages = -1);
+	void UpdatePageCombo(CDjVuView* pView);
 	void UpdateZoomCombo(int nZoomType, double fZoom);
 
 // Overrides

@@ -26,6 +26,7 @@
 #include "MainFrm.h"
 #include "ChildFrm.h"
 #include "AppSettings.h"
+#include "ThumbnailsView.h"
 
 #include <dde.h>
 
@@ -151,11 +152,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_cboPage.SetItemHeight(-1, 16);
 	m_cboPage.GetEditCtrl().SetInteger();
 
-	int nComboZoom = m_wndToolBar.CommandToIndex(ID_ZOOM_100) - 1;
+	int nComboZoom = m_wndToolBar.CommandToIndex(ID_ZOOM_IN) - 1;
 	m_wndToolBar.SetButtonInfo(nComboZoom, IDC_ZOOM, TBBS_SEPARATOR, 120);
 
 	m_wndToolBar.GetItemRect(nComboZoom, rcCombo);
-	rcCombo.DeflateRect(8, 0, 3, 0);
+	rcCombo.DeflateRect(3, 0);
 	rcCombo.bottom += 400;
 
 	m_cboZoom.Create(WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_VSCROLL | CBS_DROPDOWN,
@@ -388,22 +389,34 @@ void CMainFrame::UpdateZoomCombo(int nZoomType, double fZoom)
 		m_cboZoom.SetWindowText(FormatDouble(fZoom) + "%");
 }
 
-void CMainFrame::UpdatePageCombo(int nPage, int nPages)
+void CMainFrame::UpdatePageCombo(CDjVuView* pView)
 {
-	if (nPages != -1)
+	if (pView->GetPageCount() != m_cboPage.GetCount())
 	{
 		m_cboPage.ResetContent();
 		CString strTmp;
-		for (int i = 1; i <= nPages; ++i)
+		for (int i = 1; i <= pView->GetPageCount(); ++i)
 		{
 			strTmp.Format(_T("%d"), i);
 			m_cboPage.AddString(strTmp);
 		}
 	}
 
+	int nPage = pView->GetCurrentPage();
 	if (m_cboPage.GetCurSel() != nPage)
-	{
 		m_cboPage.SetCurSel(nPage);
+
+	CThumbnailsView* pThumbnails = ((CChildFrame*)pView->GetParentFrame())->GetThumbnailsView();
+	if (pThumbnails != NULL)
+	{
+		if (pThumbnails->GetCurrentPage() != nPage)
+		{
+			pThumbnails->EnsureVisible(nPage);
+			pThumbnails->SetCurrentPage(nPage);
+		}
+
+		if (pThumbnails->GetRotate() != pView->GetRotate())
+			pThumbnails->SetRotate(pView->GetRotate());
 	}
 }
 

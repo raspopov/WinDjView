@@ -23,7 +23,6 @@
 #define IDD_SETTINGS                    140
 #define IDD_FIND                        141
 #define IDB_CLOSE                       144
-#define IDB_BITMAP1                     145
 #define IDB_BOOKMARKS                   145
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
@@ -112,13 +111,15 @@
 #define ID_WINDOW_ACTIVATE_13           32839
 #define ID_WINDOW_ACTIVATE_14           32840
 #define ID_WINDOW_ACTIVATE_LAST         32841
+#define ID_ZOOM_IN                      32842
+#define ID_ZOOM_OUT                     32843
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        146
-#define _APS_NEXT_COMMAND_VALUE         32842
+#define _APS_NEXT_COMMAND_VALUE         32844
 #define _APS_NEXT_CONTROL_VALUE         1043
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
