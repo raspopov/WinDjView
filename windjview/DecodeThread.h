@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include "RenderThread.h"
 class CDjVuDoc;
 
 class CDecodeThread
@@ -33,11 +32,11 @@ public:
 
 private:
 	HANDLE m_hThread;
-	CSignal m_stop;
-	CSignal m_finished;
+	CEvent m_stop;
+	CEvent m_finished;
 	CDjVuDoc* m_pDoc;
 
-	CLock m_lock;
+	CCriticalSection m_lock;
 	list<int> m_jobs;
 
 	static DWORD WINAPI DecodeThreadProc(LPVOID pvData);

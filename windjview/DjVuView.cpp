@@ -77,6 +77,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CScrollView)
 	ON_COMMAND_RANGE(ID_LAYOUT_SINGLEPAGE, ID_LAYOUT_CONTINUOUS, OnViewLayout)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_LAYOUT_SINGLEPAGE, ID_LAYOUT_CONTINUOUS, OnUpdateViewLayout)
 	ON_MESSAGE(WM_RENDER_FINISHED, OnRenderFinished)
+	ON_MESSAGE(WM_PAGE_DECODED, OnPageDecoded)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
@@ -1030,4 +1031,10 @@ void CDjVuView::OnDestroy()
 	m_pRenderThread = NULL;
 
 	CScrollView::OnDestroy();
+}
+
+LRESULT CDjVuView::OnPageDecoded(WPARAM wParam, LPARAM lParam)
+{
+	UpdateView();
+	return 0;
 }

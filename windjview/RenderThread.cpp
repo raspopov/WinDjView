@@ -29,44 +29,6 @@
 #endif
 
 
-// CLock class
-
-void CLock::Lock()
-{
-	while (::InterlockedCompareExchange(&m_nLock, 1, 0) == 1)
-		::Sleep(1);
-}
-
-void CLock::Unlock()
-{
-	ASSERT(m_nLock == 1);
-	::InterlockedExchange(&m_nLock, 0);
-}
-
-
-// CSignal class
-
-bool CSignal::IsSet() const
-{
-	return ::InterlockedCompareExchange(&m_nSignal, 0, 0) == 1;
-}
-
-void CSignal::Set()
-{
-	::InterlockedExchange(&m_nSignal, 1);
-}
-
-void CSignal::Reset()
-{
-	::InterlockedExchange(&m_nSignal, 0);
-}
-
-void CSignal::Wait()
-{
-	while (::InterlockedCompareExchange(&m_nSignal, 1, 1) == 0)
-		::Sleep(1);
-}
-
 // CRenderThread class
 
 CRenderThread::CRenderThread(CWnd* pOwner)
@@ -79,34 +41,37 @@ CRenderThread::CRenderThread(CWnd* pOwner)
 
 CRenderThread::~CRenderThread()
 {
-	m_stop.Set();
-	while (m_stop.IsSet())
-		::Sleep(10);
+	m_stop.SetEvent();
+	::WaitForSingleObject(m_finished.m_hObject, INFINITE);
 }
 
 DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 {
 	CRenderThread* pData = reinterpret_cast<CRenderThread*>(pvData);
 
-	while (!pData->m_stop.IsSet())
+	HANDLE hEvents[] = { pData->m_jobReady.m_hObject, pData->m_stop.m_hObject };
+	while (::WaitForMultipleObjects(2, hEvents, false, INFINITE) == WAIT_OBJECT_0)
 	{
 		pData->m_lock.Lock();
+
 		if (pData->m_jobs.empty())
 		{
 			pData->m_lock.Unlock();
-			::Sleep(10);
 			continue;
 		}
 
 		Job job = pData->m_jobs.front();
 		pData->m_jobs.pop_front();
 
+		if (!pData->m_jobs.empty())
+			pData->m_jobReady.SetEvent();
+
 		pData->m_lock.Unlock();
 
 		pData->Render(job);
 	}
 
-	pData->m_stop.Reset();
+	pData->m_finished.SetEvent();
 	return 0;
 }
 
@@ -114,21 +79,21 @@ DWORD CRenderThread::AddJob(GP<DjVuImage> pImage, CRect rcAll, CRect rcClip, boo
 {
 	static DWORD nCode = 0;
 
-	m_lock.Lock();
-
-	if (bClearQueue)
-		m_jobs.clear();
-
 	Job job;
 	job.pImage = pImage;
 	job.rcAll = rcAll;
 	job.rcClip = rcClip;
 	job.nCode = nCode;
 
+	m_lock.Lock();
+
+	if (bClearQueue)
+		m_jobs.clear();
 	m_jobs.push_back(job);
 
 	m_lock.Unlock();
 
+	m_jobReady.SetEvent();
 	return nCode++;
 }
 

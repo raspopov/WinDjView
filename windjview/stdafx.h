@@ -62,6 +62,8 @@
 #include <afxpriv.h>
 #include <winspool.h>
 
+#include <afxmt.h>
+
 #include <vector>
 #include <set>
 #include <algorithm>

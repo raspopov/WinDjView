@@ -22,32 +22,6 @@
 
 #define WM_RENDER_FINISHED (WM_USER + 17)
 
-class CLock
-{
-public:
-	CLock() : m_nLock(0) {}
-	void Lock();
-	void Unlock();
-
-private:
-	LONG m_nLock;
-	CLock(const CLock& rhs) {}
-};
-
-class CSignal
-{
-public:
-	CSignal() : m_nSignal(0) {}
-	bool IsSet() const;
-	void Set();
-	void Reset();
-	void Wait();
-
-private:
-	mutable LONG m_nSignal;
-	CSignal(const CSignal& rhs) {}
-};
-
 class CRenderThread
 {
 public:
@@ -57,8 +31,10 @@ public:
 	DWORD AddJob(GP<DjVuImage> pImage, CRect rcAll, CRect rcClip, bool bClearQueue = false);
 
 private:
-	CLock m_lock;
-	CSignal m_stop;
+	CCriticalSection m_lock;
+	CEvent m_stop;
+	CEvent m_finished;
+	CEvent m_jobReady;
 	CWnd* m_pOwner;
 
 	struct Job

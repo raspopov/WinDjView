@@ -39,26 +39,26 @@ CDecodeThread::CDecodeThread(CDjVuDoc* pDoc)
 
 	DWORD dwThreadId;
 	HANDLE hThread = ::CreateThread(NULL, 0, DecodeThreadProc, this, 0, &dwThreadId);
-	::SetThreadPriority(hThread, THREAD_PRIORITY_BELOW_NORMAL);
+	::SetThreadPriority(hThread, THREAD_PRIORITY_LOWEST);
 }
 
 CDecodeThread::~CDecodeThread()
 {
-	m_stop.Set();
-	while (!m_finished.IsSet())
-		::Sleep(10);
+	m_stop.SetEvent();
+	::WaitForSingleObject(m_finished.m_hObject, INFINITE);
 }
 
 DWORD WINAPI CDecodeThread::DecodeThreadProc(LPVOID pvData)
 {
 	CDecodeThread* pData = reinterpret_cast<CDecodeThread*>(pvData);
 
-	while (!pData->m_stop.IsSet())
+	while (::WaitForSingleObject(pData->m_stop, 0) != WAIT_OBJECT_0)
 	{
 		pData->m_lock.Lock();
 		if (pData->m_jobs.empty())
 		{
-			pData->m_finished.Set();
+			pData->m_lock.Unlock();
+			pData->m_finished.SetEvent();
 			return 0;
 		}
 
@@ -71,7 +71,7 @@ DWORD WINAPI CDecodeThread::DecodeThreadProc(LPVOID pvData)
 		pData->m_pDoc->PageDecoded(nPage, pImage);
 	}
 
-	pData->m_finished.Set();
+	pData->m_finished.SetEvent();
 	return 0;
 }
 

@@ -121,7 +121,6 @@ GP<DjVuImage> CDjVuDoc::GetPage(int nPage)
 {
 	ASSERT(nPage >= 0 && nPage < m_pDjVuDoc->get_pages_num());
 
-	m_pageReady.Reset();
 	::InterlockedExchange(&m_nPagePending, nPage);
 
 	m_lock.Lock();
@@ -132,8 +131,8 @@ GP<DjVuImage> CDjVuDoc::GetPage(int nPage)
 		return pImage;
 
 	m_pThread->MoveToFront(nPage);
-	m_pageReady.Wait();
-	m_pageReady.Reset();
+
+	::WaitForSingleObject(m_pageReady.m_hObject, INFINITE);
 
 	m_lock.Lock();
 	pImage = m_pages[nPage];
@@ -155,6 +154,13 @@ void CDjVuDoc::PageDecoded(int nPage, GP<DjVuImage> pImage)
 	if (::InterlockedCompareExchange(&m_nPagePending, -1, nPage) == nPage)
 	{
 		TRACE("Pending page decoded: %d\n", nPage);
-		m_pageReady.Set();
+		m_pageReady.SetEvent();
+	}
+
+	POSITION pos = GetFirstViewPosition();
+	while (pos != NULL)
+	{
+		CView* pView = GetNextView(pos);
+		pView->PostMessage(WM_PAGE_DECODED, nPage);
 	}
 }

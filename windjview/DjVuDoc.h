@@ -23,6 +23,8 @@
 #include "RenderThread.h"
 class CDecodeThread;
 
+#define WM_PAGE_DECODED (WM_USER + 18)
+
 
 class CDjVuDoc : public CDocument
 {
@@ -56,8 +58,8 @@ protected:
 	GP<DjVuDocument> m_pDjVuDoc;
 	vector<GP<DjVuImage> > m_pages;
 
-	CLock m_lock;
-	CSignal m_pageReady;
+	CCriticalSection m_lock;
+	CEvent m_pageReady;
 	LONG m_nPagePending;
 
 // Generated message map functions

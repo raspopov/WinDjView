@@ -151,6 +151,7 @@ protected:
 	afx_msg void OnViewLayout(UINT nID);
 	afx_msg void OnUpdateViewLayout(CCmdUI* pCmdUI);
 	afx_msg LRESULT OnRenderFinished(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnPageDecoded(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnDestroy();
 	DECLARE_MESSAGE_MAP()
 };
