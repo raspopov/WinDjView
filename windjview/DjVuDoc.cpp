@@ -14,13 +14,14 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program; if not, write to the Free Software
 //	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//  http://www.gnu.org/copyleft/gpl.html
+//	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
 
+#include "ChildFrm.h"
 #include "DjVuDoc.h"
 
 #ifdef _DEBUG
@@ -132,7 +133,10 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 			{
 				if (chkid == "NAVM")
 				{
-					TRACE("Got bookmarks here!\n");
+					GP<ByteStream> chunk_stream = iff->get_bytestream();
+					m_bookmarks = DjVmNav::create();
+					m_bookmarks->decode(chunk_stream);
+					break;
 				}
 
 				iff->close_chunk();
@@ -141,6 +145,12 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 		iff->close_chunk();
 	}
+
+	POSITION pos = GetFirstViewPosition();
+	ASSERT(pos != NULL);
+	CView* pView = GetNextView(pos);
+	CChildFrame* pFrame = (CChildFrame*)pView->GetParentFrame();
+	pFrame->CreateNavPanes();
 
 	return true;
 }
@@ -335,4 +345,25 @@ PageInfo CDjVuDoc::ReadPageInfo(int nPage)
 	G_ENDCATCH;
 
 	return pageInfo;
+}
+
+void CDjVuDoc::SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU)
+{
+	CDocument::SetPathName(lpszPathName, bAddToMRU);
+
+#ifdef ELIBRA_READER
+	TCHAR szTitle[_MAX_FNAME];
+	if (AfxGetFileTitle(GetPathName(), szTitle, _MAX_FNAME) == 0)
+	{
+		// Strip extension from the document name
+		TCHAR* pPos = _tcsrchr(szTitle, '\\');
+		TCHAR* pPos2 = _tcsrchr(szTitle, '/');
+
+		TCHAR* pDotPos = _tcschr(szTitle, '.');
+		if (pDotPos != NULL && pDotPos > pPos && pDotPos > pPos2)
+			*pDotPos = '\0';
+
+		SetTitle(szTitle);
+	}
+#endif
 }

@@ -208,6 +208,9 @@
 				RelativePath=".\AppSettings.cpp">
 			</File>
 			<File
+				RelativePath=".\BookmarksView.cpp">
+			</File>
+			<File
 				RelativePath=".\ChildFrm.cpp">
 			</File>
 			<File
@@ -224,6 +227,9 @@
 			</File>
 			<File
 				RelativePath=".\MainFrm.cpp">
+			</File>
+			<File
+				RelativePath=".\MyBitmapButton.cpp">
 			</File>
 			<File
 				RelativePath=".\MyComboBox.cpp">
@@ -300,6 +306,9 @@
 				RelativePath=".\AppSettings.h">
 			</File>
 			<File
+				RelativePath=".\BookmarksView.h">
+			</File>
+			<File
 				RelativePath=".\ChildFrm.h">
 			</File>
 			<File
@@ -316,6 +325,9 @@
 			</File>
 			<File
 				RelativePath=".\MainFrm.h">
+			</File>
+			<File
+				RelativePath=".\MyBitmapButton.h">
 			</File>
 			<File
 				RelativePath=".\MyComboBox.h">
@@ -373,6 +385,9 @@
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+			<File
+				RelativePath=".\res\bookmarks.bmp">
+			</File>
 			<File
 				RelativePath=".\res\close.bmp">
 			</File>

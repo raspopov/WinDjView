@@ -14,7 +14,7 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program; if not, write to the Free Software
 //	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//  http://www.gnu.org/copyleft/gpl.html
+//	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
 
@@ -59,6 +59,7 @@ protected:
 	void UpdateCloseButtonImpl(bool bPressed, bool bActive, const CRect& rcButton);
 	int GetTabFromPoint(CPoint point);
 	void ActivateTab(int nTab);
+	void UpdateTabSizes();
 	bool PtInTab(int nTab, CPoint point);
 	CToolTipCtrl m_toolTip;
 
@@ -78,6 +79,7 @@ protected:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()
 };
 

@@ -14,7 +14,7 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program; if not, write to the Free Software
 //	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//  http://www.gnu.org/copyleft/gpl.html
+//	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
 
@@ -70,6 +70,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_DDE_EXECUTE, OnDDEExecute)
 	ON_COMMAND(ID_VIEW_FIND, OnViewFind)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIND, OnUpdateViewFind)
+	ON_UPDATE_COMMAND_UI(ID_WINDOW_ACTIVATE_FIRST, OnUpdateWindowList)
+	ON_COMMAND_RANGE(ID_WINDOW_ACTIVATE_FIRST, ID_WINDOW_ACTIVATE_LAST, OnActivateWindow)
 #ifdef ELIBRA_READER
 	ON_COMMAND(ID_HELP_CONTENTS, OnHelpContents)
 	ON_COMMAND(IDC_STATIC_LINK, OnGoToHomepage)
@@ -97,7 +99,6 @@ CMainFrame::~CMainFrame()
 		m_pFindDlg = NULL;
 	}
 }
-
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
@@ -190,11 +191,28 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 	if (!CMDIFrameWnd::PreCreateWindow(cs))
 		return false;
 
-#ifdef ELIBRA_READER
-	cs.style &= ~FWS_ADDTOTITLE;
-#endif
+	cs.style |= FWS_PREFIXTITLE | FWS_ADDTOTITLE;
 
 	return true;
+}
+
+void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
+{
+	if ((GetStyle() & FWS_ADDTOTITLE) == 0)
+		return;
+
+	CMDIChildWnd* pActiveChild = MDIGetActive();
+	if (pActiveChild != NULL)
+	{
+		CDocument* pDocument = pActiveChild->GetActiveDocument();
+		if (pDocument != NULL)
+		{
+			UpdateFrameTitleForDocument(pDocument->GetTitle());
+			return;
+		}
+	}
+
+	UpdateFrameTitleForDocument(NULL);
 }
 
 
@@ -304,7 +322,7 @@ void CMainFrame::OnChangePage()
 
 	int nPage = m_cboPage.GetCurSel();
 	if (nPage >= 0 && nPage < pView->GetPageCount())
-		pView->RenderPage(nPage);
+		pView->GoToPage(nPage);
 
 	pView->SetFocus();
 }
@@ -324,7 +342,7 @@ void CMainFrame::OnChangePageEdit()
 	if (_stscanf(strPage, _T("%d"), &nPage) == 1)
 	{
 		if (nPage >= 1 && nPage <= pView->GetPageCount())
-			pView->RenderPage(nPage - 1);
+			pView->GoToPage(nPage - 1);
 	}
 
 	pView->SetFocus();
@@ -513,7 +531,7 @@ void CMainFrame::OnViewFind()
 	m_pFindDlg->GotoDlgCtrl(m_pFindDlg->GetDlgItem(IDC_FIND));
 }
 
-void CMainFrame::OnUpdateViewFind(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateViewFind(CCmdUI* pCmdUI)
 {
 	CMDIChildWnd* pFrame = MDIGetActive();
 	if (pFrame == NULL)
@@ -556,4 +574,87 @@ void CMainFrame::OnHelpContents()
 
 	strPathName = CString(szDrive) + CString(szDir) + "elibra-help.chm";
 	::ShellExecute(NULL, "open", strPathName, NULL, NULL, SW_SHOWNORMAL);
+}
+
+void CMainFrame::OnUpdateWindowList(CCmdUI* pCmdUI)
+{
+	if (pCmdUI->m_pMenu == NULL)
+		return;
+
+	// Remove all window menu items
+	CDocument* pActiveDoc = NULL;
+	if (MDIGetActive() != NULL)
+		pActiveDoc = MDIGetActive()->GetActiveDocument();
+
+	const int nMaxWindows = 16;
+	for (int i = 0; i < nMaxWindows; ++i)
+		pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + i, MF_BYCOMMAND);
+
+	int nDoc = 0;
+	POSITION pos = theApp.GetFirstDocTemplatePosition();
+	while (pos != NULL)
+	{
+		CDocTemplate* pTemplate = theApp.GetNextDocTemplate(pos);
+		ASSERT_KINDOF(CDocTemplate, pTemplate);
+
+		POSITION posDoc = pTemplate->GetFirstDocPosition();
+		while (posDoc != NULL)
+		{
+			CDocument* pDoc = pTemplate->GetNextDoc(posDoc);
+
+			CString strText;
+			if (nDoc >= 10)
+				strText.Format(_T("%d "), nDoc + 1);
+			else if (nDoc == 9)
+				strText = _T("1&0 ");
+			else
+				strText.Format(_T("&%d "), nDoc + 1);
+
+			CString strDocTitle = pDoc->GetTitle();
+			strDocTitle.Replace(_T("&"), _T("&&"));
+			strText += strDocTitle;
+
+			int nFlags = MF_STRING;
+			if (pDoc == pActiveDoc)
+				nFlags |= MF_CHECKED;
+
+			pCmdUI->m_pMenu->AppendMenu(nFlags, pCmdUI->m_nID + nDoc, strText);
+			++nDoc;
+		}
+	}
+
+	// update end menu count
+	pCmdUI->m_nIndex = pCmdUI->m_pMenu->GetMenuItemCount();
+	pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
+	pCmdUI->m_bEnableChanged = TRUE;
+}
+
+void CMainFrame::OnActivateWindow(UINT nID)
+{
+	int nActivateDoc = nID - ID_WINDOW_ACTIVATE_FIRST;
+
+	int nDoc = 0;
+	POSITION pos = theApp.GetFirstDocTemplatePosition();
+	while (pos != NULL)
+	{
+		CDocTemplate* pTemplate = theApp.GetNextDocTemplate(pos);
+		ASSERT_KINDOF(CDocTemplate, pTemplate);
+
+		POSITION posDoc = pTemplate->GetFirstDocPosition();
+		while (posDoc != NULL)
+		{
+			CDocument* pDoc = pTemplate->GetNextDoc(posDoc);
+			if (nDoc == nActivateDoc)
+			{
+				POSITION pos = pDoc->GetFirstViewPosition();
+				ASSERT(pos != NULL);
+
+				CView* pView = pDoc->GetNextView(pos);
+				CFrameWnd* pFrame = pView->GetParentFrame();
+				pFrame->ActivateFrame();
+			}
+
+			++nDoc;
+		}
+	}
 }

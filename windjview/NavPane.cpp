@@ -52,6 +52,8 @@ CNavPaneWnd::CNavPaneWnd()
 
 CNavPaneWnd::~CNavPaneWnd()
 {
+	delete m_pBitmapTabs;
+	m_pBitmapTabs = NULL;
 }
 
 
@@ -63,6 +65,7 @@ BEGIN_MESSAGE_MAP(CNavPaneWnd, CWnd)
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
 	ON_WM_CREATE()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -89,6 +92,12 @@ void CNavPaneWnd::OnPaint()
 	COLORREF clrShadow = ::GetSysColor(COLOR_BTNSHADOW);
 	COLORREF clrFrame = ::GetSysColor(COLOR_WINDOWFRAME);
 
+	if (m_tabs.empty())
+	{
+		dc.FillSolidRect(rcClient, clrBtnface);
+		return;
+	}
+
 	// Draw tabs offscreen
 	if (m_pBitmapTabs == NULL || m_szBitmap.cx != s_nTabsWidth + 2
 			|| m_szBitmap.cy < rcClient.Height())
@@ -114,23 +123,14 @@ void CNavPaneWnd::OnPaint()
 	rcLine.OffsetRect(1, 0);
 	pDC->FillSolidRect(rcLine, clrHilight);
 
-	if (!m_tabs.empty())
+	for (int nDiff = m_tabs.size(); nDiff > 0; --nDiff)
 	{
-		for (int nDiff = m_tabs.size(); nDiff > 0; --nDiff)
-		{
-			if (m_nActiveTab - nDiff >= 0)
-				DrawTab(pDC, m_nActiveTab - nDiff, false);
-			if (m_nActiveTab + nDiff < static_cast<int>(m_tabs.size()))
-				DrawTab(pDC, m_nActiveTab + nDiff, false);
-		}
-		DrawTab(pDC, m_nActiveTab, true);
+		if (m_nActiveTab - nDiff >= 0)
+			DrawTab(pDC, m_nActiveTab - nDiff, false);
+		if (m_nActiveTab + nDiff < static_cast<int>(m_tabs.size()))
+			DrawTab(pDC, m_nActiveTab + nDiff, false);
 	}
-	else
-	{
-		CRect rcContent(rcLine.right, rcClient.top, rcClient.right, rcClient.bottom);
-		if (rcContent.left < rcContent.right)
-			pDC->FillSolidRect(rcContent, clrBtnface);
-	}
+	DrawTab(pDC, m_nActiveTab, true);
 
 	// Flush bitmap to screen dc
 	dc.BitBlt(0, 0, m_szBitmap.cx, m_szBitmap.cy, pDC, 0, 0, SRCCOPY);
@@ -260,7 +260,12 @@ void CNavPaneWnd::OnWindowPosChanged(WINDOWPOS FAR* lpwndpos)
 {
 	CWnd::OnWindowPosChanged(lpwndpos);
 	UpdateCloseButton(false);
-	
+
+	UpdateTabSizes();
+}
+
+void CNavPaneWnd::UpdateTabSizes()
+{
 	CRect rc;
 	GetClientRect(&rc);
 
@@ -321,7 +326,10 @@ int CNavPaneWnd::AddTab(const CString& strName, CWnd* pWnd)
 	pWnd->ModifyStyleEx(WS_EX_CLIENTEDGE, 0);
 
 	if (::IsWindow(m_hWnd))
+	{
+		UpdateTabSizes();
 		Invalidate();
+	}
 
 	return m_tabs.size() - 1;
 }
@@ -500,4 +508,10 @@ void CNavPaneWnd::ActivateTab(int nTab)
 	Invalidate();
 
 	GetParentFrame()->SendMessage(ID_EXPAND_PANE);
+}
+
+void CNavPaneWnd::PostNcDestroy()
+{
+	// Should be created on heap
+	delete this;
 }

@@ -20,37 +20,45 @@
 
 #pragma once
 
+class CDjVuDoc;
 
-// CMyEdit
 
-class CMyEdit : public CEdit
+// CBookmarksView view
+
+class CBookmarksView : public CTreeView
 {
-	DECLARE_DYNAMIC(CMyEdit)
+	DECLARE_DYNAMIC(CBookmarksView)
 
 public:
-	CMyEdit();
-	virtual ~CMyEdit();
+	CBookmarksView();           // protected constructor used by dynamic creation
+	virtual ~CBookmarksView();
 
-// Operations
+// Attributes
 public:
-	void SetNormal() { m_nType = EditNormal; }
-	void SetInteger() { m_nType = EditInteger; }
-	void SetReal() { m_nType = EditReal; }
-	void SetPercent(bool bPercent = true) { m_bPercent = bPercent; }
+	CDjVuDoc* GetDocument() const { return m_pDoc; }
+	void SetDocument(CDjVuDoc* pDoc) { m_pDoc = pDoc; }
 
-// Implementation
+// Overrides
+public:
+	virtual void OnInitialUpdate();
+
+#ifdef _DEBUG
+	virtual void AssertValid() const;
+	virtual void Dump(CDumpContext& dc) const;
+#endif
+
 protected:
-	enum EditType
-	{
-		EditNormal,
-		EditInteger,
-		EditReal
-	};
-	EditType m_nType;
-	bool m_bPercent;
+	CDjVuDoc* m_pDoc;
+	CImageList m_imageList;
+
+	void ActivateBookmark(HTREEITEM hItem);
+	int InitBookmarks(GP<DjVmNav> bookmarks, HTREEITEM hParent, int nPos, int nCount = -1);
+
+	list<GUTF8String> m_links;
 
 // Generated message map functions
-	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
 	DECLARE_MESSAGE_MAP()
 };
-

@@ -15,7 +15,8 @@ OPTS = /nologo /MTd /W3 /GX /Ox /Ob2 /Ot /Og /G6
 OUTOPT = /nologo /nodefaultlib:"msvcrtd.lib" /out:
 !ENDIF
 
-COMPOPT = /c /Fo"$(INTDIR)\\" /D"HAS_WCTYPE" /D"BUILD_LIB" /D"DJVU_STATIC_LIBRARY" /D"WIN32" /D"_WINDOWS" /D"_CONSOLE" /D"NDEBUG"
+COMPOPT = /c /Fo"$(INTDIR)\\" /D"HAS_WCTYPE=1" /D"BUILD_LIB" /D"DJVU_STATIC_LIBRARY" \
+			/D"WIN32" /D"_WINDOWS" /D"_CONSOLE" /D"NDEBUG" /D"DJVUREFAPI="
 
 all: $(OUT)
 
@@ -34,6 +35,7 @@ OBJS = "$(INTDIR)\Arrays.obj" \
        "$(INTDIR)\DjVmDir.obj" \
        "$(INTDIR)\DjVmDir0.obj" \
        "$(INTDIR)\DjVmDoc.obj" \
+       "$(INTDIR)\DjVmNav.obj" \
        "$(INTDIR)\DjVuAnno.obj" \
        "$(INTDIR)\DjVuDocEditor.obj" \
        "$(INTDIR)\DjVuDocument.obj" \
@@ -97,6 +99,7 @@ $(OUT): "$(INTDIR)" $(OBJS)
 "$(INTDIR)\DjVmDir.obj" : "$(INTDIR)" DjVmDir.cpp
 "$(INTDIR)\DjVmDir0.obj" : "$(INTDIR)" DjVmDir0.cpp
 "$(INTDIR)\DjVmDoc.obj" : "$(INTDIR)" DjVmDoc.cpp
+"$(INTDIR)\DjVmNav.obj" : "$(INTDIR)" DjVmNav.cpp
 "$(INTDIR)\DjVuAnno.obj" : "$(INTDIR)" DjVuAnno.cpp
 "$(INTDIR)\DjVuDocEditor.obj" : "$(INTDIR)" DjVuDocEditor.cpp
 "$(INTDIR)\DjVuDocument.obj" : "$(INTDIR)" DjVuDocument.cpp

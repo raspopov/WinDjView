@@ -2,6 +2,10 @@ WinDjView changes history
 Copyright (C) 2004-2005 Andrew Zhezherun
 ----------------------------------------
 
+Changes in version 0.3.1:
++ Added bookmarks.
++ Window title specifies file name first.
+
 Changes in version 0.3:
 + Added text searching.
 + Added hyperlink support.

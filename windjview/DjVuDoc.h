@@ -14,7 +14,7 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program; if not, write to the Free Software
 //	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//  http://www.gnu.org/copyleft/gpl.html
+//	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
 
@@ -60,6 +60,7 @@ public:
 	bool HasText() const { return m_bHasText; }
 	int GetPageFromId(const GUTF8String& strPageId) const;
 
+	GP<DjVmNav> GetBookmarks() { return m_bookmarks; }
 	GP<DjVuDocument> GetDjVuDoc() { return m_pDjVuDoc; }
 
 // Overrides
@@ -93,10 +94,12 @@ protected:
 	int m_nPageCount;
 	CCriticalSection m_lock;
 	bool m_bHasText;
+	GP<DjVmNav> m_bookmarks;
 
 // Generated message map functions
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
+	virtual void SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU = TRUE);
 	DECLARE_MESSAGE_MAP()
 };
 

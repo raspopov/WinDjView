@@ -103,6 +103,7 @@ IDR_DjVuTYPE            ICON                    "res\\DjVuDoc.ico"
 
 IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
 IDB_CLOSE               BITMAP                  "res\\close.bmp"
+IDB_BOOKMARKS           BITMAP                  "res\\bookmarks.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -186,8 +187,8 @@ BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
-        MENUITEM "&Previous Page\tCtrl+PgDn",   32772
-        MENUITEM "&Next Page\tCtrl+PgUp",       32771
+        MENUITEM "&Previous Page\tCtrl+PgDn",   ID_VIEW_PREVIOUSPAGE
+        MENUITEM "&Next Page\tCtrl+PgUp",       ID_VIEW_NEXTPAGE
         MENUITEM "Previous &View\tAlt+Left",    ID_VIEW_BACK
         MENUITEM "N&ext View\tAlt+Right",       ID_VIEW_FORWARD
         MENUITEM SEPARATOR
@@ -227,6 +228,8 @@ BEGIN
         MENUITEM "&Tile Horizontal",            ID_WINDOW_TILE_HORZ
         MENUITEM "Tile &Vertical",              ID_WINDOW_TILE_VERT
         MENUITEM "&Arrange Icons",              ID_WINDOW_ARRANGE
+        MENUITEM SEPARATOR
+        MENUITEM "Open this window",            ID_WINDOW_ACTIVATE_FIRST
     END
     POPUP "&Help"
     BEGIN
@@ -277,7 +280,7 @@ CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,10,9,20,20
-    LTEXT           "WinDjView Version 0.3",IDC_STATIC,40,7,119,8,
+    LTEXT           "WinDjView Version 0.3.1",IDC_STATIC,40,7,119,8,
                     SS_NOPREFIX
     LTEXT           "Copyright (C) 2004-2005 Andrew Zhezherun",IDC_STATIC,40,
                     19,149,8
@@ -419,8 +422,8 @@ BEGIN
     CONTROL         "&Restore associations at program start",
                     IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     15,49,188,10
-    LTEXT           "WinDjView 0.3\nby Andrew Zhezherun",IDC_STATIC_ABOUT,7,
-                    71,92,18
+    LTEXT           "WinDjView 0.3.1\nby Andrew Zhezherun",IDC_STATIC_ABOUT,
+                    7,71,92,18
 END
 
 IDD_FIND DIALOGEX 0, 0, 287, 45
@@ -444,8 +447,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,0,0
- PRODUCTVERSION 0,3,0,0
+ FILEVERSION 0,3,1,0
+ PRODUCTVERSION 0,3,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -462,12 +465,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Andrew Zhezherun"
             VALUE "FileDescription", "WinDjView"
-            VALUE "FileVersion", "0.3"
+            VALUE "FileVersion", "0.3.1"
             VALUE "InternalName", "WinDjView.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2004 Andrew Zhezherun.  All rights reserved."
+            VALUE "LegalCopyright", "Copyright (C) 2004-2005 Andrew Zhezherun.  All rights reserved."
             VALUE "OriginalFilename", "WinDjView.exe"
             VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "0.3"
+            VALUE "ProductVersion", "0.3.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -696,6 +699,26 @@ BEGIN
     ID_VIEW_FIND            "Find text in current document\nFind"
     ID_VIEW_BACK            "Go to previous view\nPrevious View"
     ID_VIEW_FORWARD         "Go to next view\nNext View"
+    ID_WINDOW_ACTIVATE_FIRST "Activate this window"
+    ID_WINDOW_ACTIVATE_1    "Activate this window"
+    ID_WINDOW_ACTIVATE_2    "Activate this window"
+    ID_WINDOW_ACTIVATE_3    "Activate this window"
+    ID_WINDOW_ACTIVATE_4    "Activate this window"
+    ID_WINDOW_ACTIVATE_5    "Activate this window"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_WINDOW_ACTIVATE_6    "Activate this window"
+    ID_WINDOW_ACTIVATE_7    "Activate this window"
+    ID_WINDOW_ACTIVATE_8    "Activate this window"
+    ID_WINDOW_ACTIVATE_9    "Activate this window"
+    ID_WINDOW_ACTIVATE_10   "Activate this window"
+    ID_WINDOW_ACTIVATE_11   "Activate this window"
+    ID_WINDOW_ACTIVATE_12   "Activate this window"
+    ID_WINDOW_ACTIVATE_13   "Activate this window"
+    ID_WINDOW_ACTIVATE_14   "Activate this window"
+    ID_WINDOW_ACTIVATE_LAST "Activate this window"
 END
 
 #endif    // English (U.S.) resources

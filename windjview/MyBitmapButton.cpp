@@ -18,23 +18,43 @@
 
 // $Id$
 
-#pragma once
+#include "stdafx.h"
+#include "WinDjView.h"
+#include "MyBitmapButton.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 
-// CMyToolBar
+// CMyBitmapButton
 
-class CMyToolBar : public CToolBar
+IMPLEMENT_DYNAMIC(CMyBitmapButton, CBitmapButton)
+CMyBitmapButton::CMyBitmapButton()
 {
-	DECLARE_DYNAMIC(CMyToolBar)
+}
 
-public:
-	CMyToolBar();
-	virtual ~CMyToolBar();
+CMyBitmapButton::~CMyBitmapButton()
+{
+}
 
-	void SetSizes(SIZE sizeButton, SIZE sizeImage);
-	virtual void DrawBorders(CDC* pDC, CRect& rect);
+BEGIN_MESSAGE_MAP(CMyBitmapButton, CBitmapButton)
+	ON_WM_SETCURSOR()
+END_MESSAGE_MAP()
 
-protected:
-	DECLARE_MESSAGE_MAP()
-};
 
+// CMyBitmapButton message handlers
+
+BOOL CMyBitmapButton::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	static HCURSOR hCursor = NULL;
+	if (hCursor == NULL)
+	{
+		hCursor = ::LoadCursor(NULL, IDC_HAND);
+		if (hCursor == NULL)
+			hCursor = theApp.LoadCursor(IDC_CURSOR_LINK);
+	}
+
+	::SetCursor(hCursor);
+	return TRUE;
+}

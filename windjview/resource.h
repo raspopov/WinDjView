@@ -23,6 +23,8 @@
 #define IDD_SETTINGS                    140
 #define IDD_FIND                        141
 #define IDB_CLOSE                       144
+#define IDB_BITMAP1                     145
+#define IDB_BOOKMARKS                   145
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -94,13 +96,29 @@
 #define ID_VIEW_FIND                    32816
 #define ID_VIEW_BACK                    32819
 #define ID_VIEW_FORWARD                 32820
+#define ID_WINDOW_ACTIVATE_FIRST        32826
+#define ID_WINDOW_ACTIVATE_1            32827
+#define ID_WINDOW_ACTIVATE_2            32828
+#define ID_WINDOW_ACTIVATE_3            32829
+#define ID_WINDOW_ACTIVATE_4            32830
+#define ID_WINDOW_ACTIVATE_5            32831
+#define ID_WINDOW_ACTIVATE_6            32832
+#define ID_WINDOW_ACTIVATE_7            32833
+#define ID_WINDOW_ACTIVATE_8            32834
+#define ID_WINDOW_ACTIVATE_9            32835
+#define ID_WINDOW_ACTIVATE_10           32836
+#define ID_WINDOW_ACTIVATE_11           32837
+#define ID_WINDOW_ACTIVATE_12           32838
+#define ID_WINDOW_ACTIVATE_13           32839
+#define ID_WINDOW_ACTIVATE_14           32840
+#define ID_WINDOW_ACTIVATE_LAST         32841
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        145
-#define _APS_NEXT_COMMAND_VALUE         32824
+#define _APS_NEXT_RESOURCE_VALUE        146
+#define _APS_NEXT_COMMAND_VALUE         32842
 #define _APS_NEXT_CONTROL_VALUE         1043
 #define _APS_NEXT_SYMED_VALUE           104
 #endif

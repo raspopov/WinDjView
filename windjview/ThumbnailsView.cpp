@@ -14,7 +14,7 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program; if not, write to the Free Software
 //	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//  http://www.gnu.org/copyleft/gpl.html
+//	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
 
@@ -47,7 +47,7 @@ const int nPageHeight = 110;
 
 // CThumbnailsView
 
-IMPLEMENT_DYNCREATE(CThumbnailsView, CMyScrollView)
+IMPLEMENT_DYNAMIC(CThumbnailsView, CMyScrollView)
 
 BEGIN_MESSAGE_MAP(CThumbnailsView, CMyScrollView)
 	ON_WM_ERASEBKGND()
@@ -69,7 +69,7 @@ END_MESSAGE_MAP()
 
 CThumbnailsView::CThumbnailsView()
 	: m_bInsideUpdateView(false), m_nPageCount(0), m_bVisible(false),
-	  m_pThread(NULL), m_pIdleThread(NULL), m_nSelectedPage(-1)
+	  m_pThread(NULL), m_pIdleThread(NULL), m_nSelectedPage(-1), m_pDoc(NULL)
 {
 	CFont systemFont;
 	CreateSystemDialogFont(systemFont);
@@ -358,7 +358,8 @@ void CThumbnailsView::OnLButtonDown(UINT nFlags, CPoint point)
 		if (m_nSelectedPage != -1)
 		{
 			InvalidatePage(m_nSelectedPage);
-			((CChildFrame*)GetParentFrame())->GetDjVuView()->RenderPage(nPage);
+			CDjVuView* pView = ((CChildFrame*)GetParentFrame())->GetDjVuView();
+			pView->GoToPage(nPage, pView->GetCurrentPage());
 		}
 
 		UpdateWindow();
@@ -370,7 +371,7 @@ void CThumbnailsView::OnLButtonDown(UINT nFlags, CPoint point)
 void CThumbnailsView::OnContextMenu(CWnd* pWnd, CPoint point)
 {
 #ifndef ELIBRA_READER
-	if (point.x < 0 || point.y < 0)
+/*	if (point.x < 0 || point.y < 0)
 		point = CPoint(0, 0);
 
 	CRect rcClient;
@@ -397,6 +398,7 @@ void CThumbnailsView::OnContextMenu(CWnd* pWnd, CPoint point)
 	ClientToScreen(&point);
 	pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON, point.x, point.y,
 		GetMainFrame());
+*/
 #endif
 }
 

@@ -14,7 +14,7 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program; if not, write to the Free Software
 //	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//  http://www.gnu.org/copyleft/gpl.html
+//	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
 
@@ -25,6 +25,7 @@
 #include "MainFrm.h"
 #include "DjVuView.h"
 #include "ThumbnailsView.h"
+#include "BookmarksView.h"
 #include "NavPane.h"
 #include "AppSettings.h"
 
@@ -51,19 +52,12 @@ END_MESSAGE_MAP()
 CChildFrame::CChildFrame()
 {
 	m_bCreated = false;
+	m_pThumbnailsView = NULL;
+	m_pBookmarksView = NULL;
 }
 
 CChildFrame::~CChildFrame()
 {
-}
-
-
-BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
-{
-	if (!CMDIChildWnd::PreCreateWindow(cs))
-		return FALSE;
-
-	return TRUE;
 }
 
 
@@ -125,6 +119,8 @@ void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 
 	if (m_bCreated)
 		m_wndSplitter.UpdateNavPane();
+
+	OnUpdateFrameTitle(TRUE);
 }
 
 void CChildFrame::ActivateFrame(int nCmdShow)
@@ -144,34 +140,35 @@ BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 	m_wndSplitter.CreateView(0, 1, RUNTIME_CLASS(CDjVuView),
 		CSize(0, 0), pContext);
 
-	CNavPaneWnd* pNavPane = GetNavPane();
-/*
-	CTreeCtrl* pTreeCtrl = new CTreeCtrl();
-	pTreeCtrl->Create(WS_VISIBLE | WS_TABSTOP | WS_CHILD
-		| TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES
-		| TVS_DISABLEDRAGDROP, CRect(), pNavPane, 0);
-	pNavPane->AddTab("Bookmarks", pTreeCtrl);
-
-	CEdit* pEditCtrl = new CEdit();
-	pEditCtrl->Create(WS_VISIBLE | WS_TABSTOP | WS_CHILD
-		| WS_HSCROLL | WS_VSCROLL
-		| ES_AUTOHSCROLL | ES_AUTOVSCROLL | ES_MULTILINE
-		| ES_WANTRETURN, CRect(), pNavPane, 1);
-	pNavPane->AddTab("Thumbnails", pEditCtrl);
-*/
-	CThumbnailsView* pView = (CThumbnailsView*)RUNTIME_CLASS(CThumbnailsView)->CreateObject();
-	pView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
-		| WS_HSCROLL | WS_VSCROLL, CRect(), pNavPane, 2);
-	pNavPane->AddTab("Thumbnails", pView);
-	pView->SetDocument((CDjVuDoc*)pContext->m_pCurrentDoc);
+	m_bCreated = true;
 
 	SetActiveView(GetDjVuView());
 	GetDjVuView()->SetFocus();
-
-	m_bCreated = true;
 	m_wndSplitter.UpdateNavPane();
 
 	return TRUE;
+}
+
+void CChildFrame::CreateNavPanes()
+{
+	CNavPaneWnd* pNavPane = GetNavPane();
+	CDjVuDoc* pDoc = GetActiveDocument();
+
+	if (pDoc->GetBookmarks() != NULL)
+	{
+		m_pBookmarksView = new CBookmarksView();
+		m_pBookmarksView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
+			| TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP
+			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 1);
+		pNavPane->AddTab(_T("Bookmarks"), m_pBookmarksView);
+		m_pBookmarksView->SetDocument(pDoc);
+	}
+
+	m_pThumbnailsView = new CThumbnailsView();
+	m_pThumbnailsView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
+		| WS_HSCROLL | WS_VSCROLL, CRect(), pNavPane, 2);
+	pNavPane->AddTab(_T("Thumbnails"), m_pThumbnailsView);
+	m_pThumbnailsView->SetDocument(pDoc);
 }
 
 void CChildFrame::OnCollapsePane()
@@ -187,6 +184,9 @@ void CChildFrame::OnExpandPane()
 
 CDjVuView* CChildFrame::GetDjVuView()
 {
+	if (!m_bCreated)
+		return NULL;
+
 	return static_cast<CDjVuView*>(m_wndSplitter.GetPane(0, 1));
 }
 
@@ -200,8 +200,13 @@ void CChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 	// update our parent window first
 	GetMDIFrame()->OnUpdateFrameTitle(bAddToTitle);
 
-	if ((GetStyle() & FWS_ADDTOTITLE) == 0)
-		return;     // leave child window alone!
+	if (IsZoomed())
+	{
+		// Fool Windows so that it will not add child frame title
+		// in square brackets to the main window title
+		AfxSetWindowText(m_hWnd, _T(""));
+		return;
+	}
 
 	CDocument* pDocument = GetActiveDocument();
 	if (bAddToTitle)
@@ -212,24 +217,55 @@ void CChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 		else
 			_tcsncpy(szText, pDocument->GetTitle(), _countof(szText));
 
-#ifdef ELIBRA_READER
-		// Strip extension from the document name
-		TCHAR* pPos = _tcsrchr(szText, '\\');
-		TCHAR* pPos2 = _tcsrchr(szText, '/');
-
-		TCHAR* pDotPos = _tcschr(szText, '.');
-		if (pDotPos != NULL && pDotPos > pPos && pDotPos > pPos2)
-			*pDotPos = '\0';
-#endif
-
 		// set title if changed, but don't remove completely
 		AfxSetWindowText(m_hWnd, szText);
 	}
 }
 
-CDocument* CChildFrame::GetActiveDocument()
+void CChildFrame::OnUpdateFrameMenu(
+		BOOL bActivate, CWnd* pActivateWnd, HMENU hMenuAlt)
 {
-	return GetDjVuView()->GetDocument();
+	// Fixed MFC's CMDIChildWnd::OnUpdateFrameMenu
+	// Do not pass our Windows menu to Win32, we will build window list ourselves
+
+	CMDIFrameWnd* pFrame = GetMDIFrame();
+	if (hMenuAlt == NULL && bActivate)
+	{
+		// attempt to get default menu from document
+		CDocument* pDoc = GetActiveDocument();
+		if (pDoc != NULL)
+			hMenuAlt = pDoc->GetDefaultMenu();
+	}
+
+	// use default menu stored in frame if none from document
+	if (hMenuAlt == NULL)
+		hMenuAlt = m_hMenuShared;
+
+	if (hMenuAlt != NULL && bActivate)
+	{
+		ASSERT(pActivateWnd == this);
+
+		// activating child, set parent menu
+		::SendMessage(pFrame->m_hWndMDIClient, WM_MDISETMENU,
+			(WPARAM)hMenuAlt, NULL);
+	}
+	else if (hMenuAlt != NULL && !bActivate && pActivateWnd == NULL)
+	{
+		// destroying last child
+		::SendMessage(pFrame->m_hWndMDIClient, WM_MDISETMENU,
+			(WPARAM)pFrame->m_hMenuDefault, NULL);
+	}
+	else
+	{
+		// refresh MDI Window menu (even if non-shared menu)
+		::SendMessage(pFrame->m_hWndMDIClient, WM_MDIREFRESHMENU, 0, 0);
+	}
+}
+
+CDjVuDoc* CChildFrame::GetActiveDocument()
+{
+	CDjVuView* pView = GetDjVuView();
+	return (pView != NULL ? pView->GetDocument() : NULL);
 }
 
 BOOL CChildFrame::OnEraseBkgnd(CDC* pDC)

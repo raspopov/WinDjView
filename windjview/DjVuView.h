@@ -14,7 +14,7 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program; if not, write to the Free Software
 //	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//  http://www.gnu.org/copyleft/gpl.html
+//	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
 
@@ -48,7 +48,9 @@ public:
 
 // Operations
 public:
-	void RenderPage(int nPage, int nTimeout = -1);
+	void GoToPage(int nPage, int nLinkPage = -1, bool bAddToHistory = true);
+	void GoToURL(const GUTF8String& url, int nLinkPage = -1, bool bAddToHistory = true);
+
 	int GetPageCount() const { return m_nPageCount; }
 	int GetCurrentPage() const;
 	int GetZoomType() const { return m_nZoomType; }
@@ -56,7 +58,6 @@ public:
 	void ZoomTo(int nZoomType, double fZoom = 100.0);
 	int GetLayout() const { return m_nLayout; }
 	int GetRotate() const { return m_nRotate; }
-	void GoToURL(const GUTF8String& url, int nLinkPage, bool bAddToHistory = true);
 
 	enum ZoomType
 	{
@@ -101,6 +102,7 @@ protected:
 	int m_nPage, m_nPageCount;
 	CSize m_szDisplay;
 	void CalcTopPage();
+	void RenderPage(int nPage, int nTimeout = -1);
 
 	bool InvalidatePage(int nPage);
 	void DrawPage(CDC* pDC, int nPage);
@@ -213,7 +215,6 @@ protected:
 	int m_nLinkPage;
 	GP<GMapArea> GetHyperlinkFromPoint(CPoint point, int* pnPage = NULL);
 	void UpdateActiveHyperlink(CPoint point);
-	void GoToPage(int nPage, int nLinkPage, bool bAddToHistory = true);
 
 	struct View
 	{

@@ -14,7 +14,7 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program; if not, write to the Free Software
 //	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//  http://www.gnu.org/copyleft/gpl.html
+//	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
 
@@ -594,7 +594,7 @@ CDocument* CDjViewApp::FindOpenDocument(LPCTSTR lpszFileName)
 	POSITION pos = GetFirstDocTemplatePosition();
 	while (pos != NULL)
 	{
-		CDocTemplate* pTemplate = (CDocTemplate*)GetNextDocTemplate(pos);
+		CDocTemplate* pTemplate = GetNextDocTemplate(pos);
 		ASSERT_KINDOF(CDocTemplate, pTemplate);
 
 		CDocument* pDocument = NULL;

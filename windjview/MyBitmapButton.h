@@ -21,20 +21,17 @@
 #pragma once
 
 
-// CMyToolBar
+// CMyBitmapButton
 
-class CMyToolBar : public CToolBar
+class CMyBitmapButton : public CBitmapButton
 {
-	DECLARE_DYNAMIC(CMyToolBar)
+	DECLARE_DYNAMIC(CMyBitmapButton)
 
 public:
-	CMyToolBar();
-	virtual ~CMyToolBar();
-
-	void SetSizes(SIZE sizeButton, SIZE sizeImage);
-	virtual void DrawBorders(CDC* pDC, CRect& rect);
+	CMyBitmapButton();
+	virtual ~CMyBitmapButton();
 
 protected:
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	DECLARE_MESSAGE_MAP()
 };
-

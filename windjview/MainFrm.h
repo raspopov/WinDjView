@@ -14,7 +14,7 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program; if not, write to the Free Software
 //	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//  http://www.gnu.org/copyleft/gpl.html
+//	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
 
@@ -23,6 +23,7 @@
 #include "MyToolBar.h"
 #include "MyStatusBar.h"
 #include "MyComboBox.h"
+#include "MyBitmapButton.h"
 #include "FindDlg.h"
 
 
@@ -38,7 +39,7 @@ public:
 	CFindDlg* m_pFindDlg;
 
 #ifdef ELIBRA_READER
-	CBitmapButton m_btnLink;
+	CMyBitmapButton m_btnLink;
 #endif
 
 // Operations
@@ -50,6 +51,7 @@ public:
 // Overrides
 public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
 
 // Implementation
 public:
@@ -86,6 +88,8 @@ protected:
 	afx_msg void OnUpdateViewFind(CCmdUI *pCmdUI);
 	afx_msg void OnGoToHomepage();
 	afx_msg void OnHelpContents();
+	afx_msg void OnUpdateWindowList(CCmdUI *pCmdUI);
+	afx_msg void OnActivateWindow(UINT nID);
 	DECLARE_MESSAGE_MAP()
 };
 

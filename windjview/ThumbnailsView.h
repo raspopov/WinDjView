@@ -14,7 +14,7 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program; if not, write to the Free Software
 //	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//  http://www.gnu.org/copyleft/gpl.html
+//	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
 
@@ -30,9 +30,11 @@ class CThumbnailsThread;
 
 class CThumbnailsView : public CMyScrollView
 {
-protected: // create from serialization only
+	DECLARE_DYNAMIC(CThumbnailsView)
+
+public:
 	CThumbnailsView();
-	DECLARE_DYNCREATE(CThumbnailsView)
+	virtual ~CThumbnailsView();
 
 // Attributes
 public:
@@ -47,7 +49,6 @@ public:
 
 // Implementation
 public:
-	virtual ~CThumbnailsView();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;

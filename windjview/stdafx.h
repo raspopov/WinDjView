@@ -14,7 +14,7 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program; if not, write to the Free Software
 //	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//  http://www.gnu.org/copyleft/gpl.html
+//	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
 
@@ -73,3 +73,7 @@ using namespace std;
 #include "libdjvu/BSByteStream.h"
 #include "libdjvu/DataPool.h"
 #include "libdjvu/DjVuText.h"
+
+#define DJVUREFAPI
+#include "libdjvu/DjVmNav.h"
+#include <afxcview.h>
