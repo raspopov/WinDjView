@@ -157,7 +157,11 @@ void CDjVuView::OnDraw(CDC* pDC)
 			dcSrc.CreateCompatibleDC(pDC);
 			CBitmap* pOldBmpSrc = dcSrc.SelectObject(m_pBmpDisplay);
 
-			pDC->BitBlt(0, 0, m_szDisplay.cx, m_szDisplay.cy, &dcSrc, 0, 0, SRCCOPY);
+			CRect rcClip;
+			pDC->GetClipBox(rcClip);
+
+			pDC->BitBlt(rcClip.left, rcClip.top, rcClip.Width(), rcClip.Height(),
+				&dcSrc, rcClip.left, rcClip.top, SRCCOPY);
 
 			dcSrc.SelectObject(pOldBmpSrc);
 		}
@@ -270,10 +274,14 @@ void CDjVuView::DrawVisible(CDC* pDC)
 
 	CPoint ptOffset = GetScrollPosition();
 
-	CRect rcStretched(CPoint(0, 0), m_szDisplayPage);
+	CRect rcClip;
+	pDC->GetClipBox(rcClip);
 
-	CPoint ptPartOffset(max(ptOffset.x - m_ptPageOffset.x, 0), max(ptOffset.y - m_ptPageOffset.y, 0));
-	CSize szPart(min(rcClient.Width(), m_szDisplayPage.cx), min(rcClient.Height(), m_szDisplayPage.cy));
+	CPoint ptPartOffset(max(rcClip.left - m_ptPageOffset.x, 0),
+						max(rcClip.top - m_ptPageOffset.y, 0));
+
+	CSize szPageClip = m_szDisplayPage - ptPartOffset;
+	CSize szPart(min(rcClip.Width(), szPageClip.cx), min(rcClip.Height(), szPageClip.cy));
 	CRect rcPart(CPoint(ptPartOffset.x, m_szDisplayPage.cy - szPart.cy - ptPartOffset.y), szPart);
 
 	CDIB* pBmpStretched = NULL;
@@ -289,7 +297,7 @@ void CDjVuView::DrawVisible(CDC* pDC)
 	dcDest.SetViewportOrg(-ptOffset);
 
 	COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
-	dcDest.FillSolidRect(0, 0, m_szDisplay.cx, m_szDisplay.cy, clrWindow);
+	dcDest.FillSolidRect(rcClip, clrWindow);
 
 	CPen pen(PS_SOLID, 1, ::GetSysColor(COLOR_3DDKSHADOW));
 	CPen* pOldPenDest = dcDest.SelectObject(&pen);
@@ -300,7 +308,8 @@ void CDjVuView::DrawVisible(CDC* pDC)
 	if (pBmpStretched != NULL)
 		pBmpStretched->DrawDC(&dcDest, ptPartOffset);
 
-	pDC->BitBlt(0, 0, m_szDisplay.cx, m_szDisplay.cy, &dcDest, 0, 0, SRCCOPY);
+	pDC->BitBlt(rcClip.left, rcClip.top, rcClip.Width(), rcClip.Height(),
+		&dcDest, rcClip.left, rcClip.top, SRCCOPY);
 
 	dcDest.SelectObject(pOldBmpDest);
 	dcDest.SelectObject(pOldPenDest);
@@ -556,24 +565,26 @@ void CDjVuView::OnSize(UINT nType, int cx, int cy)
 
 void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	if (nChar == VK_DOWN)
+	switch (nChar)
 	{
+	case VK_DOWN:
 		OnScrollBy(CSize(0, 3*m_lineDev.cy), TRUE);
-	}
-	else if (nChar == VK_UP)
-	{
+		break;
+
+	case VK_UP:
 		OnScrollBy(CSize(0, -3*m_lineDev.cy), TRUE);
-	}
-	if (nChar == VK_RIGHT)
-	{
+		break;
+
+	case VK_RIGHT:
 		OnScrollBy(CSize(3*m_lineDev.cx, 0), TRUE);
-	}
-	else if (nChar == VK_LEFT)
-	{
+		break;
+
+	case VK_LEFT:
 		OnScrollBy(CSize(-3*m_lineDev.cx, 0), TRUE);
-	}
-	else if (nChar == VK_NEXT)
-	{
+		break;
+
+	case VK_NEXT:
+	case VK_SPACE:
 		if (!OnScrollBy(CSize(0, m_pageDev.cy), TRUE) && m_nPage < m_nPageCount - 1)
 		{
 			CPoint ptScroll = GetScrollPosition();
@@ -581,9 +592,10 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			OnScrollBy(CPoint(ptScroll.x, 0) - GetScrollPosition(), TRUE);
 			Invalidate();
 		}
-	}
-	if (nChar == VK_PRIOR)
-	{
+		break;
+
+	case VK_PRIOR:
+	case VK_BACK:
 		if (!OnScrollBy(CSize(0, -m_pageDev.cy), TRUE) && m_nPage > 0)
 		{
 			CPoint ptScroll = GetScrollPosition();
@@ -591,6 +603,7 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			OnScrollBy(CPoint(ptScroll.x, m_szDisplay.cy) - GetScrollPosition(), TRUE);
 			Invalidate();
 		}
+		break;
 	}
 
 	CScrollView::OnKeyDown(nChar, nRepCnt, nFlags);
@@ -1007,6 +1020,13 @@ void CDjVuView::OnPageInformation()
 			strFormatted.Format(_T("\nCompression ratio: %.1f (%.1f Kb)"),
 				fRatio, fSize);
 		}
+		else if (strLine.Find(_T("DjVuFile.text")) == 0)
+		{
+			strLine = strLine.Mid(13);
+			_stscanf(strLine, _T("%lf%s"), &fSize, szName);
+			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tText (text, etc.)."),
+				fSize, szName);
+		}
 		else
 			strFormatted = strLine;
 
@@ -1022,7 +1042,6 @@ void CDjVuView::OnPageInformation()
 		//   DjVuFile.nav_dir
 		//   DjVuFile.anno1
 		//   DjVuFile.anno2
-		//   DjVuFile.text
 
 		strInfo += (!strInfo.IsEmpty() ? _T("\n") : _T("")) + strFormatted;
 	}
