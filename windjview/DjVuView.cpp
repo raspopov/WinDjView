@@ -101,7 +101,7 @@ CDjVuView::CDjVuView()
 	  m_nLayout(SinglePage), m_nRotate(0), m_bDragging(false),
 	  m_pRenderThread(NULL), m_bInsideUpdateView(false), m_bClick(false),
 	  m_historyPos(m_history.end()), m_evtRendered(false, true),
-	  m_nPendingPage(-1)
+	  m_nPendingPage(-1), m_nClickedPage(-1)
 {
 }
 
@@ -487,7 +487,6 @@ void CDjVuView::OnInitialUpdate()
 
 BOOL CDjVuView::OnEraseBkgnd(CDC* pDC)
 {
-	CBrush br(GetSysColor(COLOR_WINDOW));
 	return true;
 }
 
@@ -644,6 +643,7 @@ void CDjVuView::UpdateView(UpdateType updateType)
 		if (m_szDisplay.cx < rcClient.Width())
 			m_szDisplay.cx = rcClient.Width();
 
+		// Center pages vertically
 		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 		{
 			Page& page = m_pages[nPage];
@@ -653,6 +653,21 @@ void CDjVuView::UpdateView(UpdateType updateType)
 			page.ptOffset.Offset(1, 0);
 
 			page.rcDisplay.OffsetRect(page.ptOffset.x, 0);
+		}
+
+		if (m_szDisplay.cy < rcClient.Height())
+		{
+			int nOffset = (rcClient.Height() - m_szDisplay.cy) / 2;
+			for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+			{
+				Page& page = m_pages[nPage];
+				page.rcDisplay.OffsetRect(0, nOffset);
+				page.ptOffset.Offset(0, nOffset);
+			}
+
+			m_pages[0].rcDisplay.top = 0;
+			m_pages.back().rcDisplay.bottom = rcClient.Height();
+			m_szDisplay.cy = rcClient.Height();
 		}
 
 		if (updateType == TOP)
@@ -1374,14 +1389,14 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	CPoint ptCursor;
 	::GetCursorPos(&ptCursor);
 	ScreenToClient(&ptCursor);
-	int nPage = GetPageFromPoint(ptCursor);
-	const Page& page = m_pages[nPage];
 
-	if (page.pAnt != NULL)
+	int nPage = GetPageFromPoint(ptCursor);
+	if (nPage != -1 && m_pages[nPage].pAnt != NULL)
 	{
-		for (GPosition pos = page.pAnt->map_areas; pos; ++pos)
+		GP<DjVuANT> pAnt = m_pages[nPage].pAnt;
+		for (GPosition pos = pAnt->map_areas; pos; ++pos)
 		{
-			GP<GMapArea> pArea = page.pAnt->map_areas[pos];
+			GP<GMapArea> pArea = pAnt->map_areas[pos];
 			CRect rcArea = TranslatePageRect(nPage, pArea->get_bound_rect());
 			rcArea.OffsetRect(-GetDeviceScrollPosition());
 
@@ -1552,9 +1567,24 @@ int CDjVuView::GetPageFromPoint(CPoint point)
 		point += GetScrollPosition();
 
 		int nPage = m_nPage;
+		if (nPage == 0)
+		{
+			int nTop = m_pages[nPage].ptOffset.y - 1;
+			if (point.y < nTop)
+				return -1;
+		}
+
 		while (nPage < m_nPageCount - 1 &&
 				point.y >= m_pages[nPage].rcDisplay.bottom)
 			++nPage;
+
+		if (nPage == m_nPageCount - 1)
+		{
+			int nBottom = m_pages[nPage].ptOffset.y + m_pages[nPage].szDisplay.cy
+					+ c_nPageGap - 1;
+			if (point.y >= nBottom)
+				return -1;
+		}
 
 		return nPage;
 	}
@@ -1567,6 +1597,7 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 
 	CRect rcClient;
 	GetClientRect(rcClient);
+	ClientToScreen(rcClient);
 
 	if (!rcClient.PtInRect(point))
 	{
@@ -1576,6 +1607,8 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 
 	ScreenToClient(&point);
 	m_nClickedPage = GetPageFromPoint(point);
+	if (m_nClickedPage == -1)
+		return;
 
 	CMenu menu;
 	menu.LoadMenu(IDR_POPUP);
@@ -1590,7 +1623,15 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 
 void CDjVuView::OnPageInformation()
 {
+	if (m_nClickedPage == -1)
+		return;
+
 	GP<DjVuImage> pImage = GetDocument()->GetPage(m_nClickedPage);
+	if (pImage == NULL)
+	{
+		AfxMessageBox(_T("Error decoding page"), MB_ICONERROR | MB_OK);
+		return;
+	}
 
 	CString strDescr = pImage->get_long_description();
 	CString strInfo, strLine;
@@ -2416,6 +2457,12 @@ void CDjVuView::OnExportPage()
 	strFileName = dlg.GetPathName();
 
 	GP<DjVuImage> pImage = GetDocument()->GetPage(m_nClickedPage);
+	if (pImage == NULL)
+	{
+		AfxMessageBox(_T("Error decoding page"), MB_ICONERROR | MB_OK);
+		return;
+	}
+
 	pImage->set_rotate(m_nRotate);
 
 	GRect rect(0, 0, pImage->get_width(), pImage->get_height());
@@ -2696,6 +2743,9 @@ void CDjVuView::UpdateActiveHyperlink(CPoint point)
 GP<GMapArea> CDjVuView::GetHyperlinkFromPoint(CPoint point, int* pnPage)
 {
 	int nPage = GetPageFromPoint(point);
+	if (nPage == -1)
+		return NULL;
+
 	const Page& page = m_pages[nPage];
 
 	CRect rcClient;

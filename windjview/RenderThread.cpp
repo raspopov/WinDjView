@@ -138,20 +138,24 @@ void CRenderThread::RemoveFromQueue(int nPage)
 void CRenderThread::Render(Job& job)
 {
 	GP<DjVuImage> pImage = m_pDoc->GetPage(job.nPage);
+	CDIB* pBitmap = NULL;
 
-	pImage->set_rotate(job.nRotate);
+	if (pImage != NULL)
+	{
+		pImage->set_rotate(job.nRotate);
 
-	GRect rcAll(job.rcAll.left, job.rcAll.top, job.rcAll.Width(), job.rcAll.Height());
-	GRect rcClip(job.rcClip.left, job.rcClip.top, job.rcClip.Width(), job.rcClip.Height());
-	if (rcAll.isempty() || rcClip.isempty() || !rcAll.contains(rcClip))
-		return;
+		GRect rcAll(job.rcAll.left, job.rcAll.top, job.rcAll.Width(), job.rcAll.Height());
+		GRect rcClip(job.rcClip.left, job.rcClip.top, job.rcClip.Width(), job.rcClip.Height());
+		if (rcAll.isempty() || rcClip.isempty() || !rcAll.contains(rcClip))
+			return;
 
-	CDIB* pBitmap = Render(pImage, rcClip, rcAll);
+		pBitmap = Render(pImage, rcClip, rcAll);
+	}
 
 	if (pBitmap == NULL || pBitmap->m_hObject == NULL)
 	{
 		delete pBitmap;
-		return;
+		pBitmap = NULL;
 	}
 
 	if (m_pOwner->m_nPendingPage == job.nPage)

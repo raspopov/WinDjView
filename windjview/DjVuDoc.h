@@ -51,11 +51,11 @@ protected: // create from serialization only
 
 // Operations
 public:
-	int GetPageCount() const { return m_pDjVuDoc->get_pages_num(); }
 	GP<DjVuImage> GetPage(int nPage);
 	PageInfo GetPageInfo(int nPage);
 	void RemoveFromCache(int nPage);
 	bool IsPageCached(int nPage);
+	int GetPageCount() const { return m_nPageCount; }
 
 	bool HasText() const { return m_bHasText; }
 	int GetPageFromId(const GUTF8String& strPageId) const;
@@ -88,6 +88,7 @@ protected:
 	PageInfo ReadPageInfo(int nPage);
 	GP<DjVuDocument> m_pDjVuDoc;
 	vector<PageData> m_pages;
+	int m_nPageCount;
 	CCriticalSection m_lock;
 	bool m_bHasText;
 
