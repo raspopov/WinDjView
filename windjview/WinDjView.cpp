@@ -34,7 +34,7 @@
 #define new DEBUG_NEW
 #endif
 
-CString CURRENT_VERSION = _T("0.3.1");
+CString CURRENT_VERSION = _T("0.3.2");
 
 
 const TCHAR* s_pszDisplaySettings = _T("Display");
@@ -53,6 +53,10 @@ const TCHAR* s_pszMode = _T("mode");
 const TCHAR* s_pszNavCollapsed = _T("nav-collapsed");
 const TCHAR* s_pszNavWidth = _T("nav-width");
 const TCHAR* s_pszGenAllThumbnails = _T("gen-all-thumbs");
+const TCHAR* s_pszAdjustDisplay = _T("adjust");
+const TCHAR* s_pszGamma = _T("gamma");
+const TCHAR* s_pszBrightness = _T("brightness");
+const TCHAR* s_pszContrast = _T("contrast");
 
 const TCHAR* s_pszGlobalSettings = _T("Settings");
 const TCHAR* s_pszRestoreAssocs = _T("assocs");
@@ -372,6 +376,10 @@ void CDjViewApp::LoadSettings()
 	CAppSettings::bNavPaneCollapsed = !!GetProfileInt(s_pszDisplaySettings, s_pszNavCollapsed, 0);
 	CAppSettings::nNavPaneWidth = GetProfileInt(s_pszDisplaySettings, s_pszNavWidth, 200);
 	CAppSettings::bGenAllThumbnails = !!GetProfileInt(s_pszDisplaySettings, s_pszGenAllThumbnails, 1);
+	CAppSettings::bAdjustDisplay = !!GetProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, 0);
+	CAppSettings::fGamma = GetProfileDouble(s_pszDisplaySettings, s_pszGamma, 1.0);
+	CAppSettings::nBrightness = GetProfileInt(s_pszDisplaySettings, s_pszBrightness, 0);
+	CAppSettings::nContrast = GetProfileInt(s_pszDisplaySettings, s_pszContrast, 0);
 
 	CAppSettings::bRestoreAssocs = !!GetProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, 0);
 
@@ -402,6 +410,10 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySettings, s_pszNavCollapsed, CAppSettings::bNavPaneCollapsed);
 	WriteProfileInt(s_pszDisplaySettings, s_pszNavWidth, CAppSettings::nNavPaneWidth);
 	WriteProfileInt(s_pszDisplaySettings, s_pszGenAllThumbnails, CAppSettings::bGenAllThumbnails);
+	WriteProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, CAppSettings::bAdjustDisplay);
+	WriteProfileDouble(s_pszDisplaySettings, s_pszGamma, CAppSettings::fGamma);
+	WriteProfileInt(s_pszDisplaySettings, s_pszBrightness, CAppSettings::nBrightness);
+	WriteProfileInt(s_pszDisplaySettings, s_pszContrast, CAppSettings::nContrast);
 
 	WriteProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, CAppSettings::bRestoreAssocs);
 
@@ -553,6 +565,7 @@ void CDjViewApp::OnFileSettings()
 		SaveSettings();
 
 		// Thumbnails settings may have changed, let all thumbnail views know
+		// Also let all views know about new gamma settings
 		POSITION pos = GetFirstDocTemplatePosition();
 		while (pos != NULL)
 		{
@@ -566,8 +579,8 @@ void CDjViewApp::OnFileSettings()
 				CDjVuView* pView = ((CDjVuDoc*)pDoc)->GetDjVuView();
 				CChildFrame* pFrame = (CChildFrame*)pView->GetParentFrame();
 
-				if (pFrame->GetThumbnailsView() != NULL)
-					pFrame->GetThumbnailsView()->OnSettingsChanged();
+				pFrame->GetDjVuView()->OnSettingsChanged();
+				pFrame->GetThumbnailsView()->OnSettingsChanged();
 			}
 		}
 	}

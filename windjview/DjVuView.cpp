@@ -109,7 +109,7 @@ CDjVuView::CDjVuView()
 	  m_pRenderThread(NULL), m_bInsideUpdateView(false), m_bClick(false),
 	  m_evtRendered(false, true), m_nPendingPage(-1), m_nClickedPage(-1),
 	  m_nMode(DRAG), m_pOffscreenBitmap(NULL), m_szOffscreen(0, 0),
-	  m_bHasSelection(false)
+	  m_bHasSelection(false), m_fGamma(1.0), m_nBrightness(0), m_nContrast(0)
 {
 }
 
@@ -416,6 +416,9 @@ void CDjVuView::OnInitialUpdate()
 	m_nLayout = CAppSettings::nDefaultLayout;
 #ifndef ELIBRA_READER
 	m_nMode = CAppSettings::nDefaultMode;
+	m_fGamma = (CAppSettings::bAdjustDisplay ? CAppSettings::fGamma : 1.0);
+	m_nBrightness = (CAppSettings::bAdjustDisplay ? CAppSettings::nBrightness : 0);
+	m_nContrast = (CAppSettings::bAdjustDisplay ? CAppSettings::nContrast : 0);
 #endif
 
 	m_nPageCount = GetDocument()->GetPageCount();
@@ -3407,4 +3410,22 @@ void CDjVuView::OnFileExportText()
 void CDjVuView::OnUpdateFileExportText(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(GetDocument()->HasText());
+}
+
+void CDjVuView::OnSettingsChanged()
+{
+#ifndef ELIBRA_READER
+	double fGamma = (CAppSettings::bAdjustDisplay ? CAppSettings::fGamma : 1.0);
+	int nBrightness = (CAppSettings::bAdjustDisplay ? CAppSettings::nBrightness : 0);
+	int nContrast = (CAppSettings::bAdjustDisplay ? CAppSettings::nContrast : 0);
+	if (fGamma != m_fGamma || nBrightness != m_nBrightness || nContrast != m_nContrast)
+	{
+		m_fGamma = fGamma;
+		m_nBrightness = nBrightness;
+		m_nContrast = nContrast;
+
+		DeleteBitmaps();
+		UpdateVisiblePages();
+	}
+#endif
 }

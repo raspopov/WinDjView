@@ -154,9 +154,7 @@ IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
-        MENUITEM SEPARATOR
         MENUITEM "Settin&gs...",                ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
@@ -312,7 +310,7 @@ CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,10,9,20,20
-    LTEXT           "WinDjView Version 0.3.1",IDC_STATIC,40,7,119,8,
+    LTEXT           "WinDjView Version 0.3.2",IDC_STATIC,40,7,119,8,
                     SS_NOPREFIX
     LTEXT           "Copyright (C) 2004-2005 Andrew Zhezherun",IDC_STATIC,40,
                     19,149,8
@@ -439,14 +437,14 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS DIALOGEX 0, 0, 219, 126
+IDD_SETTINGS DIALOGEX 0, 0, 219, 201
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,107,105,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,162,105,50,14
+    DEFPUSHBUTTON   "OK",IDOK,106,180,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,162,180,50,14
     GROUPBOX        "File associations",IDC_STATIC,7,7,205,58
     LTEXT           "Press to associate WinDjView with .djvu and .djv files:",
                     IDC_STATIC,15,18,182,9
@@ -454,12 +452,24 @@ BEGIN
     CONTROL         "&Restore associations at program start",
                     IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     15,49,188,10
-    LTEXT           "WinDjView 0.3.1\nby Andrew Zhezherun",IDC_STATIC_ABOUT,
-                    7,105,92,18
     GROUPBOX        "Thumbnails",IDC_STATIC,7,69,205,29
-    CONTROL         "&Generate thumbnails for all pages in background",
+    CONTROL         "Generate &thumbnails for all pages in background",
                     IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,82,188,10
+    GROUPBOX        "Display",IDC_STATIC,7,102,205,69
+    CONTROL         "A&djust settings:",IDC_ADJUST_DISPLAY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,115,97,9
+    LTEXT           "&Brightness: 0",IDC_BRIGHTNESS_TEXT,15,129,61,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,128,
+                    131,12
+    LTEXT           "&Contrast: 0",IDC_CONTRAST_TEXT,15,142,55,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,141,
+                    131,12
+    LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,15,155,45,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,154,131,
+                    12
+    LTEXT           "WinDjView 0.3.2\nby Andrew Zhezherun",IDC_STATIC_ABOUT,
+                    7,180,92,18
 END
 
 IDD_FIND DIALOGEX 0, 0, 287, 45
@@ -492,8 +502,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,1,0
- PRODUCTVERSION 0,3,1,0
+ FILEVERSION 0,3,2,0
+ PRODUCTVERSION 0,3,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -510,12 +520,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Andrew Zhezherun"
             VALUE "FileDescription", "WinDjView"
-            VALUE "FileVersion", "0.3.1"
+            VALUE "FileVersion", "0.3.2"
             VALUE "InternalName", "WinDjView.exe"
             VALUE "LegalCopyright", "Copyright (C) 2004-2005 Andrew Zhezherun.  All rights reserved."
             VALUE "OriginalFilename", "WinDjView.exe"
             VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "0.3.1"
+            VALUE "ProductVersion", "0.3.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -570,7 +580,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 212
         TOPMARGIN, 7
-        BOTTOMMARGIN, 119
+        BOTTOMMARGIN, 194
     END
 
     IDD_FIND, DIALOG
@@ -781,6 +791,13 @@ END
 STRINGTABLE 
 BEGIN
     ID_CHECK_FOR_UPDATE     "Checks program website for available updates\nCheck for update"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_INDICATOR_PAGE       "  Page %d of %d  "
+    ID_INDICATOR_SIZE       "  %s x %s %s  "
+    ID_INDICATOR_ADJUST     "  Adjusted  "
 END
 
 #endif    // English (U.S.) resources

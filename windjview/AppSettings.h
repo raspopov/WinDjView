@@ -47,6 +47,10 @@ struct CAppSettings
 	static int nNavPaneWidth;
 
 	static bool bGenAllThumbnails;
+	static bool bAdjustDisplay;
+	static double fGamma;
+	static int nBrightness;
+	static int nContrast;
 
 	static CPrintSettings printSettings;
 

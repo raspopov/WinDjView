@@ -97,9 +97,20 @@ namespace DJVU {
 
 const GPixel GPixel::WHITE = { 255, 255, 255 };
 const GPixel GPixel::BLACK = {   0,   0,   0 };
+//< Changed for MacDjView project
+// Fix for Mac OS X and Quartz
+#ifdef QUARTZ
+const GPixel GPixel::BLUE  = {   0,   0, 255 };
+const GPixel GPixel::GREEN = {   0, 255,   0 };
+const GPixel GPixel::RED   = { 255,   0,   0 };
+#else
+//>
 const GPixel GPixel::BLUE  = { 255,   0,   0 };
 const GPixel GPixel::GREEN = {   0, 255,   0 };
 const GPixel GPixel::RED   = {   0,   0, 255 };
+//< Changed for MacDjView project
+#endif
+//>
 
 
 //////////////////////////////////////////////////

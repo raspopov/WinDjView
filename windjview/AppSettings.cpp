@@ -51,6 +51,10 @@ bool CAppSettings::bNavPaneCollapsed = false;
 int CAppSettings::nNavPaneWidth = 200;
 
 bool CAppSettings::bGenAllThumbnails = true;
+bool CAppSettings::bAdjustDisplay = false;
+double CAppSettings::fGamma = 1.0;
+int CAppSettings::nBrightness = 0;
+int CAppSettings::nContrast = 0;
 
 int CAppSettings::nCopies = 1;
 bool CAppSettings::bCollate = false;

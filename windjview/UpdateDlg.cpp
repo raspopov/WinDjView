@@ -110,7 +110,7 @@ DWORD WINAPI CUpdateDlg::UpdateThreadProc(LPVOID pvData)
 		bOk = false;
 		e->Delete();
 
-		AfxMessageBox(_T("An error occurred while connecting the server. Please check your internet settings."),
+		AfxMessageBox(_T("An error occurred while connecting to the server. Please check your internet settings."),
 			MB_ICONEXCLAMATION | MB_OK);
 	}
 

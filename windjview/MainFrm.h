@@ -109,6 +109,9 @@ protected:
 	afx_msg void OnUpdateViewBack(CCmdUI *pCmdUI);
 	afx_msg void OnViewForward();
 	afx_msg void OnUpdateViewForward(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateStatusAdjust(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateStatusPage(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateStatusSize(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 };
 

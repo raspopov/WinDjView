@@ -68,6 +68,11 @@ public:
 	GUTF8String GetFullText();
 	void StopDecoding();
 
+	CSize GetPageSize(int nPage) const { return m_pages[nPage].GetSize(m_nRotate); }
+	int GetPageDPI(int nPage) const { return m_pages[nPage].info.nDPI; }
+
+	void OnSettingsChanged();
+
 	enum ZoomType
 	{
 		ZoomPercent = 0,
@@ -126,6 +131,9 @@ protected:
 	double m_fZoom;
 	int m_nLayout;
 	int m_nRotate;
+
+	double m_fGamma;
+	int m_nBrightness, m_nContrast;
 
 	struct Page
 	{

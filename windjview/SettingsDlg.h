@@ -19,6 +19,7 @@
 // $Id$
 
 #pragma once
+#include "afxcmn.h"
 
 
 // CSettingsDlg dialog
@@ -36,15 +37,25 @@ public:
 	BOOL m_bRestoreAssocs;
 	BOOL m_bGenAllThumbnails;
 	CStatic m_ctlAbout;
+	BOOL m_bAdjustDisplay;
+	CSliderCtrl m_sliderBrightness;
+	CSliderCtrl m_sliderContrast;
+	CSliderCtrl m_sliderGamma;
+	CString m_strBrightnessValue;
+	CString m_strContrastValue;
+	CString m_strGammaValue;
 
 protected:
 	CFont m_font;
+	double m_fGammaValue;
+	int m_nBrightnessValue, m_nContrastValue;
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual void OnOK();
 	virtual BOOL OnInitDialog();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-
 	afx_msg void OnAssociate();
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnAdjustDisplay();
 	DECLARE_MESSAGE_MAP()
 };

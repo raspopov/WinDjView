@@ -78,6 +78,9 @@ protected:
 	int m_nRotate;
 	int m_nPagesInRow;
 
+	double m_fGamma;
+	int m_nBrightness, m_nContrast;
+
 	enum UpdateType
 	{
 		TOP = 0,

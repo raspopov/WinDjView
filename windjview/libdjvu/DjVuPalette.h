@@ -304,15 +304,36 @@ inline void
 DjVuPalette::index_to_color(int index, unsigned char *bgr) const
 {
   const PColor &color = palette[index];
+  
+//< Changed for MacDjView project
+// Fix for Mac OS X and Quartz
+#ifdef QUARTZ
+  bgr[2] = color.p[0];
+  bgr[1] = color.p[1];
+  bgr[0] = color.p[2];
+#else
+//>
   bgr[0] = color.p[0];
   bgr[1] = color.p[1];
   bgr[2] = color.p[2];
+//< Changed for MacDjView project
+#endif
+//>
 }
 
 inline void 
 DjVuPalette::index_to_color(int index, GPixel &p) const
 {
+//< Changed for MacDjView project
+// Fix for Mac OS X and Quartz
+#ifdef QUARTZ
+  index_to_color(index, &p.r);
+#else
+//>
   index_to_color(index, &p.b);
+//< Changed for MacDjView project
+#endif
+//>
 }
 
 inline void

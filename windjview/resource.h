@@ -9,6 +9,9 @@
 #define ID_FIND_STRING                  101
 #define ID_EXPAND_PANE                  102
 #define ID_COLLAPSE_PANE                103
+#define ID_INDICATOR_PAGE               104
+#define ID_INDICATOR_SIZE               105
+#define ID_INDICATOR_ADJUST             106
 #define IDR_MAINFRAME                   128
 #define IDR_DjVuTYPE                    129
 #define IDR_ElibTYPE                    130
@@ -67,6 +70,13 @@
 #define IDC_ASSOCIATE                   1039
 #define IDC_STATIC_ABOUT                1041
 #define IDC_FIND                        1042
+#define IDC_ADJUST_DISPLAY              1043
+#define IDC_BRIGHTNESS                  1044
+#define IDC_CONTRAST                    1045
+#define IDC_GAMMA                       1046
+#define IDC_BRIGHTNESS_TEXT             1047
+#define IDC_CONTRAST_TEXT               1048
+#define IDC_GAMMA_TEXT                  1049
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_ZOOM_50                      32777
@@ -126,7 +136,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        148
 #define _APS_NEXT_COMMAND_VALUE         32853
-#define _APS_NEXT_CONTROL_VALUE         1043
-#define _APS_NEXT_SYMED_VALUE           104
+#define _APS_NEXT_CONTROL_VALUE         1050
+#define _APS_NEXT_SYMED_VALUE           107
 #endif
 #endif

@@ -77,6 +77,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_BACK, OnUpdateViewBack)
 	ON_COMMAND(ID_VIEW_FORWARD, OnViewForward)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FORWARD, OnUpdateViewForward)
+	ON_UPDATE_COMMAND_UI(ID_INDICATOR_ADJUST, OnUpdateStatusAdjust)
+	ON_UPDATE_COMMAND_UI(ID_INDICATOR_PAGE, OnUpdateStatusPage)
+	ON_UPDATE_COMMAND_UI(ID_INDICATOR_SIZE, OnUpdateStatusSize)
 #ifdef ELIBRA_READER
 	ON_COMMAND(ID_HELP_CONTENTS, OnHelpContents)
 	ON_COMMAND(IDC_STATIC_LINK, OnGoToHomepage)
@@ -86,6 +89,12 @@ END_MESSAGE_MAP()
 static UINT indicators[] =
 {
 	ID_SEPARATOR
+#ifndef ELIBRA_READER
+	,
+	ID_INDICATOR_ADJUST,
+	ID_INDICATOR_PAGE,
+	ID_INDICATOR_SIZE
+#endif
 };
 
 
@@ -118,9 +127,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 
-	if (!m_wndStatusBar.Create(this) ||
-		!m_wndStatusBar.SetIndicators(indicators,
-		  sizeof(indicators)/sizeof(UINT)))
+	if (!m_wndStatusBar.CreateEx(this, SBT_TOOLTIPS) ||
+		!m_wndStatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT)))
 	{
 		TRACE0("Failed to create status bar\n");
 		return -1;      // fail to create
@@ -745,4 +753,121 @@ void CMainFrame::AddToHistory(CDjVuView* pView, int nPage)
 
 	m_historyPos = m_history.end();
 	--m_historyPos;
+}
+
+void CMainFrame::OnUpdateStatusAdjust(CCmdUI* pCmdUI)
+{
+	static CString strMessage, strTooltip;
+	CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
+
+	double fGamma = (CAppSettings::bAdjustDisplay ? CAppSettings::fGamma : 1.0);
+	int nBrightness = (CAppSettings::bAdjustDisplay ? CAppSettings::nBrightness : 0);
+	int nContrast = (CAppSettings::bAdjustDisplay ? CAppSettings::nContrast : 0);
+	if (fGamma == 1.0 && nBrightness == 0 && nContrast == 0 || MDIGetActive() == NULL)
+	{
+		m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_ADJUST, SBPS_DISABLED | SBPS_NOBORDERS, 0);
+		pCmdUI->Enable(false);
+		strMessage.Empty();
+		return;
+	}
+
+	CString strNewMessage;
+	strNewMessage.LoadString(ID_INDICATOR_ADJUST);
+
+	if (strMessage != strNewMessage)
+	{
+		strMessage = strNewMessage;
+		pCmdUI->SetText(strMessage + _T("          "));
+		status.SetText(strMessage + _T("          "), 1, 0);
+
+		CWindowDC dc(&status);
+		CFont* pOldFont = dc.SelectObject(status.GetFont());
+		m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_ADJUST, 0, dc.GetTextExtent(strMessage).cx + 2);
+		dc.SelectObject(pOldFont);
+	}
+
+	CString strNewTooltip;
+	strNewTooltip.Format(_T("Brightness: %d; Contrast: %d; Gamma: %1.1f"),
+			nBrightness, nContrast, fGamma);
+
+	if (strTooltip != strNewTooltip)
+	{
+		strTooltip = strNewTooltip;
+		status.SetTipText(1, strTooltip);
+	}
+}
+
+void CMainFrame::OnUpdateStatusPage(CCmdUI* pCmdUI)
+{
+	static CString strMessage;
+
+	CMDIChildWnd* pActive = MDIGetActive();
+	if (pActive == NULL)
+	{
+		m_wndStatusBar.SetPaneInfo(2, ID_INDICATOR_PAGE, SBPS_DISABLED | SBPS_NOBORDERS, 0);
+		pCmdUI->Enable(false);
+		strMessage.Empty();
+		return;
+	}
+
+	CDjVuView* pView = (CDjVuView*)pActive->GetActiveView();
+	ASSERT(pView);
+
+	CString strNewMessage;
+	strNewMessage.Format(ID_INDICATOR_PAGE, pView->GetCurrentPage() + 1, pView->GetPageCount());
+
+	if (strMessage != strNewMessage)
+	{
+		CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
+
+		strMessage = strNewMessage;
+		pCmdUI->SetText(strMessage);
+		status.SetText(strMessage, 2, 0);
+
+		CWindowDC dc(&status);
+		CFont* pOldFont = dc.SelectObject(status.GetFont());
+		m_wndStatusBar.SetPaneInfo(2, ID_INDICATOR_PAGE, 0, dc.GetTextExtent(strMessage).cx + 2);
+		dc.SelectObject(pOldFont);
+	}
+}
+
+void CMainFrame::OnUpdateStatusSize(CCmdUI* pCmdUI)
+{
+	static CString strMessage;
+
+	CMDIChildWnd* pActive = MDIGetActive();
+	if (pActive == NULL)
+	{
+		m_wndStatusBar.SetPaneInfo(3, ID_INDICATOR_SIZE, SBPS_DISABLED | SBPS_NOBORDERS, 0);
+		pCmdUI->Enable(false);
+		strMessage.Empty();
+		return;
+	}
+
+	CDjVuView* pView = (CDjVuView*)pActive->GetActiveView();
+	ASSERT(pView);
+	int nCurrentPage = pView->GetCurrentPage();
+
+	CString strNewMessage;
+	CSize szPage = pView->GetPageSize(nCurrentPage);
+	int nDPI = pView->GetPageDPI(nCurrentPage);
+	double fWidth = static_cast<int>(25.4 * szPage.cx / nDPI) * 0.1;
+	double fHeight = static_cast<int>(25.4 * szPage.cy / nDPI) * 0.1;
+
+	strNewMessage.Format(ID_INDICATOR_SIZE, 
+			(LPCTSTR)FormatDouble(fWidth), (LPCTSTR)FormatDouble(fHeight), "cm");
+
+	if (strMessage != strNewMessage)
+	{
+		CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
+
+		strMessage = strNewMessage;
+		pCmdUI->SetText(strMessage);
+		status.SetText(strMessage, 3, 0);
+
+		CWindowDC dc(&status);
+		CFont* pOldFont = dc.SelectObject(status.GetFont());
+		m_wndStatusBar.SetPaneInfo(3, ID_INDICATOR_SIZE, 0, dc.GetTextExtent(strMessage).cx + 2);
+		dc.SelectObject(pOldFont);
+	}
 }

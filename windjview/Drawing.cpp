@@ -25,10 +25,43 @@
 #include "PrintDlg.h"
 #include "ProgressDlg.h"
 #include "DjVuDoc.h"
+#include "AppSettings.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+
+void BuildBrightnessTable(int nBrightness, BYTE* table)
+{
+	for (int i = 0; i < 256; ++i)
+	{
+		double color = table[i] * (100.0 + nBrightness) / 100.0;
+		color = max(0.0, min(color, 255.0));
+		table[i] = static_cast<BYTE>(floor(color + 0.5));
+	}
+}
+
+void BuildContrastTable(int nContrast, BYTE* table)
+{
+	for (int i = 0; i < 256; ++i)
+	{
+		double color = 128.0 + (table[i] - 128.0) * (100 + nContrast) / 100.0;
+		color = max(0.0, min(color, 255.0));
+		table[i] = static_cast<BYTE>(floor(color + 0.5));
+	}
+}
+
+void BuildGammaTable(double fGamma, BYTE* table)
+{
+	double exponent = 1 / fGamma;
+	for (int i = 0; i < 256; ++i)
+	{
+		double color = pow(table[i] / 255.0, exponent) * 255.0;
+		color = max(0.0, min(color, 255.0));
+		table[i] = static_cast<BYTE>(floor(color + 0.5));
+	}
+}
 
 CDIB* RenderPixmap(GPixmap& pm)
 {
@@ -64,6 +97,40 @@ CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip)
 		while ((pNextBit - pBits) % 4 != 0)
 			++pNextBit;
 	}
+
+#ifndef ELIBRA_READER
+	double fGamma = (CAppSettings::bAdjustDisplay ? CAppSettings::fGamma : 1.0);
+	int nBrightness = (CAppSettings::bAdjustDisplay ? CAppSettings::nBrightness : 0);
+	int nContrast = (CAppSettings::bAdjustDisplay ? CAppSettings::nContrast : 0);
+	if (fGamma != 1.0 || nBrightness != 0 || nContrast != 0)
+	{
+		// Adjust gamma
+		BYTE table[256];
+		for (int i = 0; i < 256; ++i)
+			table[i] = i;
+
+		if (nBrightness != 0)
+			BuildBrightnessTable(nBrightness, table);
+		if (nContrast != 0)
+			BuildContrastTable(nContrast, table);
+		if (fGamma != 1.0)
+			BuildGammaTable(fGamma, table);
+
+		pNextBit = pBits;
+		for (int y = rcClip.top; y < rcClip.bottom; ++y)
+		{
+			LPBYTE pEndBit = pNextBit + rcClip.Width()*3;
+			while (pNextBit != pEndBit)
+			{
+				*pNextBit = table[*pNextBit];
+				++pNextBit;
+			}
+
+			while ((pNextBit - pBits) % 4 != 0)
+				++pNextBit;
+		}
+	}
+#endif
 
 	return pBitmap;
 }
@@ -104,6 +171,33 @@ CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip)
 		pBMI->bmiColors[i].rgbRed = level;
 		color -= decrement;
 	}
+
+#ifndef ELIBRA_READER
+	double fGamma = (CAppSettings::bAdjustDisplay ? CAppSettings::fGamma : 1.0);
+	int nBrightness = (CAppSettings::bAdjustDisplay ? CAppSettings::nBrightness : 0);
+	int nContrast = (CAppSettings::bAdjustDisplay ? CAppSettings::nContrast : 0);
+	if (fGamma != 1.0 || nBrightness != 0 || nContrast != 0)
+	{
+		// Adjust gamma
+		BYTE table[256];
+		for (int i = 0; i < 256; ++i)
+			table[i] = i;
+
+		if (nBrightness != 0)
+			BuildBrightnessTable(nBrightness, table);
+		if (nContrast != 0)
+			BuildContrastTable(nContrast, table);
+		if (fGamma != 1.0)
+			BuildGammaTable(fGamma, table);
+
+		for (int i = 0; i < nPaletteEntries; ++i)
+		{
+			pBMI->bmiColors[i].rgbBlue = table[pBMI->bmiColors[i].rgbBlue];
+			pBMI->bmiColors[i].rgbGreen = table[pBMI->bmiColors[i].rgbGreen];
+			pBMI->bmiColors[i].rgbRed = table[pBMI->bmiColors[i].rgbRed];
+		}
+	}
+#endif
 
 	CDIB* pBitmap = CDIB::CreateDIB(pBMI);
 	free(pBMI);

@@ -117,7 +117,7 @@ void CBookmarksView::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
 
-	if (pNMTreeView->action == TVC_BYMOUSE)
+	if (pNMTreeView->action != TVC_BYKEYBOARD)
 	{
 		HTREEITEM hItem = pNMTreeView->itemNew.hItem;
 		if (hItem != NULL)

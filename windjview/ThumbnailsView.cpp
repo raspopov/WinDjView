@@ -72,7 +72,8 @@ END_MESSAGE_MAP()
 CThumbnailsView::CThumbnailsView()
 	: m_bInsideUpdateView(false), m_nPageCount(0), m_bVisible(false),
 	  m_pThread(NULL), m_pIdleThread(NULL), m_nSelectedPage(-1), m_pDoc(NULL),
-	  m_nCurrentPage(-1), m_nRotate(0), m_nPagesInRow(1)
+	  m_nCurrentPage(-1), m_nRotate(0), m_nPagesInRow(1),
+	  m_fGamma(1.0), m_nBrightness(0), m_nContrast(0)
 {
 	CFont systemFont;
 	CreateSystemDialogFont(systemFont);
@@ -287,6 +288,12 @@ void CThumbnailsView::OnInitialUpdate()
 
 	m_nPageCount = GetDocument()->GetPageCount();
 	m_pages.resize(m_nPageCount);
+
+#ifndef ELIBRA_READER
+	m_fGamma = (CAppSettings::bAdjustDisplay ? CAppSettings::fGamma : 1.0);
+	m_nBrightness = (CAppSettings::bAdjustDisplay ? CAppSettings::nBrightness : 0);
+	m_nContrast = (CAppSettings::bAdjustDisplay ? CAppSettings::nContrast : 0);
+#endif
 
 	m_pThread = new CThumbnailsThread(GetDocument(), this);
 	m_pThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
@@ -884,5 +891,23 @@ void CThumbnailsView::StopDecoding()
 
 void CThumbnailsView::OnSettingsChanged()
 {
+#ifndef ELIBRA_READER
+	double fGamma = (CAppSettings::bAdjustDisplay ? CAppSettings::fGamma : 1.0);
+	int nBrightness = (CAppSettings::bAdjustDisplay ? CAppSettings::nBrightness : 0);
+	int nContrast = (CAppSettings::bAdjustDisplay ? CAppSettings::nContrast : 0);
+	if (fGamma != m_fGamma || nBrightness != m_nBrightness || nContrast != m_nContrast)
+	{
+		m_fGamma = fGamma;
+		m_nBrightness = nBrightness;
+		m_nContrast = nContrast;
+
+		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+		{
+			m_pages[nPage].DeleteBitmap();
+			InvalidatePage(nPage);
+		}
+	}
+#endif
+
 	UpdateVisiblePages();
 }
