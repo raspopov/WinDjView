@@ -59,6 +59,8 @@ public:
 	int GetLayout() const { return m_nLayout; }
 	int GetRotate() const { return m_nRotate; }
 
+	void StopDecoding();
+
 	enum ZoomType
 	{
 		ZoomPercent = 0,

@@ -28,6 +28,7 @@
 #include "ThumbnailsThread.h"
 #include "ChildFrm.h"
 #include "DjVuView.h"
+#include "AppSettings.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -303,7 +304,11 @@ void CThumbnailsView::SetRotate(int nRotate)
 	m_pIdleThread->RejectCurrentJob();
 
 	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+	{
 		m_pages[nPage].DeleteBitmap();
+		RecalcPageRects(nPage);
+	}
+
 	UpdateVisiblePages();
 
 	Invalidate();
@@ -759,12 +764,15 @@ void CThumbnailsView::UpdateVisiblePages()
 				m_pages[nBottomPage].rcDisplay.top < nTop + rcClient.Height())
 			++nBottomPage;
 
-		for (int nDiff = m_nPageCount; nDiff >= 1; --nDiff)
+		if (CAppSettings::bGenAllThumbnails)
 		{
-			if (nTopPage - nDiff >= 0)
-				UpdatePage(nTopPage - nDiff, m_pIdleThread);
-			if (nBottomPage + nDiff - 1 < m_nPageCount)
-				UpdatePage(nBottomPage + nDiff - 1, m_pIdleThread);
+			for (int nDiff = m_nPageCount; nDiff >= 1; --nDiff)
+			{
+				if (nTopPage - nDiff >= 0)
+					UpdatePage(nTopPage - nDiff, m_pIdleThread);
+				if (nBottomPage + nDiff - 1 < m_nPageCount)
+					UpdatePage(nBottomPage + nDiff - 1, m_pIdleThread);
+			}
 		}
 
 		for (int nPage = nBottomPage - 1; nPage >= nTopPage; --nPage)
@@ -866,4 +874,15 @@ void CThumbnailsView::EnsureVisible(int nPage)
 		OnScrollBy(CSize(0, nScrollY));
 		UpdateVisiblePages();
 	}
+}
+
+void CThumbnailsView::StopDecoding()
+{
+	m_pThread->Stop();
+	m_pIdleThread->Stop();
+}
+
+void CThumbnailsView::OnSettingsChanged()
+{
+	UpdateVisiblePages();
 }

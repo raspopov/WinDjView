@@ -49,6 +49,8 @@ bool CAppSettings::bRestoreAssocs = false;
 bool CAppSettings::bNavPaneCollapsed = false;
 int CAppSettings::nNavPaneWidth = 200;
 
+bool CAppSettings::bGenAllThumbnails = true;
+
 int CAppSettings::nCopies = 1;
 bool CAppSettings::bCollate = false;
 

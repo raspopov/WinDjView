@@ -50,6 +50,9 @@ public:
 	void SetRotate(int nRotate);
 	int GetRotate() const { return m_nRotate; }
 
+	void StopDecoding();
+	void OnSettingsChanged();
+
 // Overrides
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view

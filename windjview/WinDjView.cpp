@@ -27,6 +27,7 @@
 #include "DjVuView.h"
 #include "AppSettings.h"
 #include "SettingsDlg.h"
+#include "ThumbnailsView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -47,6 +48,7 @@ const TCHAR* s_pszZoomPercent = _T("%");
 const TCHAR* s_pszLayout = _T("layout");
 const TCHAR* s_pszNavCollapsed = _T("nav-collapsed");
 const TCHAR* s_pszNavWidth = _T("nav-width");
+const TCHAR* s_pszGenAllThumbnails = _T("gen-all-thumbs");
 
 const TCHAR* s_pszGlobalSettings = _T("Settings");
 const TCHAR* s_pszRestoreAssocs = _T("assocs");
@@ -283,7 +285,7 @@ void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 	if (rcWeblink.PtInRect(point))
 	{
 #ifndef ELIBRA_READER
-		::ShellExecute(NULL, "open", "http://sourceforge.net/projects/windjview",
+		::ShellExecute(NULL, "open", "http://windjview.sourceforge.net/",
 			NULL, NULL, SW_SHOWNORMAL);
 #else
 		::ShellExecute(NULL, "open", "http://www.starpath.com/elibra",
@@ -363,6 +365,7 @@ void CDjViewApp::LoadSettings()
 	CAppSettings::nDefaultLayout = GetProfileInt(s_pszDisplaySettings, s_pszLayout, 0);
 	CAppSettings::bNavPaneCollapsed = !!GetProfileInt(s_pszDisplaySettings, s_pszNavCollapsed, 0);
 	CAppSettings::nNavPaneWidth = GetProfileInt(s_pszDisplaySettings, s_pszNavWidth, 200);
+	CAppSettings::bGenAllThumbnails = !!GetProfileInt(s_pszDisplaySettings, s_pszGenAllThumbnails, 1);
 
 	CAppSettings::bRestoreAssocs = !!GetProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, 0);
 
@@ -391,6 +394,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySettings, s_pszLayout, CAppSettings::nDefaultLayout);
 	WriteProfileInt(s_pszDisplaySettings, s_pszNavCollapsed, CAppSettings::bNavPaneCollapsed);
 	WriteProfileInt(s_pszDisplaySettings, s_pszNavWidth, CAppSettings::nNavPaneWidth);
+	WriteProfileInt(s_pszDisplaySettings, s_pszGenAllThumbnails, CAppSettings::bGenAllThumbnails);
 
 	WriteProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, CAppSettings::bRestoreAssocs);
 
@@ -540,6 +544,27 @@ void CDjViewApp::OnFileSettings()
 	if (dlg.DoModal() == IDOK)
 	{
 		SaveSettings();
+
+		// Thumbnails settings may have changed, let all thumbnail views know
+		POSITION pos = GetFirstDocTemplatePosition();
+		while (pos != NULL)
+		{
+			CDocTemplate* pTemplate = GetNextDocTemplate(pos);
+			ASSERT_KINDOF(CDocTemplate, pTemplate);
+
+			POSITION posDoc = pTemplate->GetFirstDocPosition();
+			while (posDoc != NULL)
+			{
+				CDocument* pDoc = pTemplate->GetNextDoc(posDoc);
+				POSITION pos = pDoc->GetFirstViewPosition();
+				ASSERT(pos != NULL);
+
+				CView* pView = pDoc->GetNextView(pos);
+				CChildFrame* pFrame = (CChildFrame*)pView->GetParentFrame();
+				if (pFrame->GetThumbnailsView() != NULL)
+					pFrame->GetThumbnailsView()->OnSettingsChanged();
+			}
+		}
 	}
 }
 

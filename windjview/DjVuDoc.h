@@ -60,7 +60,7 @@ public:
 	bool HasText() const { return m_bHasText; }
 	int GetPageFromId(const GUTF8String& strPageId) const;
 
-	GP<DjVmNav> GetBookmarks() { return m_bookmarks; }
+	GP<DjVmNav> GetBookmarks() { return m_pDjVuDoc->get_bookmarks(); }
 	GP<DjVuDocument> GetDjVuDoc() { return m_pDjVuDoc; }
 
 // Overrides
@@ -94,7 +94,6 @@ protected:
 	int m_nPageCount;
 	CCriticalSection m_lock;
 	bool m_bHasText;
-	GP<DjVmNav> m_bookmarks;
 
 // Generated message map functions
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);

@@ -71,5 +71,6 @@ protected:
 	afx_msg void OnExpandPane();
 	afx_msg void OnCollapsePane();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnClose();
 	DECLARE_MESSAGE_MAP()
 };

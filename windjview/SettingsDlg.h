@@ -34,6 +34,7 @@ public:
 // Dialog Data
 	enum { IDD = IDD_SETTINGS };
 	BOOL m_bRestoreAssocs;
+	BOOL m_bGenAllThumbnails;
 	CStatic m_ctlAbout;
 
 protected:

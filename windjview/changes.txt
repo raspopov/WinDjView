@@ -4,7 +4,10 @@ Copyright (C) 2004-2005 Andrew Zhezherun
 
 Changes in version 0.3.1:
 + Added bookmarks.
++ Added zoom in/out toolbar buttons.
++ Added option to disable generating thumbnails in background.
 + Window title specifies file name first.
+- Various thumbnails fixes and improvements.
 
 Changes in version 0.3:
 + Added text searching.

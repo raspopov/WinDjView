@@ -2891,3 +2891,8 @@ void CDjVuView::OnUpdateViewZoomOut(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(GetZoom() > 10);
 }
+
+void CDjVuView::StopDecoding()
+{
+	m_pRenderThread->Stop();
+}

@@ -44,6 +44,7 @@ BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 	ON_MESSAGE_VOID(ID_EXPAND_PANE, OnExpandPane)
 	ON_MESSAGE_VOID(ID_COLLAPSE_PANE, OnCollapsePane)
 	ON_WM_ERASEBKGND()
+	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 
@@ -270,4 +271,13 @@ CDjVuDoc* CChildFrame::GetActiveDocument()
 BOOL CChildFrame::OnEraseBkgnd(CDC* pDC)
 {
 	return true;
+}
+
+void CChildFrame::OnClose()
+{
+	// Begin process of stopping all threads simultaneously for faster closing
+	GetDjVuView()->StopDecoding();
+	GetThumbnailsView()->StopDecoding();
+
+	CMDIChildWnd::OnClose();
 }

@@ -45,6 +45,8 @@ struct CAppSettings
 	static bool bNavPaneCollapsed;
 	static int nNavPaneWidth;
 
+	static bool bGenAllThumbnails;
+
 	static CPrintSettings printSettings;
 
 	// The following settings are not stored in registry

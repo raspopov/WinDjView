@@ -51,6 +51,11 @@ CRenderThread::~CRenderThread()
 	::CloseHandle(m_hThread);
 }
 
+void CRenderThread::Stop()
+{
+	m_stop.SetEvent();
+}
+
 DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 {
 	CRenderThread* pData = reinterpret_cast<CRenderThread*>(pvData);

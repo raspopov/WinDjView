@@ -60,6 +60,7 @@
 #define IDC_REVERSE                     1035
 #define IDC_RESTORE_ASSOCS              1035
 #define IDC_MATCH_CASE                  1035
+#define IDC_GEN_ALL_THUMBNAILS          1036
 #define IDC_STATIC_LINK                 1037
 #define IDC_STATIC_LIB_LINK             1038
 #define IDC_ASSOCIATE                   1039

@@ -40,6 +40,7 @@
 
 #include <afxwin.h>         // MFC core and standard components
 #include <afxext.h>         // MFC extensions
+#include <afxcview.h>
 
 #include <afxdtctl.h>		// MFC support for Internet Explorer 4 Common Controls
 #ifndef _AFX_NO_AFXCMN_SUPPORT
@@ -64,6 +65,7 @@ using namespace std;
 #endif
 
 #define HAS_WCTYPE
+#define DJVUREFAPI
 
 #include "libdjvu/DjVuDocument.h"
 #include "libdjvu/DjVuImage.h"
@@ -73,7 +75,4 @@ using namespace std;
 #include "libdjvu/BSByteStream.h"
 #include "libdjvu/DataPool.h"
 #include "libdjvu/DjVuText.h"
-
-#define DJVUREFAPI
 #include "libdjvu/DjVmNav.h"
-#include <afxcview.h>

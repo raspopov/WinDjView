@@ -124,28 +124,6 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	GP<ByteStream> pStream = pDataPool->get_stream();
 	GP<IFFByteStream> iff = IFFByteStream::create(pStream);
 
-	GUTF8String chkid;
-	if (iff->get_chunk(chkid) != 0)
-	{
-		if (chkid == "FORM:DJVM")
-		{
-			while (iff->get_chunk(chkid) != 0)
-			{
-				if (chkid == "NAVM")
-				{
-					GP<ByteStream> chunk_stream = iff->get_bytestream();
-					m_bookmarks = DjVmNav::create();
-					m_bookmarks->decode(chunk_stream);
-					break;
-				}
-
-				iff->close_chunk();
-			}
-		}
-
-		iff->close_chunk();
-	}
-
 	POSITION pos = GetFirstViewPosition();
 	ASSERT(pos != NULL);
 	CView* pView = GetNextView(pos);

@@ -31,6 +31,7 @@ class CRenderThread
 public:
 	CRenderThread(CDjVuDoc* pDoc, CDjVuView* pOwner);
 	~CRenderThread();
+	void Stop();
 
 	void AddJob(int nPage, int nRotate, const CRect& rcAll, const CRect& rcClip);
 	void AddDecodeJob(int nPage);

@@ -396,6 +396,9 @@ void CNavPaneWnd::OnMouseMove(UINT nFlags, CPoint point)
 	else
 		ReleaseCapture();
 
+	if ((nFlags & MK_LBUTTON) == 0)
+		m_bDragging = false;
+
 	UpdateCloseButton((nFlags & MK_LBUTTON) != 0);
 	CWnd::OnMouseMove(nFlags, point);
 }

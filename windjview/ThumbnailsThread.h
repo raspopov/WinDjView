@@ -32,6 +32,7 @@ class CThumbnailsThread
 public:
 	CThumbnailsThread(CDjVuDoc* pDoc, CThumbnailsView* pOwner, bool bIdle = false);
 	~CThumbnailsThread();
+	void Stop();
 
 	void SetThumbnailSize(CSize szThumbnail) { m_szThumbnail = szThumbnail; }
 

@@ -52,6 +52,11 @@ CThumbnailsThread::~CThumbnailsThread()
 	::CloseHandle(m_hThread);
 }
 
+void CThumbnailsThread::Stop()
+{
+	m_stop.SetEvent();
+}
+
 DWORD WINAPI CThumbnailsThread::RenderThreadProc(LPVOID pvData)
 {
 	CThumbnailsThread* pData = reinterpret_cast<CThumbnailsThread*>(pvData);

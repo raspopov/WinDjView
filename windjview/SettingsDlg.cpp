@@ -37,6 +37,7 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent)
 	: CDialog(CSettingsDlg::IDD, pParent)
 {
 	m_bRestoreAssocs = CAppSettings::bRestoreAssocs;
+	m_bGenAllThumbnails = CAppSettings::bGenAllThumbnails;
 }
 
 CSettingsDlg::~CSettingsDlg()
@@ -47,6 +48,7 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_RESTORE_ASSOCS, m_bRestoreAssocs);
+	DDX_Check(pDX, IDC_GEN_ALL_THUMBNAILS, m_bGenAllThumbnails);
 	DDX_Control(pDX, IDC_STATIC_ABOUT, m_ctlAbout);
 }
 
@@ -73,6 +75,7 @@ void CSettingsDlg::OnOK()
 		return;
 
 	CAppSettings::bRestoreAssocs = !!m_bRestoreAssocs;
+	CAppSettings::bGenAllThumbnails = !!m_bGenAllThumbnails;
 
 	CDialog::OnOK();
 }
