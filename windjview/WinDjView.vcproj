@@ -173,6 +173,9 @@
 				RelativePath=".\ProgressDlg.cpp">
 			</File>
 			<File
+				RelativePath=".\RenderThread.cpp">
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -230,6 +233,9 @@
 			</File>
 			<File
 				RelativePath=".\ProgressDlg.h">
+			</File>
+			<File
+				RelativePath=".\RenderThread.h">
 			</File>
 			<File
 				RelativePath=".\Resource.h">

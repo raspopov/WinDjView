@@ -31,6 +31,8 @@
 #include "ProgressDlg.h"
 #include "ZoomDlg.h"
 
+#include "RenderThread.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -72,20 +74,20 @@ BEGIN_MESSAGE_MAP(CDjVuView, CScrollView)
 	ON_WM_MOUSEMOVE()
 	ON_WM_CONTEXTMENU()
 	ON_COMMAND(ID_PAGE_INFORMATION, OnPageInformation)
+	ON_MESSAGE(WM_RENDER_FINISHED, OnRenderFinished)
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
 
 CDjVuView::CDjVuView()
-	: m_nPage(-1), m_nPageCount(0), m_pBmpDisplay(NULL), m_pBmpClient(NULL),
-	  m_bRepaint(false), m_nZoomType(ZoomFitPage), m_fZoom(100.0), m_bDragging(false)
+	: m_nPage(-1), m_nPageCount(0), m_pBitmap(NULL), m_bRendered(false),
+	  m_nZoomType(ZoomFitPage), m_fZoom(100.0), m_bDragging(false)
 {
 }
 
 CDjVuView::~CDjVuView()
 {
-	delete m_pBmpDisplay;
-	delete m_pBmpClient;
+	delete m_pBitmap;
 }
 
 BOOL CDjVuView::PreCreateWindow(CREATESTRUCT& cs)
@@ -102,110 +104,28 @@ void CDjVuView::OnDraw(CDC* pDC)
 		if (pDC->IsPrinting())
 		{
 			// TODO: Print preview
-			int nOffsetX = pDC->GetDeviceCaps(PHYSICALOFFSETX);
-			int nOffsetY = pDC->GetDeviceCaps(PHYSICALOFFSETY);
+			if (m_pBitmap != NULL)
+			{
+				int nOffsetX = pDC->GetDeviceCaps(PHYSICALOFFSETX);
+				int nOffsetY = pDC->GetDeviceCaps(PHYSICALOFFSETY);
 
-			pDC->SetViewportOrg(-nOffsetX, -nOffsetY);
+				pDC->SetViewportOrg(-nOffsetX, -nOffsetY);
 
-			CDIB* pBitmap = NULL;
-			if (m_pGPixmap != NULL)
-				pBitmap = RenderPixmap(*m_pGPixmap);
-			else if (m_pGBitmap != NULL)
-				pBitmap = RenderBitmap(*m_pGBitmap);
-
-			pBitmap->DrawDC(pDC, CPoint(0, 0));
-			delete pBitmap;
-
+				m_pBitmap->Draw(pDC, CPoint(0, 0), m_szPage);
+			}
 			return;
 		}
 
-		if (m_pBmpDisplay == NULL || m_szBitmap != m_szDisplay || m_bRepaint)
+		if (m_pBitmap != NULL)
 		{
-			if (m_pBmpDisplay == NULL || m_szBitmap != m_szDisplay)
-			{
-				delete m_pBmpDisplay;
-				m_pBmpDisplay = new CBitmap();
-				m_pBmpDisplay->CreateCompatibleBitmap(pDC, m_szDisplay.cx, m_szDisplay.cy);
-				m_szBitmap = m_szDisplay;
-			}
-
-			if (m_pGPixmapStretched == NULL && m_pGBitmapStretched == NULL ||
-				m_szStretched != m_szDisplayPage || m_bRepaint)
-			{
-				StretchBitmap();
-				m_szStretched = m_szDisplayPage;
-			}
-
-			if (m_pBmpDisplay->m_hObject == NULL)
-			{
-				DrawVisible(pDC);
-			}
-			else
+			if (m_bRendered)
 			{
 				DrawOffscreen(pDC);
 			}
-
-			m_bRepaint = false;
-		}
-		else if (m_pBmpDisplay->m_hObject == NULL)
-		{
-			DrawVisible(pDC);
-		}
-		else
-		{
-			CDC dcSrc;
-			dcSrc.CreateCompatibleDC(pDC);
-			CBitmap* pOldBmpSrc = dcSrc.SelectObject(m_pBmpDisplay);
-
-			CRect rcClip;
-			pDC->GetClipBox(rcClip);
-
-			pDC->BitBlt(rcClip.left, rcClip.top, rcClip.Width(), rcClip.Height(),
-				&dcSrc, rcClip.left, rcClip.top, SRCCOPY);
-
-			dcSrc.SelectObject(pOldBmpSrc);
-		}
-	}
-}
-
-void CDjVuView::StretchBitmap()
-{
-	m_pGPixmapStretched = NULL;
-	m_pGBitmapStretched = NULL;
-
-	if (m_nZoomType == ZoomActualSize)
-	{
-		if (m_pGPixmap != NULL)
-			m_pGPixmapStretched = m_pGPixmap;
-		else if (m_pGBitmap != NULL)
-			m_pGBitmapStretched = m_pGBitmap;
-	}
-	else if (m_szDisplayPage.cx > 0 && m_szDisplayPage.cy > 0)
-	{
-		GRect rcDest(0, 0, m_szDisplayPage.cx, m_szDisplayPage.cy);
-		GRect rcSrc(0, 0, m_szPage.cx, m_szPage.cy);
-
-		if (m_pGPixmap != NULL)
-		{
-			GP<GPixmapScaler> ps = GPixmapScaler::create();
-			ps->set_input_size(m_szPage.cx, m_szPage.cy);
-			ps->set_output_size(m_szDisplayPage.cx, m_szDisplayPage.cy);
-			ps->set_horz_ratio(m_szDisplayPage.cx, m_szPage.cx);
-			ps->set_vert_ratio(m_szDisplayPage.cy, m_szPage.cy);
-
-			m_pGPixmapStretched = GPixmap::create();
-			ps->scale(rcSrc, *m_pGPixmap, rcDest, *m_pGPixmapStretched);
-		}
-		else if (m_pGBitmap != NULL)
-		{
-			GP<GBitmapScaler> bs = GBitmapScaler::create();
-			bs->set_input_size(m_szPage.cx, m_szPage.cy);
-			bs->set_output_size(m_szDisplayPage.cx, m_szDisplayPage.cy);
-			bs->set_horz_ratio(m_szDisplayPage.cx, m_szPage.cx);
-			bs->set_vert_ratio(m_szDisplayPage.cy, m_szPage.cy);
-
-			m_pGBitmapStretched = GBitmap::create();
-			bs->scale(rcSrc, *m_pGBitmap, rcDest, *m_pGBitmapStretched);
+			else
+			{
+				DrawStretch(pDC);
+			}
 		}
 	}
 }
@@ -213,64 +133,7 @@ void CDjVuView::StretchBitmap()
 void CDjVuView::DrawOffscreen(CDC* pDC)
 {
 	ASSERT(m_pImage != NULL);
-	ASSERT(m_pBmpDisplay != NULL && m_pBmpDisplay->m_hObject != NULL);
-
-	CDIB* pBmpStretched = NULL;
-
-	if (m_pGPixmapStretched != NULL)
-		pBmpStretched = RenderPixmap(*m_pGPixmapStretched);
-	else if (m_pGBitmapStretched != NULL)
-		pBmpStretched = RenderBitmap(*m_pGBitmapStretched);
-
-	if (pBmpStretched == NULL || pBmpStretched->m_hObject == NULL)
-	{
-		delete pBmpStretched;
-		m_pBmpDisplay->DeleteObject();
-
-		DrawVisible(pDC);
-		return;
-	}
-
-	CDC dcDest;
-	dcDest.CreateCompatibleDC(pDC);
-	CBitmap* pOldBmpDest = dcDest.SelectObject(m_pBmpDisplay);
-
-	COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
-	dcDest.FillSolidRect(0, 0, m_szDisplay.cx, m_szDisplay.cy, clrWindow);
-
-	CPen pen(PS_SOLID, 1, ::GetSysColor(COLOR_3DDKSHADOW));
-	CPen* pOldPenDest = dcDest.SelectObject(&pen);
-	dcDest.Rectangle(m_ptPageOffset.x - 1, m_ptPageOffset.y - 1,
-		m_ptPageOffset.x + m_szDisplayPage.cx + 1,
-		m_ptPageOffset.y + m_szDisplayPage.cy + 1);
-
-	if (pBmpStretched != NULL)
-		pBmpStretched->DrawDC(&dcDest, m_ptPageOffset);
-
-	pDC->BitBlt(0, 0, m_szDisplay.cx, m_szDisplay.cy, &dcDest, 0, 0, SRCCOPY);
-
-	dcDest.SelectObject(pOldBmpDest);
-	dcDest.SelectObject(pOldPenDest);
-
-	m_bRepaint = false;
-	delete pBmpStretched;
-}
-
-void CDjVuView::DrawVisible(CDC* pDC)
-{
-	// Only a screen-size bitmap will be allocated so it will fit into the memory
-	ASSERT(m_pImage != NULL);
-
-	CRect rcClient;
-	GetClientRect(rcClient);
-
-	if (m_pBmpClient == NULL || m_szClient != rcClient.Size())
-	{
-		m_szClient = rcClient.Size();
-		delete m_pBmpClient;
-		m_pBmpClient = new CBitmap();
-		m_pBmpClient->CreateCompatibleBitmap(pDC, m_szClient.cx, m_szClient.cy);
-	}
+	ASSERT(m_pBitmap != NULL && m_pBitmap->m_hObject != NULL);
 
 	CPoint ptOffset = GetScrollPosition();
 
@@ -278,44 +141,65 @@ void CDjVuView::DrawVisible(CDC* pDC)
 	pDC->GetClipBox(rcClip);
 
 	CPoint ptPartOffset(max(rcClip.left - m_ptPageOffset.x, 0),
-						max(rcClip.top - m_ptPageOffset.y, 0));
+		max(rcClip.top - m_ptPageOffset.y, 0));
 
 	CSize szPageClip = m_szDisplayPage - ptPartOffset;
 	CSize szPart(min(rcClip.Width(), szPageClip.cx), min(rcClip.Height(), szPageClip.cy));
-	CRect rcPart(CPoint(ptPartOffset.x, m_szDisplayPage.cy - szPart.cy - ptPartOffset.y), szPart);
+	CRect rcPart(ptPartOffset, szPart);
 
-	CDIB* pBmpStretched = NULL;
+	m_pBitmap->DrawDC(pDC, m_ptPageOffset + ptPartOffset, rcPart);
 
-	if (m_pGPixmapStretched != NULL)
-		pBmpStretched = RenderPixmap(*m_pGPixmapStretched, rcPart);
-	else if (m_pGBitmapStretched != NULL)
-		pBmpStretched = RenderBitmap(*m_pGBitmapStretched, rcPart);
+	CRect rcBorder(m_ptPageOffset.x - 1, m_ptPageOffset.y - 1,
+		m_ptPageOffset.x + m_szDisplayPage.cx,
+		m_ptPageOffset.y + m_szDisplayPage.cy);
 
-	CDC dcDest;
-	dcDest.CreateCompatibleDC(pDC);
-	CBitmap* pOldBmpDest = dcDest.SelectObject(m_pBmpClient);
-	dcDest.SetViewportOrg(-ptOffset);
-
-	COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
-	dcDest.FillSolidRect(rcClip, clrWindow);
+	CPoint points[] = { rcBorder.TopLeft(), CPoint(rcBorder.right, rcBorder.top),
+		rcBorder.BottomRight(), CPoint(rcBorder.left, rcBorder.bottom),
+		rcBorder.TopLeft() };
 
 	CPen pen(PS_SOLID, 1, ::GetSysColor(COLOR_3DDKSHADOW));
-	CPen* pOldPenDest = dcDest.SelectObject(&pen);
-	dcDest.Rectangle(m_ptPageOffset.x - 1, m_ptPageOffset.y - 1,
-		m_ptPageOffset.x + m_szDisplayPage.cx + 1,
-		m_ptPageOffset.y + m_szDisplayPage.cy + 1);
+	CPen* pOldPen = pDC->SelectObject(&pen);
+	pDC->Polyline((LPPOINT)points, 5);
+	pDC->SelectObject(pOldPen);
 
-	if (pBmpStretched != NULL)
-		pBmpStretched->DrawDC(&dcDest, ptPartOffset);
+	int nSaveDC = pDC->SaveDC();
+	rcBorder.InflateRect(0, 0, 1, 1);
+	pDC->ExcludeClipRect(rcBorder);
 
-	pDC->BitBlt(rcClip.left, rcClip.top, rcClip.Width(), rcClip.Height(),
-		&dcDest, rcClip.left, rcClip.top, SRCCOPY);
+	COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
+	pDC->FillSolidRect(0, 0, m_szDisplay.cx, m_szDisplay.cy, clrWindow);
 
-	dcDest.SelectObject(pOldBmpDest);
-	dcDest.SelectObject(pOldPenDest);
+	pDC->RestoreDC(nSaveDC);
+}
 
-	m_bRepaint = false;
-	delete pBmpStretched;
+void CDjVuView::DrawStretch(CDC* pDC)
+{
+	ASSERT(m_pImage != NULL);
+	ASSERT(m_pBitmap != NULL && m_pBitmap->m_hObject != NULL);
+
+	m_pBitmap->Draw(pDC, m_ptPageOffset, m_szDisplayPage);
+
+	CRect rcBorder(m_ptPageOffset.x - 1, m_ptPageOffset.y - 1,
+		m_ptPageOffset.x + m_szDisplayPage.cx,
+		m_ptPageOffset.y + m_szDisplayPage.cy);
+
+	CPoint points[] = { rcBorder.TopLeft(), CPoint(rcBorder.right, rcBorder.top),
+		rcBorder.BottomRight(), CPoint(rcBorder.left, rcBorder.bottom),
+		rcBorder.TopLeft() };
+
+	CPen pen(PS_SOLID, 1, ::GetSysColor(COLOR_3DDKSHADOW));
+	CPen* pOldPen = pDC->SelectObject(&pen);
+	pDC->Polyline((LPPOINT)points, 5);
+	pDC->SelectObject(pOldPen);
+
+	int nSaveDC = pDC->SaveDC();
+	rcBorder.InflateRect(0, 0, 1, 1);
+	pDC->ExcludeClipRect(rcBorder);
+
+	COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
+	pDC->FillSolidRect(0, 0, m_szDisplay.cx, m_szDisplay.cy, clrWindow);
+
+	pDC->RestoreDC(nSaveDC);
 }
 
 
@@ -354,15 +238,14 @@ void CDjVuView::OnInitialUpdate()
 {
 	CScrollView::OnInitialUpdate();
 
+	m_pRenderThread = new CRenderThread(this);
+
 	m_nZoomType = CAppSettings::nDefaultZoomType;
 	m_fZoom = CAppSettings::fDefaultZoom;
 	if (m_nZoomType == ZoomPercent)
 		m_fZoom = 100.0;
 
-	GP<DjVuDocument> pDoc = GetDocument()->m_pDjVuDoc;
-	pDoc->wait_get_pages_num();
-
-	m_nPageCount = pDoc->get_pages_num();
+	m_nPageCount = GetDocument()->GetPageCount();
 	m_nPage = 0;
 
 	RenderPage(m_nPage);
@@ -377,21 +260,15 @@ BOOL CDjVuView::OnEraseBkgnd(CDC* pDC)
 
 void CDjVuView::RenderPage(int nPage)
 {
-	CWaitCursor wait;
-
 	int nRotate = (m_pImage != NULL ? m_pImage->get_rotate() : 0);
 	bool bSamePage = (m_nPage == nPage);
 	m_nPage = nPage;
-
-	m_pGBitmap = NULL;
-	m_pGPixmap = NULL;
 
 	G_TRY
 	{
 		if (!bSamePage || m_pImage == NULL)
 		{
-			GP<DjVuDocument> pDoc = GetDocument()->m_pDjVuDoc;
-			m_pImage = pDoc->get_page(m_nPage);
+			m_pImage = GetDocument()->GetPage(m_nPage);
 			if (m_pImage != NULL)
 				m_pImage->set_rotate(nRotate);
 		}
@@ -403,24 +280,6 @@ void CDjVuView::RenderPage(int nPage)
 		else
 		{
 			m_szPage = CSize(m_pImage->get_width(), m_pImage->get_height());
-
-			GRect rect(0, 0, m_szPage.cx, m_szPage.cy);
-
-			if (m_pImage->is_legal_photo() || m_pImage->is_legal_compound())
-			{
-				m_pGPixmap = m_pImage->get_pixmap(rect, rect);
-			}
-			else if (m_pImage->is_legal_bilevel())
-			{
-				m_pGBitmap = m_pImage->get_bitmap(rect, rect, 4);
-			}
-			else
-			{
-				// Try to get both
-				m_pGPixmap = m_pImage->get_pixmap(rect, rect);
-				if (m_pGPixmap == NULL)
-					m_pGBitmap = m_pImage->get_bitmap(rect, rect, 4);
-			}
 		}
 	}
 	G_CATCH(ex)
@@ -430,10 +289,16 @@ void CDjVuView::RenderPage(int nPage)
 	}
 	G_ENDCATCH;
 
-	m_bRepaint = true;
+	delete m_pBitmap;
+	m_pBitmap = NULL;
 
 	UpdatePageSize();
 	UpdatePageSize();
+
+	m_bRendered = false;
+	m_nImageCode = m_pRenderThread->AddJob(m_pImage,
+		CRect(CPoint(0, 0), m_szDisplayPage),
+		CRect(CPoint(0, 0), m_szDisplayPage), true);
 
 	ScrollToPosition(CPoint(0, 0));
 
@@ -556,8 +421,18 @@ void CDjVuView::OnSize(UINT nType, int cx, int cy)
 {
 	if (m_nPage != -1)
 	{
+		CSize szDisplayPage = m_szDisplayPage;
 		UpdatePageSize();
 		UpdatePageSize();
+
+		if (m_szDisplayPage != szDisplayPage)
+		{
+			m_bRendered = false;
+
+			m_nImageCode = m_pRenderThread->AddJob(m_pImage,
+				CRect(CPoint(0, 0), m_szDisplayPage),
+				CRect(CPoint(0, 0), m_szDisplayPage), true);
+		}
 	}
 
 	CScrollView::OnSize(nType, cx, cy);
@@ -789,7 +664,11 @@ void CDjVuView::ZoomTo(int nZoomType, double fZoom)
 	UpdatePageSize();
 	UpdatePageSize();
 
-	m_bRepaint = true;
+	m_bRendered = false;
+	m_nImageCode = m_pRenderThread->AddJob(m_pImage,
+		CRect(CPoint(0, 0), m_szDisplayPage),
+		CRect(CPoint(0, 0), m_szDisplayPage), true);
+
 	Invalidate();
 
 	GetMainFrame()->UpdateZoomCombo(m_nZoomType, m_fZoom);
@@ -1047,4 +926,21 @@ void CDjVuView::OnPageInformation()
 	}
 
 	AfxMessageBox(strInfo, MB_ICONINFORMATION | MB_OK);
+}
+
+LRESULT CDjVuView::OnRenderFinished(WPARAM wParam, LPARAM lParam)
+{
+	CDIB* pBitmap = reinterpret_cast<CDIB*>(lParam);
+
+	if (m_pBitmap != NULL)
+		delete m_pBitmap;
+
+	m_pBitmap = pBitmap;
+
+	if (wParam == m_nImageCode)
+		m_bRendered = true;
+
+	Invalidate();
+	UpdateWindow();
+	return 0;
 }

@@ -22,6 +22,8 @@
 
 class CDjVuDoc;
 class CPrintDlg;
+class CRenderThread;
+class CDIB;
 
 inline bool IsStandardZoom(int nZoomType, double fZoom)
 {
@@ -78,24 +80,22 @@ public:
 #endif
 
 protected:
+	CRenderThread* m_pRenderThread;
+	DWORD m_nImageCode;
+	bool m_bRendered;
+
+	CDIB* m_pBitmap;
+
 	int m_nPage, m_nPageCount;
 	GP<DjVuImage> m_pImage;
 	CSize m_szPage, m_szDisplay, m_szDisplayPage;
 	CPoint m_ptPageOffset;
 
-	GP<GPixmap> m_pGPixmap;
-	GP<GBitmap> m_pGBitmap;
-	GP<GPixmap> m_pGPixmapStretched;
-	GP<GBitmap> m_pGBitmapStretched;
-	CSize m_szStretched;
+//	GP<GPixmap> m_pGPixmap;
+//	GP<GBitmap> m_pGBitmap;
 
-	CBitmap* m_pBmpDisplay;
-	CBitmap* m_pBmpClient;
-	CSize m_szBitmap, m_szClient;
-	bool m_bRepaint;
-	void DrawVisible(CDC* pDC);
 	void DrawOffscreen(CDC* pDC);
-	void StretchBitmap();
+	void DrawStretch(CDC* pDC);
 
 	int m_nZoomType;
 	double m_fZoom;
@@ -128,6 +128,7 @@ protected:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnFilePrint();
+	afx_msg LRESULT OnRenderFinished(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };
 

@@ -20,38 +20,56 @@
 
 #pragma once
 
+#define WM_RENDER_FINISHED (WM_USER + 17)
 
-class CDjVuDoc : public CDocument
+class CLock
 {
-protected: // create from serialization only
-	CDjVuDoc();
-	DECLARE_DYNCREATE(CDjVuDoc)
-
-// Operations
 public:
-	int GetPageCount() { return m_pDjVuDoc->get_pages_num(); }
-	GP<DjVuImage> GetPage(int nPage);
+	CLock() : m_nLock(0) {}
+	void Lock();
+	void Unlock();
 
-// Overrides
-public:
-	virtual BOOL OnNewDocument();
-	virtual void Serialize(CArchive& ar);
-
-// Implementation
-public:
-	virtual ~CDjVuDoc();
-#ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
-#endif
-
-protected:
-	GP<DjVuDocument> m_pDjVuDoc;
-	vector<GP<DjVuImage> > m_pages;
-
-// Generated message map functions
-	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
-	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-	DECLARE_MESSAGE_MAP()
+private:
+	LONG m_nLock;
+	CLock(const CLock& rhs) {}
 };
 
+class CSignal
+{
+public:
+	CSignal() : m_nSignal(0) {}
+	bool IsSet() const;
+	void Set();
+	void Reset();
+
+private:
+	mutable LONG m_nSignal;
+	CSignal(const CSignal& rhs) {}
+};
+
+class CRenderThread
+{
+public:
+	CRenderThread(CWnd* pOwner);
+	~CRenderThread();
+
+	DWORD AddJob(GP<DjVuImage> pImage, CRect rcAll, CRect rcClip, bool bClearQueue = false);
+
+private:
+	CLock m_lock;
+	CSignal m_stop;
+	CWnd* m_pOwner;
+
+	struct Job
+	{
+		GP<DjVuImage> pImage;
+		CRect rcAll;
+		CRect rcClip;
+		DWORD nCode;
+	};
+
+	list<Job> m_jobs;
+
+	static DWORD WINAPI RenderThreadProc(LPVOID pvData);
+	void Render(Job& job);
+};

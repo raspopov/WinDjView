@@ -97,6 +97,7 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	G_TRY
 	{
 		m_pDjVuDoc = DjVuDocument::create("file://" + GUTF8String(pszName));
+		m_pDjVuDoc->wait_get_pages_num();
 	}
 	G_CATCH(ex) 
 	{
@@ -105,5 +106,17 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	}
 	G_ENDCATCH;
 
+	m_pages.clear();
+	m_pages.resize(m_pDjVuDoc->get_pages_num(), NULL);
+
 	return true;
+}
+
+GP<DjVuImage> CDjVuDoc::GetPage(int nPage)
+{
+	ASSERT(nPage >= 0 && nPage < m_pDjVuDoc->get_pages_num());
+	if (m_pages[nPage] == NULL)
+		m_pages[nPage] = m_pDjVuDoc->get_page(nPage);
+
+	return m_pages[nPage];
 }

@@ -126,6 +126,17 @@ CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip)
 	return pBitmap;
 }
 
+CDIB::~CDIB()
+{
+	DeleteObject();
+	free(m_pBMI);
+
+	if (m_hSection != NULL)
+		CloseHandle(m_hSection);
+	if (m_hFile != NULL)
+		CloseHandle(m_hFile);
+}
+
 CDIB* CDIB::CreateDIB(const BITMAPINFO* pBMI)
 {
 	CDIB* pDIB = new CDIB();
@@ -143,6 +154,41 @@ CDIB* CDIB::CreateDIB(const BITMAPINFO* pBMI)
 
 	HBITMAP hBitmap = ::CreateDIBSection(NULL,
 		pDIB->m_pBMI, DIB_RGB_COLORS, (VOID**)&pDIB->m_pBits, NULL, 0);
+
+	if (hBitmap == NULL)
+	{
+		CString strTempPath;
+		if (::GetTempPath(_MAX_PATH, strTempPath.GetBuffer(_MAX_PATH)) != 0)
+			strTempPath.ReleaseBuffer();
+		else
+			strTempPath = _T(".");
+
+		CString strTempFile;
+		if (::GetTempFileName(strTempPath, _T("DJV"), 0, strTempFile.GetBuffer(_MAX_PATH)) != 0)
+		{
+			DWORD nLineLength = static_cast<DWORD>(ceil(1.0*pBMI->bmiHeader.biWidth*pBMI->bmiHeader.biBitCount/8.0));
+			while ((nLineLength % 4) != 0)
+				++nLineLength;
+
+			DWORD nBitsSize = nLineLength*pBMI->bmiHeader.biHeight;
+
+			// Try to create a mapped file section
+			pDIB->m_hFile = ::CreateFile(strTempFile, GENERIC_READ | GENERIC_WRITE,
+				0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE, NULL);
+			pDIB->m_hSection = ::CreateFileMapping(pDIB->m_hFile, NULL,
+				PAGE_READWRITE, 0, nBitsSize, NULL);
+
+			hBitmap = ::CreateDIBSection(NULL, pDIB->m_pBMI, DIB_RGB_COLORS,
+				(VOID**)&pDIB->m_pBits, pDIB->m_hSection, 0);
+			if (hBitmap == NULL)
+			{
+				::CloseHandle(pDIB->m_hSection);
+				::CloseHandle(pDIB->m_hFile);
+				pDIB->m_hSection = NULL;
+				pDIB->m_hFile = NULL;
+			}
+		}
+	}
 
 	pDIB->Attach(hBitmap);
 	return pDIB;
@@ -248,6 +294,22 @@ void CDIB::DrawDC(CDC* pDC, const CPoint& ptOffset)
 	pDC->BitBlt(ptOffset.x, ptOffset.y,
 		m_pBMI->bmiHeader.biWidth, m_pBMI->bmiHeader.biHeight,
         &dcSrc, 0, 0, SRCCOPY);
+
+	dcSrc.SelectObject(pOldBmpSrc);
+}
+
+void CDIB::DrawDC(CDC* pDC, const CPoint& ptOffset, const CRect& rcPart)
+{
+	ASSERT(rcPart.left >= 0 && rcPart.top >= 0 &&
+		   rcPart.right <= m_pBMI->bmiHeader.biWidth &&
+		   rcPart.bottom <= m_pBMI->bmiHeader.biHeight);
+
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(pDC);
+	CBitmap* pOldBmpSrc = dcSrc.SelectObject(this);
+
+	pDC->BitBlt(ptOffset.x, ptOffset.y, rcPart.Width(), rcPart.Height(),
+		&dcSrc, rcPart.left, rcPart.top, SRCCOPY);
 
 	dcSrc.SelectObject(pOldBmpSrc);
 }
@@ -545,7 +607,7 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 	IProgressInfo* pProgress = reinterpret_cast<IProgressInfo*>(pvData);
 	CPrintDlg& dlg = *reinterpret_cast<CPrintDlg*>(pProgress->GetUserData());
 
-	GP<DjVuDocument> pDoc = dlg.GetDocument()->m_pDjVuDoc;
+	CDjVuDoc* pDoc = dlg.GetDocument();
 
 	int nPages = dlg.m_arrPages.size();
 	pProgress->SetRange(0, nPages);
@@ -617,8 +679,8 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 		int nPage = dlg.m_arrPages[i].first - 1;
 		int nSecondPage = dlg.m_arrPages[i].second - 1;
 
-		if ((nPage < 0 || nPage >= pDoc->get_pages_num()) &&
-			(!dlg.m_bTwoPages || nSecondPage < 0 || nSecondPage >= pDoc->get_pages_num()))
+		if ((nPage < 0 || nPage >= pDoc->GetPageCount()) &&
+			(!dlg.m_bTwoPages || nSecondPage < 0 || nSecondPage >= pDoc->GetPageCount()))
 			continue;
 
 		if (print_dc.StartPage() <= 0)
@@ -628,8 +690,8 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 		}
 
 		GP<DjVuImage> pImage;
-		if (nPage >= 0 && nPage < pDoc->get_pages_num())
-			pImage = pDoc->get_page(nPage);
+		if (nPage >= 0 && nPage < pDoc->GetPageCount())
+			pImage = pDoc->GetPage(nPage);
 		if (pImage != NULL)
 		{
 			pImage->set_rotate(nRotate);
@@ -637,8 +699,8 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 		}
 
 		pImage = NULL;
-		if (dlg.m_bTwoPages && nSecondPage >= 0 && nSecondPage < pDoc->get_pages_num())
-			pImage = pDoc->get_page(nSecondPage);
+		if (dlg.m_bTwoPages && nSecondPage >= 0 && nSecondPage < pDoc->GetPageCount())
+			pImage = pDoc->GetPage(nSecondPage);
 		if (pImage != NULL)
 		{
 			pImage->set_rotate(nRotate);

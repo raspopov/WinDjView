@@ -361,7 +361,7 @@ void CPrintDlg::OnOK()
 	// Parse page range
 	if (m_nRangeType == 0)
 	{
-		for (int i = 1; i <= m_pDoc->m_pDjVuDoc->get_pages_num(); ++i)
+		for (int i = 1; i <= m_pDoc->GetPageCount(); ++i)
 			m_pages.insert(i);
 	}
 	else if (m_nRangeType == 1)
@@ -466,8 +466,7 @@ void CPrintDlg::OnPaint()
 
 		if (m_pCurPage == NULL)
 		{
-			GP<DjVuDocument> pDoc = m_pDoc->m_pDjVuDoc;
-			m_pCurPage = pDoc->get_page(m_nCurPage);
+			m_pCurPage = m_pDoc->GetPage(m_nCurPage);
 			if (m_pCurPage != NULL)
 				m_pCurPage->set_rotate(m_nRotate);
 		}
@@ -481,8 +480,7 @@ void CPrintDlg::OnPaint()
 		{
 			if (m_pNextPage == NULL)
 			{
-				GP<DjVuDocument> pDoc = m_pDoc->m_pDjVuDoc;
-				m_pNextPage = pDoc->get_page(m_nCurPage + 1);
+				m_pNextPage = m_pDoc->GetPage(m_nCurPage + 1);
 				if (m_pNextPage != NULL)
 					m_pNextPage->set_rotate(m_nRotate);
 			}

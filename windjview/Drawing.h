@@ -24,10 +24,11 @@
 class CDIB : public CBitmap
 {
 public:
-	virtual ~CDIB() { free(m_pBMI); }
+	virtual ~CDIB();
 	void Draw(CDC* pDC, const CPoint& ptOffset);
 	void Draw(CDC* pDC, const CPoint& ptOffset, const CSize& szScale);
 	void DrawDC(CDC* pDC, const CPoint& ptOffset);
+	void DrawDC(CDC* pDC, const CPoint& ptOffset, const CRect& rcPart);
 
 	int GetWidth() const { return m_pBMI->bmiHeader.biWidth; }
 	int GetHeight() const { return m_pBMI->bmiHeader.biHeight; }
@@ -43,10 +44,14 @@ public:
 	CDIB* ReduceColors();
 
 protected:
-	CDIB() : CBitmap(), m_pBits(NULL), m_pBMI(NULL) {}
+	CDIB() : CBitmap(), m_pBits(NULL), m_pBMI(NULL),
+			 m_hFile(NULL), m_hSection(NULL) {}
 
 	LPBYTE m_pBits;
 	BITMAPINFO* m_pBMI;
+
+	HANDLE m_hFile;
+	HANDLE m_hSection;
 };
 
 struct CPrintSettings
