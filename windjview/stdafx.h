@@ -76,6 +76,8 @@ using namespace std;
 #define NO_DEBUG
 #endif
 
+#define HAS_WCTYPE
+
 #include "libdjvu/DjVuDocument.h"
 #include "libdjvu/DjVuImage.h"
 #include "libdjvu/GBitmap.h"

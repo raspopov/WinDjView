@@ -15,7 +15,7 @@ OPTS = /nologo /MTd /W3 /GX /Ox /Ob2 /Ot /Og /G6
 OUTOPT = /nologo /nodefaultlib:"msvcrtd.lib" /out:
 !ENDIF
 
-COMPOPT = /c /Fo"$(INTDIR)\\" /D"BUILD_LIB" /D"DJVU_STATIC_LIBRARY" /D"WIN32" /D"_WINDOWS" /D"_CONSOLE" /D"NDEBUG"
+COMPOPT = /c /Fo"$(INTDIR)\\" /D"HAS_WCTYPE" /D"BUILD_LIB" /D"DJVU_STATIC_LIBRARY" /D"WIN32" /D"_WINDOWS" /D"_CONSOLE" /D"NDEBUG"
 
 all: $(OUT)
 

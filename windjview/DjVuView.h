@@ -32,6 +32,8 @@ inline bool IsStandardZoom(int nZoomType, double fZoom)
 			fZoom == 100.0 || fZoom == 200.0 || fZoom == 400.0);
 }
 
+typedef GList<DjVuTXT::Zone*> DjVuSelection;
+
 
 class CDjVuView : public CScrollView
 {
@@ -48,6 +50,7 @@ public:
 	void RenderPage(int nPage);
 	int GetPageCount() const { return m_nPageCount; }
 	int GetTopPage() const;
+	int GetCurrentPage() const;
 	int GetZoomType() const { return m_nZoomType; }
 	double GetZoom() const;
 	void ZoomTo(int nZoomType, double fZoom = 100.0);
@@ -140,7 +143,8 @@ protected:
 		bool bTextDecoded;
 		GP<ByteStream> pTextStream;
 		GP<DjVuTXT> pText;
-		GList<DjVuTXT::Zone*> selection;
+		DjVuSelection selection;
+		int nSelStart, nSelEnd;
 
 		void DecodeText()
 		{
@@ -162,12 +166,12 @@ protected:
 	};
 	vector<Page> m_pages;
 
-	void UpdatePageSize();
+	void UpdatePageSize(int nPage);
 	CSize CalcPageSize(const CSize& szPage, int nDPI);
 	void UpdatePageSizes(int nTop, int nScroll = 0);
 	bool UpdatePagesFromTop(int nTop, int nBottom);
 	void UpdatePagesFromBottom(int nTop, int nBottom);
-	void DeleteBitmaps(int nKeep = -1);
+	void DeleteBitmaps();
 	int GetPageFromPoint(CPoint point);
 
 	void SetScrollSizesNoRepaint(const CSize& szTotal,
@@ -185,13 +189,24 @@ protected:
 	};
 	void UpdateView(UpdateType updateType = TOP);
 	void UpdateVisiblePages();
+	void UpdatePagesCache();
 	void UpdatePageCache(int nPage, const CRect& rcClient);
+	void UpdatePageCacheSingle(int nPage);
+	void ClearSelection();
+	bool IsSelectionBelowTop(int nPage, const DjVuSelection& selection);
+	bool IsSelectionVisible(int nPage, const DjVuSelection& selection);
+	void EnsureSelectionVisible(int nPage, const DjVuSelection& selection);
+	CRect GetSelectionRect(int nPage, const DjVuSelection& selection) const;
+	CRect TranslatePageRect(int nPage, GRect rect) const;
 	bool m_bInsideUpdateView;
 
 	int m_nClickedPage;
 	bool m_bDragging;
 	CPoint m_ptStart, m_ptStartPos;
 	int m_nStartPage;
+	bool m_bClick;
+	CPoint m_ptClick;
+	int m_nClickCount;
 	static HCURSOR hCursorHand;
 	static HCURSOR hCursorDrag;
 

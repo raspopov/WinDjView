@@ -94,7 +94,7 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 
 		cboPage.EnableWindow(true);
 		int nPages = pView->GetPageCount();
-		int nPage = pView->GetTopPage();
+		int nPage = pView->GetCurrentPage();
 		GetMainFrame()->UpdatePageCombo(nPage, nPages);
 
 		cboZoom.EnableWindow(true);

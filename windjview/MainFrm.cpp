@@ -483,6 +483,7 @@ void CMainFrame::OnViewFind()
 
 	m_pFindDlg->ShowWindow(SW_SHOW);
 	m_pFindDlg->SetFocus();
+	m_pFindDlg->GotoDlgCtrl(m_pFindDlg->GetDlgItem(IDC_FIND));
 }
 
 void CMainFrame::OnUpdateViewFind(CCmdUI *pCmdUI)
