@@ -61,6 +61,11 @@ void CSignal::Reset()
 	::InterlockedExchange(&m_nSignal, 0);
 }
 
+void CSignal::Wait()
+{
+	while (::InterlockedCompareExchange(&m_nSignal, 1, 1) == 0)
+		::Sleep(1);
+}
 
 // CRenderThread class
 

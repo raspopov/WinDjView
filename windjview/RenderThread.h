@@ -41,6 +41,7 @@ public:
 	bool IsSet() const;
 	void Set();
 	void Reset();
+	void Wait();
 
 private:
 	mutable LONG m_nSignal;

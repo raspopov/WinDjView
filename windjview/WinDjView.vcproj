@@ -146,6 +146,9 @@
 				RelativePath=".\ChildFrm.cpp">
 			</File>
 			<File
+				RelativePath=".\DecodeThread.cpp">
+			</File>
+			<File
 				RelativePath=".\DjVuDoc.cpp">
 			</File>
 			<File
@@ -206,6 +209,9 @@
 			</File>
 			<File
 				RelativePath=".\ChildFrm.h">
+			</File>
+			<File
+				RelativePath=".\DecodeThread.h">
 			</File>
 			<File
 				RelativePath=".\DjVuDoc.h">

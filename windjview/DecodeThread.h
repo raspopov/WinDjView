@@ -21,48 +21,24 @@
 #pragma once
 
 #include "RenderThread.h"
-class CDecodeThread;
+class CDjVuDoc;
 
-
-class CDjVuDoc : public CDocument
+class CDecodeThread
 {
-protected: // create from serialization only
-	CDjVuDoc();
-	DECLARE_DYNCREATE(CDjVuDoc)
-
-// Operations
 public:
-	int GetPageCount() { return m_pDjVuDoc->get_pages_num(); }
-	GP<DjVuImage> GetPage(int nPage);
+	CDecodeThread(CDjVuDoc* pDoc);
+	~CDecodeThread();
 
-// Overrides
-public:
-	virtual BOOL OnNewDocument();
-	virtual void Serialize(CArchive& ar);
-	void PageDecoded(int nPage, GP<DjVuImage> pImage);
+	void MoveToFront(int nPage);
 
-// Implementation
-public:
-	virtual ~CDjVuDoc();
-#ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
-#endif
-
-protected:
-	CDecodeThread* m_pThread;
-	friend class CDecodeThread;
-
-	GP<DjVuDocument> m_pDjVuDoc;
-	vector<GP<DjVuImage> > m_pages;
+private:
+	HANDLE m_hThread;
+	CSignal m_stop;
+	CSignal m_finished;
+	CDjVuDoc* m_pDoc;
 
 	CLock m_lock;
-	CSignal m_pageReady;
-	LONG m_nPagePending;
+	list<int> m_jobs;
 
-// Generated message map functions
-	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
-	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-	DECLARE_MESSAGE_MAP()
+	static DWORD WINAPI DecodeThreadProc(LPVOID pvData);
 };
-

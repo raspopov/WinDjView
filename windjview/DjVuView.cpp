@@ -77,6 +77,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CScrollView)
 	ON_COMMAND_RANGE(ID_LAYOUT_SINGLEPAGE, ID_LAYOUT_CONTINUOUS, OnViewLayout)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_LAYOUT_SINGLEPAGE, ID_LAYOUT_CONTINUOUS, OnUpdateViewLayout)
 	ON_MESSAGE(WM_RENDER_FINISHED, OnRenderFinished)
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -86,6 +87,7 @@ CDjVuView::CDjVuView()
 	  m_nZoomType(ZoomPercent), m_fZoom(100.0), m_nLayout(SinglePage),
 	  m_nRotate(0), m_bDragging(false)
 {
+	m_pRenderThread = NULL;
 }
 
 CDjVuView::~CDjVuView()
@@ -1020,4 +1022,12 @@ LRESULT CDjVuView::OnRenderFinished(WPARAM wParam, LPARAM lParam)
 	Invalidate();
 	UpdateWindow();
 	return 0;
+}
+
+void CDjVuView::OnDestroy()
+{
+	delete m_pRenderThread;
+	m_pRenderThread = NULL;
+
+	CScrollView::OnDestroy();
 }

@@ -22,6 +22,7 @@
 #include "WinDjView.h"
 
 #include "DjVuDoc.h"
+#include "DecodeThread.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -40,12 +41,12 @@ END_MESSAGE_MAP()
 
 CDjVuDoc::CDjVuDoc()
 {
-	// TODO: add one-time construction code here
-
+	m_pThread = NULL;
 }
 
 CDjVuDoc::~CDjVuDoc()
 {
+	delete m_pThread;
 }
 
 BOOL CDjVuDoc::OnNewDocument()
@@ -110,14 +111,50 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	m_pages.clear();
 	m_pages.resize(m_pDjVuDoc->get_pages_num(), NULL);
 
+	m_pThread = new CDecodeThread(this);
+	GetPage(0);
+
 	return true;
 }
 
 GP<DjVuImage> CDjVuDoc::GetPage(int nPage)
 {
 	ASSERT(nPage >= 0 && nPage < m_pDjVuDoc->get_pages_num());
-	if (m_pages[nPage] == NULL)
-		m_pages[nPage] = m_pDjVuDoc->get_page(nPage);
 
-	return m_pages[nPage];
+	m_pageReady.Reset();
+	::InterlockedExchange(&m_nPagePending, nPage);
+
+	m_lock.Lock();
+	GP<DjVuImage> pImage = m_pages[nPage];
+	m_lock.Unlock();
+
+	if (pImage != NULL)
+		return pImage;
+
+	m_pThread->MoveToFront(nPage);
+	m_pageReady.Wait();
+	m_pageReady.Reset();
+
+	m_lock.Lock();
+	pImage = m_pages[nPage];
+	m_lock.Unlock();
+
+	ASSERT(pImage != NULL);
+	return pImage;
+}
+
+void CDjVuDoc::PageDecoded(int nPage, GP<DjVuImage> pImage)
+{
+	ASSERT(nPage >= 0 && nPage < m_pDjVuDoc->get_pages_num());
+
+	m_lock.Lock();
+	ASSERT(m_pages[nPage] == NULL);
+	m_pages[nPage] = pImage;
+	m_lock.Unlock();
+
+	if (::InterlockedCompareExchange(&m_nPagePending, -1, nPage) == nPage)
+	{
+		TRACE("Pending page decoded: %d\n", nPage);
+		m_pageReady.Set();
+	}
 }
