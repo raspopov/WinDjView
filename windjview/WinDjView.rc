@@ -211,7 +211,6 @@ BEGIN
             MENUITEM "&Single Page",                ID_LAYOUT_SINGLEPAGE
             MENUITEM "&Continuous",                 ID_LAYOUT_CONTINUOUS
         END
-        MENUITEM SEPARATOR
     END
     POPUP "&Window"
     BEGIN
