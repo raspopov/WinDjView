@@ -5,12 +5,14 @@ Copyright (C) 2004-2005 Andrew Zhezherun
 Changes in version 0.3:
 + Added text searching.
 + Added hyperlink support.
++ Added thumbnails.
 + Significantly reduced memory usage due to new caching algorithm
   (+/- 2 screens are stored as bitmaps, +/- 10 screens are stored
   in a decoded form for faster rendering).
 - Fixed continuous mode in Windows 98.
 - Fixed mouse wheel scrolling in Windows 98.
 - Fixed combo boxes on the toolbar in Windows 2000.
+- Fixed network printer detection in Windows 2000.
 
 Changes in version 0.2.3:
 - Fixed opening read-only files (i.e. off a CDROM).
