@@ -19,7 +19,8 @@
 // $Id$
 
 #pragma once
-#include "afxcmn.h"
+
+#include "AppSettings.h"
 
 
 // CSettingsDlg dialog
@@ -47,8 +48,7 @@ public:
 
 protected:
 	CFont m_font;
-	double m_fGammaValue;
-	int m_nBrightnessValue, m_nContrastValue;
+	CDisplaySettings m_displaySettings;
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual void OnOK();

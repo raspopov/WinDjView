@@ -769,10 +769,7 @@ void CMainFrame::OnUpdateStatusAdjust(CCmdUI* pCmdUI)
 	static CString strMessage, strTooltip;
 	CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
 
-	double fGamma = (CAppSettings::bAdjustDisplay ? CAppSettings::fGamma : 1.0);
-	int nBrightness = (CAppSettings::bAdjustDisplay ? CAppSettings::nBrightness : 0);
-	int nContrast = (CAppSettings::bAdjustDisplay ? CAppSettings::nContrast : 0);
-	if (fGamma == 1.0 && nBrightness == 0 && nContrast == 0 || MDIGetActive() == NULL)
+	if (CAppSettings::displaySettings == CDisplaySettings() || MDIGetActive() == NULL)
 	{
 		m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_ADJUST, SBPS_DISABLED | SBPS_NOBORDERS, 0);
 		pCmdUI->Enable(false);
@@ -795,9 +792,28 @@ void CMainFrame::OnUpdateStatusAdjust(CCmdUI* pCmdUI)
 		dc.SelectObject(pOldFont);
 	}
 
-	CString strNewTooltip;
-	strNewTooltip.Format(_T("Brightness: %d; Contrast: %d; Gamma: %1.1f"),
-			nBrightness, nContrast, fGamma);
+	CString strNewTooltip, strTemp;
+
+	int nBrightness = CAppSettings::displaySettings.GetBrightness();
+	if (nBrightness != 0)
+	{
+		strTemp.Format(_T("Brightness: %+d"), nBrightness);
+		strNewTooltip += (!strNewTooltip.IsEmpty() ? _T(", ") : _T("")) + strTemp;
+	}
+
+	int nContrast = CAppSettings::displaySettings.GetContrast();
+	if (nContrast != 0)
+	{
+		strTemp.Format(_T("Contrast: %+d"), nContrast);
+		strNewTooltip += (!strNewTooltip.IsEmpty() ? _T(", ") : _T("")) + strTemp;
+	}
+
+	double fGamma = CAppSettings::displaySettings.GetGamma();
+	if (fGamma != 1.0)
+	{
+		strTemp.Format(_T("Gamma: %1.1f"), fGamma);
+		strNewTooltip += (!strNewTooltip.IsEmpty() ? _T(", ") : _T("")) + strTemp;
+	}
 
 	if (strTooltip != strNewTooltip)
 	{

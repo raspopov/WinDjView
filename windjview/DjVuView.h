@@ -21,6 +21,7 @@
 #pragma once
 
 #include "MyScrollView.h"
+#include "AppSettings.h"
 #include "Drawing.h"
 #include "DjVuDoc.h"
 
@@ -160,8 +161,7 @@ protected:
 	int m_nDisplayMode;
 	int m_nRotate;
 
-	double m_fGamma;
-	int m_nBrightness, m_nContrast;
+	CDisplaySettings m_displaySettings;
 
 	struct Page
 	{

@@ -99,9 +99,9 @@ CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip)
 	}
 
 #ifndef ELIBRA_READER
-	double fGamma = (CAppSettings::bAdjustDisplay ? CAppSettings::fGamma : 1.0);
-	int nBrightness = (CAppSettings::bAdjustDisplay ? CAppSettings::nBrightness : 0);
-	int nContrast = (CAppSettings::bAdjustDisplay ? CAppSettings::nContrast : 0);
+	int nBrightness = CAppSettings::displaySettings.GetBrightness();
+	int nContrast = CAppSettings::displaySettings.GetContrast();
+	double fGamma = CAppSettings::displaySettings.GetGamma();
 	if (fGamma != 1.0 || nBrightness != 0 || nContrast != 0)
 	{
 		// Adjust gamma
@@ -173,9 +173,9 @@ CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip)
 	}
 
 #ifndef ELIBRA_READER
-	double fGamma = (CAppSettings::bAdjustDisplay ? CAppSettings::fGamma : 1.0);
-	int nBrightness = (CAppSettings::bAdjustDisplay ? CAppSettings::nBrightness : 0);
-	int nContrast = (CAppSettings::bAdjustDisplay ? CAppSettings::nContrast : 0);
+	int nBrightness = CAppSettings::displaySettings.GetBrightness();
+	int nContrast = CAppSettings::displaySettings.GetContrast();
+	double fGamma = CAppSettings::displaySettings.GetGamma();
 	if (fGamma != 1.0 || nBrightness != 0 || nContrast != 0)
 	{
 		// Adjust gamma

@@ -23,7 +23,6 @@
 
 #include "DjVuDoc.h"
 #include "DjVuView.h"
-#include "AppSettings.h"
 
 #include "MainFrm.h"
 #include "PrintDlg.h"
@@ -118,8 +117,7 @@ CDjVuView::CDjVuView()
 	  m_pRenderThread(NULL), m_bInsideUpdateView(false), m_bClick(false),
 	  m_evtRendered(false, true), m_nPendingPage(-1), m_nClickedPage(-1),
 	  m_nMode(Drag), m_pOffscreenBitmap(NULL), m_szOffscreen(0, 0),
-	  m_bHasSelection(false), m_fGamma(1.0), m_nBrightness(0), m_nContrast(0),
-	  m_nDisplayMode(Color)
+	  m_bHasSelection(false), m_nDisplayMode(Color)
 {
 }
 
@@ -444,9 +442,7 @@ void CDjVuView::OnInitialUpdate()
 	}
 
 #ifndef ELIBRA_READER
-	m_fGamma = (CAppSettings::bAdjustDisplay ? CAppSettings::fGamma : 1.0);
-	m_nBrightness = (CAppSettings::bAdjustDisplay ? CAppSettings::nBrightness : 0);
-	m_nContrast = (CAppSettings::bAdjustDisplay ? CAppSettings::nContrast : 0);
+	m_displaySettings = CAppSettings::displaySettings;
 #endif
 
 	m_pRenderThread = new CRenderThread(GetDocument(), this);
@@ -3643,14 +3639,9 @@ void CDjVuView::OnUpdateFileExportText(CCmdUI* pCmdUI)
 void CDjVuView::OnSettingsChanged()
 {
 #ifndef ELIBRA_READER
-	double fGamma = (CAppSettings::bAdjustDisplay ? CAppSettings::fGamma : 1.0);
-	int nBrightness = (CAppSettings::bAdjustDisplay ? CAppSettings::nBrightness : 0);
-	int nContrast = (CAppSettings::bAdjustDisplay ? CAppSettings::nContrast : 0);
-	if (fGamma != m_fGamma || nBrightness != m_nBrightness || nContrast != m_nContrast)
+	if (m_displaySettings != CAppSettings::displaySettings)
 	{
-		m_fGamma = fGamma;
-		m_nBrightness = nBrightness;
-		m_nContrast = nContrast;
+		m_displaySettings = CAppSettings::displaySettings;
 
 		DeleteBitmaps();
 
@@ -3777,6 +3768,7 @@ void CDjVuView::OnViewFullscreen()
 	pView->m_nMode = Fullscreen;
 	pView->m_nLayout = SinglePage;
 	pView->m_nZoomType = ZoomFitPage;
+	pView->m_nDisplayMode = m_nDisplayMode;
 	pView->m_nRotate = m_nRotate;
 	pView->m_nPage = GetCurrentPage();
 	pView->OnInitialUpdate();

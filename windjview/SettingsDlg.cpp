@@ -22,7 +22,6 @@
 #include "WinDjView.h"
 #include "SettingsDlg.h"
 
-#include "AppSettings.h"
 #include "MainFrm.h"
 
 #ifdef _DEBUG
@@ -34,15 +33,13 @@
 
 IMPLEMENT_DYNAMIC(CSettingsDlg, CDialog)
 CSettingsDlg::CSettingsDlg(CWnd* pParent)
-	: CDialog(CSettingsDlg::IDD, pParent),
-	  m_fGammaValue(1.0), m_strGammaValue(_T("1.0"))
+	: CDialog(CSettingsDlg::IDD, pParent), m_strGammaValue(_T("1.0"))
 {
 	m_bRestoreAssocs = CAppSettings::bRestoreAssocs;
 	m_bGenAllThumbnails = CAppSettings::bGenAllThumbnails;
-	m_bAdjustDisplay = CAppSettings::bAdjustDisplay;
-	m_fGammaValue = CAppSettings::fGamma;
-	m_nBrightnessValue = CAppSettings::nBrightness;
-	m_nContrastValue = CAppSettings::nContrast;
+
+	m_displaySettings = CAppSettings::displaySettings;
+	m_bAdjustDisplay = m_displaySettings.bAdjustDisplay;
 }
 
 CSettingsDlg::~CSettingsDlg()
@@ -62,11 +59,13 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CONTRAST, m_sliderContrast);
 	DDX_Control(pDX, IDC_GAMMA, m_sliderGamma);
 
-	m_strBrightnessValue.Format(_T("&Brightness: %d"), m_nBrightnessValue);
+	m_strBrightnessValue.Format(m_displaySettings.nBrightness == 0 ?
+		_T("&Brightness: %d") : _T("&Brightness: %+d"), m_displaySettings.nBrightness);
 	DDX_Text(pDX, IDC_BRIGHTNESS_TEXT, m_strBrightnessValue);
-	m_strContrastValue.Format(_T("&Contrast: %d"), m_nContrastValue);
+	m_strContrastValue.Format(m_displaySettings.nContrast == 0 ?
+		_T("&Contrast: %d") : _T("&Contrast: %+d"), m_displaySettings.nContrast);
 	DDX_Text(pDX, IDC_CONTRAST_TEXT, m_strContrastValue);
-	m_strGammaValue.Format(_T("&Gamma: %1.1f"), m_fGammaValue);
+	m_strGammaValue.Format(_T("&Gamma: %1.1f"), m_displaySettings.fGamma);
 	DDX_Text(pDX, IDC_GAMMA_TEXT, m_strGammaValue);
 
 	m_sliderBrightness.EnableWindow(m_bAdjustDisplay);
@@ -105,10 +104,8 @@ void CSettingsDlg::OnOK()
 	CAppSettings::bRestoreAssocs = !!m_bRestoreAssocs;
 	CAppSettings::bGenAllThumbnails = !!m_bGenAllThumbnails;
 
-	CAppSettings::bAdjustDisplay = !!m_bAdjustDisplay;
-	CAppSettings::nBrightness = m_nBrightnessValue;
-	CAppSettings::nContrast = m_nContrastValue;
-	CAppSettings::fGamma = m_fGammaValue;
+	m_displaySettings.bAdjustDisplay = !!m_bAdjustDisplay;
+	CAppSettings::displaySettings = m_displaySettings;
 
 	CDialog::OnOK();
 }
@@ -131,7 +128,7 @@ BOOL CSettingsDlg::OnInitDialog()
 	m_ctlAbout.SetFont(&m_font);
 
 	m_sliderGamma.SetRange(1, 50);
-	m_sliderGamma.SetPos(static_cast<int>(m_fGammaValue * 10));
+	m_sliderGamma.SetPos(static_cast<int>(m_displaySettings.fGamma * 10));
 	m_sliderGamma.SetLineSize(1);
 	m_sliderGamma.SetPageSize(5);
 
@@ -141,22 +138,22 @@ BOOL CSettingsDlg::OnInitDialog()
 		m_sliderGamma.SetTic(5*i);
 
 	m_sliderBrightness.SetRange(0, 200);
-	m_sliderBrightness.SetPos(m_nBrightnessValue + 100);
+	m_sliderBrightness.SetPos(m_displaySettings.nBrightness + 100);
 	m_sliderBrightness.SetLineSize(1);
 	m_sliderBrightness.SetPageSize(5);
 
 	m_sliderBrightness.ClearTics();
-	for (int i = 0; i <= 20; ++i)
-		m_sliderBrightness.SetTic(10*i);
+	for (int i = 0; i <= 10; ++i)
+		m_sliderBrightness.SetTic(20*i);
 
 	m_sliderContrast.SetRange(0, 200);
-	m_sliderContrast.SetPos(m_nContrastValue + 100);
+	m_sliderContrast.SetPos(m_displaySettings.nContrast + 100);
 	m_sliderContrast.SetLineSize(1);
 	m_sliderContrast.SetPageSize(5);
 
 	m_sliderContrast.ClearTics();
-	for (int i = 0; i <= 20; ++i)
-		m_sliderContrast.SetTic(10*i);
+	for (int i = 0; i <= 10; ++i)
+		m_sliderContrast.SetTic(20*i);
 
 	return TRUE;
 }
@@ -165,7 +162,7 @@ HBRUSH CSettingsDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
 	HBRUSH brush = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 
-	if (pWnd->GetSafeHwnd() == m_ctlAbout.m_hWnd)
+	if (pWnd->GetDlgCtrlID() == IDC_STATIC_ABOUT)
 	{
 		pDC->SetTextColor(::GetSysColor(COLOR_3DSHADOW));
 	}
@@ -178,9 +175,9 @@ void CSettingsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	CSliderCtrl* pSlider = (CSliderCtrl*)pScrollBar;
 	if (pSlider == &m_sliderGamma || pSlider == &m_sliderBrightness || pSlider == &m_sliderContrast)
 	{
-		m_nBrightnessValue = m_sliderBrightness.GetPos() - 100;
-		m_nContrastValue = m_sliderContrast.GetPos() - 100;
-		m_fGammaValue = m_sliderGamma.GetPos() * 0.1;
+		m_displaySettings.nBrightness = m_sliderBrightness.GetPos() - 100;
+		m_displaySettings.nContrast = m_sliderContrast.GetPos() - 100;
+		m_displaySettings.fGamma = m_sliderGamma.GetPos() * 0.1;
 
 		UpdateData(false);
 	}

@@ -45,21 +45,18 @@ double CAppSettings::fDefaultZoom = 100.0;
 int CAppSettings::nDefaultLayout = 1; // Continuous
 int CAppSettings::nDefaultMode = 0; // Drag
 
-bool CAppSettings::bRestoreAssocs = false;
-
 bool CAppSettings::bNavPaneCollapsed = false;
 int CAppSettings::nNavPaneWidth = 200;
 
+bool CAppSettings::bRestoreAssocs = false;
 bool CAppSettings::bGenAllThumbnails = true;
-bool CAppSettings::bAdjustDisplay = false;
-double CAppSettings::fGamma = 1.0;
-int CAppSettings::nBrightness = 0;
-int CAppSettings::nContrast = 0;
+
+CDisplaySettings CAppSettings::displaySettings;
+
+CPrintSettings CAppSettings::printSettings;
 
 int CAppSettings::nCopies = 1;
 bool CAppSettings::bCollate = false;
-
-CPrintSettings CAppSettings::printSettings;
 
 bool CAppSettings::bLandscape = false;
 bool CAppSettings::bTwoPages = false;

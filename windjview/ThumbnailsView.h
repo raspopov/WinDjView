@@ -22,6 +22,7 @@
 
 #include "MyScrollView.h"
 #include "Drawing.h"
+#include "AppSettings.h"
 class CDjVuDoc;
 class CThumbnailsThread;
 
@@ -78,8 +79,7 @@ protected:
 	int m_nRotate;
 	int m_nPagesInRow;
 
-	double m_fGamma;
-	int m_nBrightness, m_nContrast;
+	CDisplaySettings m_displaySetting;
 
 	enum UpdateType
 	{

@@ -52,7 +52,6 @@ const TCHAR* s_pszLayout = _T("layout");
 const TCHAR* s_pszMode = _T("mode");
 const TCHAR* s_pszNavCollapsed = _T("nav-collapsed");
 const TCHAR* s_pszNavWidth = _T("nav-width");
-const TCHAR* s_pszGenAllThumbnails = _T("gen-all-thumbs");
 const TCHAR* s_pszAdjustDisplay = _T("adjust");
 const TCHAR* s_pszGamma = _T("gamma");
 const TCHAR* s_pszBrightness = _T("brightness");
@@ -60,6 +59,7 @@ const TCHAR* s_pszContrast = _T("contrast");
 
 const TCHAR* s_pszGlobalSettings = _T("Settings");
 const TCHAR* s_pszRestoreAssocs = _T("assocs");
+const TCHAR* s_pszGenAllThumbnails = _T("gen-all-thumbs");
 
 const TCHAR* s_pszPrintSettings = _T("Print");
 const TCHAR* s_pszMarginLeft = _T("m-left");
@@ -375,13 +375,15 @@ void CDjViewApp::LoadSettings()
 	CAppSettings::nDefaultMode = GetProfileInt(s_pszDisplaySettings, s_pszMode, 0); // Drag
 	CAppSettings::bNavPaneCollapsed = !!GetProfileInt(s_pszDisplaySettings, s_pszNavCollapsed, 0);
 	CAppSettings::nNavPaneWidth = GetProfileInt(s_pszDisplaySettings, s_pszNavWidth, 200);
-	CAppSettings::bGenAllThumbnails = !!GetProfileInt(s_pszDisplaySettings, s_pszGenAllThumbnails, 1);
-	CAppSettings::bAdjustDisplay = !!GetProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, 0);
-	CAppSettings::fGamma = GetProfileDouble(s_pszDisplaySettings, s_pszGamma, 1.0);
-	CAppSettings::nBrightness = GetProfileInt(s_pszDisplaySettings, s_pszBrightness, 0);
-	CAppSettings::nContrast = GetProfileInt(s_pszDisplaySettings, s_pszContrast, 0);
 
 	CAppSettings::bRestoreAssocs = !!GetProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, 0);
+	CAppSettings::bGenAllThumbnails = !!GetProfileInt(s_pszGlobalSettings, s_pszGenAllThumbnails, 1);
+
+	CDisplaySettings& ds = CAppSettings::displaySettings;
+	ds.bAdjustDisplay = !!GetProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, 0);
+	ds.fGamma = GetProfileDouble(s_pszDisplaySettings, s_pszGamma, 1.0);
+	ds.nBrightness = GetProfileInt(s_pszDisplaySettings, s_pszBrightness, 0);
+	ds.nContrast = GetProfileInt(s_pszDisplaySettings, s_pszContrast, 0);
 
 	CPrintSettings& ps = CAppSettings::printSettings;
 	ps.fMarginLeft = GetProfileDouble(s_pszPrintSettings, s_pszMarginLeft, 0.0);
@@ -409,13 +411,15 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySettings, s_pszMode, CAppSettings::nDefaultMode);
 	WriteProfileInt(s_pszDisplaySettings, s_pszNavCollapsed, CAppSettings::bNavPaneCollapsed);
 	WriteProfileInt(s_pszDisplaySettings, s_pszNavWidth, CAppSettings::nNavPaneWidth);
-	WriteProfileInt(s_pszDisplaySettings, s_pszGenAllThumbnails, CAppSettings::bGenAllThumbnails);
-	WriteProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, CAppSettings::bAdjustDisplay);
-	WriteProfileDouble(s_pszDisplaySettings, s_pszGamma, CAppSettings::fGamma);
-	WriteProfileInt(s_pszDisplaySettings, s_pszBrightness, CAppSettings::nBrightness);
-	WriteProfileInt(s_pszDisplaySettings, s_pszContrast, CAppSettings::nContrast);
 
 	WriteProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, CAppSettings::bRestoreAssocs);
+	WriteProfileInt(s_pszGlobalSettings, s_pszGenAllThumbnails, CAppSettings::bGenAllThumbnails);
+
+	CDisplaySettings& ds = CAppSettings::displaySettings;
+	WriteProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, ds.bAdjustDisplay);
+	WriteProfileDouble(s_pszDisplaySettings, s_pszGamma, ds.fGamma);
+	WriteProfileInt(s_pszDisplaySettings, s_pszBrightness, ds.nBrightness);
+	WriteProfileInt(s_pszDisplaySettings, s_pszContrast, ds.nContrast);
 
 	CPrintSettings& ps = CAppSettings::printSettings;
 	WriteProfileDouble(s_pszPrintSettings, s_pszMarginLeft, ps.fMarginLeft);

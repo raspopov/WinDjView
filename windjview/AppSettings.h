@@ -22,6 +22,27 @@
 
 #include "Drawing.h"
 
+struct CDisplaySettings
+{
+	CDisplaySettings() :
+			bAdjustDisplay(false), nBrightness(0), nContrast(0), fGamma(1.0) {}
+
+	int GetBrightness() const { return bAdjustDisplay ? nBrightness : 0; }
+	int GetContrast() const { return bAdjustDisplay ? nContrast : 0; }
+	double GetGamma() const { return bAdjustDisplay ? fGamma : 1.0; }
+
+	bool operator!=(const CDisplaySettings& rhs) const { return !(*this == rhs); }
+	bool operator==(const CDisplaySettings& rhs) const
+	{
+		return GetBrightness() == rhs.GetBrightness() && GetContrast() == rhs.GetContrast()
+				&& GetGamma() == rhs.GetGamma();
+	}
+
+	bool bAdjustDisplay;
+	double fGamma;
+	int nBrightness;
+	int nContrast;
+};
 
 struct CAppSettings
 {
@@ -41,16 +62,13 @@ struct CAppSettings
 	static int nDefaultLayout;
 	static int nDefaultMode;
 
-	static bool bRestoreAssocs;
-
 	static bool bNavPaneCollapsed;
 	static int nNavPaneWidth;
 
+	static bool bRestoreAssocs;
 	static bool bGenAllThumbnails;
-	static bool bAdjustDisplay;
-	static double fGamma;
-	static int nBrightness;
-	static int nContrast;
+
+	static CDisplaySettings displaySettings;
 
 	static CPrintSettings printSettings;
 
