@@ -21,6 +21,7 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "DjVuView.h"
+#include "DjVuDoc.h"
 
 #include "MainFrm.h"
 #include "AppSettings.h"
@@ -66,6 +67,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_CONTROL(CBN_FINISHEDIT, IDC_ZOOM, OnChangeZoomEdit)
 	ON_CONTROL(CBN_CANCELEDIT, IDC_ZOOM, OnCancelChangePageZoom)
 	ON_MESSAGE(WM_DDE_EXECUTE, OnDDEExecute)
+	ON_COMMAND(ID_VIEW_FIND, OnViewFind)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_FIND, OnUpdateViewFind)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -77,12 +80,17 @@ static UINT indicators[] =
 // CMainFrame construction/destruction
 
 CMainFrame::CMainFrame()
+	: m_pFindDlg(NULL), m_bFirstShow(true)
 {
-	m_bFirstShow = true;
 }
 
 CMainFrame::~CMainFrame()
 {
+	if (m_pFindDlg != NULL)
+	{
+		m_pFindDlg->DestroyWindow();
+		m_pFindDlg = NULL;
+	}
 }
 
 
@@ -462,4 +470,30 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 		TRACE(traceAppMsg, 0, _T("Error: failed to execute DDE command '%s'.\n"), szCommand);
 
 	return 0L;
+}
+
+void CMainFrame::OnViewFind()
+{
+	if (m_pFindDlg == NULL)
+	{
+		m_pFindDlg = new CFindDlg();
+		m_pFindDlg->Create(IDD_FIND, this);
+		m_pFindDlg->CenterWindow();
+	}
+
+	m_pFindDlg->ShowWindow(SW_SHOW);
+	m_pFindDlg->SetFocus();
+}
+
+void CMainFrame::OnUpdateViewFind(CCmdUI *pCmdUI)
+{
+	CMDIChildWnd* pFrame = MDIGetActive();
+	if (pFrame == NULL)
+	{
+		pCmdUI->Enable(false);
+		return;
+	}
+
+	CDjVuDoc* pDoc = (CDjVuDoc*)pFrame->GetActiveDocument();
+	pCmdUI->Enable(pDoc->HasText());
 }

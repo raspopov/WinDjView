@@ -30,6 +30,7 @@
 #include "Drawing.h"
 #include "ProgressDlg.h"
 #include "ZoomDlg.h"
+#include "FindDlg.h"
 
 #include "RenderThread.h"
 
@@ -84,8 +85,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CScrollView)
 	ON_WM_DESTROY()
 	ON_WM_MOUSEWHEEL()
 	ON_COMMAND(ID_EXPORT_PAGE, OnExportPage)
-	ON_COMMAND(ID_VIEW_FIND, OnViewFind)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_FIND, OnUpdateViewFind)
+	ON_COMMAND(ID_FIND_STRING, OnFindString)
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -177,6 +177,25 @@ void CDjVuView::DrawPage(CDC* pDC, int nPage)
 	else
 	{
 		DrawWhite(pDC, nPage);
+	}
+
+	// Draw selection
+	for (GPosition pos = page.selection; pos; ++pos)
+	{
+		GRect rect = page.selection[pos]->rect;
+
+		double fRatioX = (1.0*page.szDisplay.cx) / page.szPage.cx;
+		double fRatioY = (1.0*page.szDisplay.cy) / page.szPage.cy;
+
+		CRect rcText(static_cast<int>(rect.xmin * fRatioX),
+			static_cast<int>((page.szPage.cy - rect.ymax) * fRatioY),
+			static_cast<int>(rect.xmax * fRatioX),
+			static_cast<int>((page.szPage.cy - rect.ymin) * fRatioY));
+
+		rcText.InflateRect(1, 1);
+		rcText.OffsetRect(page.rcDisplay.TopLeft() - GetDeviceScrollPosition());
+
+		pDC->InvertRect(rcText);
 	}
 }
 
@@ -433,12 +452,10 @@ void CDjVuView::RenderPage(int nPage)
 
 		m_nPage = nPage;
 
-		if (!page.bSizeLoaded)
+		if (!page.bInfoLoaded)
 		{
 			PageInfo info = GetDocument()->GetPageInfo(nPage);
-			page.szPage = info.szPage;
-			page.nDPI = info.nDPI;
-			page.bSizeLoaded = true;
+			page.Init(info);
 		}
 
 		UpdateView();
@@ -605,7 +622,7 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient)
 	int nTop = GetScrollPos(SB_VERT);
 	Page& page = m_pages[nPage];
 
-	if (!page.bSizeLoaded)
+	if (!page.bInfoLoaded)
 		return;
 
 	if (page.rcDisplay.top < nTop + 3*rcClient.Height() &&
@@ -1647,9 +1664,7 @@ LRESULT CDjVuView::OnPageDecoded(WPARAM wParam, LPARAM lParam)
 	}
 
 	Page& page = m_pages[nPage];
-	page.szPage = info.szPage;
-	page.nDPI = info.nDPI;
-	page.bSizeLoaded = true;
+	page.Init(info);
 
 	if (m_nLayout == Continuous)
 		UpdateView();
@@ -1761,14 +1776,12 @@ void CDjVuView::UpdatePagesFromBottom(int nTop, int nBottom)
 		   nBottom > m_pages[nPage].rcDisplay.bottom)
 		++nPage;
 
-	if (!m_pages[nPage].bSizeLoaded)
+	if (!m_pages[nPage].bInfoLoaded)
 	{
 		Page& page = m_pages[nPage];
 
 		PageInfo info = GetDocument()->GetPageInfo(nPage);
-		page.szPage = info.szPage;
-		page.nDPI = info.nDPI;
-		page.bSizeLoaded = true;
+		page.Init(info);
 
 		page.szDisplay = CalcPageSize(page.GetSize(m_nRotate), page.nDPI);
 		bUpdateView = true;
@@ -1777,14 +1790,12 @@ void CDjVuView::UpdatePagesFromBottom(int nTop, int nBottom)
 	while (nPage > 0 && nTop < m_pages[nPage].ptOffset.y)
 	{
 		--nPage;
-		if (!m_pages[nPage].bSizeLoaded)
+		if (!m_pages[nPage].bInfoLoaded)
 		{
 			Page& page = m_pages[nPage];
 
 			PageInfo info = GetDocument()->GetPageInfo(nPage);
-			page.szPage = info.szPage;
-			page.nDPI = info.nDPI;
-			page.bSizeLoaded = true;
+			page.Init(info);
 
 			page.szDisplay = CalcPageSize(page.GetSize(m_nRotate), page.nDPI);
 			page.ptOffset.y = m_pages[nPage + 1].ptOffset.y -
@@ -1807,14 +1818,12 @@ bool CDjVuView::UpdatePagesFromTop(int nTop, int nBottom)
 		   nTop >= m_pages[nPage].rcDisplay.bottom)
 		++nPage;
 
-	if (!m_pages[nPage].bSizeLoaded)
+	if (!m_pages[nPage].bInfoLoaded)
 	{
 		Page& page = m_pages[nPage];
 
 		PageInfo info = GetDocument()->GetPageInfo(nPage);
-		page.szPage = info.szPage;
-		page.nDPI = info.nDPI;
-		page.bSizeLoaded = true;
+		page.Init(info);
 
 		page.szDisplay = CalcPageSize(page.GetSize(m_nRotate), page.nDPI);
 		bUpdateView = true;
@@ -1824,14 +1833,12 @@ bool CDjVuView::UpdatePagesFromTop(int nTop, int nBottom)
 		   nBottom > m_pages[nPage].ptOffset.y + m_pages[nPage].szDisplay.cy + c_nPageGap - 1)
 	{
 		++nPage;
-		if (!m_pages[nPage].bSizeLoaded)
+		if (!m_pages[nPage].bInfoLoaded)
 		{
 			Page& page = m_pages[nPage];
 
 			PageInfo info = GetDocument()->GetPageInfo(nPage);
-			page.szPage = info.szPage;
-			page.nDPI = info.nDPI;
-			page.bSizeLoaded = true;
+			page.Init(info);
 
 			page.szDisplay = CalcPageSize(page.GetSize(m_nRotate), page.nDPI);
 			page.ptOffset.y = m_pages[nPage - 1].ptOffset.y +
@@ -2224,24 +2231,44 @@ void CDjVuView::OnExportPage()
 	delete pBitmap;
 }
 
-void CDjVuView::OnViewFind()
+void CDjVuView::OnFindString()
 {
+	CFindDlg* pDlg = GetMainFrame()->m_pFindDlg;
+	ASSERT(pDlg != NULL);
+
 	int nPage = GetTopPage();
-	PageInfo info = GetDocument()->GetPageInfo(nPage);
-	if (info.pTextStream != NULL)
+	CString strFind = pDlg->m_strFind;
+
+	for (; nPage < m_nPageCount; ++nPage)
 	{
-		info.pTextStream->seek(0);
-		GP<DjVuText> pText = DjVuText::create();
-		pText->decode(info.pTextStream);
-		GP<DjVuTXT> pTxt = pText->txt;
-		if (pTxt != NULL)
+		Page& page = m_pages[nPage];
+		if (!page.bInfoLoaded)
 		{
-			AfxMessageBox((const char*)pTxt->textUTF8);
+			PageInfo info = GetDocument()->GetPageInfo(nPage);
+			page.Init(info);
+		}
+
+		if (page.pTextStream != NULL && !page.bTextDecoded)
+		{
+			page.DecodeText();
+		}
+
+		if (page.pText != NULL)
+		{
+			GP<DjVuTXT> pText = page.pText;
+			GUTF8String& text = pText->textUTF8;
+
+			int nPos = text.search(strFind);
+			if (nPos != -1)
+			{
+				int nLastPos = nPos + strFind.GetLength();
+				page.selection.empty();
+				pText->page_zone.find_zones(page.selection, nPos, nLastPos);
+
+				InvalidatePage(nPage);
+				ScrollToPosition(CPoint(GetScrollPos(SB_HORZ), page.rcDisplay.top));
+				break;
+			}
 		}
 	}
-}
-
-void CDjVuView::OnUpdateViewFind(CCmdUI *pCmdUI)
-{
-	pCmdUI->Enable(GetDocument()->HasText());
 }

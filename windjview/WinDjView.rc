@@ -252,6 +252,7 @@ BEGIN
     VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, CONTROL, NOINVERT
     VK_NEXT,        ID_VIEW_NEXTPAGE,       VIRTKEY, CONTROL, NOINVERT
     VK_PRIOR,       ID_VIEW_PREVIOUSPAGE,   VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_VIEW_FIND,           VIRTKEY, CONTROL, NOINVERT
 END
 
 
@@ -267,10 +268,10 @@ CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,10,9,20,20
-    LTEXT           "WinDjView Version 0.2.3",IDC_STATIC,40,7,119,8,
+    LTEXT           "WinDjView Version 0.3",IDC_STATIC,40,7,119,8,
                     SS_NOPREFIX
-    LTEXT           "Copyright (C) 2004 Andrew Zhezherun",IDC_STATIC,40,19,
-                    130,8
+    LTEXT           "Copyright (C) 2004-2005 Andrew Zhezherun",IDC_STATIC,40,
+                    19,149,8
     DEFPUSHBUTTON   "Close",IDOK,193,7,50,14,WS_GROUP
     LTEXT           "Project homepage:",IDC_STATIC,40,39,64,8
     LTEXT           "DjVuLibre homepage:",IDC_STATIC,40,51,72,8
@@ -409,8 +410,8 @@ BEGIN
     CONTROL         "&Restore associations at program start",
                     IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     15,49,188,10
-    LTEXT           "WinDjView 0.2.3\nby Andrew Zhezherun",IDC_STATIC_ABOUT,
-                    7,71,92,18
+    LTEXT           "WinDjView 0.3\nby Andrew Zhezherun",IDC_STATIC_ABOUT,7,
+                    71,92,18
 END
 
 IDD_FIND DIALOGEX 0, 0, 287, 45
@@ -434,8 +435,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,2,3,0
- PRODUCTVERSION 0,2,3,0
+ FILEVERSION 0,3,0,0
+ PRODUCTVERSION 0,3,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -452,12 +453,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Andrew Zhezherun"
             VALUE "FileDescription", "WinDjView"
-            VALUE "FileVersion", "0.2.3"
+            VALUE "FileVersion", "0.3"
             VALUE "InternalName", "WinDjView.exe"
             VALUE "LegalCopyright", "Copyright (C) 2004 Andrew Zhezherun.  All rights reserved."
             VALUE "OriginalFilename", "WinDjView.exe"
             VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "0.2.3"
+            VALUE "ProductVersion", "0.3"
         END
     END
     BLOCK "VarFileInfo"

@@ -224,7 +224,8 @@ void CRenderThread::AddJob(const Job& job)
 {
 	m_lock.Lock();
 
-	if (currentJob.nPage == job.nPage && job.type == RENDER && currentJob.type == RENDER)
+	if (currentJob.nPage == job.nPage && job.type == RENDER && currentJob.type == RENDER &&
+		job.rcAll == currentJob.rcAll && job.rcClip == currentJob.rcClip)
 	{
 		m_lock.Unlock();
 		return;

@@ -6,6 +6,7 @@
 #define IDC_PROPERTIES                  3
 #define IDD_PRINT                       9
 #define IDD_ABOUTBOX                    100
+#define ID_FIND_STRING                  101
 #define IDR_MAINFRAME                   128
 #define IDR_DjVuTYPE                    129
 #define IDC_CURSOR_HAND                 132
@@ -15,7 +16,6 @@
 #define IDR_POPUP                       137
 #define IDC_CURSOR_LINK                 139
 #define IDD_SETTINGS                    140
-#define IDD_ZOOM1                       141
 #define IDD_FIND                        141
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
@@ -94,8 +94,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        141
-#define _APS_NEXT_COMMAND_VALUE         32817
+#define _APS_NEXT_COMMAND_VALUE         32819
 #define _APS_NEXT_CONTROL_VALUE         1043
-#define _APS_NEXT_SYMED_VALUE           101
+#define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif

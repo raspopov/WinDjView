@@ -21,7 +21,8 @@
 #pragma once
 
 #include "Drawing.h"
-class CDjVuDoc;
+#include "DjVuDoc.h"
+
 class CPrintDlg;
 class CRenderThread;
 
@@ -107,8 +108,8 @@ protected:
 	struct Page
 	{
 		Page() :
-			bSizeLoaded(false), szPage(0, 0), nDPI(0), szDisplay(0, 0),
-			ptOffset(0, 0), pBitmap(NULL) {}
+			bInfoLoaded(false), szPage(0, 0), nDPI(0), szDisplay(0, 0),
+			ptOffset(0, 0), pBitmap(NULL), bTextDecoded(false) {}
 		~Page() { delete pBitmap; }
 
 		CSize GetSize(int nRotate) const
@@ -119,7 +120,15 @@ protected:
 			return sz;
 		}
 
-		bool bSizeLoaded;
+		void Init(const PageInfo& info)
+		{
+			szPage = info.szPage;
+			nDPI = info.nDPI;
+			pTextStream = info.pTextStream;
+			bInfoLoaded = true;
+		}
+
+		bool bInfoLoaded;
 		CSize szPage;
 		int nDPI;
 
@@ -127,6 +136,23 @@ protected:
 		CSize szDisplay;
 		CRect rcDisplay;
 		CDIB* pBitmap;
+
+		bool bTextDecoded;
+		GP<ByteStream> pTextStream;
+		GP<DjVuTXT> pText;
+		GList<DjVuTXT::Zone*> selection;
+
+		void DecodeText()
+		{
+			if (pTextStream != NULL)
+			{
+				pTextStream->seek(0);
+				GP<DjVuText> pDjVuText = DjVuText::create();
+				pDjVuText->decode(pTextStream);
+				pText = pDjVuText->txt;
+				bTextDecoded = true;
+			}
+		}
 
 		void DeleteBitmap()
 		{
@@ -199,8 +225,7 @@ protected:
 	afx_msg void OnDestroy();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnExportPage();
-	afx_msg void OnViewFind();
-	afx_msg void OnUpdateViewFind(CCmdUI *pCmdUI);
+	afx_msg void OnFindString();
 	DECLARE_MESSAGE_MAP()
 };
 

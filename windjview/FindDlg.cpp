@@ -21,6 +21,8 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "FindDlg.h"
+#include "MainFrm.h"
+#include ".\finddlg.h"
 
 
 // CFindDlg dialog
@@ -44,7 +46,21 @@ void CFindDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CFindDlg, CDialog)
+	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 
 // CFindDlg message handlers
+
+void CFindDlg::OnOK()
+{
+	if (!UpdateData())
+		return;
+
+	GetMainFrame()->SendMessage(WM_COMMAND, ID_FIND_STRING);
+}
+
+void CFindDlg::OnClose()
+{
+	ShowWindow(SW_HIDE);
+}

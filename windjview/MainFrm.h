@@ -22,6 +22,7 @@
 
 #include "MyToolBar.h"
 #include "MyComboBox.h"
+#include "FindDlg.h"
 
 
 class CMainFrame : public CMDIFrameWnd
@@ -33,6 +34,7 @@ public:
 // Attributes
 public:
 	CMyComboBox m_cboPage, m_cboZoom;
+	CFindDlg* m_pFindDlg;
 	void UpdatePageCombo(int nPage, int nPages = -1);
 	void UpdateZoomCombo(int nZoomType, double fZoom);
 
@@ -74,6 +76,8 @@ protected:
 	afx_msg void OnChangeZoomEdit();
 	afx_msg void OnCancelChangePageZoom();
 	afx_msg LRESULT OnDDEExecute(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnViewFind();
+	afx_msg void OnUpdateViewFind(CCmdUI *pCmdUI);
 	DECLARE_MESSAGE_MAP()
 };
 

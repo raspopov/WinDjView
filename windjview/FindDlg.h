@@ -20,8 +20,6 @@
 
 #pragma once
 
-#define WM_FIND_NEXT (WM_USER+20)
-
 
 // CFindDlg dialog
 
@@ -40,6 +38,7 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
+	virtual void OnOK();
+	afx_msg void OnClose();
 	DECLARE_MESSAGE_MAP()
 };
