@@ -107,6 +107,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_DISPLAY_COLOR, ID_DISPLAY_FOREGROUND, OnUpdateViewDisplay)
 	ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullscreen)
 	ON_WM_MOUSEACTIVATE()
+	ON_WM_LBUTTONDBLCLK()
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -117,7 +118,7 @@ CDjVuView::CDjVuView()
 	  m_pRenderThread(NULL), m_bInsideUpdateView(false), m_bClick(false),
 	  m_evtRendered(false, true), m_nPendingPage(-1), m_nClickedPage(-1),
 	  m_nMode(Drag), m_pOffscreenBitmap(NULL), m_szOffscreen(0, 0),
-	  m_bHasSelection(false), m_nDisplayMode(Color)
+	  m_bHasSelection(false), m_nDisplayMode(Color), m_bShowAllLinks(false)
 {
 }
 
@@ -227,7 +228,7 @@ void CDjVuView::OnDraw(CDC* pDC)
 			for (GPosition pos = page.pAnt->map_areas; pos; ++pos)
 			{
 				GP<GMapArea> pArea = page.pAnt->map_areas[pos];
-				DrawMapArea(&dcOffscreen, pArea, nPage, !!(pArea == m_pActiveLink));
+				DrawMapArea(&dcOffscreen, pArea, nPage, !!(pArea == m_pActiveLink) || m_bShowAllLinks);
 			}
 		}
 
@@ -1851,12 +1852,32 @@ void CDjVuView::SelectTextRange(int nPage, int nStart, int nEnd,
 	DjVuSelection selection;
 	FindSelectionZones(selection, page.pText, nStart, nEnd);
 
-	page.nSelStart = nStart;
-	page.nSelEnd = nEnd;
 	page.selection = selection;
+	if (!selection.isempty())
+	{
+		nStart = -1;
+		nEnd = -1;
+		for (GPosition pos = selection; pos; ++pos)
+		{
+			if (nStart == -1 || nStart > selection[pos]->text_start)
+				nStart = selection[pos]->text_start;
+
+			int nZoneEnd = selection[pos]->text_start + selection[pos]->text_length;
+			if (nEnd == -1 || nEnd < nZoneEnd)
+				nEnd = nZoneEnd;
+		}
+
+		page.nSelStart = nStart;
+		page.nSelEnd = nEnd;
+		m_bHasSelection = true;
+	}
+	else
+	{
+		page.nSelStart = -1;
+		page.nSelEnd = -1;
+	}
 
 	InvalidatePage(nPage);
-	m_bHasSelection = true;
 }
 
 void CDjVuView::OnFilePrint()
@@ -2752,12 +2773,24 @@ void CDjVuView::OnFindString()
 
 				ClearSelection();
 
-				page.nSelStart = nPos;
-				page.nSelEnd = nSelEnd;
+				int nStart = -1;
+				int nEnd = -1;
+				for (GPosition pos = selection; pos; ++pos)
+				{
+					if (nStart == -1 || nStart > selection[pos]->text_start)
+						nStart = selection[pos]->text_start;
+
+					int nZoneEnd = selection[pos]->text_start + selection[pos]->text_length;
+					if (nEnd == -1 || nEnd < nZoneEnd)
+						nEnd = nZoneEnd;
+				}
+
+				page.nSelStart = nStart;
+				page.nSelEnd = nEnd;
 				page.selection = selection;
+				m_bHasSelection = !selection.isempty();
 
 				InvalidatePage(nPage);
-				m_bHasSelection = true;
 
 				if (!IsSelectionVisible(nPage, page.selection))
 				{
@@ -3825,4 +3858,36 @@ void CDjVuView::UpdatePageInfo(CDjVuView* pView)
 		if (page.bInfoLoaded && !rhsPage.bInfoLoaded)
 			rhsPage.Init(page.info);
 	}
+}
+
+void CDjVuView::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	if (m_nMode == Select)
+	{
+		ClearSelection();
+
+		int nPage = GetPageFromPoint(point);
+		if (nPage == -1)
+			return;
+
+		int nPos = GetTextPosFromPoint(nPage, point);
+		bool bInfoLoaded = false;
+		CWaitCursor* pWaitCursor = NULL;
+		SelectTextRange(nPage, nPos, nPos + 1, bInfoLoaded, pWaitCursor);
+
+		if (bInfoLoaded)
+			UpdateView();
+
+		if (pWaitCursor != NULL)
+			delete pWaitCursor;
+	}
+
+	CMyScrollView::OnLButtonDblClk(nFlags, point);
+}
+
+void CDjVuView::ShowAllLinks(bool bShowAll)
+{
+	m_bShowAllLinks = bShowAll;
+	Invalidate();
+	UpdateWindow();
 }

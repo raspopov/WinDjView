@@ -81,6 +81,7 @@ public:
 	int GetPageDPI(int nPage) const { return m_pages[nPage].info.nDPI; }
 
 	void OnSettingsChanged();
+	void ShowAllLinks(bool bShowAll);
 
 	enum ZoomType
 	{
@@ -142,6 +143,7 @@ protected:
 	CToolTipCtrl m_toolTip;
 	CRenderThread* m_pRenderThread;
 	CEvent m_evtRendered;
+	bool m_bShowAllLinks;
 
 	CBitmap* m_pOffscreenBitmap;
 	CSize m_szOffscreen;
@@ -343,6 +345,7 @@ protected:
 	afx_msg void OnUpdateViewDisplay(CCmdUI* pCmdUI);
 	afx_msg void OnViewFullscreen();
 	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
+	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	DECLARE_MESSAGE_MAP()
 };
 

@@ -28,6 +28,8 @@
 class CDjVuView;
 class CFullscreenWnd;
 
+#define WM_SHOWALLLINKS (WM_USER + 20)
+
 
 class CMainFrame : public CMDIFrameWnd
 {
@@ -74,6 +76,9 @@ protected:
 	CMyStatusBar m_wndStatusBar;
 	CMyToolBar m_wndToolBar;
 
+	static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
+	static HHOOK hHook;
+
 	bool m_bFirstShow;
 	void UpdateSettings();
 
@@ -119,6 +124,8 @@ protected:
 	afx_msg void OnUpdateStatusPage(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateStatusSize(CCmdUI* pCmdUI);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	afx_msg void OnDestroy();
+	afx_msg LRESULT OnShowAllLinks(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };
 

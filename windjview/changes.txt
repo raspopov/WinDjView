@@ -8,6 +8,7 @@ Changes in version 0.3.2:
 + Added status bar indicators for page count and current page size.
 + Added brightness, contrast and gamma adjustment.
 + Added display modes (Color/B&W/Foreground/Background).
++ Shift key shows all hyperlinks on a page.
 - Fixed some issues with single-page layout.
 
 Changes in version 0.3.1:

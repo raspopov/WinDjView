@@ -35,6 +35,8 @@
 #define new DEBUG_NEW
 #endif
 
+HHOOK CMainFrame::hHook;
+
 void CreateSystemDialogFont(CFont& font)
 {
 	LOGFONT lf;
@@ -83,6 +85,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_PAGE, OnUpdateStatusPage)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_SIZE, OnUpdateStatusSize)
 	ON_WM_SETFOCUS()
+	ON_WM_DESTROY()
+	ON_MESSAGE(WM_SHOWALLLINKS, OnShowAllLinks)
 #ifdef ELIBRA_READER
 	ON_COMMAND(ID_HELP_CONTENTS, OnHelpContents)
 	ON_COMMAND(IDC_STATIC_LINK, OnGoToHomepage)
@@ -182,6 +186,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_cboZoom.SetItemHeight(-1, 16);
 	m_cboPage.GetEditCtrl().SetReal();
 	m_cboZoom.GetEditCtrl().SetPercent();
+
+	hHook = ::SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, NULL, ::GetCurrentThreadId());
 
 #ifdef ELIBRA_READER
 	TBBUTTON btn;
@@ -972,4 +978,48 @@ void CMainFrame::OnSetFocus(CWnd* pOldWnd)
 	}
 
 	CMDIFrameWnd::OnSetFocus(pOldWnd);
+}
+
+LRESULT CALLBACK CMainFrame::KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	if (nCode == HC_ACTION && wParam == VK_SHIFT)
+	{
+		static bool bWasPressed = false;
+		bool bPressed = (lParam & 0x80000000) == 0;
+
+		if (bPressed != bWasPressed)
+		{
+			bWasPressed = bPressed;
+			GetMainFrame()->PostMessage(WM_SHOWALLLINKS, bPressed);
+		}
+	}
+
+	return ::CallNextHookEx(hHook, nCode, wParam, lParam);
+}
+
+void CMainFrame::OnDestroy()
+{
+	::UnhookWindowsHookEx(hHook);
+
+	CMDIFrameWnd::OnDestroy();
+}
+
+LRESULT CMainFrame::OnShowAllLinks(WPARAM wParam, LPARAM lParam)
+{
+	POSITION pos = theApp.GetFirstDocTemplatePosition();
+	while (pos != NULL)
+	{
+		CDocTemplate* pTemplate = theApp.GetNextDocTemplate(pos);
+		ASSERT_KINDOF(CDocTemplate, pTemplate);
+
+		POSITION posDoc = pTemplate->GetFirstDocPosition();
+		while (posDoc != NULL)
+		{
+			CDocument* pDoc = pTemplate->GetNextDoc(posDoc);
+			CDjVuView* pView = ((CDjVuDoc*)pDoc)->GetDjVuView();
+			pView->ShowAllLinks(wParam != 0);
+		}
+	}
+
+	return 0;
 }
