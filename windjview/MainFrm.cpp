@@ -175,7 +175,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_cboPage.GetEditCtrl().SetInteger();
 
 	int nComboZoom = m_wndToolBar.CommandToIndex(ID_ZOOM_IN) - 1;
-	m_wndToolBar.SetButtonInfo(nComboZoom, IDC_ZOOM, TBBS_SEPARATOR, 120);
+	m_wndToolBar.SetButtonInfo(nComboZoom, IDC_ZOOM, TBBS_SEPARATOR, 105);
 
 	m_wndToolBar.GetItemRect(nComboZoom, rcCombo);
 	rcCombo.DeflateRect(3, 0);

@@ -76,20 +76,19 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_LASTPAGE, OnUpdateViewNextpage)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIRSTPAGE, OnUpdateViewPreviouspage)
 	ON_WM_SETFOCUS()
+	ON_WM_KILLFOCUS()
 	ON_WM_SETCURSOR()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_CONTEXTMENU()
-	ON_COMMAND(ID_PAGE_INFORMATION, OnPageInformation)
 	ON_COMMAND_RANGE(ID_LAYOUT_SINGLEPAGE, ID_LAYOUT_CONTINUOUS, OnViewLayout)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_LAYOUT_SINGLEPAGE, ID_LAYOUT_CONTINUOUS, OnUpdateViewLayout)
 	ON_MESSAGE(WM_RENDER_FINISHED, OnRenderFinished)
 	ON_MESSAGE(WM_PAGE_DECODED, OnPageDecoded)
 	ON_WM_DESTROY()
 	ON_WM_MOUSEWHEEL()
-	ON_COMMAND(ID_EXPORT_PAGE, OnExportPage)
 	ON_COMMAND(ID_FIND_STRING, OnFindString)
 	ON_COMMAND(ID_FIND_ALL, OnFindAll)
 	ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNeedText)
@@ -97,6 +96,12 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND(ID_ZOOM_OUT, OnViewZoomOut)
 	ON_UPDATE_COMMAND_UI(ID_ZOOM_IN, OnUpdateViewZoomIn)
 	ON_UPDATE_COMMAND_UI(ID_ZOOM_OUT, OnUpdateViewZoomOut)
+	ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullscreen)
+	ON_WM_MOUSEACTIVATE()
+	ON_WM_LBUTTONDBLCLK()
+#ifndef ELIBRA_READER
+	ON_COMMAND(ID_PAGE_INFORMATION, OnPageInformation)
+	ON_COMMAND(ID_EXPORT_PAGE, OnExportPage)
 	ON_COMMAND_RANGE(ID_MODE_DRAG, ID_MODE_SELECT, OnChangeMode)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_MODE_DRAG, ID_MODE_SELECT, OnUpdateMode)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
@@ -105,10 +110,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_UPDATE_COMMAND_UI(ID_FILE_EXPORT_TEXT, OnUpdateFileExportText)
 	ON_COMMAND_RANGE(ID_DISPLAY_COLOR, ID_DISPLAY_FOREGROUND, OnViewDisplay)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_DISPLAY_COLOR, ID_DISPLAY_FOREGROUND, OnUpdateViewDisplay)
-	ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullscreen)
-	ON_WM_MOUSEACTIVATE()
-	ON_WM_LBUTTONDBLCLK()
-	ON_WM_KILLFOCUS()
+#endif
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -508,7 +510,7 @@ void CDjVuView::RenderPage(int nPage, int nTimeout)
 			page.Init(info);
 		}
 
-		UpdateView();
+		UpdateView(RECALC);
 		ScrollToPositionNoRepaint(CPoint(GetScrollPos(SB_HORZ), 0));
 		UpdatePagesCache();
 	}
@@ -568,6 +570,11 @@ void CDjVuView::UpdateView(UpdateType updateType)
 			CSize szDevLine(15, 15);
 
 			SetScrollSizes(m_szDisplay, szDevPage, szDevLine);
+		}
+
+		if (updateType != RECALC)
+		{
+			UpdatePagesCache();
 		}
 	}
 	else if (m_nLayout == Continuous)
@@ -1252,7 +1259,7 @@ void CDjVuView::OnViewLayout(UINT nID)
 		}
 		else
 		{
-			UpdateView();
+			UpdateView(RECALC);
 			UpdatePageSizes(m_pages[nPage].ptOffset.y);
 
 			if (nOffset < 0)
@@ -1270,11 +1277,7 @@ void CDjVuView::OnViewLayout(UINT nID)
 		int nTop = m_pages[nPage].ptOffset.y + nOffset;
 		OnScrollBy(CPoint(GetScrollPos(SB_HORZ), nTop) - GetScrollPosition());
 
-		if (m_nLayout == SinglePage)
-		{
-			UpdatePagesCache();
-		}
-		else if (m_nLayout == Continuous)
+		if (m_nLayout == Continuous)
 		{
 			UpdateVisiblePages();
 			GetMainFrame()->UpdatePageCombo(this);
@@ -1324,9 +1327,7 @@ void CDjVuView::OnRotateRight()
 	DeleteBitmaps();
 	UpdateView();
 
-	if (m_nLayout == SinglePage)
-		UpdatePagesCache();
-	else if (m_nLayout == Continuous)
+	if (m_nLayout == Continuous)
 		UpdatePageSizes(GetScrollPos(SB_VERT));
 
 	GetMainFrame()->UpdatePageCombo(this);
@@ -1339,9 +1340,7 @@ void CDjVuView::OnRotate180()
 	DeleteBitmaps();
 	UpdateView();
 
-	if (m_nLayout == SinglePage)
-		UpdatePagesCache();
-	else if (m_nLayout == Continuous)
+	if (m_nLayout == Continuous)
 		UpdatePageSizes(GetScrollPos(SB_VERT));
 
 	GetMainFrame()->UpdatePageCombo(this);
@@ -1433,9 +1432,7 @@ void CDjVuView::ZoomTo(int nZoomType, double fZoom)
 
 	UpdateView();
 
-	if (m_nLayout == SinglePage)
-		UpdatePagesCache();
-	else if (m_nLayout == Continuous)
+	if (m_nLayout == Continuous)
 		UpdatePageSizes(GetScrollPos(SB_VERT));
 
 	Invalidate();
@@ -3852,10 +3849,6 @@ void CDjVuView::RestartThread()
 	m_pRenderThread = new CRenderThread(GetDocument(), this);
 
 	UpdateView();
-	if (m_nLayout == SinglePage)
-		UpdatePagesCache();
-	else if (m_nLayout == Continuous)
-		UpdateVisiblePages();
 }
 
 int CDjVuView::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)

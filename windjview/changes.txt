@@ -7,6 +7,7 @@ Changes in version 0.3.3:
 + Show all links works in fullscreen mode.
 * Fixed crash when exiting fullscreen mode on Windows 98.
 * Fixed window positioning when task bar is always visible.
+* Fixed wrong resulution of first page in single page layout.
 
 Changes in version 0.3.2:
 + Added "Find All" button which displays search results in a list.
