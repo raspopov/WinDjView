@@ -20,43 +20,29 @@
 
 #pragma once
 
-#include "Drawing.h"
 
+// CUpdateDlg dialog
 
-struct CAppSettings
+class CUpdateDlg : public CDialog
 {
-	static int nWindowPosX;
-	static int nWindowPosY;
-	static int nWindowWidth;
-	static int nWindowHeight;
+	DECLARE_DYNAMIC(CUpdateDlg)
 
-	static bool bWindowMaximized;
-	static bool bChildMaximized;
+public:
+	CUpdateDlg(CWnd* pParent = NULL);
+	virtual ~CUpdateDlg();
 
-	static bool bToolbar;
-	static bool bStatusBar;
+// Dialog Data
+	enum { IDD = IDD_UPDATE };
 
-	static int nDefaultZoomType;
-	static double fDefaultZoom;
-	static int nDefaultLayout;
-	static int nDefaultMode;
+protected:
+	HANDLE m_hThread;
+	static DWORD WINAPI UpdateThreadProc(LPVOID pvData);
 
-	static bool bRestoreAssocs;
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void OnOK();
+	virtual void OnCancel();
+	virtual BOOL OnInitDialog();
 
-	static bool bNavPaneCollapsed;
-	static int nNavPaneWidth;
-
-	static bool bGenAllThumbnails;
-
-	static CPrintSettings printSettings;
-
-	// The following settings are not stored in registry
-	static int nCopies;
-	static bool bCollate;
-
-	static bool bLandscape;
-	static bool bTwoPages;
-
-	static CString strPrinter;
-	static WORD nPaper;
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	DECLARE_MESSAGE_MAP()
 };

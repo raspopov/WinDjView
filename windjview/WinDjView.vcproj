@@ -292,6 +292,9 @@
 				RelativePath=".\ThumbnailsView.cpp">
 			</File>
 			<File
+				RelativePath=".\UpdateDlg.cpp">
+			</File>
+			<File
 				RelativePath=".\WinDjView.cpp">
 			</File>
 			<File
@@ -373,6 +376,9 @@
 			</File>
 			<File
 				RelativePath=".\ThumbnailsView.h">
+			</File>
+			<File
+				RelativePath=".\UpdateDlg.h">
 			</File>
 			<File
 				RelativePath=".\WinDjView.h">

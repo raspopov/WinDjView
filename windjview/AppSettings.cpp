@@ -43,6 +43,7 @@ bool CAppSettings::bStatusBar = true;
 int CAppSettings::nDefaultZoomType = -3; // Fit page
 double CAppSettings::fDefaultZoom = 100.0;
 int CAppSettings::nDefaultLayout = 1; // Continuous
+int CAppSettings::nDefaultMode = 0; // Drag
 
 bool CAppSettings::bRestoreAssocs = false;
 

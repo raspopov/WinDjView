@@ -728,18 +728,20 @@ void CMainFrame::OnUpdateViewForward(CCmdUI* pCmdUI)
 
 void CMainFrame::AddToHistory(CDjVuView* pView, int nPage)
 {
+	HistoryPos pos;
+	pos.strFileName = pView->GetDocument()->GetPathName();
+	pos.nPage = nPage;
+
+	if (!m_history.empty() && pos == *m_historyPos)
+		return;
+
 	if (!m_history.empty())
 	{
 		++m_historyPos;
 		m_history.erase(m_historyPos, m_history.end());
 	}
 
-	HistoryPos pos;
-	pos.strFileName = pView->GetDocument()->GetPathName();
-	pos.nPage = nPage;
-
-	if (m_history.empty() || m_history.back() != pos)
-		m_history.push_back(pos);
+	m_history.push_back(pos);
 
 	m_historyPos = m_history.end();
 	--m_historyPos;

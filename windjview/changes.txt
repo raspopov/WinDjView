@@ -4,10 +4,12 @@ Copyright (C) 2004-2005 Andrew Zhezherun
 
 Changes in version 0.3.1:
 + Added bookmarks.
++ Added text selection, copying to clipboard and export to file.
 + Added zoom in/out toolbar buttons.
 + Added option to disable generating thumbnails in background.
++ Added checking for updates.
 + Window title specifies file name first.
-- Various thumbnails fixes and improvements.
+- Thumbnails fixes and improvements.
 
 Changes in version 0.3:
 + Added text searching.

@@ -65,6 +65,7 @@ public:
 	int GetLayout() const { return m_nLayout; }
 	int GetRotate() const { return m_nRotate; }
 
+	GUTF8String GetFullText();
 	void StopDecoding();
 
 	enum ZoomType
@@ -108,6 +109,9 @@ protected:
 	CToolTipCtrl m_toolTip;
 	CRenderThread* m_pRenderThread;
 	CEvent m_evtRendered;
+
+	CBitmap* m_pOffscreenBitmap;
+	CSize m_szOffscreen;
 
 	int m_nPage, m_nPageCount;
 	CSize m_szDisplay;
@@ -214,7 +218,8 @@ protected:
 	void UpdatePagesCache();
 	void UpdatePageCache(int nPage, const CRect& rcClient);
 	void UpdatePageCacheSingle(int nPage);
-	void ClearSelection();
+	void ClearSelection(int nPage = -1);
+	void UpdateSelectionStatus();
 	bool IsSelectionBelowTop(int nPage, const DjVuSelection& selection);
 	bool IsSelectionVisible(int nPage, const DjVuSelection& selection);
 	void EnsureSelectionVisible(int nPage, const DjVuSelection& selection);
@@ -227,16 +232,31 @@ protected:
 	GP<GMapArea> GetHyperlinkFromPoint(CPoint point, int* pnPage = NULL);
 	void UpdateActiveHyperlink(CPoint point);
 
+	enum Mode
+	{
+		DRAG = 0,
+		SELECT = 1
+	};
+	int m_nMode;
+	int m_nSelStartPos;
+	CPoint TranslateToDjVuCoord(int nPage, const CPoint& point);
+	int GetTextPosFromPoint(int nPage, const CPoint& point);
+	void FindSelectionZones(DjVuSelection& list, DjVuTXT* pText, int nStart, int nEnd);
+	void SelectTextRange(int nPage, int nStart, int nEnd, bool& bInfoLoaded, CWaitCursor*& pWaitCursor);
+	GUTF8String GetSelectedText();
+	bool m_bHasSelection;
+
 	int m_nClickedPage;
 	bool m_bDragging;
 	CPoint m_ptStart, m_ptStartPos;
-	int m_nStartPage;
+	int m_nStartPage, m_nPrevPage;
 	bool m_bClick;
 	CPoint m_ptClick;
 	int m_nClickCount;
 	static HCURSOR hCursorHand;
 	static HCURSOR hCursorDrag;
 	static HCURSOR hCursorLink;
+	static HCURSOR hCursorText;
 
 public:
 	int m_nPendingPage;
@@ -278,6 +298,12 @@ protected:
 	afx_msg void OnViewZoomOut();
 	afx_msg void OnUpdateViewZoomIn(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewZoomOut(CCmdUI* pCmdUI);
+	afx_msg void OnChangeMode(UINT nID);
+	afx_msg void OnUpdateMode(CCmdUI* pCmdUI);
+	afx_msg void OnEditCopy();
+	afx_msg void OnUpdateEditCopy(CCmdUI* pCmdUI);
+	afx_msg void OnFileExportText();
+	afx_msg void OnUpdateFileExportText(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 };
 

@@ -27,11 +27,14 @@
 #include "DjVuView.h"
 #include "AppSettings.h"
 #include "SettingsDlg.h"
+#include "UpdateDlg.h"
 #include "ThumbnailsView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+CString CURRENT_VERSION = _T("0.3.1");
 
 
 const TCHAR* s_pszDisplaySettings = _T("Display");
@@ -46,6 +49,7 @@ const TCHAR* s_pszStatusBar = _T("statusbar");
 const TCHAR* s_pszZoom = _T("zoom");
 const TCHAR* s_pszZoomPercent = _T("%");
 const TCHAR* s_pszLayout = _T("layout");
+const TCHAR* s_pszMode = _T("mode");
 const TCHAR* s_pszNavCollapsed = _T("nav-collapsed");
 const TCHAR* s_pszNavWidth = _T("nav-width");
 const TCHAR* s_pszGenAllThumbnails = _T("gen-all-thumbs");
@@ -71,6 +75,7 @@ BEGIN_MESSAGE_MAP(CDjViewApp, CWinApp)
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
 	ON_COMMAND(ID_FILE_SETTINGS, OnFileSettings)
+	ON_COMMAND(ID_CHECK_FOR_UPDATE, OnCheckForUpdate)
 END_MESSAGE_MAP()
 
 
@@ -360,9 +365,10 @@ void CDjViewApp::LoadSettings()
 	CAppSettings::bChildMaximized = !!GetProfileInt(s_pszDisplaySettings, s_pszChildMaximized, 0);
 	CAppSettings::bToolbar = !!GetProfileInt(s_pszDisplaySettings, s_pszToolbar, 1);
 	CAppSettings::bStatusBar = !!GetProfileInt(s_pszDisplaySettings, s_pszStatusBar, 1);
-	CAppSettings::nDefaultZoomType = GetProfileInt(s_pszDisplaySettings, s_pszZoom, 0);
+	CAppSettings::nDefaultZoomType = GetProfileInt(s_pszDisplaySettings, s_pszZoom, -3); // Fit page
 	CAppSettings::fDefaultZoom = GetProfileDouble(s_pszDisplaySettings, s_pszZoomPercent, 100.0);
-	CAppSettings::nDefaultLayout = GetProfileInt(s_pszDisplaySettings, s_pszLayout, 0);
+	CAppSettings::nDefaultLayout = GetProfileInt(s_pszDisplaySettings, s_pszLayout, 1); // Continuous
+	CAppSettings::nDefaultMode = GetProfileInt(s_pszDisplaySettings, s_pszMode, 0); // Drag
 	CAppSettings::bNavPaneCollapsed = !!GetProfileInt(s_pszDisplaySettings, s_pszNavCollapsed, 0);
 	CAppSettings::nNavPaneWidth = GetProfileInt(s_pszDisplaySettings, s_pszNavWidth, 200);
 	CAppSettings::bGenAllThumbnails = !!GetProfileInt(s_pszDisplaySettings, s_pszGenAllThumbnails, 1);
@@ -392,6 +398,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySettings, s_pszZoom, CAppSettings::nDefaultZoomType);
 	WriteProfileDouble(s_pszDisplaySettings, s_pszZoomPercent, CAppSettings::fDefaultZoom);
 	WriteProfileInt(s_pszDisplaySettings, s_pszLayout, CAppSettings::nDefaultLayout);
+	WriteProfileInt(s_pszDisplaySettings, s_pszMode, CAppSettings::nDefaultMode);
 	WriteProfileInt(s_pszDisplaySettings, s_pszNavCollapsed, CAppSettings::bNavPaneCollapsed);
 	WriteProfileInt(s_pszDisplaySettings, s_pszNavWidth, CAppSettings::nNavPaneWidth);
 	WriteProfileInt(s_pszDisplaySettings, s_pszGenAllThumbnails, CAppSettings::bGenAllThumbnails);
@@ -620,4 +627,10 @@ CDocument* CDjViewApp::FindOpenDocument(LPCTSTR lpszFileName)
 	}
 
 	return NULL;
+}
+
+void CDjViewApp::OnCheckForUpdate()
+{
+	CUpdateDlg dlg;
+	dlg.DoModal();
 }

@@ -13,7 +13,6 @@
 #define IDR_DjVuTYPE                    129
 #define IDR_ElibTYPE                    130
 #define IDS_ASSOCIATE_SUCCESSFUL        131
-#define IDC_CURSOR_HAND                 132
 #define IDS_ASSOCIATE_FAILED            132
 #define IDC_CURSOR_DRAG                 133
 #define IDD_PROGRESS                    135
@@ -24,6 +23,9 @@
 #define IDD_FIND                        141
 #define IDB_CLOSE                       144
 #define IDB_BOOKMARKS                   145
+#define IDC_CURSOR1                     146
+#define IDC_CURSOR_HAND                 146
+#define IDD_UPDATE                      147
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -114,13 +116,17 @@
 #define ID_WINDOW_ACTIVATE_LAST         32841
 #define ID_ZOOM_IN                      32842
 #define ID_ZOOM_OUT                     32843
+#define ID_MODE_DRAG                    32844
+#define ID_MODE_SELECT                  32845
+#define ID_FILE_EXPORT_TEXT             32850
+#define ID_CHECK_FOR_UPDATE             32852
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        146
-#define _APS_NEXT_COMMAND_VALUE         32844
+#define _APS_NEXT_RESOURCE_VALUE        148
+#define _APS_NEXT_COMMAND_VALUE         32853
 #define _APS_NEXT_CONTROL_VALUE         1043
 #define _APS_NEXT_SYMED_VALUE           104
 #endif

@@ -30,6 +30,8 @@
 #include "Elibra.h"         // main symbols
 #endif
 
+extern CString CURRENT_VERSION;
+
 
 CString FormatDouble(double fValue);
 void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, double& value, double def = 0.0, LPCTSTR pszSuffix = NULL);
@@ -66,6 +68,7 @@ protected:
 // Generated message map functions
 	afx_msg void OnAppAbout();
 	afx_msg void OnFileSettings();
+	afx_msg void OnCheckForUpdate();
 	DECLARE_MESSAGE_MAP()
 };
 
