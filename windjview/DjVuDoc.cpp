@@ -191,17 +191,38 @@ bool CDjVuDoc::GetPageInfo(int nPage, CSize& szPage, int& nDPI)
 		// Find chunk with page info
 		while (iff->get_chunk(chkid) != 0)
 		{
-			// Decode and get chunk description
 			if (chkid == "INFO")
 			{
-				GP<DjVuInfo> info = DjVuInfo::create();
+				// Get page dimensions and resolution from info chunk
 				GP<ByteStream> chunk_stream = iff->get_bytestream();
+
+				GP<DjVuInfo> info = DjVuInfo::create();
 				info->decode(*chunk_stream);
 
 				// Check data for consistency
 				szPage.cx = max(info->width, 0);
 				szPage.cy = max(info->height, 0);
 				nDPI = max(info->dpi, 0);
+				return true;
+			}
+			else if (chkid == "PM44" || chkid == "BM44")
+			{
+				// Get image dimensions and resolution from bitmap chunk
+				GP<ByteStream> chunk_stream = iff->get_bytestream();
+
+				UINT serial = chunk_stream->read8();
+				UINT slices = chunk_stream->read8();
+				UINT major = chunk_stream->read8();
+				UINT minor = chunk_stream->read8();
+
+				UINT xhi = chunk_stream->read8();
+				UINT xlo = chunk_stream->read8();
+				UINT yhi = chunk_stream->read8();
+				UINT ylo = chunk_stream->read8();
+
+				szPage.cx = (xhi << 8) | xlo;
+				szPage.cy = (yhi << 8) | ylo;
+				nDPI = 100;
 				return true;
 			}
 

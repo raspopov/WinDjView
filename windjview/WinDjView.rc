@@ -250,24 +250,24 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 259, 67
+IDD_ABOUTBOX DIALOGEX 0, 0, 252, 67
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,10,9,18,16
-    LTEXT           "WinDjView Version 0.2",IDC_STATIC,40,7,119,8,
+    ICON            IDR_MAINFRAME,IDC_STATIC,10,9,21,20
+    LTEXT           "WinDjView Version 0.2.1",IDC_STATIC,40,7,119,8,
                     SS_NOPREFIX
     LTEXT           "Copyright (C) 2004 Andrew Zhezherun",IDC_STATIC,40,19,
                     130,8
-    DEFPUSHBUTTON   "Close",IDOK,202,7,50,14,WS_GROUP
+    DEFPUSHBUTTON   "Close",IDOK,193,7,50,14,WS_GROUP
     LTEXT           "Project homepage:",IDC_STATIC,40,39,64,8
     LTEXT           "DjVuLibre homepage:",IDC_STATIC,40,51,72,8
     LTEXT           "http://sourceforge.net/projects/windjview",
-                    IDC_STATIC_LINK,106,39,146,8
-    LTEXT           "http://sourceforge.net/projects/djvu",
-                    IDC_STATIC_LIB_LINK,115,51,137,8
+                    IDC_STATIC_LINK,106,39,139,8
+    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,114,51,
+                    131,8
 END
 
 IDD_PRINT DIALOGEX 0, 0, 431, 316
@@ -435,7 +435,7 @@ BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 252
+        RIGHTMARGIN, 245
         TOPMARGIN, 7
         BOTTOMMARGIN, 60
     END

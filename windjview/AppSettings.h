@@ -31,6 +31,7 @@ struct CAppSettings
 	static int nWindowHeight;
 
 	static bool bWindowMaximized;
+	static bool bChildMaximized;
 
 	static bool bToolbar;
 	static bool bStatusBar;

@@ -157,6 +157,7 @@ protected:
 	};
 	void UpdateView(UpdateType updateType = TOP);
 	void UpdateVisiblePages();
+	bool m_bInsideUpdateView;
 
 	int m_nClickedPage;
 	bool m_bDragging;

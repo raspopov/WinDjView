@@ -30,6 +30,7 @@ public:
 // Overrides
 public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual void ActivateFrame(int nCmdShow = -1);
 
 // Implementation
 public:
@@ -42,5 +43,6 @@ public:
 protected:
 // Generated message map functions
 	afx_msg void OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeactivateWnd);
+	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
 	DECLARE_MESSAGE_MAP()
 };

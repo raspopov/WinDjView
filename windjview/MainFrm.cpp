@@ -104,15 +104,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 
-	m_wndToolBar.SetBarStyle(m_wndToolBar.GetBarStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
 	m_wndToolBar.SetHeight(30);
-
 	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
+	m_wndToolBar.SetWindowText(_T("Toolbar"));
+
 	EnableDocking(CBRS_ALIGN_ANY);
 	DockControlBar(&m_wndToolBar);
 
 	int nComboPage = m_wndToolBar.CommandToIndex(ID_VIEW_NEXTPAGE) - 1;
-	m_wndToolBar.SetButtonInfo(nComboPage, 0, TBBS_SEPARATOR, 65);
+	m_wndToolBar.SetButtonInfo(nComboPage, IDC_PAGENUM, TBBS_SEPARATOR, 65);
 
 	CRect rcCombo;
 	m_wndToolBar.GetItemRect(nComboPage, rcCombo);
@@ -134,7 +134,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_cboPage.GetEditCtrl().SetInteger();
 
 	int nComboZoom = m_wndToolBar.CommandToIndex(ID_ROTATE_LEFT) - 1;
-	m_wndToolBar.SetButtonInfo(nComboZoom, 0, TBBS_SEPARATOR, 120);
+	m_wndToolBar.SetButtonInfo(nComboZoom, IDC_ZOOM, TBBS_SEPARATOR, 120);
 
 	m_wndToolBar.GetItemRect(nComboZoom, rcCombo);
 	rcCombo.DeflateRect(8, 0, 3, 0);

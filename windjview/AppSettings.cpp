@@ -35,6 +35,7 @@ int CAppSettings::nWindowWidth = 700;
 int CAppSettings::nWindowHeight = 500;
 
 bool CAppSettings::bWindowMaximized = false;
+bool CAppSettings::bChildMaximized = false;
 
 bool CAppSettings::bToolbar = true;
 bool CAppSettings::bStatusBar = true;

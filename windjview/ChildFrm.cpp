@@ -24,6 +24,7 @@
 #include "ChildFrm.h"
 #include "MainFrm.h"
 #include "DjVuView.h"
+#include "AppSettings.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -36,6 +37,7 @@ IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWnd)
 
 BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 	ON_WM_MDIACTIVATE()
+	ON_WM_WINDOWPOSCHANGED()
 END_MESSAGE_MAP()
 
 
@@ -108,4 +110,22 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 		cboZoom.SetWindowText(_T("100%"));
 		cboZoom.EnableWindow(false);
 	}
+}
+
+void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
+{
+	CMDIChildWnd::OnWindowPosChanged(lpwndpos);
+
+	if (IsWindowVisible() && !IsIconic())
+	{
+		CAppSettings::bChildMaximized = !!IsZoomed();
+	}
+}
+
+void CChildFrame::ActivateFrame(int nCmdShow)
+{
+	if (CAppSettings::bChildMaximized)
+		nCmdShow = SW_SHOWMAXIMIZED;
+
+	CMDIChildWnd::ActivateFrame(nCmdShow);
 }

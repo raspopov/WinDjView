@@ -39,6 +39,7 @@ const TCHAR* s_pszPosY = _T("y");
 const TCHAR* s_pszWidth = _T("width");
 const TCHAR* s_pszHeight = _T("height");
 const TCHAR* s_pszMaximized = _T("maximized");
+const TCHAR* s_pszChildMaximized = _T("child-maximized");
 const TCHAR* s_pszToolbar = _T("toobar");
 const TCHAR* s_pszStatusBar = _T("statusbar");
 const TCHAR* s_pszZoom = _T("zoom");
@@ -253,7 +254,7 @@ void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 	}
 	else if (rcWeblinkLibrary.PtInRect(point))
 	{
-		::ShellExecute(NULL, "open", "http://sourceforge.net/projects/djvu",
+		::ShellExecute(NULL, "open", "http://djvu.sourceforge.net",
 			NULL, NULL, SW_SHOWNORMAL);
 		return;
 	}
@@ -305,6 +306,7 @@ void CDjViewApp::LoadSettings()
 	CAppSettings::nWindowWidth = GetProfileInt(s_pszDisplaySettings, s_pszWidth, 700);
 	CAppSettings::nWindowHeight = GetProfileInt(s_pszDisplaySettings, s_pszHeight, 500);
 	CAppSettings::bWindowMaximized = !!GetProfileInt(s_pszDisplaySettings, s_pszMaximized, 0);
+	CAppSettings::bChildMaximized = !!GetProfileInt(s_pszDisplaySettings, s_pszChildMaximized, 0);
 	CAppSettings::bToolbar = !!GetProfileInt(s_pszDisplaySettings, s_pszToolbar, 1);
 	CAppSettings::bStatusBar = !!GetProfileInt(s_pszDisplaySettings, s_pszStatusBar, 1);
 	CAppSettings::nDefaultZoomType = GetProfileInt(s_pszDisplaySettings, s_pszZoom, 0);
@@ -328,6 +330,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySettings, s_pszWidth, CAppSettings::nWindowWidth);
 	WriteProfileInt(s_pszDisplaySettings, s_pszHeight, CAppSettings::nWindowHeight);
 	WriteProfileInt(s_pszDisplaySettings, s_pszMaximized, CAppSettings::bWindowMaximized);
+	WriteProfileInt(s_pszDisplaySettings, s_pszChildMaximized, CAppSettings::bChildMaximized);
 	WriteProfileInt(s_pszDisplaySettings, s_pszToolbar, CAppSettings::bToolbar);
 	WriteProfileInt(s_pszDisplaySettings, s_pszStatusBar, CAppSettings::bStatusBar);
 	WriteProfileInt(s_pszDisplaySettings, s_pszZoom, CAppSettings::nDefaultZoomType);
