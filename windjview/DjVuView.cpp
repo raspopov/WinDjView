@@ -2717,7 +2717,11 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, bool bAddToHistor
 	TCHAR szDir[_MAX_DIR + 1] = {0};
 	TCHAR szExt[_MAX_EXT + 1] = {0};
 	_tsplitpath(strPathName, NULL, NULL, NULL, szExt);
-	if (_tcsicmp(szExt, _T(".djvu")) == 0 || _tcsicmp(szExt, _T(".djv")) == 0)
+	if (_tcsicmp(szExt, _T(".djvu")) == 0 || _tcsicmp(szExt, _T(".djv")) == 0
+#ifdef ELIBRA_READER
+			|| _tcsicmp(szExt, _T(".elib")) == 0
+#endif
+		)
 	{
 		// Check if the link leads to a local DjVu file
 

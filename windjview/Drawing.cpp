@@ -717,7 +717,7 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 
 		GP<DjVuImage> pImage;
 		if (nPage >= 0 && nPage < pDoc->GetPageCount())
-			pImage = pDoc->GetPage(nPage);
+			pImage = pDoc->GetPage(nPage, false);
 		if (pImage != NULL)
 		{
 			pImage->set_rotate(nRotate);
@@ -726,7 +726,7 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 
 		pImage = NULL;
 		if (dlg.m_bTwoPages && nSecondPage >= 0 && nSecondPage < pDoc->GetPageCount())
-			pImage = pDoc->GetPage(nSecondPage);
+			pImage = pDoc->GetPage(nSecondPage, false);
 		if (pImage != NULL)
 		{
 			pImage->set_rotate(nRotate);

@@ -121,26 +121,9 @@ void CThumbnailsThread::ClearQueue()
 
 void CThumbnailsThread::Render(Job& job)
 {
-	GP<DjVuImage> pImage = NULL;
-	if (m_pDoc->IsPageCached(job.nPage))
-	{
-		pImage = m_pDoc->GetPage(job.nPage);
-	}
-	else
-	{
-		G_TRY
-		{
-			pImage = m_pDoc->GetDjVuDoc()->get_page(job.nPage);
-		}
-		G_CATCH(ex)
-		{
-			ex;
-		}
-		G_ENDCATCH;
-	}
-
 	CDIB* pBitmap = NULL;
 
+	GP<DjVuImage> pImage = m_pDoc->GetPage(job.nPage, false);
 	if (pImage != NULL)
 	{
 		pImage->set_rotate(job.nRotate);

@@ -472,7 +472,7 @@ void CPrintDlg::OnPaint()
 
 		if (m_pCurPage == NULL)
 		{
-			m_pCurPage = m_pDoc->GetPage(m_nCurPage);
+			m_pCurPage = m_pDoc->GetPage(m_nCurPage, false);
 			if (m_pCurPage != NULL)
 				m_pCurPage->set_rotate(m_nRotate);
 		}
@@ -486,7 +486,7 @@ void CPrintDlg::OnPaint()
 		{
 			if (m_pNextPage == NULL)
 			{
-				m_pNextPage = m_pDoc->GetPage(m_nCurPage + 1);
+				m_pNextPage = m_pDoc->GetPage(m_nCurPage + 1, false);
 				if (m_pNextPage != NULL)
 					m_pNextPage->set_rotate(m_nRotate);
 			}

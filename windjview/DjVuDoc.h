@@ -51,7 +51,7 @@ protected: // create from serialization only
 
 // Operations
 public:
-	GP<DjVuImage> GetPage(int nPage);
+	GP<DjVuImage> GetPage(int nPage, bool bAddToCache = true);
 	PageInfo GetPageInfo(int nPage);
 	void RemoveFromCache(int nPage);
 	bool IsPageCached(int nPage);
@@ -61,7 +61,6 @@ public:
 	int GetPageFromId(const GUTF8String& strPageId) const;
 
 	GP<DjVmNav> GetBookmarks() { return m_pDjVuDoc->get_bookmarks(); }
-	GP<DjVuDocument> GetDjVuDoc() { return m_pDjVuDoc; }
 
 // Overrides
 public:
@@ -78,15 +77,29 @@ public:
 
 
 protected:
+	struct PageRequest
+	{
+		HANDLE hEvent;
+		GP<DjVuImage> pImage;
+	};
+	stack<HANDLE> m_eventCache;
+	CCriticalSection m_eventLock;
+
 	struct PageData
 	{
-		PageData() : pImage(NULL), bHasInfo(false), bFullInfo(false) {}
+		PageData() : pImage(NULL), bHasInfo(false),
+					 bFullInfo(false), hDecodingThread(NULL) {}
 
 		GP<DjVuImage> pImage;
 		PageInfo info;
 		bool bHasInfo;
 		bool bFullInfo;
+
+		HANDLE hDecodingThread;
+		int nOrigThreadPriority;
+		vector<PageRequest*> requests;
 	};
+
 
 	PageInfo ReadPageInfo(int nPage);
 	GP<DjVuDocument> m_pDjVuDoc;

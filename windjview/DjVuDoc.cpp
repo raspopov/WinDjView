@@ -46,6 +46,13 @@ CDjVuDoc::CDjVuDoc()
 
 CDjVuDoc::~CDjVuDoc()
 {
+	while (!m_eventCache.empty())
+	{
+		HANDLE hEvent = m_eventCache.top();
+		m_eventCache.pop();
+
+		::CloseHandle(hEvent);
+	}
 }
 
 BOOL CDjVuDoc::OnNewDocument()
@@ -145,7 +152,7 @@ bool CDjVuDoc::IsPageCached(int nPage)
 	return bCached;
 }
 
-GP<DjVuImage> CDjVuDoc::GetPage(int nPage)
+GP<DjVuImage> CDjVuDoc::GetPage(int nPage, bool bAddToCache)
 {
 	ASSERT(nPage >= 0 && nPage < m_pDjVuDoc->get_pages_num());
 	PageData& data = m_pages[nPage];
@@ -158,6 +165,47 @@ GP<DjVuImage> CDjVuDoc::GetPage(int nPage)
 		return pImage;
 	}
 
+	if (data.hDecodingThread != NULL)
+	{
+		// Other thread is already decoding this page. Put
+		// ourselves in a list of waiting threads
+		PageRequest request;
+
+		m_eventLock.Lock();
+		if (m_eventCache.empty())
+		{
+			request.hEvent = ::CreateEvent(NULL, false, false, NULL);
+		}
+		else
+		{
+			request.hEvent = m_eventCache.top();
+			::ResetEvent(request.hEvent);
+			m_eventCache.pop();
+		}
+		m_eventLock.Unlock();
+
+		// Temporarily increase priority of the decoding thread if needed
+		HANDLE hOurThread = ::GetCurrentThread();
+		int nOurPriority = ::GetThreadPriority(hOurThread);
+		if (::GetThreadPriority(data.hDecodingThread) < nOurPriority)
+			::SetThreadPriority(data.hDecodingThread, nOurPriority);
+
+		data.requests.push_back(&request);
+		m_lock.Unlock();
+
+		::WaitForSingleObject(request.hEvent, INFINITE);
+		pImage = request.pImage;
+
+		m_eventLock.Lock();
+		m_eventCache.push(request.hEvent);
+		m_eventLock.Unlock();
+
+		// Page will be put in cache by the thread which decoded it
+		return pImage;
+	}
+
+	data.hDecodingThread = ::GetCurrentThread();
+	data.nOrigThreadPriority = ::GetThreadPriority(data.hDecodingThread);
 	m_lock.Unlock();
 
 	G_TRY
@@ -170,9 +218,21 @@ GP<DjVuImage> CDjVuDoc::GetPage(int nPage)
 	}
 	G_ENDCATCH;
 
-	if (pImage != NULL)
+	m_lock.Lock();
+	// Notify all waiting threads that image is ready
+	for (size_t i = 0; i < data.requests.size(); ++i)
 	{
-		m_lock.Lock();
+		data.requests[i]->pImage = pImage;
+		::SetEvent(data.requests[i]->hEvent);
+	}
+
+	ASSERT(data.hDecodingThread == ::GetCurrentThread());
+	::SetThreadPriority(data.hDecodingThread, data.nOrigThreadPriority);
+	data.hDecodingThread = NULL;
+	data.requests.clear();
+
+	if (pImage != NULL && bAddToCache)
+	{
 		data.pImage = pImage;
 
 		if (!data.bFullInfo)
@@ -185,8 +245,8 @@ GP<DjVuImage> CDjVuDoc::GetPage(int nPage)
 			if (info.pTextStream != NULL)
 				m_bHasText = true;
 		}
-		m_lock.Unlock();
 	}
+	m_lock.Unlock();
 
 	return pImage;
 }

@@ -55,6 +55,7 @@
 
 #include <vector>
 #include <set>
+#include <stack>
 #include <algorithm>
 #include <cmath>
 #include <list>
