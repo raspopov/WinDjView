@@ -156,6 +156,8 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
+        MENUITEM "Associate With .djvu &Files", ID_HELP_ASSOCIATE
+        MENUITEM SEPARATOR
         MENUITEM "&About WinDjView...",         ID_APP_ABOUT
     END
 END
@@ -218,6 +220,8 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
+        MENUITEM "Associate With .djvu &Files", ID_HELP_ASSOCIATE
+        MENUITEM SEPARATOR
         MENUITEM "&About WinDjView...",         ID_APP_ABOUT
     END
 END
@@ -260,8 +264,8 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
 CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,10,9,21,20
-    LTEXT           "WinDjView Version 0.2.1",IDC_STATIC,40,7,119,8,
+    ICON            IDR_MAINFRAME,IDC_STATIC,10,9,20,20
+    LTEXT           "WinDjView Version 0.2.2",IDC_STATIC,40,7,119,8,
                     SS_NOPREFIX
     LTEXT           "Copyright (C) 2004 Andrew Zhezherun",IDC_STATIC,40,19,
                     130,8
@@ -395,8 +399,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,2,1,0
- PRODUCTVERSION 0,2,1,0
+ FILEVERSION 0,2,2,0
+ PRODUCTVERSION 0,2,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -412,13 +416,13 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "Andrew Zhezherun"
-            VALUE "FileDescription", "DjVu Document"
-            VALUE "FileVersion", "0.2.1"
+            VALUE "FileDescription", "WinDjView"
+            VALUE "FileVersion", "0.2.2"
             VALUE "InternalName", "WinDjView.exe"
             VALUE "LegalCopyright", "Copyright (C) 2004 Andrew Zhezherun.  All rights reserved."
             VALUE "OriginalFilename", "WinDjView.exe"
             VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "0.2.1"
+            VALUE "ProductVersion", "0.2.2"
         END
     END
     BLOCK "VarFileInfo"

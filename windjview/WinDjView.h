@@ -51,9 +51,11 @@ public:
 protected:
 	void LoadSettings();
 	void SaveSettings();
+	void EnableShellOpen();
 
 // Generated message map functions
 	afx_msg void OnAppAbout();
+	afx_msg void OnHelpAssociate();
 	DECLARE_MESSAGE_MAP()
 };
 

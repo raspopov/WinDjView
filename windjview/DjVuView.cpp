@@ -573,6 +573,7 @@ void CDjVuView::UpdateVisiblePages()
 
 	int nTop = GetScrollPos(SB_VERT);
 
+	list<int> pages;
 	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 	{
 		Page& page = m_pages[nPage];
@@ -582,18 +583,34 @@ void CDjVuView::UpdateVisiblePages()
 		{
 			if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize())
 			{
-				m_pRenderThread->AddJob(nPage, m_nRotate,
-					CRect(CPoint(0, 0), page.szDisplay),
-					CRect(CPoint(0, 0), page.szDisplay));
-
-				InvalidatePage(nPage);
+				pages.push_back(nPage);
 			}
 		}
-		else
+		else if (page.rcDisplay.bottom < nTop - rcClient.Height() ||
+			page.rcDisplay.top > nTop + 2*rcClient.Height())
 		{
 			page.DeleteBitmap();
 			m_pRenderThread->RemoveFromQueue(nPage);
 		}
+		else
+		{
+			if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize())
+			{
+				pages.push_front(nPage);
+			}
+		}
+	}
+
+	for (list<int>::iterator it = pages.begin(); it != pages.end(); ++it)
+	{
+		int nPage = *it;
+		Page& page = m_pages[nPage];
+
+		m_pRenderThread->AddJob(nPage, m_nRotate,
+			CRect(CPoint(0, 0), page.szDisplay),
+			CRect(CPoint(0, 0), page.szDisplay));
+
+		InvalidatePage(nPage);
 	}
 }
 

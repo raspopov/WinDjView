@@ -77,13 +77,14 @@
 #define ID_VIEW_LAYOUT                  32810
 #define ID_LAYOUT_SINGLEPAGE            32811
 #define ID_LAYOUT_CONTINUOUS            32812
+#define ID_HELP_ASSOCIATE                32814
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        140
-#define _APS_NEXT_COMMAND_VALUE         32813
+#define _APS_NEXT_COMMAND_VALUE         32815
 #define _APS_NEXT_CONTROL_VALUE         1039
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

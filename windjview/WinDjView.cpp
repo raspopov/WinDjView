@@ -26,7 +26,6 @@
 #include "DjVuDoc.h"
 #include "DjVuView.h"
 #include "AppSettings.h"
-#include "afxwin.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -60,6 +59,7 @@ const TCHAR* s_pszCenterImage = _T("center");
 
 BEGIN_MESSAGE_MAP(CDjViewApp, CWinApp)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
+	ON_COMMAND(ID_HELP_ASSOCIATE, OnHelpAssociate)
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
@@ -143,6 +143,13 @@ BOOL CDjViewApp::InitInstance()
 	return TRUE;
 }
 
+void CDjViewApp::EnableShellOpen()
+{
+	ASSERT(m_atomApp == NULL && m_atomSystemTopic == NULL); // do once
+
+	m_atomApp = ::GlobalAddAtom(_T("WinDjView"));
+	m_atomSystemTopic = ::GlobalAddAtom(_T("system"));
+}
 
 
 // CAboutDlg dialog used for App About
@@ -352,4 +359,111 @@ int CDjViewApp::ExitInstance()
 	SaveSettings();
 
 	return CWinApp::ExitInstance();
+}
+
+bool SetRegKey(LPCTSTR lpszKey, LPCTSTR lpszValue)
+{
+	if (::RegSetValue(HKEY_CLASSES_ROOT, lpszKey, REG_SZ,
+		lpszValue, lstrlen(lpszValue) * sizeof(TCHAR)) != ERROR_SUCCESS)
+	{
+		TRACE(traceAppMsg, 0, _T("Warning: registration database update failed for key '%s'.\n"),
+			lpszKey);
+		return false;
+	}
+
+	return true;
+}
+
+void CDjViewApp::OnHelpAssociate()
+{
+	if (AfxMessageBox(
+		_T("Press OK to associate WinDjView with *.djvu/*.djv files ")
+		_T("in windows shell.\n\nNote:\nTo restore original association, ")
+		_T("use corresponding command in the application\n")
+		_T("you want to use. The easiest way to restore association ")
+		_T("with DjVu IE plugin\nmight be reinstalling it."),
+		MB_ICONEXCLAMATION | MB_OKCANCEL) == IDOK)
+	{
+		// From CDocManager::RegisterShellFileTypes()
+
+		CString strPathName, strTemp;
+
+		GetModuleFileName(m_hInstance, strPathName.GetBuffer(_MAX_PATH), _MAX_PATH);
+		strPathName.ReleaseBuffer();
+
+		POSITION pos = GetFirstDocTemplatePosition();
+		for (int nTemplateIndex = 1; pos != NULL; nTemplateIndex++)
+		{
+			CDocTemplate* pTemplate = GetNextDocTemplate(pos);
+
+			CString strOpenCommandLine = '"' + strPathName + '"';
+
+			CString strFilterExt, strFileTypeId, strFileTypeName;
+			if (pTemplate->GetDocString(strFileTypeId,
+				CDocTemplate::regFileTypeId) && !strFileTypeId.IsEmpty())
+			{
+				// enough info to register it
+				if (!pTemplate->GetDocString(strFileTypeName,
+					CDocTemplate::regFileTypeName))
+					strFileTypeName = strFileTypeId;    // use id name
+
+				ASSERT(strFileTypeId.Find(' ') == -1);  // no spaces allowed
+
+				// first register the type ID of our server
+				if (!SetRegKey(strFileTypeId, strFileTypeName))
+					continue;
+
+				strTemp.Format(_T("%s\\shell\\open\\%s"), (LPCTSTR)strFileTypeId,
+					(LPCTSTR)_T("ddeexec"));
+				if (!SetRegKey(strTemp, _T("[open(\"%1\")]")))
+					continue;
+
+				strTemp.Format(_T("%s\\shell\\open\\%s\\Application"), (LPCTSTR)strFileTypeId,
+					(LPCTSTR)_T("ddeexec"));
+				if (!SetRegKey(strTemp, _T("WinDjView")))
+					continue;
+
+				strTemp.Format(_T("%s\\shell\\open\\%s\\Topic"), (LPCTSTR)strFileTypeId,
+					(LPCTSTR)_T("ddeexec"));
+				if (!SetRegKey(strTemp, _T("System")))
+					continue;
+
+				strOpenCommandLine += _T(" \"%1\"");
+
+				// path\shell\open\command = path filename
+				strTemp.Format(_T("%s\\shell\\open\\%s"), (LPCTSTR)strFileTypeId,
+					_T("command"));
+				if (!SetRegKey(strTemp, strOpenCommandLine))
+					continue;
+
+				CString strExtensions;
+				pTemplate->GetDocString(strExtensions, CDocTemplate::filterExt);
+
+				int nExt = 0;
+				while (AfxExtractSubString(strFilterExt, strExtensions, nExt++, ';') &&
+					!strFilterExt.IsEmpty())
+				{
+					ASSERT(strFilterExt[0] == '.');
+
+					LONG lSize = _MAX_PATH * 2;
+					LONG lResult = ::RegQueryValue(HKEY_CLASSES_ROOT, strFilterExt,
+						strTemp.GetBuffer(lSize), &lSize);
+					strTemp.ReleaseBuffer();
+
+					if (lResult != ERROR_SUCCESS || strTemp.IsEmpty() ||
+						strTemp != strFileTypeId)
+					{
+						// no association for that suffix
+						if (!SetRegKey(strFilterExt, strFileTypeId))
+							continue;
+					}
+				}
+			}
+		}
+
+		AfxMessageBox(
+			_T("Now you will be able to open .djvu files ")
+			_T("with WinDjView\nby double-clicking them in ")
+			_T("the explorer."), MB_ICONINFORMATION | MB_OK);
+	}
 }

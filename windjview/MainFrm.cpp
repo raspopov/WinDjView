@@ -25,6 +25,8 @@
 #include "MainFrm.h"
 #include "AppSettings.h"
 
+#include <dde.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -63,6 +65,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_CBN_SELCHANGE(IDC_ZOOM, OnChangeZoom)
 	ON_CONTROL(CBN_FINISHEDIT, IDC_ZOOM, OnChangeZoomEdit)
 	ON_CONTROL(CBN_CANCELEDIT, IDC_ZOOM, OnCancelChangePageZoom)
+	ON_MESSAGE(WM_DDE_EXECUTE, OnDDEExecute)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -407,4 +410,51 @@ void CMainFrame::OnChangeZoomEdit()
 	}
 
 	pView->SetFocus();
+}
+
+LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
+{
+	// From CFrameWnd::OnDDEExecute
+
+	// unpack the DDE message
+	UINT_PTR unused;
+	HGLOBAL hData;
+	//IA64: Assume DDE LPARAMs are still 32-bit
+	VERIFY(UnpackDDElParam(WM_DDE_EXECUTE, lParam, &unused, (UINT_PTR*)&hData));
+
+	// get the command string
+	TCHAR szCommand[_MAX_PATH * 2];
+	LPCTSTR lpsz = (LPCTSTR)GlobalLock(hData);
+	int commandLength = lstrlen(lpsz);
+	if (commandLength >= _countof(szCommand))
+	{
+		// The command would be truncated. This could be a security problem
+		TRACE0("Warning: Command was ignored because it was too long.\n");
+		return 0;
+	}
+	// !!! MFC Bug Fix
+	_tcsncpy(szCommand, lpsz, _countof(szCommand) - 1);
+	szCommand[_countof(szCommand) - 1] = '\0';
+	// !!!
+	GlobalUnlock(hData);
+
+	// acknowledge now - before attempting to execute
+	::PostMessage((HWND)wParam, WM_DDE_ACK, (WPARAM)m_hWnd,
+		//IA64: Assume DDE LPARAMs are still 32-bit
+		ReuseDDElParam(lParam, WM_DDE_EXECUTE, WM_DDE_ACK,
+		(UINT)0x8000, (UINT_PTR)hData));
+
+	// don't execute the command when the window is disabled
+	if (!IsWindowEnabled())
+	{
+		TRACE(traceAppMsg, 0, _T("Warning: DDE command '%s' ignored because window is disabled.\n"),
+			szCommand);
+		return 0;
+	}
+
+	// execute the command
+	if (!AfxGetApp()->OnDDECommand(szCommand))
+		TRACE(traceAppMsg, 0, _T("Error: failed to execute DDE command '%s'.\n"), szCommand);
+
+	return 0L;
 }

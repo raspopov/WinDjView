@@ -73,6 +73,7 @@ protected:
 	afx_msg void OnChangeZoom();
 	afx_msg void OnChangeZoomEdit();
 	afx_msg void OnCancelChangePageZoom();
+	afx_msg LRESULT OnDDEExecute(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };
 
