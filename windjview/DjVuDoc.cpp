@@ -397,7 +397,7 @@ void CDjVuDoc::SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU)
 		TCHAR* pPos = _tcsrchr(szTitle, '\\');
 		TCHAR* pPos2 = _tcsrchr(szTitle, '/');
 
-		TCHAR* pDotPos = _tcschr(szTitle, '.');
+		TCHAR* pDotPos = _tcsrchr(szTitle, '.');
 		if (pDotPos != NULL && pDotPos > pPos && pDotPos > pPos2)
 			*pDotPos = '\0';
 
