@@ -20,27 +20,26 @@
 
 #pragma once
 
-#define WM_RENDER_FINISHED (WM_USER + 17)
+#define WM_RENDER_THUMB_FINISHED (WM_USER + 19)
 
 class CDjVuDoc;
-class CDjVuView;
+class CThumbnailsView;
 class CDIB;
 
-class CRenderThread
+
+class CThumbnailsThread
 {
 public:
-	CRenderThread(CDjVuDoc* pDoc, CDjVuView* pOwner);
-	~CRenderThread();
+	CThumbnailsThread(CDjVuDoc* pDoc, CThumbnailsView* pOwner, bool bIdle = false);
+	~CThumbnailsThread();
 
-	void AddJob(int nPage, int nRotate, const CRect& rcAll, const CRect& rcClip);
-	void AddDecodeJob(int nPage);
-	void AddReadInfoJob(int nPage);
-	void AddCleanupJob(int nPage);
+	void SetThumbnailSize(CSize szThumbnail) { m_szThumbnail = szThumbnail; }
 
-	static CDIB* Render(GP<DjVuImage> pImage, const GRect& rcClip, const GRect& rcAll);
+	void AddJob(int nPage, int nRotate);
 
 	void PauseJobs();
 	void ResumeJobs();
+	void ClearQueue();
 
 private:
 	HANDLE m_hThread;
@@ -48,26 +47,19 @@ private:
 	CEvent m_stop;
 	CEvent m_finished;
 	CEvent m_jobReady;
-	CDjVuView* m_pOwner;
+	CThumbnailsView* m_pOwner;
 	CDjVuDoc* m_pDoc;
 	bool m_bPaused;
-
-	enum JobType { RENDER, DECODE, READINFO, CLEANUP };
+	CSize m_szThumbnail;
 
 	struct Job
 	{
 		int nPage;
 		int nRotate;
-		CRect rcAll;
-		CRect rcClip;
-		JobType type;
 	};
 	list<Job> m_jobs;
-	vector<list<Job>::iterator> m_pages;
 	Job m_currentJob;
 
 	static DWORD WINAPI RenderThreadProc(LPVOID pvData);
 	void Render(Job& job);
-	void AddJob(const Job& job);
-	void RemoveFromQueue(int nPage);
 };

@@ -36,7 +36,7 @@
 CRenderThread::CRenderThread(CDjVuDoc* pDoc, CDjVuView* pOwner)
 	: m_pOwner(pOwner), m_pDoc(pDoc), m_bPaused(false)
 {
-	currentJob.nPage = -1;
+	m_currentJob.nPage = -1;
 	m_pages.resize(m_pOwner->GetPageCount(), m_jobs.end());
 
 	DWORD dwThreadId;
@@ -67,7 +67,7 @@ DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 		}
 
 		Job job = pData->m_jobs.front();
-		pData->currentJob = job;
+		pData->m_currentJob = job;
 		pData->m_jobs.pop_front();
 		pData->m_pages[job.nPage] = pData->m_jobs.end();
 
@@ -95,7 +95,7 @@ DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 			break;
 		}
 
-		pData->currentJob.nPage = -1;
+		pData->m_currentJob.nPage = -1;
 		if (bHasMoreJobs && !pData->m_bPaused)
 			pData->m_jobReady.SetEvent();
 
@@ -238,8 +238,9 @@ void CRenderThread::AddJob(const Job& job)
 {
 	m_lock.Lock();
 
-	if (currentJob.nPage == job.nPage && job.type == RENDER && currentJob.type == RENDER &&
-		job.rcAll == currentJob.rcAll && job.rcClip == currentJob.rcClip)
+	if (m_currentJob.nPage == job.nPage && m_currentJob.type == RENDER &&
+		job.type == RENDER && job.nRotate == m_currentJob.nRotate && 
+		job.rcAll == m_currentJob.rcAll && job.rcClip == m_currentJob.rcClip)
 	{
 		m_lock.Unlock();
 		return;

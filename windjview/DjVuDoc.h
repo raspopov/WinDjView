@@ -60,6 +60,8 @@ public:
 	bool HasText() const { return m_bHasText; }
 	int GetPageFromId(const GUTF8String& strPageId) const;
 
+	GP<DjVuDocument> GetDjVuDoc() { return m_pDjVuDoc; }
+
 // Overrides
 public:
 	virtual BOOL OnNewDocument();

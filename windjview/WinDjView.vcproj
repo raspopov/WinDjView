@@ -232,6 +232,9 @@
 				RelativePath=".\MyEdit.cpp">
 			</File>
 			<File
+				RelativePath=".\MyScrollView.cpp">
+			</File>
+			<File
 				RelativePath=".\MySplitterWnd.cpp">
 			</File>
 			<File
@@ -277,6 +280,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\ThumbnailsThread.cpp">
+			</File>
+			<File
 				RelativePath=".\ThumbnailsView.cpp">
 			</File>
 			<File
@@ -318,6 +324,9 @@
 				RelativePath=".\MyEdit.h">
 			</File>
 			<File
+				RelativePath=".\MyScrollView.h">
+			</File>
+			<File
 				RelativePath=".\MySplitterWnd.h">
 			</File>
 			<File
@@ -346,6 +355,9 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h">
+			</File>
+			<File
+				RelativePath=".\ThumbnailsThread.h">
 			</File>
 			<File
 				RelativePath=".\ThumbnailsView.h">

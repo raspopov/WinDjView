@@ -745,3 +745,16 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 	pProgress->StopProgress(0);
 	return 0;
 }
+
+void FrameRect(CDC* pDC, const CRect& rect, COLORREF color)
+{
+	CRect rcHorzLine(rect.TopLeft(), CSize(rect.Width(), 1));
+	pDC->FillSolidRect(rcHorzLine, color);
+	rcHorzLine.OffsetRect(0, rect.Height() - 1);
+	pDC->FillSolidRect(rcHorzLine, color);
+
+	CRect rcVertLine(rect.TopLeft(), CSize(1, rect.Height()));
+	pDC->FillSolidRect(rcVertLine, color);
+	rcVertLine.OffsetRect(rect.Width() - 1, 0);
+	pDC->FillSolidRect(rcVertLine, color);
+}

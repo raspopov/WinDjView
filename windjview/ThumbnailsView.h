@@ -20,11 +20,15 @@
 
 #pragma once
 
+#include "MyScrollView.h"
 #include "Drawing.h"
 class CDjVuDoc;
+class CThumbnailsThread;
 
 
-class CThumbnailsView : public CScrollView
+// CThumbnailsView
+
+class CThumbnailsView : public CMyScrollView
 {
 protected: // create from serialization only
 	CThumbnailsView();
@@ -50,21 +54,40 @@ public:
 #endif
 
 protected:
+	CThumbnailsThread* m_pThread;
+	CThumbnailsThread* m_pIdleThread;
 	int m_nPageCount;
 	CDjVuDoc* m_pDoc;
 	bool m_bInsideUpdateView;
-	void UpdateView(/*UpdateType updateType*/);
+	CFont m_font;
+	int m_nSelectedPage;
+	bool m_bVisible;
+
+	enum UpdateType
+	{
+		TOP = 0,
+		RECALC = 1
+	};
+	void UpdateView(UpdateType updateType = TOP);
+	void UpdateVisiblePages();
+	void UpdatePage(int nPage, CThumbnailsThread* pThread);
+	bool InvalidatePage(int nPage);
+	void DrawPage(CDC* pDC, int nPage);
+	int GetPageFromPoint(CPoint point);
 
 	struct Page
 	{
 		Page() : pBitmap(NULL) {}
 		~Page() { delete pBitmap; }
 
-		CPoint ptOffset;
-		CSize szTotal;
-		CRect rcPage, rcNumber;
+		CRect rcDisplay, rcPage;
 		CDIB* pBitmap;
 
+		void DeleteBitmap()
+		{
+			delete pBitmap;
+			pBitmap = NULL;
+		}
 	};
 	vector<Page> m_pages;
 	CSize m_szDisplay;
@@ -79,5 +102,8 @@ protected:
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint point);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
+	afx_msg void OnDestroy();
+	afx_msg LRESULT OnRenderFinished(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	DECLARE_MESSAGE_MAP()
 };

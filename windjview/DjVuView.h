@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "MyScrollView.h"
 #include "Drawing.h"
 #include "DjVuDoc.h"
 
@@ -35,7 +36,7 @@ inline bool IsStandardZoom(int nZoomType, double fZoom)
 typedef GList<DjVuTXT::Zone*> DjVuSelection;
 
 
-class CDjVuView : public CScrollView
+class CDjVuView : public CMyScrollView
 {
 protected: // create from serialization only
 	CDjVuView();
@@ -101,11 +102,8 @@ protected:
 	CSize m_szDisplay;
 	void CalcTopPage();
 
+	bool InvalidatePage(int nPage);
 	void DrawPage(CDC* pDC, int nPage);
-	void DrawWhite(CDC* pDC, int nPage);
-	void DrawOffscreen(CDC* pDC, int nPage);
-	void DrawStretch(CDC* pDC, int nPage);
-	void InvalidatePage(int nPage);
 	void DrawMapArea(CDC* pDC, GP<GMapArea> pArea, int nPage, bool bActive);
 
 	int m_nZoomType;
@@ -191,13 +189,6 @@ protected:
 	void UpdatePagesFromBottom(int nTop, int nBottom);
 	void DeleteBitmaps();
 	int GetPageFromPoint(CPoint point);
-
-	void SetScrollSizesNoRepaint(const CSize& szTotal,
-		const CSize& szPage, const CSize& szLine);
-	void SetScrollSizes(const CSize& szTotal,
-		const CSize& szPage, const CSize& szLine);
-	void UpdateBarsNoRepaint();
-	void ScrollToPositionNoRepaint(CPoint pt);
 
 	enum UpdateType
 	{

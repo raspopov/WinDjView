@@ -88,3 +88,4 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, const CRect& rcPage,
 
 DWORD WINAPI PrintThreadProc(LPVOID pvData);
 
+void FrameRect(CDC* pDC, const CRect& rect, COLORREF color);

@@ -191,7 +191,7 @@ void CNavPaneWnd::DrawTab(CDC* pDC, int nTab, bool bActive)
 
 	static CBrush brushBtnface(clrBtnface);
 	static CPen penBtnface(PS_SOLID, 1, clrBtnface);
-	static CPen penBlack(PS_SOLID, 1, RGB(0, 0, 0));
+	static CPen penFrame(PS_SOLID, 1, clrFrame);
 	static CPen penHilight(PS_SOLID, 1, clrHilight);
 
 	CRect rcTab = tab.rcTab;
@@ -222,7 +222,7 @@ void CNavPaneWnd::DrawTab(CDC* pDC, int nTab, bool bActive)
 			CPoint(rcTab.left, rcTab.top - 1),
 			CPoint(rcTab.right + 1, rcTab.top - s_nTabSize - 1) };
 
-	pOldPen = pDC->SelectObject(&penBlack);
+	pOldPen = pDC->SelectObject(&penFrame);
 	pDC->Polyline(points2, 2);
 	pDC->SelectObject(pOldPen);
 

@@ -46,11 +46,11 @@ HCURSOR CDjVuView::hCursorDrag = NULL;
 HCURSOR CDjVuView::hCursorLink = NULL;
 
 const int c_nPageGap = 8;
-const int c_nPageShadow = 4;
+const int c_nPageShadow = 3;
 
-IMPLEMENT_DYNCREATE(CDjVuView, CScrollView)
+IMPLEMENT_DYNCREATE(CDjVuView, CMyScrollView)
 
-BEGIN_MESSAGE_MAP(CDjVuView, CScrollView)
+BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	// Standard printing commands
 	ON_COMMAND(ID_FILE_PRINT, OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, OnFilePrint)
@@ -111,7 +111,7 @@ CDjVuView::~CDjVuView()
 
 BOOL CDjVuView::PreCreateWindow(CREATESTRUCT& cs)
 {
-	return CScrollView::PreCreateWindow(cs);
+	return CMyScrollView::PreCreateWindow(cs);
 }
 
 // CDjVuView drawing
@@ -156,55 +156,35 @@ void CDjVuView::OnDraw(CDC* pDC)
 		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 		{
 			Page& page = m_pages[nPage];
+			if (page.rcDisplay.top >= rcClip.bottom ||
+					page.rcDisplay.bottom <= rcClip.top)
+				continue;
 
-			if (page.rcDisplay.top < rcClip.bottom &&
-				page.rcDisplay.bottom > rcClip.top)
+			DrawPage(pDC, nPage);
+
+			if (page.pBitmap != NULL && page.pBitmap->m_hObject != NULL)
 			{
-				DrawPage(pDC, nPage);
+				// Draw hyperlinks
+				if (page.pAnt != NULL)
+				{
+					for (GPosition pos = page.pAnt->map_areas; pos; ++pos)
+					{
+						GP<GMapArea> pArea = page.pAnt->map_areas[pos];
+						DrawMapArea(pDC, pArea, nPage, !!(pArea == m_pActiveLink));
+					}
+				}
+
+				// Draw selection
+				for (GPosition pos = page.selection; pos; ++pos)
+				{
+					GRect rect = page.selection[pos]->rect;
+					CRect rcText = TranslatePageRect(nPage, rect);
+
+					rcText.OffsetRect(-GetDeviceScrollPosition());
+					pDC->InvertRect(rcText);
+				}
 			}
 		}
-	}
-}
-
-void CDjVuView::DrawPage(CDC* pDC, int nPage)
-{
-	ASSERT(nPage >= 0 && nPage < m_nPageCount);
-	Page& page = m_pages[nPage];
-
-	if (page.pBitmap != NULL)
-	{
-		if (page.pBitmap->GetSize() == page.szDisplay)
-		{
-			DrawOffscreen(pDC, nPage);
-		}
-		else
-		{
-			DrawStretch(pDC, nPage);
-		}
-
-		// Draw hyperlinks
-		if (page.pAnt != NULL)
-		{
-			for (GPosition pos = page.pAnt->map_areas; pos; ++pos)
-			{
-				GP<GMapArea> pArea = page.pAnt->map_areas[pos];
-				DrawMapArea(pDC, pArea, nPage, !!(pArea == m_pActiveLink));
-			}
-		}
-
-		// Draw selection
-		for (GPosition pos = page.selection; pos; ++pos)
-		{
-			GRect rect = page.selection[pos]->rect;
-			CRect rcText = TranslatePageRect(nPage, rect);
-
-			rcText.OffsetRect(-GetDeviceScrollPosition());
-			pDC->InvertRect(rcText);
-		}
-	}
-	else
-	{
-		DrawWhite(pDC, nPage);
 	}
 }
 
@@ -243,15 +223,19 @@ void CDjVuView::DrawMapArea(CDC* pDC, GP<GMapArea> pArea, int nPage, bool bActiv
 	}
 }
 
-void CDjVuView::DrawWhite(CDC* pDC, int nPage)
+void CDjVuView::DrawPage(CDC* pDC, int nPage)
 {
 	Page& page = m_pages[nPage];
 
-	CPoint ptDeviceScrollPos = GetDeviceScrollPosition();
+	COLORREF clrFrame = ::GetSysColor(COLOR_WINDOWFRAME);
+	COLORREF clrShadow = ::GetSysColor(COLOR_BTNSHADOW);
+	COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
+
+	CPoint ptScrollPos = GetDeviceScrollPosition();
 
 	CRect rcClip;
 	pDC->GetClipBox(rcClip);
-	rcClip.OffsetRect(ptDeviceScrollPos);
+	rcClip.OffsetRect(ptScrollPos);
 
 	if (m_nLayout == Continuous)
 	{
@@ -259,171 +243,75 @@ void CDjVuView::DrawWhite(CDC* pDC, int nPage)
 		rcClip.bottom = min(rcClip.bottom, page.rcDisplay.bottom);
 	}
 
-	if (!rcClip.IsRectEmpty())
-	{
-		rcClip.OffsetRect(-ptDeviceScrollPos);
+	if (rcClip.IsRectEmpty())
+		return;
 
-		COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
-		pDC->FillSolidRect(rcClip, clrWindow);
+	if (page.szDisplay.cx <= 0 || page.szDisplay.cy <= 0)
+	{
+		pDC->FillSolidRect(rcClip - ptScrollPos, clrWindow);
+		return;
 	}
 
-	if (page.szDisplay.cx > 0 && page.szDisplay.cy > 0)
+	if (page.pBitmap == NULL || page.pBitmap->m_hObject == NULL)
 	{
-		CRect rcBorder(page.ptOffset.x - 1, page.ptOffset.y - 1,
-			page.ptOffset.x + page.szDisplay.cx,
-			page.ptOffset.y + page.szDisplay.cy);
-		rcBorder.OffsetRect(-ptDeviceScrollPos);
+		// Draw white rect
+		CRect rcPage(page.ptOffset, page.szDisplay);
+		pDC->FillSolidRect(rcPage - ptScrollPos, clrWindow);
 
-		CPoint points[] = { rcBorder.TopLeft(), CPoint(rcBorder.right, rcBorder.top),
-			rcBorder.BottomRight(), CPoint(rcBorder.left, rcBorder.bottom),
-			rcBorder.TopLeft() };
-
-		CPen pen(PS_SOLID, 1, ::GetSysColor(COLOR_3DDKSHADOW));
-		CPen* pOldPen = pDC->SelectObject(&pen);
-		pDC->Polyline((LPPOINT)points, 5);
-		pDC->SelectObject(pOldPen);
-
-		CRect rcShadow(page.ptOffset.x + c_nPageShadow - 1, page.ptOffset.y + page.szDisplay.cy + 1,
-			page.ptOffset.x + page.szDisplay.cx + c_nPageShadow, page.ptOffset.y + page.szDisplay.cy + c_nPageShadow);
-		rcShadow.OffsetRect(-ptDeviceScrollPos);
-		pDC->FillSolidRect(rcShadow, ::GetSysColor(COLOR_BTNSHADOW));
-
-		rcShadow = CRect(page.ptOffset.x + page.szDisplay.cx + 1, page.ptOffset.y + c_nPageShadow - 1,
-			page.ptOffset.x + page.szDisplay.cx + c_nPageShadow, page.ptOffset.y + page.szDisplay.cy + 1);
-		rcShadow.OffsetRect(-ptDeviceScrollPos);
-		pDC->FillSolidRect(rcShadow, ::GetSysColor(COLOR_BTNSHADOW));
-
-//		CString strPage;
-//		strPage.Format(_T("%d"), nPage + 1);
-//		pDC->DrawText(strPage, rcBorder, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+		//CString strPage;
+		//strPage.Format(_T("%d"), nPage + 1);
+		//pDC->DrawText(strPage, rcPage - ptScrollPos,
+		//		DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 	}
-}
-
-void CDjVuView::DrawOffscreen(CDC* pDC, int nPage)
-{
-	Page& page = m_pages[nPage];
-	ASSERT(page.pBitmap != NULL && page.pBitmap->m_hObject != NULL);
-
-	CPoint ptOffset = GetScrollPosition();
-	CPoint ptDeviceScrollPos = GetDeviceScrollPosition();
-
-	CRect rcClip;
-	pDC->GetClipBox(rcClip);
-	rcClip.OffsetRect(ptDeviceScrollPos);
-
-	CPoint ptPartOffset(max(rcClip.left - page.ptOffset.x, 0),
-		max(rcClip.top - page.ptOffset.y, 0));
-
-	CSize szPageClip = page.szDisplay - ptPartOffset;
-	CSize szPart(min(rcClip.Width(), szPageClip.cx), min(rcClip.Height(), szPageClip.cy));
-
-	if (szPart.cx > 0 && szPart.cy > 0)
+	else if (page.pBitmap->GetSize() == page.szDisplay)
 	{
-		CRect rcPart(ptPartOffset, szPart);
-		page.pBitmap->DrawDC(pDC, page.ptOffset + ptPartOffset
-			- ptDeviceScrollPos, rcPart);
+		// Draw offscreen bitmap
+		CPoint ptPartOffset(max(rcClip.left - page.ptOffset.x, 0),
+			max(rcClip.top - page.ptOffset.y, 0));
+
+		CSize szPageClip = page.szDisplay - ptPartOffset;
+		CSize szPart(min(rcClip.Width(), szPageClip.cx), min(rcClip.Height(), szPageClip.cy));
+
+		if (szPart.cx > 0 && szPart.cy > 0)
+		{
+			CRect rcPart(ptPartOffset, szPart);
+			page.pBitmap->DrawDC(pDC,
+				page.ptOffset + ptPartOffset - ptScrollPos, rcPart);
+		}
+	}
+	else
+	{
+		// Offscreen bitmap has yet wrong size, stretch it
+		page.pBitmap->Draw(pDC, page.ptOffset - ptScrollPos, page.szDisplay);
 	}
 
-	CRect rcBorder(page.ptOffset.x - 1, page.ptOffset.y - 1,
-		page.ptOffset.x + page.szDisplay.cx,
-		page.ptOffset.y + page.szDisplay.cy);
-	rcBorder.OffsetRect(-ptDeviceScrollPos);
+	// Draw border
+	CRect rcBorder(page.ptOffset, page.szDisplay);
+	rcBorder.InflateRect(1, 1);
+	FrameRect(pDC, rcBorder - ptScrollPos, clrFrame);
 
-	CPoint points[] = { rcBorder.TopLeft(), CPoint(rcBorder.right, rcBorder.top),
-		rcBorder.BottomRight(), CPoint(rcBorder.left, rcBorder.bottom),
-		rcBorder.TopLeft() };
+	// Draw shadow
+	CRect rcWhiteBar(CPoint(rcBorder.left, rcBorder.bottom),
+			CSize(c_nPageShadow + 1, c_nPageShadow));
+	pDC->FillSolidRect(rcWhiteBar - ptScrollPos, clrWindow);
+	rcWhiteBar = CRect(CPoint(rcBorder.right, rcBorder.top),
+			CSize(c_nPageShadow, c_nPageShadow + 1));
+	pDC->FillSolidRect(rcWhiteBar - ptScrollPos, clrWindow);
 
-	CPen pen(PS_SOLID, 1, ::GetSysColor(COLOR_3DDKSHADOW));
-	CPen* pOldPen = pDC->SelectObject(&pen);
-	pDC->Polyline((LPPOINT)points, 5);
-	pDC->SelectObject(pOldPen);
+	CRect rcShadow(CPoint(rcBorder.left + c_nPageShadow + 1, rcBorder.bottom),
+			CSize(rcBorder.Width() - 1, c_nPageShadow));
+	pDC->FillSolidRect(rcShadow - ptScrollPos, clrShadow);
+	rcShadow = CRect(CPoint(rcBorder.right, rcBorder.top + c_nPageShadow + 1),
+			CSize(c_nPageShadow, rcBorder.Height() - 1));
+	pDC->FillSolidRect(rcShadow - ptScrollPos, clrShadow);
 
-	if (m_nLayout == Continuous)
-	{
-		rcClip.top = max(rcClip.top, page.rcDisplay.top);
-		rcClip.bottom = min(rcClip.bottom, page.rcDisplay.bottom);
-	}
+	rcBorder.InflateRect(0, 0, c_nPageShadow, c_nPageShadow);
 
-	if (!rcClip.IsRectEmpty())
-	{
-		rcClip.OffsetRect(-ptDeviceScrollPos);
-		int nSaveDC = pDC->SaveDC();
-		rcBorder.InflateRect(0, 0, 1, 1);
-		pDC->ExcludeClipRect(rcBorder);
-
-		COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
-		pDC->FillSolidRect(rcClip, clrWindow);
-
-		pDC->RestoreDC(nSaveDC);
-	}
-
-	CRect rcShadow(page.ptOffset.x + c_nPageShadow - 1, page.ptOffset.y + page.szDisplay.cy + 1,
-		page.ptOffset.x + page.szDisplay.cx + c_nPageShadow, page.ptOffset.y + page.szDisplay.cy + c_nPageShadow);
-	rcShadow.OffsetRect(-ptDeviceScrollPos);
-	pDC->FillSolidRect(rcShadow, ::GetSysColor(COLOR_BTNSHADOW));
-
-	rcShadow = CRect(page.ptOffset.x + page.szDisplay.cx + 1, page.ptOffset.y + c_nPageShadow - 1,
-		page.ptOffset.x + page.szDisplay.cx + c_nPageShadow, page.ptOffset.y + page.szDisplay.cy + 1);
-	rcShadow.OffsetRect(-ptDeviceScrollPos);
-	pDC->FillSolidRect(rcShadow, ::GetSysColor(COLOR_BTNSHADOW));
-}
-
-void CDjVuView::DrawStretch(CDC* pDC, int nPage)
-{
-	Page& page = m_pages[nPage];
-	ASSERT(page.pBitmap != NULL && page.pBitmap->m_hObject != NULL);
-
-	CPoint ptDeviceScrollPos = GetDeviceScrollPosition();
-
-	CRect rcClip;
-	pDC->GetClipBox(rcClip);
-	rcClip.OffsetRect(ptDeviceScrollPos);
-
-	page.pBitmap->Draw(pDC, page.ptOffset - ptDeviceScrollPos, page.szDisplay);
-
-	CRect rcBorder(page.ptOffset.x - 1, page.ptOffset.y - 1,
-		page.ptOffset.x + page.szDisplay.cx,
-		page.ptOffset.y + page.szDisplay.cy);
-	rcBorder.OffsetRect(-ptDeviceScrollPos);
-
-	CPoint points[] = { rcBorder.TopLeft(), CPoint(rcBorder.right, rcBorder.top),
-		rcBorder.BottomRight(), CPoint(rcBorder.left, rcBorder.bottom),
-		rcBorder.TopLeft() };
-
-	CPen pen(PS_SOLID, 1, ::GetSysColor(COLOR_3DDKSHADOW));
-	CPen* pOldPen = pDC->SelectObject(&pen);
-	pDC->Polyline((LPPOINT)points, 5);
-	pDC->SelectObject(pOldPen);
-
-	if (m_nLayout == Continuous)
-	{
-		rcClip.top = max(rcClip.top, page.rcDisplay.top);
-		rcClip.bottom = min(rcClip.bottom, page.rcDisplay.bottom);
-	}
-
-	if (!rcClip.IsRectEmpty())
-	{
-		rcClip.OffsetRect(-ptDeviceScrollPos);
-
-		int nSaveDC = pDC->SaveDC();
-		rcBorder.InflateRect(0, 0, 1, 1);
-		pDC->ExcludeClipRect(rcBorder);
-
-		COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
-		pDC->FillSolidRect(rcClip, clrWindow);
-
-		pDC->RestoreDC(nSaveDC);
-	}
-
-	CRect rcShadow(page.ptOffset.x + c_nPageShadow - 1, page.ptOffset.y + page.szDisplay.cy + 1,
-		page.ptOffset.x + page.szDisplay.cx + c_nPageShadow, page.ptOffset.y + page.szDisplay.cy + c_nPageShadow);
-	rcShadow.OffsetRect(-ptDeviceScrollPos);
-	pDC->FillSolidRect(rcShadow, ::GetSysColor(COLOR_BTNSHADOW));
-
-	rcShadow = CRect(page.ptOffset.x + page.szDisplay.cx + 1, page.ptOffset.y + c_nPageShadow - 1,
-		page.ptOffset.x + page.szDisplay.cx + c_nPageShadow, page.ptOffset.y + page.szDisplay.cy + 1);
-	rcShadow.OffsetRect(-ptDeviceScrollPos);
-	pDC->FillSolidRect(rcShadow, ::GetSysColor(COLOR_BTNSHADOW));
+	// Fill everything else with white
+	int nSaveDC = pDC->SaveDC();
+	pDC->ExcludeClipRect(rcBorder - ptScrollPos);
+	pDC->FillSolidRect(rcClip - ptScrollPos, clrWindow);
+	pDC->RestoreDC(nSaveDC);
 }
 
 
@@ -440,12 +328,12 @@ BOOL CDjVuView::OnPreparePrinting(CPrintInfo* pInfo)
 #ifdef _DEBUG
 void CDjVuView::AssertValid() const
 {
-	CScrollView::AssertValid();
+	CMyScrollView::AssertValid();
 }
 
 void CDjVuView::Dump(CDumpContext& dc) const
 {
-	CScrollView::Dump(dc);
+	CMyScrollView::Dump(dc);
 }
 
 CDjVuDoc* CDjVuView::GetDocument() const // non-debug version is inline
@@ -460,7 +348,7 @@ CDjVuDoc* CDjVuView::GetDocument() const // non-debug version is inline
 
 void CDjVuView::OnInitialUpdate()
 {
-	CScrollView::OnInitialUpdate();
+	CMyScrollView::OnInitialUpdate();
 
 	if (m_toolTip.Create(this, TTS_ALWAYSTIP) && m_toolTip.AddTool(this))
 	{
@@ -623,7 +511,7 @@ void CDjVuView::UpdateView(UpdateType updateType)
 				}
 
 				page.rcDisplay = CRect(page.ptOffset, page.szDisplay);
-				page.rcDisplay.InflateRect(1, 1, c_nPageShadow, c_nPageGap - 1);
+				page.rcDisplay.InflateRect(1, 1, c_nPageShadow + 1, c_nPageGap - 1);
 
 				if (page.rcDisplay.Width() > m_szDisplay.cx)
 					m_szDisplay.cx = page.rcDisplay.Width();
@@ -847,7 +735,7 @@ CSize CDjVuView::CalcPageSize(const CSize& szPage, int nDPI)
 	if (szPage.cx <= 0 || szPage.cy <= 0)
 		return szDisplay;
 
-	CSize szShadow(c_nPageShadow + 1, c_nPageShadow + 1);
+	CSize szFrame(c_nPageShadow + 2, c_nPageShadow + 2);
 
 	CRect rcClient;
 	GetClientRect(rcClient);
@@ -855,22 +743,22 @@ CSize CDjVuView::CalcPageSize(const CSize& szPage, int nDPI)
 	switch (m_nZoomType)
 	{
 	case ZoomFitWidth:
-		szDisplay = rcClient.Size() - szShadow;
+		szDisplay = rcClient.Size() - szFrame;
 		szDisplay.cy = szDisplay.cx * szPage.cy / szPage.cx;
 		break;
 
 	case ZoomFitHeight:
-		szDisplay = rcClient.Size() - szShadow;
+		szDisplay = rcClient.Size() - szFrame;
 		szDisplay.cx = szDisplay.cy * szPage.cx / szPage.cy;
 		break;
 
 	case ZoomFitPage:
-		szDisplay = rcClient.Size() - szShadow;
+		szDisplay = rcClient.Size() - szFrame;
 		szDisplay.cx = szDisplay.cy * szPage.cx / szPage.cy;
 
-		if (szDisplay.cx > rcClient.Width() - szShadow.cx)
+		if (szDisplay.cx > rcClient.Width() - szFrame.cx)
 		{
-			szDisplay.cx = rcClient.Width() - szShadow.cx;
+			szDisplay.cx = rcClient.Width() - szFrame.cx;
 			szDisplay.cy = szDisplay.cx * szPage.cy / szPage.cx;
 		}
 		break;
@@ -880,7 +768,7 @@ CSize CDjVuView::CalcPageSize(const CSize& szPage, int nDPI)
 		break;
 
 	case ZoomStretch:
-		szDisplay = rcClient.Size() - szShadow;
+		szDisplay = rcClient.Size() - szFrame;
 		break;
 
 	case ZoomPercent:
@@ -975,7 +863,7 @@ void CDjVuView::OnSize(UINT nType, int cx, int cy)
 		GetMainFrame()->UpdatePageCombo(GetCurrentPage());
 	}
 
-	CScrollView::OnSize(nType, cx, cy);
+	CMyScrollView::OnSize(nType, cx, cy);
 }
 
 void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
@@ -1065,7 +953,7 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		GetMainFrame()->UpdatePageCombo(GetCurrentPage());
 	}
 
-	CScrollView::OnKeyDown(nChar, nRepCnt, nFlags);
+	CMyScrollView::OnKeyDown(nChar, nRepCnt, nFlags);
 }
 
 void CDjVuView::OnViewZoom(UINT nID)
@@ -1339,7 +1227,7 @@ void CDjVuView::OnViewLastpage()
 
 void CDjVuView::OnSetFocus(CWnd* pOldWnd)
 {
-	CScrollView::OnSetFocus(pOldWnd);
+	CMyScrollView::OnSetFocus(pOldWnd);
 
 	GetMainFrame()->UpdatePageCombo(GetCurrentPage());
 	GetMainFrame()->UpdateZoomCombo(m_nZoomType, m_fZoom);
@@ -1416,7 +1304,7 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		return true;
 	}
 
-	return CScrollView::OnSetCursor(pWnd, nHitTest, message);
+	return CMyScrollView::OnSetCursor(pWnd, nHitTest, message);
 }
 
 void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
@@ -1450,7 +1338,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 		SetCursor(hCursorDrag);
 	}
 
-	CScrollView::OnLButtonDown(nFlags, point);
+	CMyScrollView::OnLButtonDown(nFlags, point);
 }
 
 void CDjVuView::OnLButtonUp(UINT nFlags, CPoint point)
@@ -1486,7 +1374,7 @@ void CDjVuView::OnLButtonUp(UINT nFlags, CPoint point)
 		}
 	}
 
-	CScrollView::OnLButtonUp(nFlags, point);
+	CMyScrollView::OnLButtonUp(nFlags, point);
 }
 
 void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
@@ -1535,7 +1423,7 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 
 	UpdateActiveHyperlink(point);
 
-	CScrollView::OnMouseMove(nFlags, point);
+	CMyScrollView::OnMouseMove(nFlags, point);
 }
 
 void CDjVuView::OnFilePrint()
@@ -1602,7 +1490,7 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 
 	if (!rcClient.PtInRect(point))
 	{
-		CScrollView::OnContextMenu(pWnd, point);
+		CMyScrollView::OnContextMenu(pWnd, point);
 		return;
 	}
 
@@ -1873,8 +1761,8 @@ LRESULT CDjVuView::OnRenderFinished(WPARAM wParam, LPARAM lParam)
 	page.pBitmap = pBitmap;
 	m_evtRendered.SetEvent();
 	
-	InvalidatePage(nPage);
-	UpdateWindow();
+	if (InvalidatePage(nPage))
+		UpdateWindow();
 
 	return 0;
 }
@@ -1884,7 +1772,7 @@ void CDjVuView::OnDestroy()
 	delete m_pRenderThread;
 	m_pRenderThread = NULL;
 
-	CScrollView::OnDestroy();
+	CMyScrollView::OnDestroy();
 }
 
 LRESULT CDjVuView::OnPageDecoded(WPARAM wParam, LPARAM lParam)
@@ -1974,7 +1862,7 @@ BOOL CDjVuView::OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll)
 		}
 	}
 
-	BOOL bResult = CScrollView::OnScroll(nScrollCode, nPos, bDoScroll);
+	BOOL bResult = CMyScrollView::OnScroll(nScrollCode, nPos, bDoScroll);
 	UpdateVisiblePages();
 	GetMainFrame()->UpdatePageCombo(GetCurrentPage());
 
@@ -2264,9 +2152,9 @@ BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint /*point*/)
 	return bResult;
 }
 
-void CDjVuView::InvalidatePage(int nPage)
+bool CDjVuView::InvalidatePage(int nPage)
 {
-	ASSERT(nPage >= 0 && nPage <= m_nPageCount);
+	ASSERT(nPage >= 0 && nPage < m_nPageCount);
 
 	CRect rect;
 	GetClientRect(rect);
@@ -2276,166 +2164,12 @@ void CDjVuView::InvalidatePage(int nPage)
 	rect.bottom = min(rect.bottom, m_pages[nPage].rcDisplay.bottom - y);
 
 	if (!rect.IsRectEmpty())
+	{
 		InvalidateRect(rect);
-}
-
-void CDjVuView::SetScrollSizesNoRepaint(const CSize& szTotal,
-	const CSize& szPage, const CSize& szLine)
-{
-	ASSERT(szTotal.cx >= 0 && szTotal.cy >= 0);
-
-	m_nMapMode = MM_TEXT;
-	m_totalLog = szTotal;
-
-	m_totalDev = m_totalLog;
-	m_pageDev = szPage;
-	m_lineDev = szLine;
-	ASSERT(m_totalDev.cx >= 0 && m_totalDev.cy >= 0);
-
-	if (m_hWnd != NULL)
-	{
-		// window has been created, invalidate now
-		UpdateBarsNoRepaint();
-	}
-}
-
-void CDjVuView::SetScrollSizes(const CSize& szTotal, const CSize& szPage, const CSize& szLine)
-{
-	SetScrollSizesNoRepaint(szTotal, szPage, szLine);
-
-	if (m_hWnd != NULL)
-	{
-		// window has been created, invalidate now
-		UpdateBars();
-	}
-}
-
-void CDjVuView::UpdateBarsNoRepaint()
-{
-	// update the horizontal to reflect reality
-	// NOTE: turning on/off the scrollbars will cause 'OnSize' callbacks
-	ASSERT(m_totalDev.cx >= 0 && m_totalDev.cy >= 0);
-
-	CRect rectClient;
-	bool bCalcClient = true;
-
-	// allow parent to do inside-out layout first
-	CWnd* pParentWnd = GetParent();
-	if (pParentWnd != NULL)
-	{
-		// if parent window responds to this message, use just
-		//  client area for scroll bar calc -- not "true" client area
-		if (pParentWnd->SendMessage(WM_RECALCPARENT, 0,
-			(LPARAM)(LPCRECT)&rectClient) != 0)
-		{
-			// use rectClient instead of GetTrueClientSize for
-			//  client size calculation.
-			bCalcClient = false;
-		}
+		return true;
 	}
 
-	CSize sizeClient;
-	CSize sizeSb;
-
-	if (bCalcClient)
-	{
-		// get client rect
-		if (!GetTrueClientSize(sizeClient, sizeSb))
-		{
-			// no room for scroll bars (common for zero sized elements)
-			CRect rect;
-			GetClientRect(&rect);
-			if (rect.right > 0 && rect.bottom > 0)
-			{
-				// if entire client area is not invisible, assume we have
-				//  control over our scrollbars
-				EnableScrollBarCtrl(SB_BOTH, false);
-			}
-			return;
-		}
-	}
-	else
-	{
-		// let parent window determine the "client" rect
-		GetScrollBarSizes(sizeSb);
-		sizeClient.cx = rectClient.right - rectClient.left;
-		sizeClient.cy = rectClient.bottom - rectClient.top;
-	}
-
-	// enough room to add scrollbars
-	CSize sizeRange;
-	CPoint ptMove;
-	CSize needSb;
-
-	// get the current scroll bar state given the true client area
-	GetScrollBarState(sizeClient, needSb, sizeRange, ptMove, bCalcClient);
-	if (needSb.cx)
-		sizeClient.cy -= sizeSb.cy;
-	if (needSb.cy)
-		sizeClient.cx -= sizeSb.cx;
-
-	// first scroll the window as needed
-	SetScrollPos(SB_HORZ, ptMove.x);
-	SetScrollPos(SB_VERT, ptMove.y);
-
-	// this structure needed to update the scrollbar page range
-	SCROLLINFO info;
-	info.fMask = SIF_PAGE|SIF_RANGE;
-	info.nMin = 0;
-
-	// now update the bars as appropriate
-	EnableScrollBarCtrl(SB_HORZ, needSb.cx);
-	if (needSb.cx)
-	{
-		info.nPage = sizeClient.cx;
-		info.nMax = m_totalDev.cx-1;
-		if (!SetScrollInfo(SB_HORZ, &info, true))
-			SetScrollRange(SB_HORZ, 0, sizeRange.cx, true);
-	}
-
-	EnableScrollBarCtrl(SB_VERT, needSb.cy);
-	if (needSb.cy)
-	{
-		info.nPage = sizeClient.cy;
-		info.nMax = m_totalDev.cy-1;
-		if (!SetScrollInfo(SB_VERT, &info, true))
-			SetScrollRange(SB_VERT, 0, sizeRange.cy, true);
-	}
-}
-
-void CDjVuView::ScrollToPositionNoRepaint(CPoint pt)
-{
-	ASSERT(m_nMapMode > 0);     // not allowed for shrink to fit
-	if (m_nMapMode != MM_TEXT)
-	{
-		CWindowDC dc(NULL);
-		dc.SetMapMode(m_nMapMode);
-		dc.LPtoDP((LPPOINT)&pt);
-	}
-
-	// now in device coordinates - limit if out of range
-	int xMax = GetScrollLimit(SB_HORZ);
-	int yMax = GetScrollLimit(SB_VERT);
-
-	BOOL bHasHorzBar, bHasVertBar;
-	CheckScrollBars(bHasHorzBar, bHasVertBar);
-
-	if (!bHasHorzBar)
-		xMax = 0;
-	if (!bHasVertBar)
-		yMax = 0;
-
-	if (pt.x < 0)
-		pt.x = 0;
-	else if (pt.x > xMax)
-		pt.x = xMax;
-	if (pt.y < 0)
-		pt.y = 0;
-	else if (pt.y > yMax)
-		pt.y = yMax;
-
-	SetScrollPos(SB_HORZ, pt.x);
-	SetScrollPos(SB_VERT, pt.y);
+	return false;
 }
 
 void CDjVuView::OnExportPage()
@@ -2855,7 +2589,7 @@ BOOL CDjVuView::PreTranslateMessage(MSG* pMsg)
 	if (::IsWindow(m_toolTip.m_hWnd))
 		m_toolTip.RelayEvent(pMsg);
 
-	return CScrollView::PreTranslateMessage(pMsg);
+	return CMyScrollView::PreTranslateMessage(pMsg);
 }
 
 void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, bool bAddToHistory)
