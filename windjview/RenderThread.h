@@ -34,6 +34,7 @@ public:
 
 	void AddJob(int nPage, int nRotate, const CRect& rcAll, const CRect& rcClip);
 	void AddDecodeJob(int nPage);
+	void AddReadInfoJob(int nPage);
 	void AddCleanupJob(int nPage);
 	void RemoveFromQueue(int nPage);
 
@@ -52,7 +53,7 @@ private:
 	CDjVuDoc* m_pDoc;
 	bool m_bPaused;
 
-	enum JobType { RENDER, DECODE, CLEANUP };
+	enum JobType { RENDER, DECODE, READINFO, CLEANUP };
 
 	struct Job
 	{

@@ -153,7 +153,7 @@ protected:
 
 		void DecodeText()
 		{
-			if (info.pTextStream != NULL)
+			if (info.pTextStream != NULL && !bTextDecoded)
 			{
 				info.pTextStream->seek(0);
 				GP<DjVuText> pDjVuText = DjVuText::create();
@@ -165,7 +165,7 @@ protected:
 
 		void DecodeAnno()
 		{
-			if (info.pAnnoStream != NULL)
+			if (info.pAnnoStream != NULL && !bAnnoDecoded)
 			{
 				info.pAnnoStream->seek(0);
 				GP<DjVuAnno> pDjVuAnno = DjVuAnno::create();
@@ -279,7 +279,7 @@ protected:
 	afx_msg void OnFilePrint();
 	afx_msg void OnViewLayout(UINT nID);
 	afx_msg void OnUpdateViewLayout(CCmdUI* pCmdUI);
-	afx_msg LRESULT OnPageDecoded(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnPageDecoded(WPARAM wParam, LPARAM lParam = 0);
 	afx_msg void OnDestroy();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnExportPage();

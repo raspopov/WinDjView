@@ -468,8 +468,6 @@ void CDjVuView::OnInitialUpdate()
 		m_toolTip.Activate(FALSE);
 	}
 
-	m_pRenderThread = new CRenderThread(GetDocument(), this);
-
 	m_nZoomType = CAppSettings::nDefaultZoomType;
 	m_fZoom = CAppSettings::fDefaultZoom;
 	if (m_nZoomType == ZoomPercent)
@@ -481,8 +479,9 @@ void CDjVuView::OnInitialUpdate()
 	m_pages.resize(m_nPageCount);
 	m_nPage = 0;
 
-	UpdateView(RECALC);
+	m_pRenderThread = new CRenderThread(GetDocument(), this);
 
+	UpdateView(RECALC);
 	RenderPage(0);
 }
 
@@ -702,13 +701,14 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient)
 	int nTop = GetScrollPos(SB_VERT);
 	Page& page = m_pages[nPage];
 
-	if (!page.bInfoLoaded)
-		return;
-
 	if (page.rcDisplay.top < nTop + 3*rcClient.Height() &&
 		page.rcDisplay.bottom > nTop - 2*rcClient.Height())
 	{
-		if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize())
+		if (!page.bInfoLoaded)
+		{
+			m_pRenderThread->AddDecodeJob(nPage);
+		}
+		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize())
 		{
 			m_pRenderThread->AddJob(nPage, m_nRotate,
 				CRect(CPoint(0, 0), page.szDisplay),
@@ -725,7 +725,11 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient)
 		{
 			m_pRenderThread->AddDecodeJob(nPage);
 		}
-		else
+		else if (!page.bInfoLoaded)
+		{
+			m_pRenderThread->AddReadInfoJob(nPage);
+		}
+		else if (GetDocument()->IsPageCached(nPage))
 		{
 			m_pRenderThread->AddCleanupJob(nPage);
 		}
@@ -745,7 +749,11 @@ void CDjVuView::UpdatePageCacheSingle(int nPage)
 	if (nPageSize < 4000000 && abs(nPage - m_nPage) <= 2 ||
 			abs(nPage - m_nPage) <= 1)
 	{
-		if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize())
+		if (!page.bInfoLoaded)
+		{
+			m_pRenderThread->AddDecodeJob(nPage);
+		}
+		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize())
 		{
 			m_pRenderThread->AddJob(nPage, m_nRotate,
 				CRect(CPoint(0, 0), page.szDisplay),
@@ -760,6 +768,10 @@ void CDjVuView::UpdatePageCacheSingle(int nPage)
 		if (abs(nPage - m_nPage) <= 10)
 		{
 			m_pRenderThread->AddDecodeJob(nPage);
+		}
+		else if (!page.bInfoLoaded)
+		{
+			m_pRenderThread->AddReadInfoJob(nPage);
 		}
 		else
 		{
@@ -1801,9 +1813,11 @@ void CDjVuView::OnPageInformation()
 
 LRESULT CDjVuView::OnRenderFinished(WPARAM wParam, LPARAM lParam)
 {
-	CDIB* pBitmap = reinterpret_cast<CDIB*>(lParam);
 	int nPage = (int)wParam;
+	OnPageDecoded(nPage);
+
 	Page& page = m_pages[nPage];
+	CDIB* pBitmap = reinterpret_cast<CDIB*>(lParam);
 
 	if (page.pBitmap != NULL && page.szDisplay == page.pBitmap->GetSize())
 	{
@@ -1842,9 +1856,10 @@ LRESULT CDjVuView::OnPageDecoded(WPARAM wParam, LPARAM lParam)
 	}
 
 	Page& page = m_pages[nPage];
-	page.Init(info);
+	bool bHadInfo = page.bInfoLoaded;
 
-	if (m_nLayout == Continuous)
+	page.Init(info);
+	if (!bHadInfo && m_nLayout == Continuous)
 		UpdateView();
 
 	return 0;
@@ -2465,11 +2480,7 @@ void CDjVuView::OnFindString()
 			page.Init(info);
 		}
 
-		if (page.info.pTextStream != NULL && !page.bTextDecoded)
-		{
-			page.DecodeText();
-		}
-
+		page.DecodeText();
 		if (page.pText != NULL)
 		{
 			GP<DjVuTXT> pText = page.pText;

@@ -37,6 +37,7 @@ CRenderThread::CRenderThread(CDjVuDoc* pDoc, CDjVuView* pOwner)
 	: m_pOwner(pOwner), m_pDoc(pDoc), m_bPaused(false)
 {
 	currentJob.nPage = -1;
+	m_pages.resize(m_pOwner->GetPageCount(), m_jobs.end());
 
 	DWORD dwThreadId;
 	m_hThread = ::CreateThread(NULL, 0, RenderThreadProc, this, 0, &dwThreadId);
@@ -83,6 +84,12 @@ DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 
 		case DECODE:
 			pData->m_pDoc->GetPage(job.nPage);
+			pData->m_pOwner->PostMessage(WM_PAGE_DECODED, job.nPage);
+			break;
+
+		case READINFO:
+			pData->m_pDoc->GetPageInfo(job.nPage);
+			pData->m_pOwner->PostMessage(WM_PAGE_DECODED, job.nPage);
 			break;
 
 		case CLEANUP:
@@ -127,9 +134,6 @@ void CRenderThread::RemoveFromQueue(int nPage)
 void CRenderThread::RemoveFromQueueImpl(int nPage)
 {
 	// Delete jobs with the same nPage
-	if (static_cast<int>(m_pages.size()) < nPage + 1)
-		return;
-
 	list<Job>::iterator it = m_pages[nPage];
 	if (it != m_jobs.end())
 	{
@@ -215,6 +219,15 @@ void CRenderThread::AddDecodeJob(int nPage)
 	AddJob(job);
 }
 
+void CRenderThread::AddReadInfoJob(int nPage)
+{
+	Job job;
+	job.nPage = nPage;
+	job.type = READINFO;
+
+	AddJob(job);
+}
+
 void CRenderThread::AddCleanupJob(int nPage)
 {
 	Job job;
@@ -235,11 +248,9 @@ void CRenderThread::AddJob(const Job& job)
 		return;
 	}
 
-	RemoveFromQueue(job.nPage);
+	RemoveFromQueueImpl(job.nPage);
+
 	m_jobs.push_front(job);
-	
-	if (static_cast<int>(m_pages.size()) < job.nPage + 1)
-		m_pages.resize(job.nPage + 1, m_jobs.end());
 	m_pages[job.nPage] = m_jobs.begin();
 
 	m_lock.Unlock();

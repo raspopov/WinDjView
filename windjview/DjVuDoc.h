@@ -51,11 +51,11 @@ protected: // create from serialization only
 
 // Operations
 public:
-	int GetPageCount() { return m_pDjVuDoc->get_pages_num(); }
+	int GetPageCount() const { return m_pDjVuDoc->get_pages_num(); }
 	GP<DjVuImage> GetPage(int nPage);
-	void PageDecoded(int nPage, GP<DjVuImage> pImage, const PageInfo& info);
 	PageInfo GetPageInfo(int nPage);
 	void RemoveFromCache(int nPage);
+	bool IsPageCached(int nPage);
 
 	bool HasText() const { return m_bHasText; }
 	int GetPageFromId(const GUTF8String& strPageId) const;
@@ -75,9 +75,6 @@ public:
 
 
 protected:
-	friend class CDecodeThread;
-	CDecodeThread* m_pThread;
-
 	struct PageData
 	{
 		PageData() : pImage(NULL), bHasInfo(false), bFullInfo(false) {}
@@ -88,13 +85,11 @@ protected:
 		bool bFullInfo;
 	};
 
+	PageInfo ReadPageInfo(int nPage);
 	GP<DjVuDocument> m_pDjVuDoc;
 	vector<PageData> m_pages;
-	bool m_bHasText;
-
 	CCriticalSection m_lock;
-	CEvent m_pageReady;
-	LONG m_nPagePending;
+	bool m_bHasText;
 
 // Generated message map functions
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
