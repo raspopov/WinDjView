@@ -102,18 +102,30 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 		m_pDjVuDoc = DjVuDocument::create("file://" + GUTF8String(pszName));
 		m_pDjVuDoc->wait_get_pages_num();
 	}
-	G_CATCH(ex) 
+	G_CATCH(ex)
 	{
 		AfxMessageBox("Error opening file " + CString(pszName) + ":\n" + CString(ex.get_cause()));
 		return false;
 	}
 	G_ENDCATCH;
 
+	if (m_pDjVuDoc->get_pages_num() == 0)
+	{
+		AfxMessageBox("Error opening file " + CString(pszName) + ":\nNot a valid DjVu document.");
+		return false;
+	}
+
 	m_pages.clear();
 	m_pages.resize(m_pDjVuDoc->get_pages_num());
 
 	m_pThread = new CDecodeThread(this);
 	GetPage(0);
+
+	if (m_pages[0].pImage == NULL)
+	{
+		AfxMessageBox("Error opening file " + CString(pszName) + ":\nNot a valid DjVu document.");
+		return false;
+	}
 
 	return true;
 }
@@ -174,8 +186,12 @@ void CDjVuDoc::PageDecoded(int nPage, GP<DjVuImage> pImage, const PageInfo& info
 		m_pages[nPage].pImage = pImage;
 	}
 
-	m_pages[nPage].info = info;
-	m_pages[nPage].bHasInfo = true;
+	if (!m_pages[nPage].bFullInfo)
+	{
+		m_pages[nPage].info = info;
+		m_pages[nPage].bHasInfo = true;
+		m_pages[nPage].bFullInfo = !!(pImage != NULL);
+	}
 	m_lock.Unlock();
 
 	if (info.pTextStream != NULL)
@@ -228,4 +244,12 @@ void CDjVuDoc::RemoveFromCache(int nPage)
 	m_lock.Lock();
 	m_pages[nPage].pImage = NULL;
 	m_lock.Unlock();
+}
+
+int CDjVuDoc::GetPageFromId(const GUTF8String& strPageId) const
+{
+	if (m_pDjVuDoc == NULL)
+		return -1;
+	
+	return m_pDjVuDoc->id_to_page(strPageId);
 }

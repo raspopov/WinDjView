@@ -151,7 +151,16 @@ PageInfo CDecodeThread::ReadPageInfo(GP<DjVuDocument> pDjVuDoc, int nPage)
 			}
 			else if (chkid == "TXTa" || chkid == "TXTz")
 			{
-				pageInfo.pTextStream = ByteStream::create();
+				if (pageInfo.pTextStream == NULL)
+				{
+					pageInfo.pTextStream = ByteStream::create();
+				}
+				else
+				{
+					pageInfo.pTextStream->seek(0, SEEK_END);
+					pageInfo.pTextStream->write((const void*)"", 1);
+				}
+
 				const GP<IFFByteStream> iffout = IFFByteStream::create(pageInfo.pTextStream);
 				iffout->put_chunk(chkid);
 				iffout->copy(*chunk_stream);

@@ -48,6 +48,8 @@ public:
 	virtual int ExitInstance();
 	bool RegisterShellFileTypes();
 
+	void OpenDocument(const CString& strPathName, const GUTF8String& strPage);
+
 // Implementation
 protected:
 	void LoadSettings();

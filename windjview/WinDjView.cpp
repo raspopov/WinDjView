@@ -499,3 +499,8 @@ void CDjViewApp::OnFileSettings()
 		SaveSettings();
 	}
 }
+
+void CDjViewApp::OpenDocument(const CString& strPathName, const GUTF8String& strPage)
+{
+	AfxMessageBox(strPathName);
+}

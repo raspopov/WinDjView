@@ -49,7 +49,6 @@ public:
 public:
 	void RenderPage(int nPage);
 	int GetPageCount() const { return m_nPageCount; }
-	int GetTopPage() const;
 	int GetCurrentPage() const;
 	int GetZoomType() const { return m_nZoomType; }
 	double GetZoom() const;
@@ -79,6 +78,7 @@ public:
 	virtual void OnInitialUpdate();
 	virtual BOOL OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll = TRUE);
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
@@ -92,10 +92,12 @@ public:
 #endif
 
 protected:
+	CToolTipCtrl m_toolTip;
 	CRenderThread* m_pRenderThread;
 
 	int m_nPage, m_nPageCount;
 	CSize m_szDisplay;
+	void CalcTopPage();
 
 	void DrawPage(CDC* pDC, int nPage);
 	void DrawWhite(CDC* pDC, int nPage);
@@ -111,13 +113,13 @@ protected:
 	struct Page
 	{
 		Page() :
-			bInfoLoaded(false), szPage(0, 0), nDPI(0), szDisplay(0, 0),
-			ptOffset(0, 0), pBitmap(NULL), bTextDecoded(false) {}
+			bInfoLoaded(false), szDisplay(0, 0), ptOffset(0, 0),
+			pBitmap(NULL), bTextDecoded(false), bAnnoDecoded(false) {}
 		~Page() { delete pBitmap; }
 
 		CSize GetSize(int nRotate) const
 		{
-			CSize sz(szPage);
+			CSize sz(info.szPage);
 			if ((nRotate % 2) == 1)
 				swap(sz.cx, sz.cy);
 			return sz;
@@ -125,15 +127,13 @@ protected:
 
 		void Init(const PageInfo& info)
 		{
-			szPage = info.szPage;
-			nDPI = info.nDPI;
-			pTextStream = info.pTextStream;
+			this->info = info;
 			bInfoLoaded = true;
+			DecodeAnno();
 		}
 
 		bool bInfoLoaded;
-		CSize szPage;
-		int nDPI;
+		PageInfo info;
 
 		CPoint ptOffset;
 		CSize szDisplay;
@@ -141,20 +141,34 @@ protected:
 		CDIB* pBitmap;
 
 		bool bTextDecoded;
-		GP<ByteStream> pTextStream;
 		GP<DjVuTXT> pText;
 		DjVuSelection selection;
 		int nSelStart, nSelEnd;
 
+		bool bAnnoDecoded;
+		GP<DjVuANT> pAnt;
+
 		void DecodeText()
 		{
-			if (pTextStream != NULL)
+			if (info.pTextStream != NULL)
 			{
-				pTextStream->seek(0);
+				info.pTextStream->seek(0);
 				GP<DjVuText> pDjVuText = DjVuText::create();
-				pDjVuText->decode(pTextStream);
+				pDjVuText->decode(info.pTextStream);
 				pText = pDjVuText->txt;
 				bTextDecoded = true;
+			}
+		}
+
+		void DecodeAnno()
+		{
+			if (info.pAnnoStream != NULL)
+			{
+				info.pAnnoStream->seek(0);
+				GP<DjVuAnno> pDjVuAnno = DjVuAnno::create();
+				pDjVuAnno->decode(info.pAnnoStream);
+				pAnt = pDjVuAnno->ant;
+				bAnnoDecoded = true;
 			}
 		}
 
@@ -200,6 +214,24 @@ protected:
 	CRect TranslatePageRect(int nPage, GRect rect) const;
 	bool m_bInsideUpdateView;
 
+	GP<GMapArea> m_pActiveLink;
+	int m_nLinkPage;
+	GP<GMapArea> GetHyperlinkFromPoint(CPoint point, int* pnPage = NULL);
+	void UpdateActiveHyperlink(CPoint point);
+	void GoToURL(const GUTF8String& url, int nLinkPage);
+	void GoToPage(int nPage, int nLinkPage);
+
+	struct View
+	{
+		int nPage;
+		int nTopOffset, nLeftOffset;
+
+		bool operator==(const View& rhs) const { return nPage == rhs.nPage; }
+		bool operator!=(const View& rhs) const { return !(*this == rhs); }
+	};
+	list<View> m_history;
+	list<View>::iterator m_historyPos;
+
 	int m_nClickedPage;
 	bool m_bDragging;
 	CPoint m_ptStart, m_ptStartPos;
@@ -209,6 +241,7 @@ protected:
 	int m_nClickCount;
 	static HCURSOR hCursorHand;
 	static HCURSOR hCursorDrag;
+	static HCURSOR hCursorLink;
 
 // Generated message map functions
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
@@ -220,6 +253,10 @@ protected:
 	afx_msg void OnUpdateViewNextpage(CCmdUI *pCmdUI);
 	afx_msg void OnViewPreviouspage();
 	afx_msg void OnUpdateViewPreviouspage(CCmdUI *pCmdUI);
+	afx_msg void OnViewBack();
+	afx_msg void OnUpdateViewBack(CCmdUI *pCmdUI);
+	afx_msg void OnViewForward();
+	afx_msg void OnUpdateViewForward(CCmdUI *pCmdUI);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnRotateLeft();
@@ -241,6 +278,7 @@ protected:
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnExportPage();
 	afx_msg void OnFindString();
+	afx_msg BOOL OnToolTipNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
 };
 

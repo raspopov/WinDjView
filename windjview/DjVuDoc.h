@@ -25,17 +25,22 @@
 struct PageInfo
 {
 	PageInfo() : szPage(0, 0), nDPI(0) {}
-	PageInfo(GP<DjVuImage> pImage)
+	PageInfo(GP<DjVuImage> pImage) : szPage(0, 0), nDPI(0)
 	{
-		pImage->set_rotate(0);
-		szPage = CSize(pImage->get_width(), pImage->get_height());
-		nDPI = pImage->get_dpi();
-		pTextStream = pImage->get_text();
+		if (pImage != NULL)
+		{
+			pImage->set_rotate(0);
+			szPage = CSize(pImage->get_width(), pImage->get_height());
+			nDPI = pImage->get_dpi();
+			pTextStream = pImage->get_text();
+			pAnnoStream = pImage->get_anno();
+		}
 	}
 
 	CSize szPage;
 	int nDPI;
 	GP<ByteStream> pTextStream;
+	GP<ByteStream> pAnnoStream;
 };
 
 class CDjVuDoc : public CDocument
@@ -53,6 +58,7 @@ public:
 	void RemoveFromCache(int nPage);
 
 	bool HasText() const { return m_bHasText; }
+	int GetPageFromId(const GUTF8String& strPageId) const;
 
 // Overrides
 public:
@@ -74,11 +80,12 @@ protected:
 
 	struct PageData
 	{
-		PageData() : pImage(NULL), bHasInfo(false) {}
+		PageData() : pImage(NULL), bHasInfo(false), bFullInfo(false) {}
 
 		GP<DjVuImage> pImage;
 		PageInfo info;
 		bool bHasInfo;
+		bool bFullInfo;
 	};
 
 	GP<DjVuDocument> m_pDjVuDoc;

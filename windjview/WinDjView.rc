@@ -121,6 +121,9 @@ BEGIN
     BUTTON      ID_VIEW_NEXTPAGE
     BUTTON      ID_VIEW_LASTPAGE
     SEPARATOR
+    BUTTON      ID_VIEW_BACK
+    BUTTON      ID_VIEW_FORWARD
+    SEPARATOR
     BUTTON      ID_LAYOUT_SINGLEPAGE
     BUTTON      ID_LAYOUT_CONTINUOUS
     SEPARATOR
@@ -181,8 +184,10 @@ BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
-        MENUITEM "&Next Page\tCtrl+PgUp",       ID_VIEW_NEXTPAGE
-        MENUITEM "&Previous Page\tCtrl+PgDn",   ID_VIEW_PREVIOUSPAGE
+        MENUITEM "&Previous Page\tCtrl+PgDn",   32772
+        MENUITEM "&Next Page\tCtrl+PgUp",       32771
+        MENUITEM "Previous &View\tAlt+Left",    ID_VIEW_BACK
+        MENUITEM "N&ext View\tAlt+Right",       ID_VIEW_FORWARD
         MENUITEM SEPARATOR
         POPUP "&Zoom"
         BEGIN
@@ -248,11 +253,13 @@ BEGIN
     "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    "F",            ID_VIEW_FIND,           VIRTKEY, CONTROL, NOINVERT
     VK_HOME,        ID_VIEW_FIRSTPAGE,      VIRTKEY, CONTROL, NOINVERT
     VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, CONTROL, NOINVERT
     VK_NEXT,        ID_VIEW_NEXTPAGE,       VIRTKEY, CONTROL, NOINVERT
     VK_PRIOR,       ID_VIEW_PREVIOUSPAGE,   VIRTKEY, CONTROL, NOINVERT
-    "F",            ID_VIEW_FIND,           VIRTKEY, CONTROL, NOINVERT
+    VK_LEFT,        ID_VIEW_BACK,           VIRTKEY, ALT, NOINVERT
+    VK_RIGHT,       ID_VIEW_FORWARD,        VIRTKEY, ALT, NOINVERT
 END
 
 
@@ -675,6 +682,12 @@ BEGIN
     ID_LAYOUT_SINGLEPAGE    "Single page layout\nSingle Page"
     ID_LAYOUT_CONTINUOUS    "Continuous page layout\nContinuous"
     ID_EXPORT_PAGE          "Exports current page as bmp file"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_BACK            "Go to previous view\nPrevious View"
+    ID_VIEW_FORWARD         "Go to next view\nNext View"
 END
 
 #endif    // English (U.S.) resources
