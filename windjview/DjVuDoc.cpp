@@ -89,7 +89,7 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	GetFullPathName(lpszPathName, MAX_PATH, pszName, &pszFileName);
 
 	CFile file;
-	if (!file.Open(pszName, CFile::readOnly | CFile::shareDenyWrite))
+	if (!file.Open(pszName, CFile::modeRead | CFile::shareDenyWrite))
 	{
 		AfxMessageBox("Failed to open file " + CString(pszName));
 		return false;
