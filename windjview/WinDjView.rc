@@ -265,7 +265,7 @@ CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,10,9,20,20
-    LTEXT           "WinDjView Version 0.2.2",IDC_STATIC,40,7,119,8,
+    LTEXT           "WinDjView Version 0.2.3",IDC_STATIC,40,7,119,8,
                     SS_NOPREFIX
     LTEXT           "Copyright (C) 2004 Andrew Zhezherun",IDC_STATIC,40,19,
                     130,8
@@ -407,7 +407,7 @@ BEGIN
     CONTROL         "&Restore associations at program start",
                     IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     15,49,188,10
-    LTEXT           "WinDjView 0.2.2\nby Andrew Zhezherun",IDC_STATIC_ABOUT,
+    LTEXT           "WinDjView 0.2.3\nby Andrew Zhezherun",IDC_STATIC_ABOUT,
                     7,71,92,18
 END
 
@@ -418,8 +418,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,2,2,0
- PRODUCTVERSION 0,2,2,0
+ FILEVERSION 0,2,3,0
+ PRODUCTVERSION 0,2,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -436,12 +436,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Andrew Zhezherun"
             VALUE "FileDescription", "WinDjView"
-            VALUE "FileVersion", "0.2.2"
+            VALUE "FileVersion", "0.2.3"
             VALUE "InternalName", "WinDjView.exe"
             VALUE "LegalCopyright", "Copyright (C) 2004 Andrew Zhezherun.  All rights reserved."
             VALUE "OriginalFilename", "WinDjView.exe"
             VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "0.2.2"
+            VALUE "ProductVersion", "0.2.3"
         END
     END
     BLOCK "VarFileInfo"
