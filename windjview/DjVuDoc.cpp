@@ -93,6 +93,7 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 		AfxMessageBox("Failed to open file " + CString(pszName));
 		return false;
 	}
+	file.Close();
 
 	G_TRY
 	{

@@ -41,6 +41,7 @@ bool CAppSettings::bStatusBar = true;
 
 int CAppSettings::nDefaultZoomType = 0;
 double CAppSettings::fDefaultZoom = 100.0;
+int CAppSettings::nDefaultLayout = 0;
 
 int CAppSettings::nCopies = 1;
 bool CAppSettings::bCollate = false;

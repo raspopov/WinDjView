@@ -37,6 +37,7 @@ struct CAppSettings
 
 	static int nDefaultZoomType;
 	static double fDefaultZoom;
+	static int nDefaultLayout;
 
 	static CPrintSettings printSettings;
 

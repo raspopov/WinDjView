@@ -196,6 +196,11 @@ BEGIN
             MENUITEM "&Right",                      ID_ROTATE_RIGHT
             MENUITEM "&180°",                       ID_ROTATE_180
         END
+        POPUP "Layout"
+        BEGIN
+            MENUITEM "&Single Page",                ID_LAYOUT_SINGLEPAGE
+            MENUITEM "&Continuous",                 ID_LAYOUT_CONTINUOUS
+        END
     END
     POPUP "&Window"
     BEGIN
@@ -599,6 +604,12 @@ BEGIN
     ID_ROTATE_180           "Rotate 180 degrees\nRotate 180"
     ID_VIEW_FIRSTPAGE       "Go to first page\nFirst Page"
     ID_VIEW_LASTPAGE        "Go to last page\nLast Page"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_LAYOUT_SINGLEPAGE    "Single page layout\nSingle Page"
+    ID_LAYOUT_CONTINUOUS    "Continuous layout\nContinuous"
 END
 
 #endif    // English (U.S.) resources

@@ -45,12 +45,13 @@ public:
 // Operations
 public:
 	void RenderPage(int nPage);
-	void UpdatePageSize();
 	int GetPageCount() const { return m_nPageCount; }
 	int GetCurrentPage() const { return m_nPage; }
 	int GetZoomType() const { return m_nZoomType; }
 	double GetZoom() const;
 	void ZoomTo(int nZoomType, double fZoom = 100.0);
+	int GetLayout() const { return m_nLayout; }
+	int GetRotate() const { return m_nRotate; }
 
 	enum ZoomType
 	{
@@ -60,6 +61,12 @@ public:
 		ZoomFitPage = -3,
 		ZoomActualSize = -4,
 		ZoomStretch = -5
+	};
+
+	enum LayoutType
+	{
+		SinglePage = 0,
+		Continuous = 1
 	};
 
 // Overrides
@@ -91,14 +98,27 @@ protected:
 	CSize m_szPage, m_szDisplay, m_szDisplayPage;
 	CPoint m_ptPageOffset;
 
-//	GP<GPixmap> m_pGPixmap;
-//	GP<GBitmap> m_pGBitmap;
-
+	void DrawWhite(CDC* pDC);
 	void DrawOffscreen(CDC* pDC);
 	void DrawStretch(CDC* pDC);
 
 	int m_nZoomType;
 	double m_fZoom;
+	int m_nLayout;
+	int m_nRotate;
+
+	struct Page
+	{
+		GP<DjVuImage> pImage;
+		CSize szPage;
+		CSize szDisplayPage;
+		CDIB* pBitmap;
+	};
+	vector<Page> m_pages;
+
+	CSize CalcPageSize(GP<DjVuImage> pImage);
+	void UpdatePageSize();
+	void UpdateView();
 
 	bool m_bDragging;
 	CPoint m_ptStart, m_ptStartPos;
@@ -128,6 +148,8 @@ protected:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnFilePrint();
+	afx_msg void OnViewLayout(UINT nID);
+	afx_msg void OnUpdateViewLayout(CCmdUI* pCmdUI);
 	afx_msg LRESULT OnRenderFinished(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };

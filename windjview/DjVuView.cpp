@@ -74,6 +74,8 @@ BEGIN_MESSAGE_MAP(CDjVuView, CScrollView)
 	ON_WM_MOUSEMOVE()
 	ON_WM_CONTEXTMENU()
 	ON_COMMAND(ID_PAGE_INFORMATION, OnPageInformation)
+	ON_COMMAND_RANGE(ID_LAYOUT_SINGLEPAGE, ID_LAYOUT_CONTINUOUS, OnViewLayout)
+	ON_UPDATE_COMMAND_UI_RANGE(ID_LAYOUT_SINGLEPAGE, ID_LAYOUT_CONTINUOUS, OnUpdateViewLayout)
 	ON_MESSAGE(WM_RENDER_FINISHED, OnRenderFinished)
 END_MESSAGE_MAP()
 
@@ -81,7 +83,8 @@ END_MESSAGE_MAP()
 
 CDjVuView::CDjVuView()
 	: m_nPage(-1), m_nPageCount(0), m_pBitmap(NULL), m_bRendered(false),
-	  m_nZoomType(ZoomFitPage), m_fZoom(100.0), m_bDragging(false)
+	  m_nZoomType(ZoomPercent), m_fZoom(100.0), m_nLayout(SinglePage),
+	  m_nRotate(0), m_bDragging(false)
 {
 }
 
@@ -127,7 +130,36 @@ void CDjVuView::OnDraw(CDC* pDC)
 				DrawStretch(pDC);
 			}
 		}
+		else
+		{
+			DrawWhite(pDC);
+		}
 	}
+}
+
+void CDjVuView::DrawWhite(CDC* pDC)
+{
+	CPoint ptOffset = GetScrollPosition();
+
+	CRect rcClient;
+	GetClientRect(rcClient);
+	rcClient.OffsetRect(ptOffset);
+
+	COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
+	pDC->FillSolidRect(rcClient, clrWindow);
+
+	CRect rcBorder(m_ptPageOffset.x - 1, m_ptPageOffset.y - 1,
+		m_ptPageOffset.x + m_szDisplayPage.cx,
+		m_ptPageOffset.y + m_szDisplayPage.cy);
+
+	CPoint points[] = { rcBorder.TopLeft(), CPoint(rcBorder.right, rcBorder.top),
+		rcBorder.BottomRight(), CPoint(rcBorder.left, rcBorder.bottom),
+		rcBorder.TopLeft() };
+
+	CPen pen(PS_SOLID, 1, ::GetSysColor(COLOR_3DDKSHADOW));
+	CPen* pOldPen = pDC->SelectObject(&pen);
+	pDC->Polyline((LPPOINT)points, 5);
+	pDC->SelectObject(pOldPen);
 }
 
 void CDjVuView::DrawOffscreen(CDC* pDC)
@@ -245,6 +277,8 @@ void CDjVuView::OnInitialUpdate()
 	if (m_nZoomType == ZoomPercent)
 		m_fZoom = 100.0;
 
+	m_nLayout = CAppSettings::nDefaultLayout;
+
 	m_nPageCount = GetDocument()->GetPageCount();
 	m_nPage = 0;
 
@@ -260,18 +294,11 @@ BOOL CDjVuView::OnEraseBkgnd(CDC* pDC)
 
 void CDjVuView::RenderPage(int nPage)
 {
-	int nRotate = (m_pImage != NULL ? m_pImage->get_rotate() : 0);
-	bool bSamePage = (m_nPage == nPage);
 	m_nPage = nPage;
 
 	G_TRY
 	{
-		if (!bSamePage || m_pImage == NULL)
-		{
-			m_pImage = GetDocument()->GetPage(m_nPage);
-			if (m_pImage != NULL)
-				m_pImage->set_rotate(nRotate);
-		}
+		m_pImage = GetDocument()->GetPage(m_nPage);
 
 		if (m_pImage == NULL)
 		{
@@ -279,6 +306,7 @@ void CDjVuView::RenderPage(int nPage)
 		}
 		else
 		{
+			m_pImage->set_rotate(m_nRotate);
 			m_szPage = CSize(m_pImage->get_width(), m_pImage->get_height());
 		}
 	}
@@ -292,14 +320,7 @@ void CDjVuView::RenderPage(int nPage)
 	delete m_pBitmap;
 	m_pBitmap = NULL;
 
-	UpdatePageSize();
-	UpdatePageSize();
-
-	m_bRendered = false;
-	m_nImageCode = m_pRenderThread->AddJob(m_pImage,
-		CRect(CPoint(0, 0), m_szDisplayPage),
-		CRect(CPoint(0, 0), m_szDisplayPage), true);
-
+	UpdateView();
 	ScrollToPosition(CPoint(0, 0));
 
 	GetMainFrame()->UpdatePageCombo(m_nPage);
@@ -308,13 +329,48 @@ void CDjVuView::RenderPage(int nPage)
 	UpdateWindow();
 }
 
-void CDjVuView::UpdatePageSize()
+void CDjVuView::UpdateView()
 {
-	m_ptPageOffset = CPoint(0, 0);
-	m_szDisplay = m_szDisplayPage = CSize(0, 0);
+	if (m_nLayout == SinglePage)
+	{
+		CSize szDisplayPage = m_szDisplayPage;
 
-	if (m_szPage.cx <= 0 || m_szPage.cy <= 0)
-		return;
+		CRect rcClient;
+		GetClientRect(rcClient);
+
+		// Update size 2 times to allow for scrollbars
+		for (int i = 0; i < 2; ++i)
+		{
+			UpdatePageSize();
+
+			CSize szPage(rcClient.Width()*3/4, rcClient.Height()*3/4);
+			CSize szLine(15, 15);
+			SetScrollSizes(MM_TEXT, m_szDisplay, szPage, szLine);
+		}
+
+		if (m_pBitmap == NULL || szDisplayPage != m_szDisplayPage)
+		{
+			m_bRendered = false;
+
+			m_nImageCode = m_pRenderThread->AddJob(m_pImage,
+				CRect(CPoint(0, 0), m_szDisplayPage),
+				CRect(CPoint(0, 0), m_szDisplayPage), true);
+		}
+	}
+	else if (m_nLayout == Continuous)
+	{
+	}
+}
+
+CSize CDjVuView::CalcPageSize(GP<DjVuImage> pImage)
+{
+	CSize szDisplay(0, 0);
+	if (pImage == NULL)
+		return szDisplay;
+
+	CSize szPage(pImage->get_width(), pImage->get_height());
+	if (szPage.cx <= 0 || szPage.cy <= 0)
+		return szDisplay;
 
 	CRect rcClient;
 	GetClientRect(rcClient);
@@ -322,61 +378,58 @@ void CDjVuView::UpdatePageSize()
 	switch (m_nZoomType)
 	{
 	case ZoomFitWidth:
-		m_szDisplay = rcClient.Size();
-		m_szDisplay.cy = m_szDisplay.cx * m_szPage.cy / m_szPage.cx;
+		szDisplay = rcClient.Size();
+		szDisplay.cy = szDisplay.cx * szPage.cy / szPage.cx;
 		break;
 
 	case ZoomFitHeight:
-		m_szDisplay = rcClient.Size();
-		m_szDisplay.cx = m_szDisplay.cy * m_szPage.cx / m_szPage.cy;
+		szDisplay = rcClient.Size();
+		szDisplay.cx = szDisplay.cy * szPage.cx / szPage.cy;
 		break;
 
 	case ZoomFitPage:
-		m_szDisplay = rcClient.Size();
-		m_szDisplay.cx = m_szDisplay.cy * m_szPage.cx / m_szPage.cy;
+		szDisplay = rcClient.Size();
+		szDisplay.cx = szDisplay.cy * szPage.cx / szPage.cy;
 
-		if (m_szDisplay.cx > rcClient.Width())
+		if (szDisplay.cx > rcClient.Width())
 		{
-			m_szDisplay.cx = rcClient.Width();
-			m_szDisplay.cy = m_szDisplay.cx * m_szPage.cy / m_szPage.cx;
+			szDisplay.cx = rcClient.Width();
+			szDisplay.cy = szDisplay.cx * szPage.cy / szPage.cx;
 		}
 		break;
 
 	case ZoomActualSize:
-		m_szDisplay = m_szPage;
+		szDisplay = szPage;
 		break;
 
 	case ZoomStretch:
-		m_szDisplay = rcClient.Size();
+		szDisplay = rcClient.Size();
 		break;
 
 	case ZoomPercent:
 	default:
-		// Leave two digits after decimal point
-		m_fZoom = static_cast<int>(m_fZoom*100.0)*0.01;
-		if (m_fZoom < 10.0)
-			m_fZoom = 10.0;
-		else if (m_fZoom > 800.0)
-			m_fZoom = 800.0;
+		CDC dcScreen;
+		dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
 
-		if (m_pImage == NULL)
-			break;
-		else
-		{
-			CDC dcScreen;
-			dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+		int nLogPixelsX = dcScreen.GetDeviceCaps(LOGPIXELSX);
+		int nLogPixelsY = dcScreen.GetDeviceCaps(LOGPIXELSX);
 
-			int nLogPixelsX = dcScreen.GetDeviceCaps(LOGPIXELSX);
-			int nLogPixelsY = dcScreen.GetDeviceCaps(LOGPIXELSX);
+		int nImgPixels = pImage->get_dpi();
 
-			int nImgPixels = m_pImage->get_dpi();
-
-			m_szDisplay.cx = static_cast<int>(m_szPage.cx*nLogPixelsX*m_fZoom*0.01/nImgPixels);
-			m_szDisplay.cy = static_cast<int>(m_szPage.cy*nLogPixelsY*m_fZoom*0.01/nImgPixels);
-		}
+		szDisplay.cx = static_cast<int>(szPage.cx*nLogPixelsX*m_fZoom*0.01/nImgPixels);
+		szDisplay.cy = static_cast<int>(szPage.cy*nLogPixelsY*m_fZoom*0.01/nImgPixels);
 	}
 
-	m_szDisplayPage = m_szDisplay;
+	return szDisplay;
+}
+
+void CDjVuView::UpdatePageSize()
+{
+	m_ptPageOffset = CPoint(0, 0);
+	m_szDisplay = m_szDisplayPage = CalcPageSize(m_pImage);
+
+	CRect rcClient;
+	GetClientRect(rcClient);
 
 	if (m_szDisplayPage.cx < rcClient.Width())
 	{
@@ -389,10 +442,6 @@ void CDjVuView::UpdatePageSize()
 		m_szDisplay.cy = rcClient.Height();
 		m_ptPageOffset.y = (m_szDisplay.cy - m_szDisplayPage.cy)/2;
 	}
-
-	CSize szPage(rcClient.Width()*3/4, rcClient.Height()*3/4);
-	CSize szLine(15, 15);
-	SetScrollSizes(MM_TEXT, m_szDisplay, szPage, szLine);
 }
 
 void CDjVuView::OnViewNextpage()
@@ -401,7 +450,7 @@ void CDjVuView::OnViewNextpage()
 		RenderPage(m_nPage + 1);
 }
 
-void CDjVuView::OnUpdateViewNextpage(CCmdUI *pCmdUI)
+void CDjVuView::OnUpdateViewNextpage(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(m_nPage < m_nPageCount - 1);
 }
@@ -412,7 +461,7 @@ void CDjVuView::OnViewPreviouspage()
 		RenderPage(m_nPage - 1);
 }
 
-void CDjVuView::OnUpdateViewPreviouspage(CCmdUI *pCmdUI)
+void CDjVuView::OnUpdateViewPreviouspage(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(m_nPage > 0);
 }
@@ -421,18 +470,7 @@ void CDjVuView::OnSize(UINT nType, int cx, int cy)
 {
 	if (m_nPage != -1)
 	{
-		CSize szDisplayPage = m_szDisplayPage;
-		UpdatePageSize();
-		UpdatePageSize();
-
-		if (m_szDisplayPage != szDisplayPage)
-		{
-			m_bRendered = false;
-
-			m_nImageCode = m_pRenderThread->AddJob(m_pImage,
-				CRect(CPoint(0, 0), m_szDisplayPage),
-				CRect(CPoint(0, 0), m_szDisplayPage), true);
-		}
+		UpdateView();
 	}
 
 	CScrollView::OnSize(nType, cx, cy);
@@ -606,13 +644,50 @@ double CDjVuView::GetZoom() const
 	return 100.0*m_szDisplayPage.cx*nImgPixels/(m_szPage.cx*nLogPixels);
 }
 
+void CDjVuView::OnViewLayout(UINT nID)
+{
+	int nPrevLayout = m_nLayout;
+
+	switch (nID)
+	{
+	case ID_LAYOUT_SINGLEPAGE:
+		m_nLayout = SinglePage;
+		break;
+
+	case ID_LAYOUT_CONTINUOUS:
+		m_nLayout = Continuous;
+		break;
+	}
+
+	CAppSettings::nDefaultLayout = m_nLayout;
+
+	if (m_nLayout != nPrevLayout)
+	{
+		UpdateView();
+		Invalidate();
+	}
+}
+
+void CDjVuView::OnUpdateViewLayout(CCmdUI* pCmdUI)
+{
+	switch (pCmdUI->m_nID)
+	{
+	case ID_LAYOUT_SINGLEPAGE:
+		pCmdUI->SetCheck(m_nLayout == SinglePage);
+		break;
+
+	case ID_LAYOUT_CONTINUOUS:
+		pCmdUI->SetCheck(m_nLayout == Continuous);
+		break;
+	}
+}
+
 void CDjVuView::OnRotateLeft()
 {
 	if (m_pImage == NULL)
 		return;
 
-	int nRotate = m_pImage->get_rotate();
-	m_pImage->set_rotate((nRotate + 1) % 4);
+	m_nRotate = (m_nRotate + 1) % 4;
 	RenderPage(m_nPage);
 }
 
@@ -621,8 +696,7 @@ void CDjVuView::OnRotateRight()
 	if (m_pImage == NULL)
 		return;
 
-	int nRotate = m_pImage->get_rotate();
-	m_pImage->set_rotate((nRotate + 3) % 4);
+	m_nRotate = (m_nRotate + 3) % 4;
 	RenderPage(m_nPage);
 }
 
@@ -631,8 +705,7 @@ void CDjVuView::OnRotate180()
 	if (m_pImage == NULL)
 		return;
 
-	int nRotate = m_pImage->get_rotate();
-	m_pImage->set_rotate((nRotate + 2) % 4);
+	m_nRotate = (m_nRotate + 2) % 4;
 	RenderPage(m_nPage);
 }
 
@@ -658,17 +731,21 @@ void CDjVuView::ZoomTo(int nZoomType, double fZoom)
 {
 	m_nZoomType = nZoomType;
 	m_fZoom = fZoom;
+
+	if (m_nZoomType == ZoomPercent)
+	{
+		// Leave two digits after decimal point
+		m_fZoom = static_cast<int>(m_fZoom*100.0)*0.01;
+		if (m_fZoom < 10.0)
+			m_fZoom = 10.0;
+		else if (m_fZoom > 800.0)
+			m_fZoom = 800.0;
+	}
+
 	CAppSettings::nDefaultZoomType = nZoomType;
 	CAppSettings::fDefaultZoom = fZoom;
 
-	UpdatePageSize();
-	UpdatePageSize();
-
-	m_bRendered = false;
-	m_nImageCode = m_pRenderThread->AddJob(m_pImage,
-		CRect(CPoint(0, 0), m_szDisplayPage),
-		CRect(CPoint(0, 0), m_szDisplayPage), true);
-
+	UpdateView();
 	Invalidate();
 
 	GetMainFrame()->UpdateZoomCombo(m_nZoomType, m_fZoom);
