@@ -70,6 +70,10 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_DDE_EXECUTE, OnDDEExecute)
 	ON_COMMAND(ID_VIEW_FIND, OnViewFind)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIND, OnUpdateViewFind)
+#ifdef ELIBRA_READER
+	ON_COMMAND(ID_HELP_CONTENTS, OnHelpContents)
+	ON_COMMAND(IDC_STATIC_LINK, OnGoToHomepage)
+#endif
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -160,6 +164,24 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_cboPage.GetEditCtrl().SetReal();
 	m_cboZoom.GetEditCtrl().SetPercent();
 
+#ifdef ELIBRA_READER
+	TBBUTTON btn;
+	btn.fsStyle = TBSTYLE_SEP;
+	m_wndToolBar.GetToolBarCtrl().AddButtons(1, &btn);
+
+	int nButtonLink = m_wndToolBar.GetToolBarCtrl().GetButtonCount() - 1;
+	m_wndToolBar.SetButtonInfo(nButtonLink, IDC_STATIC_LINK, TBBS_SEPARATOR, 84);
+
+	CRect rcButton;
+	m_wndToolBar.GetItemRect(nButtonLink, rcButton);
+	rcButton.DeflateRect(8, 0, 4, 0);
+	rcButton.bottom = rcButton.top + 22;
+
+	m_btnLink.Create(_T(""), WS_CHILD | WS_VISIBLE | BS_OWNERDRAW | BS_PUSHBUTTON,
+		rcButton, &m_wndToolBar, IDC_STATIC_LINK);
+	m_btnLink.LoadBitmaps(IDB_TOOLBAR_LINK);
+#endif
+
 	return 0;
 }
 
@@ -167,6 +189,10 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
 	if (!CMDIFrameWnd::PreCreateWindow(cs))
 		return false;
+
+#ifdef ELIBRA_READER
+	cs.style &= ~FWS_ADDTOTITLE;
+#endif
 
 	return true;
 }
@@ -509,4 +535,25 @@ void CMainFrame::HilightStatusMessage(LPCTSTR pszMessage)
 	CAppSettings::bStatusBar = true;
 
 	m_wndStatusBar.SetHilightMessage(pszMessage);
+}
+
+void CMainFrame::OnGoToHomepage()
+{
+	::ShellExecute(NULL, "open", "http://www.starpath.com/elibra",
+		NULL, NULL, SW_SHOWNORMAL);
+}
+
+void CMainFrame::OnHelpContents()
+{
+	CString strPathName;
+	GetModuleFileName(theApp.m_hInstance, strPathName.GetBuffer(_MAX_PATH), _MAX_PATH);
+	strPathName.ReleaseBuffer();
+
+	TCHAR szDrive[_MAX_DRIVE + 1] = {0};
+	TCHAR szDir[_MAX_DIR + 1] = {0};
+	TCHAR szExt[_MAX_EXT + 1] = {0};
+	_tsplitpath(strPathName, szDrive, szDir, NULL, NULL);
+
+	strPathName = CString(szDrive) + CString(szDir) + "elibra-help.chm";
+	::ShellExecute(NULL, "open", strPathName, NULL, NULL, SW_SHOWNORMAL);
 }

@@ -1592,6 +1592,7 @@ int CDjVuView::GetPageFromPoint(CPoint point)
 
 void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 {
+#ifndef ELIBRA_READER
 	if (point.x < 0 || point.y < 0)
 		point = CPoint(0, 0);
 
@@ -1619,6 +1620,7 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 	ClientToScreen(&point);
 	pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON, point.x, point.y,
 		GetMainFrame());
+#endif
 }
 
 void CDjVuView::OnPageInformation()
@@ -2187,10 +2189,6 @@ BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint /*point*/)
 	// we don't handle anything but scrolling
 	if ((nFlags & MK_CONTROL) != 0)
 		return false;
-
-//	// if the parent is a splitter, it will handle the message
-//	if (GetParentSplitter(this, true))
-//		return false;
 
 	BOOL bHasHorzBar, bHasVertBar;
 	CheckScrollBars(bHasHorzBar, bHasVertBar);
@@ -2920,7 +2918,7 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, bool bAddToHistor
 	CString strPathName = (const char*)strURL;
 	TCHAR szDrive[_MAX_DRIVE + 1] = {0};
 	TCHAR szDir[_MAX_DIR + 1] = {0};
-	TCHAR szExt[_MAX_EXT] = {0};
+	TCHAR szExt[_MAX_EXT + 1] = {0};
 	_tsplitpath(strPathName, NULL, NULL, NULL, szExt);
 	if (_tcsicmp(szExt, _T(".djvu")) == 0 || _tcsicmp(szExt, _T(".djv")) == 0)
 	{

@@ -24,7 +24,11 @@
 	#error include 'stdafx.h' before including this file for PCH
 #endif
 
+#ifndef ELIBRA_READER
 #include "resource.h"       // main symbols
+#else
+#include "Elibra.h"         // main symbols
+#endif
 
 
 CString FormatDouble(double fValue);

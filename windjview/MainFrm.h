@@ -37,6 +37,10 @@ public:
 	CMyComboBox m_cboPage, m_cboZoom;
 	CFindDlg* m_pFindDlg;
 
+#ifdef ELIBRA_READER
+	CBitmapButton m_btnLink;
+#endif
+
 // Operations
 public:
 	void HilightStatusMessage(LPCTSTR pszMessage);
@@ -80,6 +84,8 @@ protected:
 	afx_msg LRESULT OnDDEExecute(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnViewFind();
 	afx_msg void OnUpdateViewFind(CCmdUI *pCmdUI);
+	afx_msg void OnGoToHomepage();
+	afx_msg void OnHelpContents();
 	DECLARE_MESSAGE_MAP()
 };
 
@@ -89,4 +95,3 @@ inline CMainFrame* GetMainFrame()
 }
 
 void CreateSystemDialogFont(CFont& font);
-

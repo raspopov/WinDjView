@@ -105,6 +105,17 @@ BOOL CDjViewApp::InitInstance()
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views
 	CMultiDocTemplate* pDocTemplate;
+
+#ifdef ELIBRA_READER
+	pDocTemplate = new CMultiDocTemplate(IDR_ElibTYPE,
+		RUNTIME_CLASS(CDjVuDoc),
+		RUNTIME_CLASS(CChildFrame), // custom MDI child frame
+		RUNTIME_CLASS(CDjVuView));
+	if (!pDocTemplate)
+		return FALSE;
+	AddDocTemplate(pDocTemplate);
+#endif
+
 	pDocTemplate = new CMultiDocTemplate(IDR_DjVuTYPE,
 		RUNTIME_CLASS(CDjVuDoc),
 		RUNTIME_CLASS(CChildFrame), // custom MDI child frame
@@ -190,8 +201,10 @@ CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_STATIC_LIB_LINK, m_weblinkLibrary);
 	DDX_Control(pDX, IDC_STATIC_LINK, m_weblink);
+#ifndef ELIBRA_READER
+	DDX_Control(pDX, IDC_STATIC_LIB_LINK, m_weblinkLibrary);
+#endif
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
@@ -211,8 +224,11 @@ HBRUSH CAboutDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
 	HBRUSH brush = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 
-	if (pWnd->GetSafeHwnd() == m_weblink.m_hWnd ||
-		pWnd->GetSafeHwnd() == m_weblinkLibrary.m_hWnd)
+	if (pWnd->GetSafeHwnd() == m_weblink.m_hWnd
+#ifndef ELIBRA_READER
+			|| pWnd->GetSafeHwnd() == m_weblinkLibrary.m_hWnd
+#endif
+		)
 	{
 		pDC->SetTextColor(RGB(0, 0, 204));
 	}
@@ -225,7 +241,7 @@ BOOL CAboutDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	static HCURSOR hCursor = NULL;
 	if (hCursor == NULL)
 	{
-		hCursor = ::LoadCursor(NULL, MAKEINTRESOURCE(32649)); // IDC_HAND
+		hCursor = ::LoadCursor(NULL, IDC_HAND);
 		if (hCursor == NULL)
 			hCursor = theApp.LoadCursor(IDC_CURSOR_LINK);
 	}
@@ -233,41 +249,59 @@ BOOL CAboutDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	CPoint ptCursor;
 	::GetCursorPos(&ptCursor);
 
-	CRect rcWeblink, rcWeblinkLibrary;
+	CRect rcWeblink;
 	m_weblink.GetWindowRect(rcWeblink);
-	m_weblinkLibrary.GetWindowRect(rcWeblinkLibrary);
 
-	if (rcWeblink.PtInRect(ptCursor) ||
-		rcWeblinkLibrary.PtInRect(ptCursor))
+	if (rcWeblink.PtInRect(ptCursor))
 	{
 		::SetCursor(hCursor);
 		return true;
 	}
+
+#ifndef ELIBRA_READER
+	CRect rcWeblinkLibrary;
+	m_weblinkLibrary.GetWindowRect(rcWeblinkLibrary);
+
+	if (rcWeblinkLibrary.PtInRect(ptCursor))
+	{
+		::SetCursor(hCursor);
+		return true;
+	}
+#endif
 
 	return CDialog::OnSetCursor(pWnd, nHitTest, message);
 }
 
 void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	CRect rcWeblink, rcWeblinkLibrary;
+	CRect rcWeblink;
 	m_weblink.GetWindowRect(rcWeblink);
-	m_weblinkLibrary.GetWindowRect(rcWeblinkLibrary);
-
 	ScreenToClient(rcWeblink);
-	ScreenToClient(rcWeblinkLibrary);
 
 	if (rcWeblink.PtInRect(point))
 	{
+#ifndef ELIBRA_READER
 		::ShellExecute(NULL, "open", "http://sourceforge.net/projects/windjview",
 			NULL, NULL, SW_SHOWNORMAL);
+#else
+		::ShellExecute(NULL, "open", "http://www.starpath.com/elibra",
+			NULL, NULL, SW_SHOWNORMAL);
+#endif
 		return;
 	}
-	else if (rcWeblinkLibrary.PtInRect(point))
+
+#ifndef ELIBRA_READER
+	CRect rcWeblinkLibrary;
+	m_weblinkLibrary.GetWindowRect(rcWeblinkLibrary);
+	ScreenToClient(rcWeblinkLibrary);
+
+	if (rcWeblinkLibrary.PtInRect(point))
 	{
 		::ShellExecute(NULL, "open", "http://djvu.sourceforge.net",
 			NULL, NULL, SW_SHOWNORMAL);
 		return;
 	}
+#endif
 
 	CDialog::OnLButtonDown(nFlags, point);
 }
@@ -285,7 +319,10 @@ BOOL CAboutDlg::OnInitDialog()
 	m_font.CreateFontIndirect(&lf);
 
 	m_weblink.SetFont(&m_font);
+
+#ifndef ELIBRA_READER
 	m_weblinkLibrary.SetFont(&m_font);
+#endif
 
 	return true;
 }
@@ -390,7 +427,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 	strPathName.ReleaseBuffer();
 
 	POSITION pos = GetFirstDocTemplatePosition();
-	for (int nTemplateIndex = 1; pos != NULL; nTemplateIndex++)
+	while (pos != NULL)
 	{
 		CDocTemplate* pTemplate = GetNextDocTemplate(pos);
 

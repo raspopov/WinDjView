@@ -113,6 +113,7 @@ BEGIN
     BUTTON      ID_FILE_OPEN
     SEPARATOR
     BUTTON      ID_FILE_PRINT
+    BUTTON      ID_VIEW_FIND
     BUTTON      ID_APP_ABOUT
     SEPARATOR
     BUTTON      ID_VIEW_FIRSTPAGE
@@ -543,6 +544,9 @@ STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "WinDjView"
     IDR_DjVuTYPE            "\nDjVu\nDjVu\nDjVu Documents (*.djvu;*.djv)\n.djvu;.djv\nDjVu.Document\n"
+    IDS_ASSOCIATE_SUCCESSFUL 
+                            "Now you will be able to open .elib files with Elibra Reader\nby double-clicking them in the Explorer."
+    IDS_ASSOCIATE_FAILED    "An error occurred while trying to register file associations.\nYou may not have enough permissions to write to system registry."
 END
 
 STRINGTABLE 
@@ -678,6 +682,8 @@ END
 
 STRINGTABLE 
 BEGIN
+    IDC_PAGENUM             "Select page number\nPage"
+    IDC_ZOOM                "Select zoom level\nZoom"
     ID_PAGE_INFORMATION     "Displays page information"
     ID_LAYOUT_SINGLEPAGE    "Single page layout\nSingle Page"
     ID_LAYOUT_CONTINUOUS    "Continuous page layout\nContinuous"
@@ -686,6 +692,7 @@ END
 
 STRINGTABLE 
 BEGIN
+    ID_VIEW_FIND            "Find text in current document\nFind"
     ID_VIEW_BACK            "Go to previous view\nPrevious View"
     ID_VIEW_FORWARD         "Go to next view\nNext View"
 END

@@ -10,7 +10,10 @@
 #define ID_STOP_TRACKING                102
 #define IDR_MAINFRAME                   128
 #define IDR_DjVuTYPE                    129
+#define IDR_ElibTYPE                    130
+#define IDS_ASSOCIATE_SUCCESSFUL        131
 #define IDC_CURSOR_HAND                 132
+#define IDS_ASSOCIATE_FAILED            132
 #define IDC_CURSOR_DRAG                 133
 #define IDD_PROGRESS                    135
 #define IDD_ZOOM                        136
@@ -18,6 +21,8 @@
 #define IDC_CURSOR_LINK                 139
 #define IDD_SETTINGS                    140
 #define IDD_FIND                        141
+#define IDB_ABOUT                       141
+#define IDB_TOOLBAR_LINK                142
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -96,7 +101,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        141
+#define _APS_NEXT_RESOURCE_VALUE        143
 #define _APS_NEXT_COMMAND_VALUE         32824
 #define _APS_NEXT_CONTROL_VALUE         1043
 #define _APS_NEXT_SYMED_VALUE           103

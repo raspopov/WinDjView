@@ -62,19 +62,9 @@ END_MESSAGE_MAP()
 void CSettingsDlg::OnAssociate()
 {
 	if (theApp.RegisterShellFileTypes())
-	{
-		AfxMessageBox(
-			_T("Now you will be able to open .djvu files ")
-			_T("with WinDjView\nby double-clicking them in ")
-			_T("the explorer."), MB_ICONINFORMATION | MB_OK);
-	}
+		AfxMessageBox(IDS_ASSOCIATE_SUCCESSFUL, MB_ICONINFORMATION | MB_OK);
 	else
-	{
-		AfxMessageBox(
-			_T("An error occurred while trying to register file associations.\n")
-			_T("You may not have enough permissions to write system registry."),
-			MB_ICONERROR | MB_OK);
-	}
+		AfxMessageBox(IDS_ASSOCIATE_FAILED, MB_ICONERROR | MB_OK);
 }
 
 void CSettingsDlg::OnOK()

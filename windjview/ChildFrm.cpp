@@ -201,9 +201,19 @@ void CChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 	{
 		TCHAR szText[256 + _MAX_PATH];
 		if (pDocument == NULL)
-			lstrcpyn(szText, m_strTitle, _countof(szText));
+			_tcsncpy(szText, m_strTitle, _countof(szText));
 		else
-			lstrcpyn(szText, pDocument->GetTitle(), _countof(szText));
+			_tcsncpy(szText, pDocument->GetTitle(), _countof(szText));
+
+#ifdef ELIBRA_READER
+		// Strip extension from the document name
+		TCHAR* pPos = _tcsrchr(szText, '\\');
+		TCHAR* pPos2 = _tcsrchr(szText, '/');
+
+		TCHAR* pDotPos = _tcschr(szText, '.');
+		if (pDotPos != NULL && pDotPos > pPos && pDotPos > pPos2)
+			*pDotPos = '\0';
+#endif
 
 		// set title if changed, but don't remove completely
 		AfxSetWindowText(m_hWnd, szText);

@@ -19,8 +19,13 @@
 // $Id$
 
 #include "stdafx.h"
-#include "resource.h"
 #include "MySplitterWnd.h"
+
+#ifndef ELIBRA_READER
+#include "resource.h"
+#else
+#include "Elibra.h"
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
