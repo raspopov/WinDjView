@@ -203,8 +203,12 @@ PageInfo CDjVuDoc::GetPageInfo(int nPage)
 void CDjVuDoc::RemoveFromCache(int nPage)
 {
 	m_lock.Lock();
+	GP<DjVuImage> pImage = m_pages[nPage].pImage;
 	m_pages[nPage].pImage = NULL;
 	m_lock.Unlock();
+
+	// This will cause the destructor to be called
+	pImage = NULL;
 }
 
 int CDjVuDoc::GetPageFromId(const GUTF8String& strPageId) const

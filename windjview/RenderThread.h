@@ -36,7 +36,6 @@ public:
 	void AddDecodeJob(int nPage);
 	void AddReadInfoJob(int nPage);
 	void AddCleanupJob(int nPage);
-	void RemoveFromQueue(int nPage);
 
 	static CDIB* Render(GP<DjVuImage> pImage, const GRect& rcClip, const GRect& rcAll);
 
@@ -71,5 +70,5 @@ private:
 	static DWORD WINAPI RenderThreadProc(LPVOID pvData);
 	void Render(Job& job);
 	void AddJob(const Job& job);
-	void RemoveFromQueueImpl(int nPage);
+	void RemoveFromQueue(int nPage);
 };

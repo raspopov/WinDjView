@@ -71,9 +71,7 @@ DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 		pData->m_jobs.pop_front();
 		pData->m_pages[job.nPage] = pData->m_jobs.end();
 
-		if (!pData->m_jobs.empty())
-			pData->m_jobReady.SetEvent();
-
+		bool bHasMoreJobs = !pData->m_jobs.empty();
 		pData->m_lock.Unlock();
 
 		switch (job.type)
@@ -98,6 +96,8 @@ DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 		}
 
 		pData->currentJob.nPage = -1;
+		if (bHasMoreJobs && !pData->m_bPaused)
+			pData->m_jobReady.SetEvent();
 
 		if (::WaitForSingleObject(pData->m_stop.m_hObject, 0) == WAIT_OBJECT_0)
 			break;
@@ -125,13 +125,6 @@ void CRenderThread::ResumeJobs()
 }
 
 void CRenderThread::RemoveFromQueue(int nPage)
-{
-	m_lock.Lock();
-	RemoveFromQueueImpl(nPage);
-	m_lock.Unlock();
-}
-
-void CRenderThread::RemoveFromQueueImpl(int nPage)
 {
 	// Delete jobs with the same nPage
 	list<Job>::iterator it = m_pages[nPage];
@@ -248,7 +241,7 @@ void CRenderThread::AddJob(const Job& job)
 		return;
 	}
 
-	RemoveFromQueueImpl(job.nPage);
+	RemoveFromQueue(job.nPage);
 
 	m_jobs.push_front(job);
 	m_pages[job.nPage] = m_jobs.begin();
