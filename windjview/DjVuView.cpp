@@ -773,12 +773,7 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			if (!OnScrollBy(CSize(0, m_pageDev.cy)))
 			{
 				if (m_nPage < m_nPageCount - 1 && m_nLayout == SinglePage)
-				{
-					CPoint ptScroll = GetScrollPosition();
 					OnViewNextpage();
-					OnScrollBy(CPoint(ptScroll.x, 0) - GetScrollPosition());
-					Invalidate();
-				}
 			}
 			break;
 
@@ -1411,6 +1406,48 @@ void CDjVuView::OnPageInformation()
 			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tIW44 foreground colors (%dx%d, %d dpi)."),
 				fSize, szName, nWidth, nHeight, nDPI);
 		}
+		else if (strLine.Find(_T("DjVuFile.JPEG_bg1")) == 0)
+		{
+			strLine = strLine.Mid(17);
+			_stscanf(strLine, _T("%d%d%d%lf%s"), &nWidth, &nHeight, &nDPI, &fSize, szName);
+			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tJPEG background (%dx%d, %d dpi)."),
+				fSize, szName, nWidth, nHeight, nDPI);
+		}
+		else if (strLine.Find(_T("DjVuFile.JPEG_bg2")) == 0)
+		{
+			strLine = strLine.Mid(17);
+			_stscanf(strLine, _T("%lf%s"), &fSize, szName);
+			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tJPEG background (unimplemented)."),
+				fSize, szName);
+		}
+		else if (strLine.Find(_T("DjVuFile.JPEG_fg1")) == 0)
+		{
+			strLine = strLine.Mid(17);
+			_stscanf(strLine, _T("%d%d%d%lf%s"), &nWidth, &nHeight, &nDPI, &fSize, szName);
+			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tJPEG foreground colors (%dx%d, %d dpi)."),
+				fSize, szName, nWidth, nHeight, nDPI);
+		}
+		else if (strLine.Find(_T("DjVuFile.JPEG_fg2")) == 0)
+		{
+			strLine = strLine.Mid(17);
+			_stscanf(strLine, _T("%lf%s"), &fSize, szName);
+			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tJPEG foreground colors (unimplemented)."),
+				fSize, szName);
+		}
+		else if (strLine.Find(_T("DjVuFile.JPEG2K_bg")) == 0)
+		{
+			strLine = strLine.Mid(17);
+			_stscanf(strLine, _T("%lf%s"), &fSize, szName);
+			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tJPEG-2000 background (unimplemented)."),
+				fSize, szName);
+		}
+		else if (strLine.Find(_T("DjVuFile.JPEG2K_fg")) == 0)
+		{
+			strLine = strLine.Mid(17);
+			_stscanf(strLine, _T("%lf%s"), &fSize, szName);
+			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tJPEG-2000 foreground colors (unimplemented)."),
+				fSize, szName);
+		}
 		else if (strLine.Find(_T("DjVuFile.ratio")) == 0)
 		{
 			strLine = strLine.Mid(14);
@@ -1432,21 +1469,43 @@ void CDjVuView::OnPageInformation()
 			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tUnrecognized chunk."),
 				fSize, szName);
 		}
+		else if (strLine.Find(_T("DjVuFile.nav_dir")) == 0)
+		{
+			strLine = strLine.Mid(16);
+			_stscanf(strLine, _T("%lf%s"), &fSize, szName);
+			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tNavigation directory (obsolete)."),
+				fSize, szName);
+		}
+		else if (strLine.Find(_T("DjVuFile.color_import1")) == 0)
+		{
+			strLine = strLine.Mid(22);
+			_stscanf(strLine, _T("%d%d%d%lf%s"), &nWidth, &nHeight, &nDPI, &fSize, szName);
+			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tLINK Color Import (%dx%d, %d dpi)."),
+				fSize, szName, nWidth, nHeight, nDPI);
+		}
+		else if (strLine.Find(_T("DjVuFile.color_import2")) == 0)
+		{
+			strLine = strLine.Mid(22);
+			_stscanf(strLine, _T("%lf%s"), &fSize, szName);
+			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tLINK Color Import (unimplemented)."),
+				fSize, szName);
+		}
+		else if (strLine.Find(_T("DjVuFile.anno1")) == 0)
+		{
+			strLine = strLine.Mid(14);
+			_stscanf(strLine, _T("%lf%s"), &fSize, szName);
+			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tAnnotations (bundled)."),
+				fSize, szName);
+		}
+		else if (strLine.Find(_T("DjVuFile.anno2")) == 0)
+		{
+			strLine = strLine.Mid(14);
+			_stscanf(strLine, _T("%lf%s"), &fSize, szName);
+			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tAnnotations (hyperlinks, etc.)."),
+				fSize, szName);
+		}
 		else
 			strFormatted = strLine;
-
-		// TODO: Display information about the following chunks:
-		//   DjVuFile.color_import1
-		//   DjVuFile.color_import2
-		//   DjVuFile.JPEG_bg1
-		//   DjVuFile.JPEG_bg2
-		//   DjVuFile.JPEG_fg1
-		//   DjVuFile.JPEG_fg2
-		//   DjVuFile.JPEG2K_bg
-		//   DjVuFile.JPEG2K_fg
-		//   DjVuFile.nav_dir
-		//   DjVuFile.anno1
-		//   DjVuFile.anno2
 
 		strInfo += (!strInfo.IsEmpty() ? _T("\n") : _T("")) + strFormatted;
 	}
@@ -1719,7 +1778,7 @@ UINT GetMouseScrollLines()
 
 	// see if we can find the mouse window
 
-	bGotScrollLines = TRUE;
+	bGotScrollLines = true;
 
 	static UINT msgGetScrollLines;
 	static WORD nRegisteredMessage;
@@ -1761,21 +1820,21 @@ BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint /*point*/)
 {
 	// we don't handle anything but scrolling
 	if ((nFlags & MK_CONTROL) != 0)
-		return FALSE;
+		return false;
 
 	// if the parent is a splitter, it will handle the message
-	if (GetParentSplitter(this, TRUE))
-		return FALSE;
+	if (GetParentSplitter(this, true))
+		return false;
 
 	BOOL bHasHorzBar, bHasVertBar;
 	CheckScrollBars(bHasHorzBar, bHasVertBar);
-	if (!bHasVertBar && !bHasHorzBar)
-		return false;
 
-	BOOL bResult = FALSE;
+	BOOL bResult = false;
 	UINT uWheelScrollLines = GetMouseScrollLines();
 	int nToScroll = ::MulDiv(-zDelta, uWheelScrollLines, WHEEL_DELTA);
 	int nDisplacement;
+
+	bool bScrollPages = true;
 
 	if (bHasVertBar && (!bHasHorzBar || (nFlags & MK_SHIFT) == 0))
 	{
@@ -1793,7 +1852,9 @@ BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint /*point*/)
 
 		UpdatePageSizes(GetScrollPos(SB_VERT), nDisplacement);
 
-		bResult = OnScrollBy(CSize(0, nDisplacement), TRUE);
+		bResult = OnScrollBy(CSize(0, nDisplacement));
+		bScrollPages = false;
+
 		UpdateVisiblePages();
 		GetMainFrame()->UpdatePageCombo(GetTopPage());
 	}
@@ -1811,7 +1872,26 @@ BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint /*point*/)
 			nDisplacement = min(nDisplacement, m_pageDev.cx);
 		}
 
-		bResult = OnScrollBy(CSize(nDisplacement, 0), TRUE);
+		bResult = OnScrollBy(CSize(nDisplacement, 0));
+		bScrollPages = false;
+	}
+
+	if (!bResult && bScrollPages)
+	{
+		if (zDelta < 0 && m_nPage < m_nPageCount - 1 &&
+			m_nLayout == SinglePage)
+		{
+			OnViewNextpage();
+		}
+		else if (zDelta > 0 && m_nPage > 0 &&
+			m_nLayout == SinglePage)
+		{
+			CPoint ptScroll = GetScrollPosition();
+			OnViewPreviouspage();
+			OnScrollBy(CPoint(ptScroll.x, m_szDisplay.cy) - GetScrollPosition());
+			Invalidate();
+		}
+		return true;
 	}
 
 	if (bResult)
@@ -1989,6 +2069,15 @@ void CDjVuView::ScrollToPositionNoRepaint(CPoint pt)
 	// now in device coordinates - limit if out of range
 	int xMax = GetScrollLimit(SB_HORZ);
 	int yMax = GetScrollLimit(SB_VERT);
+
+	BOOL bHasHorzBar, bHasVertBar;
+	CheckScrollBars(bHasHorzBar, bHasVertBar);
+
+	if (!bHasHorzBar)
+		xMax = 0;
+	if (!bHasVertBar)
+		yMax = 0;
+
 	if (pt.x < 0)
 		pt.x = 0;
 	else if (pt.x > xMax)

@@ -124,6 +124,10 @@ BEGIN
     BUTTON      ID_LAYOUT_SINGLEPAGE
     BUTTON      ID_LAYOUT_CONTINUOUS
     SEPARATOR
+    BUTTON      ID_ZOOM_100
+    BUTTON      ID_ZOOM_FITPAGE
+    BUTTON      ID_ZOOM_FITWIDTH
+    SEPARATOR
     BUTTON      ID_ROTATE_LEFT
     BUTTON      ID_ROTATE_RIGHT
 END
@@ -589,16 +593,16 @@ BEGIN
     ID_VIEW_PREVIOUSPAGE    "Go to previous page\nPrevious Page"
     ID_ZOOM_50              "Zoom to 50%"
     ID_ZOOM_75              "Zoom to 75%"
-    ID_ZOOM_100             "Zoom to 100%"
+    ID_ZOOM_100             "Zoom to 100%\nZoom 100%"
     ID_ZOOM_200             "Zoom to 200%"
     ID_ZOOM_400             "Zoom to 400%"
-    ID_ZOOM_FITWIDTH        "Fit page to width of the window"
+    ID_ZOOM_FITWIDTH        "Fit page to width of the window\nFit Width"
     ID_ZOOM_FITHEIGHT       "Fit page to height of the window"
 END
 
 STRINGTABLE 
 BEGIN
-    ID_ZOOM_FITPAGE         "Fit page to the window"
+    ID_ZOOM_FITPAGE         "Fit page to the window\nFit Page"
     ID_ZOOM_ACTUALSIZE      "Display page in actual size"
     ID_ZOOM_STRETCH         "Stretch page to the window"
     ID_ZOOM_CUSTOM          "Specify custom zoom"
