@@ -23,7 +23,6 @@
 #define IDD_FIND                        141
 #define IDB_CLOSE                       144
 #define IDB_BOOKMARKS                   145
-#define IDC_CURSOR1                     146
 #define IDC_CURSOR_HAND                 146
 #define IDD_UPDATE                      147
 #define IDC_COMBO_PRINTER               1000
