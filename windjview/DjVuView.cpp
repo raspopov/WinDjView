@@ -108,6 +108,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullscreen)
 	ON_WM_MOUSEACTIVATE()
 	ON_WM_LBUTTONDBLCLK()
+	ON_WM_KILLFOCUS()
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -969,22 +970,29 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	bool bNextPage = false;
 	bool bPrevPage = false;
 
+	BOOL bHasHorzBar, bHasVertBar;
+	CheckScrollBars(bHasHorzBar, bHasVertBar);
+
 	switch (nChar)
 	{
 	case VK_DOWN:
 		szScroll.cy = 3*m_lineDev.cy;
+		bNextPage = (m_nLayout == SinglePage && !bHasVertBar);
 		break;
 
 	case VK_UP:
 		szScroll.cy = -3*m_lineDev.cy;
+		bPrevPage = (m_nLayout == SinglePage && !bHasVertBar);
 		break;
 
 	case VK_RIGHT:
 		szScroll.cx = 3*m_lineDev.cx;
+		bNextPage = (m_nLayout == SinglePage && !bHasHorzBar);
 		break;
 
 	case VK_LEFT:
 		szScroll.cx = -3*m_lineDev.cx;
+		bPrevPage = (m_nLayout == SinglePage && !bHasHorzBar);
 		break;
 
 	case VK_NEXT:
@@ -1383,6 +1391,26 @@ void CDjVuView::OnSetFocus(CWnd* pOldWnd)
 	GetMainFrame()->UpdateZoomCombo(m_nZoomType, m_fZoom);
 
 	m_nClickCount = 0;
+
+	if (m_nMode == Fullscreen)
+	{
+		GetParent()->SetWindowPos(&wndTopMost, 0, 0, 0, 0,
+				SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	}
+}
+
+void CDjVuView::OnKillFocus(CWnd* pNewWnd)
+{
+	CMyScrollView::OnKillFocus(pNewWnd);
+
+	if (m_nMode == Fullscreen && (!::IsWindow(pNewWnd->GetSafeHwnd())
+			|| !GetMainFrame()->IsChild(pNewWnd)))
+	{
+		GetParent()->SetWindowPos(&wndNoTopMost, 0, 0, 0, 0,
+			SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+		GetParent()->SetWindowPos(&wndTop, 0, 0, 0, 0,
+			SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	}
 }
 
 void CDjVuView::ZoomTo(int nZoomType, double fZoom)

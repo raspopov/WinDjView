@@ -47,7 +47,7 @@ END_MESSAGE_MAP()
 
 BOOL CFullscreenWnd::Create()
 {
-	static CString strWndClass = AfxRegisterWndClass(CS_OWNDC);
+	static CString strWndClass = AfxRegisterWndClass(0);
 
 	CDC dcScreen;
 	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
@@ -55,8 +55,17 @@ BOOL CFullscreenWnd::Create()
 	m_nWidth = dcScreen.GetDeviceCaps(HORZRES);
 	m_nHeight = dcScreen.GetDeviceCaps(VERTRES);
 
+	CWnd* pParent = NULL;
+	OSVERSIONINFO vi;
+	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
+			vi.dwMajorVersion >= 5)
+	{
+		pParent = GetMainFrame();
+	}
+
 	return CreateEx(WS_EX_LEFT | WS_EX_TOOLWINDOW, strWndClass, NULL,
-		WS_VISIBLE | WS_POPUP, CRect(0, 0, m_nWidth, m_nHeight), GetMainFrame(), 0);
+		WS_VISIBLE | WS_POPUP, CRect(0, 0, m_nWidth, m_nHeight), pParent, 0);
 }
 
 void CFullscreenWnd::SetView(CDjVuView* pView)

@@ -45,6 +45,7 @@ void CreateSystemDialogFont(CFont& font)
 	::GetObject(hFont, sizeof(LOGFONT), &lf);
 
 	OSVERSIONINFO vi;
+	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
 		vi.dwMajorVersion >= 5)
 	{
@@ -323,16 +324,12 @@ void CMainFrame::OnShowWindow(BOOL bShow, UINT nStatus)
 	{
 		m_bFirstShow = false;
 
-		WINDOWPLACEMENT wp;
-		GetWindowPlacement(&wp);
+		SetWindowPos(NULL, CAppSettings::nWindowPosX, CAppSettings::nWindowPosY,
+				CAppSettings::nWindowWidth, CAppSettings::nWindowHeight,
+				SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
 
-		wp.rcNormalPosition.left = CAppSettings::nWindowPosX;
-		wp.rcNormalPosition.top = CAppSettings::nWindowPosY;
-		wp.rcNormalPosition.right = CAppSettings::nWindowPosX + CAppSettings::nWindowWidth;
-		wp.rcNormalPosition.bottom = CAppSettings::nWindowPosY + CAppSettings::nWindowHeight;
-		wp.showCmd = (CAppSettings::bWindowMaximized ? SW_SHOWMAXIMIZED : SW_SHOW);
-
-		SetWindowPlacement(&wp);
+		if (CAppSettings::bWindowMaximized)
+			ShowWindow(SW_SHOWMAXIMIZED);
 	}
 }
 

@@ -3,7 +3,10 @@ Copyright (C) 2004-2005 Andrew Zhezherun
 ----------------------------------------
 
 Changes in version 0.3.3:
-- Show all links works in fullscreen mode.
++ Improved keyboard navigation in fullscreen mode.
++ Show all links works in fullscreen mode.
+* Fixed crash when exiting fullscreen mode on Windows 98.
+* Fixed window positioning when task bar is always visible.
 
 Changes in version 0.3.2:
 + Added "Find All" button which displays search results in a list.
@@ -12,7 +15,7 @@ Changes in version 0.3.2:
 + Added brightness, contrast and gamma adjustment.
 + Added display modes (Color/B&W/Foreground/Background).
 + Shift key shows all hyperlinks on a page.
-- Fixed some issues with single-page layout.
+* Fixed some issues with single-page layout.
 
 Changes in version 0.3.1:
 + Added bookmarks.
@@ -21,7 +24,7 @@ Changes in version 0.3.1:
 + Added option to disable generating thumbnails in background.
 + Added checking for updates.
 + Window title specifies file name first.
-- Thumbnails fixes and improvements.
+* Thumbnails fixes and improvements.
 
 Changes in version 0.3:
 + Added text searching.
@@ -30,13 +33,13 @@ Changes in version 0.3:
 + Significantly reduced memory usage due to new caching algorithm
   (+/- 2 screens are stored as bitmaps, +/- 10 screens are stored
   in a decoded form for faster rendering).
-- Fixed continuous mode in Windows 98.
-- Fixed mouse wheel scrolling in Windows 98.
-- Fixed combo boxes on the toolbar in Windows 2000.
-- Fixed network printer detection in Windows 2000.
+* Fixed continuous mode in Windows 98.
+* Fixed mouse wheel scrolling in Windows 98.
+* Fixed combo boxes on the toolbar in Windows 2000.
+* Fixed network printer detection in Windows 2000.
 
 Changes in version 0.2.3:
-- Fixed opening read-only files (i.e. off a CDROM).
+* Fixed opening read-only files (i.e. off a CDROM).
 
 Changes in version 0.2.2:
 + Additional bitmaps are cached (+/- one screen) for more seamless scrolling
@@ -45,7 +48,7 @@ Changes in version 0.2.2:
 + WinDjView can associate itself with .djvu/.djv files in Explorer.
 + In single page mode, when no scrollbars are visible, mouse wheel
   switches to next/previous page.
-- Fixed horizontal centering in continuous view when switching from
+* Fixed horizontal centering in continuous view when switching from
   Actual Size mode to Zoom 100%.
 
 Changes in version 0.2.1:
