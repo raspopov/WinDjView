@@ -264,8 +264,9 @@ BOOL CPrintDlg::OnInitDialog()
 
 	// Quick enum all printers
 	DWORD cbNeeded, nPrinters;
-	
+
 	OSVERSIONINFO vi;
+	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT)
 	{
 		// use PRINTER_INFO_4
