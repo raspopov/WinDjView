@@ -6,20 +6,20 @@ DEFOPT = /D
 !IFNDEF DEBUG
 INTDIR = .\Objs
 OUT = ..\Release\libdjvu.lib
-OPTS = /nologo /MT /W3 /GX /Ox /G6
+OPTS = /nologo /MT /W3 /GX /Ox /Ob2 /Ot /Og /G6
 OUTOPT = /nologo /nodefaultlib:"msvcrt.lib" /out:
 !ELSE
 INTDIR = .\Objs.dbg
 OUT = ..\Debug\libdjvud.lib
-OPTS = /nologo /MTd /W3 /GX /Ox /G6
+OPTS = /nologo /MTd /W3 /GX /Ox /Ob2 /Ot /Og /G6
 OUTOPT = /nologo /nodefaultlib:"msvcrtd.lib" /out:
 !ENDIF
 
 COMPOPT = /c /Fo"$(INTDIR)\\" /D"BUILD_LIB" /D"DJVU_STATIC_LIBRARY" /D"WIN32" /D"_WINDOWS" /D"_CONSOLE" /D"NDEBUG"
 
-rebuild: clean all
-
 all: $(OUT)
+
+rebuild: clean all
 
 clean:
 	@if exist "$(INTDIR)\*.*" del /q "$(INTDIR)\*.*"
