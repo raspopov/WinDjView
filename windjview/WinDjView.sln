@@ -7,17 +7,6 @@ Global
 	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
 		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
 	EndGlobalSection
-	GlobalSection(SourceCodeControl) = preSolution
-		SccNumberOfProjects = 2
-		SccProjectName0 = windjview
-		SccLocalPath0 = .
-		SccProvider0 = MSSCCI:PushOk\u0020CVS\u0020Proxy
-		CanCheckoutShared = false
-		SolutionUniqueID = {7B5C1545-F886-4477-9EF2-E480CE45E7DF}
-		SccProjectUniqueName1 = WinDjView.vcproj
-		SccLocalPath1 = .
-		CanCheckoutShared = false
-	EndGlobalSection
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
 		Release = Release

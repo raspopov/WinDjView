@@ -4,10 +4,6 @@
 	Version="7.10"
 	Name="WinDjView"
 	ProjectGUID="{74F36F86-9AC4-4322-BCDA-9408F6E5D9A5}"
-	SccProjectName="windjview"
-	SccAuxPath=""
-	SccLocalPath="."
-	SccProvider="MSSCCI:PushOk CVS Proxy"
 	Keyword="MFCProj">
 	<Platforms>
 		<Platform
