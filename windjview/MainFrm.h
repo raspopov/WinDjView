@@ -95,3 +95,4 @@ inline CMainFrame* GetMainFrame()
 }
 
 void CreateSystemDialogFont(CFont& font);
+UINT GetMouseScrollLines();

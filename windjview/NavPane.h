@@ -33,23 +33,52 @@ public:
 
 // Attributes
 public:
-	static const int s_nHorzBorderWidth;
-	static const int s_nVertBorderHeight;
-	
-// Implementation
-public:
-	CWnd* GetChildWnd() const;
-	void SetChildWnd(CWnd* pWnd);
-	int GetMinWidth() const;
+	static const int s_nTabsWidth = 20;
+	static const int s_nTabSize = 20;
+	static const int s_nLeftMargin = 5;
+	static const int s_nTopMargin = 22;
+	static const int s_nMinExpandedWidth = 100;
 
+public:
+	int AddTab(const CString& strName, CWnd* pWnd);
+
+// Implementation
 protected:
-	CWnd* m_pChildWnd;
-	int m_nDefPaneWidth;
-	int m_nLockPos;
+	struct Tab
+	{
+		CString strName;
+		CRect rcTab;
+		CWnd* pWnd;
+	};
+	vector<Tab> m_tabs;
+	CFont m_font;
+	CFont m_fontActive;
+	int m_nActiveTab;
+	void DrawTab(CDC* pDC, int nTab, bool bActive);
+	void UpdateCloseButton(bool bLButtonDown);
+	void UpdateCloseButtonImpl(bool bPressed, bool bActive, const CRect& rcButton);
+	int GetTabFromPoint(CPoint point);
+	void ActivateTab(int nTab);
+	bool PtInTab(int nTab, CPoint point);
+	CToolTipCtrl m_toolTip;
+
+	CBitmap* m_pBitmapTabs;
+	CSize m_szBitmap;
+
+	bool m_bCloseActive;
+	bool m_bClosePressed;
+	bool m_bDragging;
 
 	// Generated message map functions
 	afx_msg void OnPaint();
 	afx_msg void OnWindowPosChanged(WINDOWPOS FAR* lpwndpos);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	DECLARE_MESSAGE_MAP()
 };
+
+COLORREF ChangeBrightness(COLORREF color, double fFactor);

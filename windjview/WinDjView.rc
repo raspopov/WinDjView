@@ -102,6 +102,7 @@ IDR_DjVuTYPE            ICON                    "res\\DjVuDoc.ico"
 //
 
 IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+IDB_CLOSE               BITMAP                  "res\\close.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -545,7 +546,7 @@ BEGIN
     IDR_MAINFRAME           "WinDjView"
     IDR_DjVuTYPE            "\nDjVu\nDjVu\nDjVu Documents (*.djvu;*.djv)\n.djvu;.djv\nDjVu.Document\n"
     IDS_ASSOCIATE_SUCCESSFUL 
-                            "Now you will be able to open .elib files with Elibra Reader\nby double-clicking them in the Explorer."
+                            "Now you will be able to open .djvu and .djv files with WinDjView\nby double-clicking them in the Explorer."
     IDS_ASSOCIATE_FAILED    "An error occurred while trying to register file associations.\nYou may not have enough permissions to write to system registry."
 END
 

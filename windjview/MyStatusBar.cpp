@@ -77,7 +77,7 @@ void CMyStatusBar::DrawItem(LPDRAWITEMSTRUCT lpDrawItem)
 	CDC dc;
 	dc.Attach(lpDrawItem->hDC);
 
-	CBrush brush(RGB(0, 0, 128));
+	static CBrush brush(RGB(0, 0, 128));
 	CBrush* pOldBrush = dc.SelectObject(&brush);
 	dc.Rectangle(&rcItem);
 

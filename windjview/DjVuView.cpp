@@ -828,7 +828,7 @@ void CDjVuView::UpdateVisiblePages()
 
 		int nSize = min(nTop + rcClient.Height(), m_pages[nPage].rcDisplay.bottom) -
 			max(nTop, m_pages[nPage].rcDisplay.top);
-		if (nSize > nMaxSize)
+		if (nSize >= nMaxSize)
 		{
 			nLastPage = nPage;
 			nMaxSize = nSize;

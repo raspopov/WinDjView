@@ -277,6 +277,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\ThumbnailsView.cpp">
+			</File>
+			<File
 				RelativePath=".\WinDjView.cpp">
 			</File>
 			<File
@@ -345,6 +348,9 @@
 				RelativePath=".\stdafx.h">
 			</File>
 			<File
+				RelativePath=".\ThumbnailsView.h">
+			</File>
+			<File
 				RelativePath=".\WinDjView.h">
 			</File>
 			<File
@@ -355,6 +361,12 @@
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+			<File
+				RelativePath=".\res\close.bmp">
+			</File>
+			<File
+				RelativePath=".\res\close.ico">
+			</File>
 			<File
 				RelativePath=".\res\DjVuDoc.ico">
 				<FileConfiguration
@@ -372,6 +384,9 @@
 			</File>
 			<File
 				RelativePath=".\res\hand.cur">
+			</File>
+			<File
+				RelativePath=".\res\icon1.ico">
 			</File>
 			<File
 				RelativePath=".\res\link.cur">

@@ -24,6 +24,7 @@
 #include "ChildFrm.h"
 #include "MainFrm.h"
 #include "DjVuView.h"
+#include "ThumbnailsView.h"
 #include "NavPane.h"
 #include "AppSettings.h"
 
@@ -39,7 +40,8 @@ IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWnd)
 BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 	ON_WM_MDIACTIVATE()
 	ON_WM_WINDOWPOSCHANGED()
-	ON_MESSAGE_VOID(ID_STOP_TRACKING, OnStopTracking)
+	ON_MESSAGE_VOID(ID_EXPAND_PANE, OnExpandPane)
+	ON_MESSAGE_VOID(ID_COLLAPSE_PANE, OnCollapsePane)
 	ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
 
@@ -48,14 +50,11 @@ END_MESSAGE_MAP()
 
 CChildFrame::CChildFrame()
 {
-	m_nNavPaneWidth = CAppSettings::nNavPaneWidth;
-
 	m_bCreated = false;
 }
 
 CChildFrame::~CChildFrame()
 {
-	CAppSettings::nNavPaneWidth = m_nNavPaneWidth;
 }
 
 
@@ -125,7 +124,7 @@ void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 		CAppSettings::bChildMaximized = !!IsZoomed();
 
 	if (m_bCreated)
-		UpdateNavPane();
+		m_wndSplitter.UpdateNavPane();
 }
 
 void CChildFrame::ActivateFrame(int nCmdShow)
@@ -141,41 +140,49 @@ BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 	m_wndSplitter.CreateStatic(this, 1, 2);
 
 	m_wndSplitter.CreateView(0, 0, RUNTIME_CLASS(CNavPaneWnd),
-		CSize(m_nNavPaneWidth, 0), pContext);
+		CSize(100, 0), pContext);
 	m_wndSplitter.CreateView(0, 1, RUNTIME_CLASS(CDjVuView),
 		CSize(0, 0), pContext);
 
+	CNavPaneWnd* pNavPane = GetNavPane();
+/*
+	CTreeCtrl* pTreeCtrl = new CTreeCtrl();
+	pTreeCtrl->Create(WS_VISIBLE | WS_TABSTOP | WS_CHILD
+		| TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES
+		| TVS_DISABLEDRAGDROP, CRect(), pNavPane, 0);
+	pNavPane->AddTab("Bookmarks", pTreeCtrl);
+
+	CEdit* pEditCtrl = new CEdit();
+	pEditCtrl->Create(WS_VISIBLE | WS_TABSTOP | WS_CHILD
+		| WS_HSCROLL | WS_VSCROLL
+		| ES_AUTOHSCROLL | ES_AUTOVSCROLL | ES_MULTILINE
+		| ES_WANTRETURN, CRect(), pNavPane, 1);
+	pNavPane->AddTab("Thumbnails", pEditCtrl);
+*/
+	CThumbnailsView* pView = (CThumbnailsView*)RUNTIME_CLASS(CThumbnailsView)->CreateObject();
+	pView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
+		| WS_HSCROLL | WS_VSCROLL, CRect(), pNavPane, 2);
+	pNavPane->AddTab("Thumbnails", pView);
+	pView->SetDocument((CDjVuDoc*)pContext->m_pCurrentDoc);
+
 	SetActiveView(GetDjVuView());
+	GetDjVuView()->SetFocus();
 
 	m_bCreated = true;
-	UpdateNavPane();
+	m_wndSplitter.UpdateNavPane();
 
 	return TRUE;
 }
 
-void CChildFrame::UpdateNavPane()
+void CChildFrame::OnCollapsePane()
 {
-	m_wndSplitter.AllowTracking(CAppSettings::bShowNavPane);
-	m_wndSplitter.HideSplitter(!CAppSettings::bShowNavPane);
-
-	UpdateNavPaneWidth();
+	m_wndSplitter.CollapseNavPane(true);
+	GetDjVuView()->SetFocus();
 }
 
-void CChildFrame::UpdateNavPaneWidth()
+void CChildFrame::OnExpandPane()
 {
-	int nWidth = (CAppSettings::bShowNavPane ? m_nNavPaneWidth : 0);
-
-	m_wndSplitter.SetColumnInfo(0, nWidth, 0);
-	m_wndSplitter.RecalcLayout();
-}
-
-void CChildFrame::OnStopTracking()
-{
-	if (CAppSettings::bShowNavPane)
-	{
-		int cxMin;
-		m_wndSplitter.GetColumnInfo(0, m_nNavPaneWidth, cxMin);
-	}
+	m_wndSplitter.CollapseNavPane(false);
 }
 
 CDjVuView* CChildFrame::GetDjVuView()
@@ -185,7 +192,7 @@ CDjVuView* CChildFrame::GetDjVuView()
 
 CNavPaneWnd* CChildFrame::GetNavPane()
 {
-	return static_cast<CNavPaneWnd*>(m_wndSplitter.GetPane(0, 0));
+	return m_wndSplitter.GetNavPane();
 }
 
 void CChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)

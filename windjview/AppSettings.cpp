@@ -46,7 +46,7 @@ int CAppSettings::nDefaultLayout = 0;
 
 bool CAppSettings::bRestoreAssocs = false;
 
-bool CAppSettings::bShowNavPane = false;
+bool CAppSettings::bNavPaneCollapsed = false;
 int CAppSettings::nNavPaneWidth = 200;
 
 int CAppSettings::nCopies = 1;

@@ -54,17 +54,15 @@ public:
 #endif
 
 protected:
-	int m_nNavPaneWidth;
 	bool m_bCreated;
 
 	CMySplitterWnd m_wndSplitter;
-	void UpdateNavPaneWidth();
-	void UpdateNavPane();
 
 // Generated message map functions
 	afx_msg void OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeactivateWnd);
 	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
-	afx_msg void OnStopTracking();
+	afx_msg void OnExpandPane();
+	afx_msg void OnCollapsePane();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	DECLARE_MESSAGE_MAP()
 };

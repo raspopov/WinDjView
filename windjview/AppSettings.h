@@ -42,7 +42,7 @@ struct CAppSettings
 
 	static bool bRestoreAssocs;
 
-	static bool bShowNavPane;
+	static bool bNavPaneCollapsed;
 	static int nNavPaneWidth;
 
 	static CPrintSettings printSettings;

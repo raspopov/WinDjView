@@ -20,6 +20,8 @@
 
 #pragma once
 
+class CNavPaneWnd;
+
 
 // CMySplitterWnd
 
@@ -33,13 +35,15 @@ public:
 
 // Operations
 public:
-	void AllowTracking(bool bAllow = true) { m_bAllowTracking = bAllow; }
-	void HideSplitter(bool bHide = true);
+	CNavPaneWnd* GetNavPane();
+	void HideNavPane(bool bHide = true);
+	void CollapseNavPane(bool bCollapse = true);
+	void UpdateNavPane();
 
 	int GetSplitterWidth() { return m_cxSplitter; }
 	int GetSplitterHeight() { return m_cySplitter; }
 
-// Overrides
+	// Overrides
 protected:
 	virtual void StopTracking(BOOL bAccept);
 	virtual int HitTest(CPoint pt) const;
@@ -50,6 +54,9 @@ protected:
 
 // Implementation
 protected:
+	int m_nNavPaneWidth;
+	bool m_bCollapsed;
+
 	bool m_bAllowTracking;
 	bool m_bHideSplitter;
 
@@ -58,6 +65,10 @@ protected:
 	int m_cyOrigSplitter;
 	int m_cyOrigSplitterGap;
 
-// Generated message map functions
+	void DrawLeftPaneBorder(CDC* pDC, const CRect& rcArg);
+	void UpdateNavPaneWidth(int nWidth);
+
+	// Generated message map functions
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	DECLARE_MESSAGE_MAP()
 };
