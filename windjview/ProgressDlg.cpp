@@ -78,7 +78,13 @@ void CProgressDlg::SetPos(int nPos)
 
 bool CProgressDlg::IsCancelled()
 {
+#if _MSC_VER >= 1300
 	return (InterlockedCompareExchange(&m_nCancelled, 1, 1) == 1);
+#else
+	long nCancelled = 1;
+	return (InterlockedCompareExchange((void**)&m_nCancelled,
+		(void*)nCancelled, (void*)nCancelled) == (void*)nCancelled);
+#endif
 }
 
 void CProgressDlg::StopProgress(int nCode)

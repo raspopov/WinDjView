@@ -6,7 +6,7 @@
     name="Andrew.Zhezherun.WinDjView"
     type="win32" 
 /> 
-<description>Your app description here</description> 
+<description>WinDjView</description> 
 <dependency> 
     <dependentAssembly> 
         <assemblyIdentity 

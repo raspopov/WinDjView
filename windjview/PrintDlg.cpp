@@ -584,7 +584,7 @@ void CPrintDlg::OnChangePrinter()
 	m_cboPrinter.GetLBText(nPrinter, strPrinter);
 
 	// Get full information about the printer into PRINTER_INFO_2 member variable
-	::OpenPrinter(strPrinter.GetBuffer(), &m_hPrinter, NULL);
+	::OpenPrinter(strPrinter.GetBuffer(0), &m_hPrinter, NULL);
 
 	DWORD cbNeeded;
 	::GetPrinter(m_hPrinter, 2, NULL, 0, &cbNeeded);
@@ -642,7 +642,8 @@ void CPrintDlg::LoadPaperTypes()
 		DC_PAPERSIZE, (LPTSTR)&sizes[0], m_pPrinter->pDevMode);
 
 	// Retain selected paper size
-	for (int i = 0; i < nPapers && i < nSizeNames && i < nSizes; ++i)
+	int i;
+	for (i = 0; i < nPapers && i < nSizeNames && i < nSizes; ++i)
 	{
 		if (size_names[i] == m_nPaperCode)
 		{
@@ -654,7 +655,7 @@ void CPrintDlg::LoadPaperTypes()
 	m_cboPaper.ResetContent();
 	m_paperSizes.clear();
 	TCHAR szPaperName[65];
-	for (int i = 0; i < nPapers && i < nSizeNames && i < nSizes; ++i)
+	for (i = 0; i < nPapers && i < nSizeNames && i < nSizes; ++i)
 	{
 		ZeroMemory(szPaperName, sizeof(szPaperName));
 		_tcsncpy(szPaperName, (LPCTSTR)strPaperNames + i*64, 64);

@@ -201,3 +201,15 @@ void CMyScrollView::ScrollToPositionNoRepaint(CPoint pt)
 	SetScrollPos(SB_HORZ, pt.x);
 	SetScrollPos(SB_VERT, pt.y);
 }
+
+void CMyScrollView::CheckScrollBars(BOOL& bHasHorzBar, BOOL& bHasVertBar) const
+{
+	DWORD dwStyle = GetStyle();
+	CScrollBar* pBar = GetScrollBarCtrl(SB_VERT);
+	bHasVertBar = (pBar != NULL && pBar->IsWindowEnabled())
+			|| (dwStyle & WS_VSCROLL) != 0;
+
+	pBar = GetScrollBarCtrl(SB_HORZ);
+	bHasHorzBar = (pBar != NULL && pBar->IsWindowEnabled())
+			|| (dwStyle & WS_HSCROLL) != 0;
+}

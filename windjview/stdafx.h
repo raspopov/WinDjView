@@ -28,10 +28,16 @@
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 #endif
 
+#if (_MSC_VER >= 1300)
 #define WINVER			0x0500
 #define _WIN32_WINNT	0x0400
 #define _WIN32_WINDOWS	0x0410
 #define _WIN32_IE		0x0400
+#endif
+
+#if (_MSC_VER < 1300)
+#pragma warning(disable: 4200 4786)
+#endif
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
 
@@ -48,10 +54,14 @@
 #include <afxcmn.h>			// MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
-#include <afxpriv.h>
+#if (_MSC_VER >= 1300)
 #include <../src/mfc/afximpl.h>
-#include <winspool.h>
+#else
+#include <../src/afximpl.h>
+#endif
 
+#include <afxpriv.h>
+#include <winspool.h>
 #include <afxmt.h>
 
 #include <vector>
@@ -78,3 +88,8 @@ using namespace std;
 #include "libdjvu/DataPool.h"
 #include "libdjvu/DjVuText.h"
 #include "libdjvu/DjVmNav.h"
+
+#if (_MSC_VER < 1300)
+#define DWORD_PTR DWORD
+#define IDC_HAND MAKEINTRESOURCE(32649)
+#endif

@@ -146,8 +146,8 @@ BOOL CSettingsDlg::OnInitDialog()
 	m_sliderBrightness.SetPageSize(5);
 
 	m_sliderBrightness.ClearTics();
-	for (int i = 0; i <= 10; ++i)
-		m_sliderBrightness.SetTic(20*i);
+	for (int j = 0; j <= 10; ++j)
+		m_sliderBrightness.SetTic(20*j);
 
 	m_sliderContrast.SetRange(0, 200);
 	m_sliderContrast.SetPos(m_displaySettings.nContrast + 100);
@@ -155,8 +155,8 @@ BOOL CSettingsDlg::OnInitDialog()
 	m_sliderContrast.SetPageSize(5);
 
 	m_sliderContrast.ClearTics();
-	for (int i = 0; i <= 10; ++i)
-		m_sliderContrast.SetTic(20*i);
+	for (int k = 0; k <= 10; ++k)
+		m_sliderContrast.SetTic(20*k);
 
 	return TRUE;
 }

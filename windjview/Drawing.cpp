@@ -190,11 +190,11 @@ CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip)
 		if (fGamma != 1.0)
 			BuildGammaTable(fGamma, table);
 
-		for (int i = 0; i < nPaletteEntries; ++i)
+		for (int j = 0; j < nPaletteEntries; ++j)
 		{
-			pBMI->bmiColors[i].rgbBlue = table[pBMI->bmiColors[i].rgbBlue];
-			pBMI->bmiColors[i].rgbGreen = table[pBMI->bmiColors[i].rgbGreen];
-			pBMI->bmiColors[i].rgbRed = table[pBMI->bmiColors[i].rgbRed];
+			pBMI->bmiColors[j].rgbBlue = table[pBMI->bmiColors[j].rgbBlue];
+			pBMI->bmiColors[j].rgbGreen = table[pBMI->bmiColors[j].rgbGreen];
+			pBMI->bmiColors[j].rgbRed = table[pBMI->bmiColors[j].rgbRed];
 		}
 	}
 #endif
@@ -527,7 +527,8 @@ CRect FindContentRect(GP<DjVuImage> pImage)
 	}
 
 	// Left margin
-	for (int y = 0; y < szImage.cy; ++y)
+	int y;
+	for (y = 0; y < szImage.cy; ++y)
 	{
 		LPBYTE pPixel = pBits + y*nRowLength;
 		LPBYTE pEndPixel = pPixel + nPixelSize*rcResult.left;
@@ -540,7 +541,7 @@ CRect FindContentRect(GP<DjVuImage> pImage)
 	}
 
 	// Right margin
-	for (int y = 0; y < szImage.cy; ++y)
+	for (y = 0; y < szImage.cy; ++y)
 	{
 		LPBYTE pPixel = pBits + y*nRowLength + nPixelSize*szImage.cx - 1;
 		LPBYTE pEndPixel = pBits + y*nRowLength + nPixelSize*rcResult.right;

@@ -37,6 +37,47 @@ CMyToolBar::~CMyToolBar()
 {
 }
 
+
+BEGIN_MESSAGE_MAP(CMyToolBar, CToolBar)
+	ON_WM_NCPAINT()
+END_MESSAGE_MAP()
+
+
+// CMyToolBar message handlers
+
+void CMyToolBar::SetSizes(SIZE sizeButton, SIZE sizeImage)
+{
+	CToolBar::SetSizes(sizeButton, sizeImage);
+	m_sizeButton = sizeButton;
+	m_sizeImage = sizeImage;
+}
+
+void CMyToolBar::EraseNonClient()
+{
+	// Copied from MFC's CControlBar::EraseNonClient
+
+	// get window DC that is clipped to the non-client area
+	CWindowDC dc(this);
+	CRect rectClient;
+	GetClientRect(rectClient);
+	CRect rectWindow;
+	GetWindowRect(rectWindow);
+	ScreenToClient(rectWindow);
+	rectClient.OffsetRect(-rectWindow.left, -rectWindow.top);
+	dc.ExcludeClipRect(rectClient);
+
+	// draw borders in non-client area
+	rectWindow.OffsetRect(-rectWindow.left, -rectWindow.top);
+	DrawBorders(&dc, rectWindow);
+
+	// erase parts not drawn
+	dc.IntersectClipRect(rectWindow);
+	SendMessage(WM_ERASEBKGND, (WPARAM)dc.m_hDC);
+
+	// draw gripper in non-client area
+	DrawGripper(&dc, rectWindow);
+}
+
 void CMyToolBar::DrawBorders(CDC* pDC, CRect& rect)
 {
 	// MFC fix (original code from CControlBar::DrawBorders)
@@ -118,16 +159,7 @@ void CMyToolBar::DrawBorders(CDC* pDC, CRect& rect)
 		rect.bottom -= afxData.cyBorder2;
 }
 
-
-BEGIN_MESSAGE_MAP(CMyToolBar, CToolBar)
-END_MESSAGE_MAP()
-
-
-// CMyToolBar message handlers
-
-void CMyToolBar::SetSizes(SIZE sizeButton, SIZE sizeImage)
+void CMyToolBar::OnNcPaint()
 {
-	CToolBar::SetSizes(sizeButton, sizeImage);
-	m_sizeButton = sizeButton;
-	m_sizeImage = sizeImage;
+	EraseNonClient();
 }

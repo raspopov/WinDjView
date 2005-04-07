@@ -33,11 +33,14 @@ public:
 
 // Attributes
 public:
-	static const int s_nTabsWidth = 20;
-	static const int s_nTabSize = 20;
-	static const int s_nLeftMargin = 5;
-	static const int s_nTopMargin = 22;
-	static const int s_nMinExpandedWidth = 100;
+	enum
+	{
+		s_nTabsWidth = 20,
+		s_nTabSize = 20,
+		s_nLeftMargin = 5,
+		s_nTopMargin = 22,
+		s_nMinExpandedWidth = 100
+	};
 
 // Operations
 public:

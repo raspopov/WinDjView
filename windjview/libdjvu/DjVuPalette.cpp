@@ -232,7 +232,11 @@ DjVuPalette::compute_palette(int maxcolors, int minboxsize)
   int sum = 0;
   int ncolors = 0;
   GTArray<PData> pdata;
-  for (GPosition p = *hist; p; ++p)
+//< Changed for WinDjView project
+  GPosition p;
+  for (p = *hist; p; ++p)
+//  for (GPosition p = *hist; p; ++p)
+//>
     {
       pdata.touch(ncolors);
       PData &data = pdata[ncolors++];
@@ -316,7 +320,10 @@ DjVuPalette::compute_palette(int maxcolors, int minboxsize)
   ncolors = 0;
   palette.empty();
   palette.resize(0,boxes.size()-1);
-  for (GPosition p=boxes; p; ++p)
+//< Changed for WinDjView project
+  for (p=boxes; p; ++p)
+//  for (GPosition p=boxes; p; ++p)
+//>
     {
       PBox &box = boxes[p];
       // Compute box representative color

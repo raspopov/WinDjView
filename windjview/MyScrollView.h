@@ -38,6 +38,7 @@ protected:
 		const CSize& szPage, const CSize& szLine);
 	void UpdateBarsNoRepaint();
 	void ScrollToPositionNoRepaint(CPoint pt);
+	void CheckScrollBars(BOOL& bHasHorzBar, BOOL& bHasVertBar) const;
 
 protected:
 	// Generated message map functions

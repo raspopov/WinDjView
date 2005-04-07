@@ -612,7 +612,8 @@ void CDjVuView::UpdateView(UpdateType updateType)
 			m_szDisplay = CSize(0, 0);
 			m_pages[0].ptOffset = CPoint(0, 1);
 
-			for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+			int nPage;
+			for (nPage = 0; nPage < m_nPageCount; ++nPage)
 			{
 				Page& page = m_pages[nPage];
 				CSize szPage = page.GetSize(m_nRotate);
@@ -639,7 +640,7 @@ void CDjVuView::UpdateView(UpdateType updateType)
 				m_szDisplay.cx = rcClient.Width();
 
 			// Center pages horizontally
-			for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+			for (nPage = 0; nPage < m_nPageCount; ++nPage)
 			{
 				Page& page = m_pages[nPage];
 
@@ -654,7 +655,7 @@ void CDjVuView::UpdateView(UpdateType updateType)
 			if (m_szDisplay.cy < rcClient.Height())
 			{
 				int nOffset = (rcClient.Height() - m_szDisplay.cy) / 2;
-				for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+				for (nPage = 0; nPage < m_nPageCount; ++nPage)
 				{
 					Page& page = m_pages[nPage];
 					page.rcDisplay.OffsetRect(0, nOffset);
@@ -839,7 +840,7 @@ void CDjVuView::UpdateVisiblePages()
 
 CSize CDjVuView::CalcPageSize(const CSize& szPage, int nDPI)
 {
-	CSize szDisplay(0, 0);
+	CSize szDisplay(1, 1);
 	if (szPage.cx <= 0 || szPage.cy <= 0)
 		return szDisplay;
 
@@ -908,7 +909,7 @@ void CDjVuView::UpdatePageSize(int nPage)
 	if (m_nMode != Fullscreen)
 	{
 		page.ptOffset = CPoint(1, 1);
-		page.rcDisplay.InflateRect(1, 1, 1 + c_nPageShadow, 1 + c_nPageShadow);
+		page.rcDisplay.InflateRect(0, 0, 2 + c_nPageShadow, 2 + c_nPageShadow);
 	}
 
 	CRect rcClient;
@@ -1764,21 +1765,23 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 		bool bInfoLoaded = false;
 		CWaitCursor* pWaitCursor = NULL;
 
+		int nPage;
+
 		if (nCurPage < m_nStartPage)
 		{
 			if (m_nPrevPage >= m_nStartPage)
 			{
-				for (int nPage = m_nStartPage; nPage <= m_nPrevPage; ++nPage)
+				for (nPage = m_nStartPage; nPage <= m_nPrevPage; ++nPage)
 					ClearSelection(nPage);
 
 				SelectTextRange(nCurPage, nSelPos, -1, bInfoLoaded, pWaitCursor);
-				for (int nPage = nCurPage + 1; nPage < m_nStartPage; ++nPage)
+				for (nPage = nCurPage + 1; nPage < m_nStartPage; ++nPage)
 					SelectTextRange(nPage, 0, -1, bInfoLoaded, pWaitCursor);
 				SelectTextRange(m_nStartPage, 0, m_nSelStartPos, bInfoLoaded, pWaitCursor);
 			}
 			else if (m_nPrevPage <= nCurPage)
 			{
-				for (int nPage = m_nPrevPage; nPage <= nCurPage; ++nPage)
+				for (nPage = m_nPrevPage; nPage <= nCurPage; ++nPage)
 					ClearSelection(nPage);
 
 				SelectTextRange(nCurPage, nSelPos, -1, bInfoLoaded, pWaitCursor);
@@ -1788,7 +1791,7 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 				ClearSelection(m_nPrevPage);
 
 				SelectTextRange(nCurPage, nSelPos, -1, bInfoLoaded, pWaitCursor);
-				for (int nPage = nCurPage + 1; nPage <= m_nPrevPage; ++nPage)
+				for (nPage = nCurPage + 1; nPage <= m_nPrevPage; ++nPage)
 					SelectTextRange(nPage, 0, -1, bInfoLoaded, pWaitCursor);
 			}
 		}
@@ -1796,17 +1799,17 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 		{
 			if (m_nPrevPage <= m_nStartPage)
 			{
-				for (int nPage = m_nPrevPage; nPage <= m_nStartPage; ++nPage)
+				for (nPage = m_nPrevPage; nPage <= m_nStartPage; ++nPage)
 					ClearSelection(nPage);
 
 				SelectTextRange(m_nStartPage, m_nSelStartPos, -1, bInfoLoaded, pWaitCursor);
-				for (int nPage = m_nStartPage + 1; nPage < nCurPage; ++nPage)
+				for (nPage = m_nStartPage + 1; nPage < nCurPage; ++nPage)
 					SelectTextRange(nPage, 0, -1, bInfoLoaded, pWaitCursor);
 				SelectTextRange(nCurPage, 0, nSelPos, bInfoLoaded, pWaitCursor);
 			}
 			else if (m_nPrevPage >= nCurPage)
 			{
-				for (int nPage = nCurPage; nPage <= m_nPrevPage; ++nPage)
+				for (nPage = nCurPage; nPage <= m_nPrevPage; ++nPage)
 					ClearSelection(nPage);
 
 				SelectTextRange(nCurPage, 0, nSelPos, bInfoLoaded, pWaitCursor);
@@ -1815,7 +1818,7 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 			{
 				ClearSelection(m_nPrevPage);
 
-				for (int nPage = m_nPrevPage; nPage < nCurPage; ++nPage)
+				for (nPage = m_nPrevPage; nPage < nCurPage; ++nPage)
 					SelectTextRange(nPage, 0, -1, bInfoLoaded, pWaitCursor);
 				SelectTextRange(nCurPage, 0, nSelPos, bInfoLoaded, pWaitCursor);
 			}
@@ -1824,12 +1827,12 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 		{
 			if (m_nPrevPage < m_nStartPage)
 			{
-				for (int nPage = m_nPrevPage; nPage <= m_nStartPage; ++nPage)
+				for (nPage = m_nPrevPage; nPage <= m_nStartPage; ++nPage)
 					ClearSelection(nPage);
 			}
 			else
 			{
-				for (int nPage = m_nStartPage; nPage <= m_nPrevPage; ++nPage)
+				for (nPage = m_nStartPage; nPage <= m_nPrevPage; ++nPage)
 					ClearSelection(nPage);
 			}
 
@@ -2962,9 +2965,9 @@ CString MakePreviewString(const GUTF8String& text, int nStart, int nEnd)
 	CString strAfter = MakeANSIString(text.substr(nEnd, text.length() - nEnd));
 
 	nPos = 0;
-	for (int i = 0; i < 11 && nPos < strAfter.GetLength(); ++i)
+	for (int j = 0; j < 11 && nPos < strAfter.GetLength(); ++j)
 	{
-		if (i > 0)
+		if (j > 0)
 			strPreview += _T(" ");
 
 		while (nPos < strAfter.GetLength() && static_cast<unsigned int>(strAfter[nPos]) > 0x20
@@ -2980,10 +2983,10 @@ CString MakePreviewString(const GUTF8String& text, int nStart, int nEnd)
 	return strPreview;
 }
 
-void CDjVuView::FindSelectionZones(DjVuSelection& list, DjVuTXT* pText, int nStart, int nEnd)
+void CDjVuView::FindSelectionZones(DjVuSelection& sel, DjVuTXT* pText, int nStart, int nEnd)
 {
 	for (GPosition pos = pText->page_zone.children; pos; ++pos)
-		pText->page_zone.children[pos].find_zones(list, nStart, nEnd);
+		pText->page_zone.children[pos].find_zones(sel, nStart, nEnd);
 }
 
 CRect CDjVuView::GetSelectionRect(int nPage, const DjVuSelection& selection) const
@@ -3686,7 +3689,7 @@ void CDjVuView::OnFileExportText()
 	CFileDialog dlg(false, "txt", strFileName, OFN_OVERWRITEPROMPT |
 		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST, szFilter);
 	CString strTitle(_T("Export Text"));
-	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer();
+	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
 
 	if (dlg.DoModal() != IDOK)
 		return;

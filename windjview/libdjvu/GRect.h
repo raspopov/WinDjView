@@ -315,7 +315,9 @@ public:
       corners in the canonical rectangle representation.  Variable #rect# is
       overwritten with the new rectangle coordinates. */
   void unmap(GRect &rect);
-private:
+//< Changed for WinDjView project
+//private:
+//>
   // GRatio
   struct GRatio {
     GRatio ();
@@ -323,6 +325,9 @@ private:
     int p;
     int q;
   };
+//< Changed for WinDjView project
+private:
+//>
   // Data
   GRect rectFrom;
   GRect rectTo;

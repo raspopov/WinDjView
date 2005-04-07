@@ -33,8 +33,10 @@ public:
 
 	void SetSizes(SIZE sizeButton, SIZE sizeImage);
 	virtual void DrawBorders(CDC* pDC, CRect& rect);
+	void EraseNonClient();
 
 protected:
 	DECLARE_MESSAGE_MAP()
+	afx_msg void OnNcPaint();
 };
 

@@ -19,7 +19,6 @@
 // $Id$
 
 #include "stdafx.h"
-#include "Parser.h"
 #include "AppSettings.h"
 
 #ifdef _DEBUG

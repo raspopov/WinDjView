@@ -250,11 +250,19 @@ GRectMapper::GRatio::GRatio(int p, int q)
 }
 
 
+//< Changed for WinDjView project
+#ifdef _MSC_VER
+#define llint_t __int64
+#else
+//>
 #ifdef HAVE_LONG_LONG_INT
 #define llint_t long long int
 #else
 #define llint_t long int
 #endif
+//< Changed for WinDjView project
+#endif
+//>
 
 inline int 
 operator*(int n, GRectMapper::GRatio r )

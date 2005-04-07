@@ -154,7 +154,7 @@ BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 void CChildFrame::CreateNavPanes()
 {
 	CNavPaneWnd* pNavPane = GetNavPane();
-	CDjVuDoc* pDoc = GetActiveDocument();
+	CDjVuDoc* pDoc = (CDjVuDoc*)GetActiveDocument();
 
 	if (pDoc->GetBookmarks() != NULL)
 	{
@@ -264,7 +264,7 @@ void CChildFrame::OnUpdateFrameMenu(
 	}
 }
 
-CDjVuDoc* CChildFrame::GetActiveDocument()
+CDocument* CChildFrame::GetActiveDocument()
 {
 	CDjVuView* pView = GetDjVuView();
 	return (pView != NULL ? pView->GetDocument() : NULL);
@@ -293,7 +293,7 @@ CSearchResultsView* CChildFrame::GetResultsView()
 
 	if (m_pResultsView == NULL)
 	{
-		CDjVuDoc* pDoc = GetActiveDocument();
+		CDjVuDoc* pDoc = (CDjVuDoc*)GetActiveDocument();
 
 		m_pResultsView = new CSearchResultsView();
 		m_pResultsView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD

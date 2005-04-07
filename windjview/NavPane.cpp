@@ -172,7 +172,7 @@ void CNavPaneWnd::OnPaint()
 		CDC dcSrc;
 		dcSrc.CreateCompatibleDC(&dc);
 		HGDIOBJ hOldBmpSrc = dcSrc.SelectObject(hBmpClose);
-		dc.TransparentBlt(ptOffset.x, ptOffset.y, 10, 10, &dcSrc,
+		::TransparentBlt(dc.m_hDC, ptOffset.x, ptOffset.y, 10, 10, dcSrc.m_hDC,
 			0, 0, 10, 10, RGB(192, 192, 192));
 		dcSrc.SelectObject(hOldBmpSrc);
 	}

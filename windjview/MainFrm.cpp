@@ -511,10 +511,10 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 	// From CFrameWnd::OnDDEExecute
 
 	// unpack the DDE message
-	UINT_PTR unused;
+	unsigned int unused;
 	HGLOBAL hData;
 	//IA64: Assume DDE LPARAMs are still 32-bit
-	VERIFY(UnpackDDElParam(WM_DDE_EXECUTE, lParam, &unused, (UINT_PTR*)&hData));
+	VERIFY(UnpackDDElParam(WM_DDE_EXECUTE, lParam, &unused, (unsigned int*)&hData));
 
 	// get the command string
 	TCHAR szCommand[_MAX_PATH * 2];
@@ -541,14 +541,13 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 	// don't execute the command when the window is disabled
 	if (!IsWindowEnabled())
 	{
-		TRACE(traceAppMsg, 0, _T("Warning: DDE command '%s' ignored because window is disabled.\n"),
-			szCommand);
+		TRACE(_T("Warning: DDE command '%s' ignored because window is disabled.\n"), szCommand);
 		return 0;
 	}
 
 	// execute the command
 	if (!AfxGetApp()->OnDDECommand(szCommand))
-		TRACE(traceAppMsg, 0, _T("Error: failed to execute DDE command '%s'.\n"), szCommand);
+		TRACE(_T("Error: failed to execute DDE command '%s'.\n"), szCommand);
 
 	return 0L;
 }
@@ -593,7 +592,7 @@ void CMainFrame::HilightStatusMessage(LPCTSTR pszMessage)
 
 void CMainFrame::OnGoToHomepage()
 {
-	::ShellExecute(NULL, "open", "http://www.starpath.com/elibra",
+	::ShellExecute(NULL, "open", "http://www.elibrabooks.com",
 		NULL, NULL, SW_SHOWNORMAL);
 }
 

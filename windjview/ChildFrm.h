@@ -42,7 +42,7 @@ public:
 	virtual void ActivateFrame(int nCmdShow = -1);
 	CDjVuView* GetDjVuView();
 	CNavPaneWnd* GetNavPane();
-	virtual CDjVuDoc* GetActiveDocument();
+	virtual CDocument* GetActiveDocument();
 	void CreateNavPanes();
 
 	CThumbnailsView* GetThumbnailsView() { return m_pThumbnailsView; }

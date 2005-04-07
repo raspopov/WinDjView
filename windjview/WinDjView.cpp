@@ -298,7 +298,7 @@ void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 		::ShellExecute(NULL, "open", "http://windjview.sourceforge.net/",
 			NULL, NULL, SW_SHOWNORMAL);
 #else
-		::ShellExecute(NULL, "open", "http://www.starpath.com/elibra",
+		::ShellExecute(NULL, "open", "http://www.elibrabooks.com",
 			NULL, NULL, SW_SHOWNORMAL);
 #endif
 		return;
@@ -446,8 +446,7 @@ bool SetRegKey(LPCTSTR lpszKey, LPCTSTR lpszValue)
 	if (::RegSetValue(HKEY_CLASSES_ROOT, lpszKey, REG_SZ,
 		lpszValue, lstrlen(lpszValue) * sizeof(TCHAR)) != ERROR_SUCCESS)
 	{
-		TRACE(traceAppMsg, 0, _T("Warning: registration database update failed for key '%s'.\n"),
-			lpszKey);
+		TRACE(_T("Warning: registration database update failed for key '%s'.\n"), lpszKey);
 		return false;
 	}
 

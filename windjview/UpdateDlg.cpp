@@ -116,7 +116,10 @@ DWORD WINAPI CUpdateDlg::UpdateThreadProc(LPVOID pvData)
 
 	if (bOk)
 	{
-		if (strVersion.Trim() == CURRENT_VERSION)
+		strVersion.TrimLeft();
+		strVersion.TrimRight();
+
+		if (strVersion == CURRENT_VERSION)
 		{
 			AfxMessageBox(_T("No updates are available at this time. Please check again later."),
 				MB_ICONINFORMATION | MB_OK);
