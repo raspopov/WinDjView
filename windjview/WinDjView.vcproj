@@ -340,31 +340,19 @@
 				RelativePath=".\res\close.bmp">
 			</File>
 			<File
-				RelativePath=".\res\close.ico">
-			</File>
-			<File
 				RelativePath=".\res\DjVuDoc.ico">
 			</File>
 			<File
 				RelativePath=".\res\drag.cur">
 			</File>
 			<File
-				RelativePath=".\Elibra\ElibraDoc.ico">
-			</File>
-			<File
 				RelativePath=".\res\hand.cur">
-			</File>
-			<File
-				RelativePath=".\res\icon1.ico">
 			</File>
 			<File
 				RelativePath=".\res\link.cur">
 			</File>
 			<File
 				RelativePath=".\res\Toolbar.bmp">
-			</File>
-			<File
-				RelativePath=".\Elibra\ToolbarLink.bmp">
 			</File>
 			<File
 				RelativePath=".\res\WinDjView.ico">
