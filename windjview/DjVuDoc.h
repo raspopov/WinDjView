@@ -116,7 +116,6 @@ protected:
 // Generated message map functions
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-	virtual void SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU = TRUE);
 	DECLARE_MESSAGE_MAP()
 };
 

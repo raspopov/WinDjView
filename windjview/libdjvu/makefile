@@ -1,18 +1,42 @@
 CPP = cl
 GENLIB = lib
 DEFOPT = /D
+OUTOTHER =
 
+#MAKEDLL = 1
 
-!IFNDEF DEBUG
-INTDIR = .\Objs
-OUT = ..\Release\libdjvu.lib
-OPTS = /nologo /MT /W3 /GX /Ox /Ob2 /Ot /Og /G6
-OUTOPT = /nologo /nodefaultlib:"msvcrt.lib" /out:
-!ELSE
+!IFDEF DEBUG
 INTDIR = .\Objs.dbg
-OUT = ..\Debug\libdjvud.lib
 OPTS = /nologo /MTd /W3 /GX /Ox /Ob2 /Ot /Og /G6
+!ELSE
+INTDIR = .\Objs
+OPTS = /nologo /MT /W3 /GX /Ox /Ob2 /Ot /Og /G6
+!ENDIF
+
+!IFDEF MAKEDLL
+
+GENLIB = cl
+OUTOPT = /nologo /LD /Fe
+#OUTOTHER = libcpmt.lib /link /map:libdjvu.map
+
+!IFDEF DEBUG
+OUT = ..\Debug\libdjvud.dll
+OUTOTHER = libcpmt.lib /link /def:libdjvud.def
+!ELSE
+OUT = ..\Release\libdjvu.dll
+OUTOTHER = libcpmt.lib /link /def:libdjvu.def
+!ENDIF
+
+!ELSE
+
+!IFDEF DEBUG
+OUT = ..\Debug\libdjvud.lib
 OUTOPT = /nologo /nodefaultlib:"msvcrtd.lib" /out:
+!ELSE
+OUT = ..\Release\libdjvu.lib
+OUTOPT = /nologo /nodefaultlib:"msvcrt.lib" /out:
+!ENDIF
+
 !ENDIF
 
 COMPOPT = /c /Fo"$(INTDIR)\\" /D"HAS_WCTYPE=1" /D"BUILD_LIB" /D"DJVU_STATIC_LIBRARY" \
@@ -82,7 +106,7 @@ OBJS = "$(INTDIR)\Arrays.obj" \
        "$(INTDIR)\ZPCodec.obj"
 
 $(OUT): "$(INTDIR)" $(OBJS)
-	@$(GENLIB) $(OUTOPT)$(OUT) $(OBJS)
+	@$(GENLIB) $(OUTOPT)$(OUT) $(OBJS) $(OUTOTHER)
 
 .cpp{$(INTDIR)}.obj::
 	@$(CPP) $(COMPOPT) $(OPTS) $<

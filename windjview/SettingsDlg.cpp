@@ -55,7 +55,6 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_FULLSCREEN_CLICKS, m_bFullscreenClicks);
 	DDX_Control(pDX, IDC_STATIC_ABOUT, m_ctlAbout);
 
-#ifndef ELIBRA_READER
 	DDX_Check(pDX, IDC_ADJUST_DISPLAY, m_bAdjustDisplay);
 	DDX_Control(pDX, IDC_BRIGHTNESS, m_sliderBrightness);
 	DDX_Control(pDX, IDC_CONTRAST, m_sliderContrast);
@@ -76,7 +75,6 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	GetDlgItem(IDC_BRIGHTNESS_TEXT)->EnableWindow(m_bAdjustDisplay);
 	GetDlgItem(IDC_CONTRAST_TEXT)->EnableWindow(m_bAdjustDisplay);
 	GetDlgItem(IDC_GAMMA_TEXT)->EnableWindow(m_bAdjustDisplay);
-#endif
 }
 
 

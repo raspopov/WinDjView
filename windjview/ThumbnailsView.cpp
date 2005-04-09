@@ -86,6 +86,8 @@ CThumbnailsView::CThumbnailsView()
 
 CThumbnailsView::~CThumbnailsView()
 {
+	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+		m_pages[nPage].DeleteBitmap();
 }
 
 // CThumbnailsView drawing
@@ -287,9 +289,7 @@ void CThumbnailsView::OnInitialUpdate()
 	m_nPageCount = GetDocument()->GetPageCount();
 	m_pages.resize(m_nPageCount);
 
-#ifndef ELIBRA_READER
 	m_displaySetting = CAppSettings::displaySettings;
-#endif
 
 	m_pThread = new CThumbnailsThread(GetDocument(), this);
 	m_pThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
@@ -480,7 +480,6 @@ void CThumbnailsView::OnRButtonDown(UINT nFlags, CPoint point)
 
 void CThumbnailsView::OnContextMenu(CWnd* pWnd, CPoint point)
 {
-#ifndef ELIBRA_READER
 /*	if (point.x < 0 || point.y < 0)
 		point = CPoint(0, 0);
 
@@ -509,7 +508,6 @@ void CThumbnailsView::OnContextMenu(CWnd* pWnd, CPoint point)
 	pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON, point.x, point.y,
 		GetMainFrame());
 */
-#endif
 }
 
 BOOL CThumbnailsView::OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll)
@@ -887,7 +885,6 @@ void CThumbnailsView::StopDecoding()
 
 void CThumbnailsView::OnSettingsChanged()
 {
-#ifndef ELIBRA_READER
 	if (m_displaySetting != CAppSettings::displaySettings)
 	{
 		m_displaySetting = CAppSettings::displaySettings;
@@ -898,7 +895,6 @@ void CThumbnailsView::OnSettingsChanged()
 			InvalidatePage(nPage);
 		}
 	}
-#endif
 
 	UpdateVisiblePages();
 }

@@ -98,7 +98,6 @@ CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip)
 			++pNextBit;
 	}
 
-#ifndef ELIBRA_READER
 	int nBrightness = CAppSettings::displaySettings.GetBrightness();
 	int nContrast = CAppSettings::displaySettings.GetContrast();
 	double fGamma = CAppSettings::displaySettings.GetGamma();
@@ -130,7 +129,6 @@ CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip)
 				++pNextBit;
 		}
 	}
-#endif
 
 	return pBitmap;
 }
@@ -172,7 +170,6 @@ CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip)
 		color -= decrement;
 	}
 
-#ifndef ELIBRA_READER
 	int nBrightness = CAppSettings::displaySettings.GetBrightness();
 	int nContrast = CAppSettings::displaySettings.GetContrast();
 	double fGamma = CAppSettings::displaySettings.GetGamma();
@@ -197,7 +194,6 @@ CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip)
 			pBMI->bmiColors[j].rgbRed = table[pBMI->bmiColors[j].rgbRed];
 		}
 	}
-#endif
 
 	CDIB* pBitmap = CDIB::CreateDIB(pBMI);
 	free(pBMI);

@@ -93,6 +93,14 @@ DjVuInfo::DjVuInfo()
 {
 }
 
+//< Changed for WinDjView project
+GP<DjVuInfo>
+DjVuInfo::create(void)
+{
+	return new DjVuInfo();
+}
+//>
+
 void 
 DjVuInfo::decode(ByteStream &bs)
 {

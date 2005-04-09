@@ -43,10 +43,6 @@ public:
 	CFindDlg* m_pFindDlg;
 	CFullscreenWnd* m_pFullscreenWnd;
 
-#ifdef ELIBRA_READER
-	CMyBitmapButton m_btnLink;
-#endif
-
 // Operations
 public:
 	void HilightStatusMessage(LPCTSTR pszMessage);
@@ -111,8 +107,6 @@ protected:
 	afx_msg LRESULT OnDDEExecute(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnViewFind();
 	afx_msg void OnUpdateViewFind(CCmdUI *pCmdUI);
-	afx_msg void OnGoToHomepage();
-	afx_msg void OnHelpContents();
 	afx_msg void OnUpdateWindowList(CCmdUI *pCmdUI);
 	afx_msg void OnActivateWindow(UINT nID);
 	afx_msg void OnViewBack();

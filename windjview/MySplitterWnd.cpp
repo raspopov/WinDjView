@@ -22,12 +22,7 @@
 #include "MySplitterWnd.h"
 #include "NavPane.h"
 #include "AppSettings.h"
-
-#ifndef ELIBRA_READER
 #include "resource.h"
-#else
-#include "Elibra.h"
-#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

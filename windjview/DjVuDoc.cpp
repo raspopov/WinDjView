@@ -384,27 +384,6 @@ PageInfo CDjVuDoc::ReadPageInfo(int nPage)
 	return pageInfo;
 }
 
-void CDjVuDoc::SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU)
-{
-	CDocument::SetPathName(lpszPathName, bAddToMRU);
-
-#ifdef ELIBRA_READER
-	TCHAR szTitle[_MAX_FNAME];
-	if (AfxGetFileTitle(GetPathName(), szTitle, _MAX_FNAME) == 0)
-	{
-		// Strip extension from the document name
-		TCHAR* pPos = _tcsrchr(szTitle, '\\');
-		TCHAR* pPos2 = _tcsrchr(szTitle, '/');
-
-		TCHAR* pDotPos = _tcsrchr(szTitle, '.');
-		if (pDotPos != NULL && pDotPos > pPos && pDotPos > pPos2)
-			*pDotPos = '\0';
-
-		SetTitle(szTitle);
-	}
-#endif
-}
-
 CDjVuView* CDjVuDoc::GetDjVuView()
 {
 	POSITION pos = GetFirstViewPosition();

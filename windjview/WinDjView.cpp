@@ -34,7 +34,7 @@
 #define new DEBUG_NEW
 #endif
 
-CString CURRENT_VERSION = _T("0.3.3");
+CString CURRENT_VERSION = _T("0.3.4");
 
 
 const TCHAR* s_pszDisplaySettings = _T("Display");
@@ -119,16 +119,6 @@ BOOL CDjViewApp::InitInstance()
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views
 	CMultiDocTemplate* pDocTemplate;
-
-#ifdef ELIBRA_READER
-	pDocTemplate = new CMultiDocTemplate(IDR_ElibTYPE,
-		RUNTIME_CLASS(CDjVuDoc),
-		RUNTIME_CLASS(CChildFrame), // custom MDI child frame
-		RUNTIME_CLASS(CDjVuView));
-	if (!pDocTemplate)
-		return FALSE;
-	AddDocTemplate(pDocTemplate);
-#endif
 
 	pDocTemplate = new CMultiDocTemplate(IDR_DjVuTYPE,
 		RUNTIME_CLASS(CDjVuDoc),
@@ -216,9 +206,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_STATIC_LINK, m_weblink);
-#ifndef ELIBRA_READER
 	DDX_Control(pDX, IDC_STATIC_LIB_LINK, m_weblinkLibrary);
-#endif
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
@@ -239,10 +227,7 @@ HBRUSH CAboutDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	HBRUSH brush = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 
 	if (pWnd->GetSafeHwnd() == m_weblink.m_hWnd
-#ifndef ELIBRA_READER
-			|| pWnd->GetSafeHwnd() == m_weblinkLibrary.m_hWnd
-#endif
-		)
+			|| pWnd->GetSafeHwnd() == m_weblinkLibrary.m_hWnd)
 	{
 		pDC->SetTextColor(RGB(0, 0, 204));
 	}
@@ -272,7 +257,6 @@ BOOL CAboutDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		return true;
 	}
 
-#ifndef ELIBRA_READER
 	CRect rcWeblinkLibrary;
 	m_weblinkLibrary.GetWindowRect(rcWeblinkLibrary);
 
@@ -281,7 +265,6 @@ BOOL CAboutDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		::SetCursor(hCursor);
 		return true;
 	}
-#endif
 
 	return CDialog::OnSetCursor(pWnd, nHitTest, message);
 }
@@ -294,17 +277,11 @@ void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 
 	if (rcWeblink.PtInRect(point))
 	{
-#ifndef ELIBRA_READER
 		::ShellExecute(NULL, "open", "http://windjview.sourceforge.net/",
 			NULL, NULL, SW_SHOWNORMAL);
-#else
-		::ShellExecute(NULL, "open", "http://www.elibrabooks.com",
-			NULL, NULL, SW_SHOWNORMAL);
-#endif
 		return;
 	}
 
-#ifndef ELIBRA_READER
 	CRect rcWeblinkLibrary;
 	m_weblinkLibrary.GetWindowRect(rcWeblinkLibrary);
 	ScreenToClient(rcWeblinkLibrary);
@@ -315,7 +292,6 @@ void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 			NULL, NULL, SW_SHOWNORMAL);
 		return;
 	}
-#endif
 
 	CDialog::OnLButtonDown(nFlags, point);
 }
@@ -333,10 +309,7 @@ BOOL CAboutDlg::OnInitDialog()
 	m_font.CreateFontIndirect(&lf);
 
 	m_weblink.SetFont(&m_font);
-
-#ifndef ELIBRA_READER
 	m_weblinkLibrary.SetFont(&m_font);
-#endif
 
 	return true;
 }

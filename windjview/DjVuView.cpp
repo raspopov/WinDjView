@@ -99,7 +99,6 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullscreen)
 	ON_WM_MOUSEACTIVATE()
 	ON_WM_LBUTTONDBLCLK()
-#ifndef ELIBRA_READER
 	ON_COMMAND(ID_PAGE_INFORMATION, OnPageInformation)
 	ON_COMMAND(ID_EXPORT_PAGE, OnExportPage)
 	ON_COMMAND_RANGE(ID_MODE_DRAG, ID_MODE_SELECT, OnChangeMode)
@@ -110,7 +109,6 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_UPDATE_COMMAND_UI(ID_FILE_EXPORT_TEXT, OnUpdateFileExportText)
 	ON_COMMAND_RANGE(ID_DISPLAY_COLOR, ID_DISPLAY_FOREGROUND, OnViewDisplay)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_DISPLAY_COLOR, ID_DISPLAY_FOREGROUND, OnUpdateViewDisplay)
-#endif
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -127,6 +125,8 @@ CDjVuView::CDjVuView()
 
 CDjVuView::~CDjVuView()
 {
+	delete m_pOffscreenBitmap;
+	DeleteBitmaps();
 }
 
 BOOL CDjVuView::PreCreateWindow(CREATESTRUCT& cs)
@@ -434,9 +434,7 @@ void CDjVuView::OnInitialUpdate()
 			m_fZoom = 100.0;
 
 		m_nLayout = CAppSettings::nDefaultLayout;
-#ifndef ELIBRA_READER
 		m_nMode = CAppSettings::nDefaultMode;
-#endif
 
 		m_nPage = 0;
 		Page& page = m_pages[0];
@@ -445,9 +443,7 @@ void CDjVuView::OnInitialUpdate()
 			ReadZoomSettings(page.pAnt);
 	}
 
-#ifndef ELIBRA_READER
 	m_displaySettings = CAppSettings::displaySettings;
-#endif
 
 	m_pRenderThread = new CRenderThread(GetDocument(), this);
 
@@ -1982,7 +1978,6 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 	if (m_nMode == Fullscreen && CAppSettings::bFullscreenClicks)
 		return;
 
-#ifndef ELIBRA_READER
 	if (point.x < 0 || point.y < 0)
 		point = CPoint(0, 0);
 
@@ -2010,7 +2005,6 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 	ClientToScreen(&point);
 	pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON, point.x, point.y,
 		GetMainFrame());
-#endif
 }
 
 void CDjVuView::OnPageInformation()
@@ -3385,11 +3379,7 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory
 	TCHAR szDir[_MAX_DIR + 1] = {0};
 	TCHAR szExt[_MAX_EXT + 1] = {0};
 	_tsplitpath(strPathName, NULL, NULL, NULL, szExt);
-	if (_tcsicmp(szExt, _T(".djvu")) == 0 || _tcsicmp(szExt, _T(".djv")) == 0
-#ifdef ELIBRA_READER
-			|| _tcsicmp(szExt, _T(".elib")) == 0
-#endif
-		)
+	if (_tcsicmp(szExt, _T(".djvu")) == 0 || _tcsicmp(szExt, _T(".djv")) == 0)
 	{
 		// Check if the link leads to a local DjVu file
 
@@ -3715,7 +3705,6 @@ void CDjVuView::OnUpdateFileExportText(CCmdUI* pCmdUI)
 
 void CDjVuView::OnSettingsChanged()
 {
-#ifndef ELIBRA_READER
 	if (m_displaySettings != CAppSettings::displaySettings)
 	{
 		m_displaySettings = CAppSettings::displaySettings;
@@ -3727,7 +3716,6 @@ void CDjVuView::OnSettingsChanged()
 		else if (m_nLayout == Continuous)
 			UpdateVisiblePages();
 	}
-#endif
 }
 
 void CDjVuView::OnViewDisplay(UINT nID)
@@ -3791,7 +3779,7 @@ void CDjVuView::GoToSelection(int nPage, int nStartPos, int nEndPos, int nLinkPa
 {
 	Page& page = m_pages[nPage];
 	bool bInfoLoaded;
-	CWaitCursor* pWaitCursor;
+	CWaitCursor* pWaitCursor = NULL;
 
 	ClearSelection();
 	SelectTextRange(nPage, nStartPos, nEndPos, bInfoLoaded, pWaitCursor);

@@ -2,6 +2,11 @@ WinDjView changes history
 Copyright (C) 2004-2005 Andrew Zhezherun
 ----------------------------------------
 
+Changes in version 0.3.4:
+* Fixed crash when using Search Results.
+* Fixed wrong page bounds calculation in single page layout.
++ WinDjView can now be compiled with VC6.0.
+
 Changes in version 0.3.3:
 + Improved keyboard navigation in fullscreen mode.
 + Show all links works in fullscreen mode.

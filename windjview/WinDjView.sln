@@ -9,14 +9,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
-		Elibra - Release = Elibra - Release
 		Release = Release
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
 		{74F36F86-9AC4-4322-BCDA-9408F6E5D9A5}.Debug.ActiveCfg = Debug|Win32
 		{74F36F86-9AC4-4322-BCDA-9408F6E5D9A5}.Debug.Build.0 = Debug|Win32
-		{74F36F86-9AC4-4322-BCDA-9408F6E5D9A5}.Elibra - Release.ActiveCfg = Elibra - Release|Win32
-		{74F36F86-9AC4-4322-BCDA-9408F6E5D9A5}.Elibra - Release.Build.0 = Elibra - Release|Win32
 		{74F36F86-9AC4-4322-BCDA-9408F6E5D9A5}.Release.ActiveCfg = Release|Win32
 		{74F36F86-9AC4-4322-BCDA-9408F6E5D9A5}.Release.Build.0 = Release|Win32
 	EndGlobalSection

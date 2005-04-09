@@ -132,7 +132,10 @@ public:
   /** Creates an empty DjVuInfo object.
       The #width# and #height# fields are set to zero.
       All other fields are initialized with suitable default values. */
-  static GP<DjVuInfo> create(void) {return new DjVuInfo();}
+//< Changed for WinDjView project
+  static GP<DjVuInfo> create(void);
+//  static GP<DjVuInfo> create(void) {return new DjVuInfo();}
+//>
 
   /** Decodes the DjVu #"INFO"# chunk.  This function reads binary data from
       ByteStream #bs# and populates the fields of this DjVuInfo object.  It is

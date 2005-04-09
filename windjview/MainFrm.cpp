@@ -88,22 +88,15 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_WM_SETFOCUS()
 	ON_WM_DESTROY()
 	ON_MESSAGE(WM_SHOWALLLINKS, OnShowAllLinks)
-#ifdef ELIBRA_READER
-	ON_COMMAND(ID_HELP_CONTENTS, OnHelpContents)
-	ON_COMMAND(IDC_STATIC_LINK, OnGoToHomepage)
-#endif
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
 {
-	ID_SEPARATOR
-#ifndef ELIBRA_READER
-	,
+	ID_SEPARATOR,
 	ID_INDICATOR_ADJUST,
 	ID_INDICATOR_MODE,
 	ID_INDICATOR_PAGE,
 	ID_INDICATOR_SIZE
-#endif
 };
 
 
@@ -120,7 +113,7 @@ CMainFrame::~CMainFrame()
 	if (m_pFindDlg != NULL)
 	{
 		m_pFindDlg->DestroyWindow();
-		m_pFindDlg = NULL;
+		delete m_pFindDlg;
 	}
 }
 
@@ -189,24 +182,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_cboZoom.GetEditCtrl().SetPercent();
 
 	hHook = ::SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, NULL, ::GetCurrentThreadId());
-
-#ifdef ELIBRA_READER
-	TBBUTTON btn;
-	btn.fsStyle = TBSTYLE_SEP;
-	m_wndToolBar.GetToolBarCtrl().AddButtons(1, &btn);
-
-	int nButtonLink = m_wndToolBar.GetToolBarCtrl().GetButtonCount() - 1;
-	m_wndToolBar.SetButtonInfo(nButtonLink, IDC_STATIC_LINK, TBBS_SEPARATOR, 84);
-
-	CRect rcButton;
-	m_wndToolBar.GetItemRect(nButtonLink, rcButton);
-	rcButton.DeflateRect(8, 0, 4, 0);
-	rcButton.bottom = rcButton.top + 22;
-
-	m_btnLink.Create(_T(""), WS_CHILD | WS_VISIBLE | BS_OWNERDRAW | BS_PUSHBUTTON,
-		rcButton, &m_wndToolBar, IDC_STATIC_LINK);
-	m_btnLink.LoadBitmaps(IDB_TOOLBAR_LINK);
-#endif
 
 	return 0;
 }
@@ -588,27 +563,6 @@ void CMainFrame::HilightStatusMessage(LPCTSTR pszMessage)
 	CAppSettings::bStatusBar = true;
 
 	m_wndStatusBar.SetHilightMessage(pszMessage);
-}
-
-void CMainFrame::OnGoToHomepage()
-{
-	::ShellExecute(NULL, "open", "http://www.elibrabooks.com",
-		NULL, NULL, SW_SHOWNORMAL);
-}
-
-void CMainFrame::OnHelpContents()
-{
-	CString strPathName;
-	GetModuleFileName(theApp.m_hInstance, strPathName.GetBuffer(_MAX_PATH), _MAX_PATH);
-	strPathName.ReleaseBuffer();
-
-	TCHAR szDrive[_MAX_DRIVE + 1] = {0};
-	TCHAR szDir[_MAX_DIR + 1] = {0};
-	TCHAR szExt[_MAX_EXT + 1] = {0};
-	_tsplitpath(strPathName, szDrive, szDir, NULL, NULL);
-
-	strPathName = CString(szDrive) + CString(szDir) + "elibra-help.chm";
-	::ShellExecute(NULL, "open", strPathName, NULL, NULL, SW_SHOWNORMAL);
 }
 
 void CMainFrame::OnUpdateWindowList(CCmdUI* pCmdUI)
