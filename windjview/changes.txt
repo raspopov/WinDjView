@@ -2,14 +2,15 @@ WinDjView changes history
 Copyright (C) 2004-2005 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 0.3.4:
+Changes in version 0.3.4 (2005-05-02):
++ Added "Go To Page" dialog.
++ Added licensing info to About dialog.
 * Fixed crash when using Search Results.
 * Fixed wrong page bounds calculation in single page layout.
 * Fixed text searching in single page layout.
-+ Added "Go To Page" dialog.
-+ WinDjView can now be compiled with VC6.0.
+! WinDjView can now be compiled with VC6.0.
 
-Changes in version 0.3.3:
+Changes in version 0.3.3 (2005-03-31):
 + Improved keyboard navigation in fullscreen mode.
 + Show all links works in fullscreen mode.
 + Added zoom in/out in fullscreen mode.
@@ -20,7 +21,7 @@ Changes in version 0.3.3:
 * Fixed window positioning when task bar is always visible.
 * Fixed wrong resolution of first page in single page layout.
 
-Changes in version 0.3.2:
+Changes in version 0.3.2 (2005-03-19):
 + Added "Find All" button which displays search results in a list.
 + Added fullscreen mode.
 + Added status bar indicators for page count and current page size.
@@ -29,7 +30,7 @@ Changes in version 0.3.2:
 + Shift key shows all hyperlinks on a page.
 * Fixed some issues with single-page layout.
 
-Changes in version 0.3.1:
+Changes in version 0.3.1 (2005-03-08):
 + Added bookmarks.
 + Added text selection, copying to clipboard and export to file.
 + Added zoom in/out toolbar buttons.
@@ -38,7 +39,7 @@ Changes in version 0.3.1:
 + Window title specifies file name first.
 * Thumbnails fixes and improvements.
 
-Changes in version 0.3:
+Changes in version 0.3 (2005-02-19):
 + Added text searching.
 + Added hyperlink support.
 + Added thumbnails.
@@ -50,10 +51,10 @@ Changes in version 0.3:
 * Fixed combo boxes on the toolbar in Windows 2000.
 * Fixed network printer detection in Windows 2000.
 
-Changes in version 0.2.3:
+Changes in version 0.2.3 (2004-10-30):
 * Fixed opening read-only files (i.e. off a CDROM).
 
-Changes in version 0.2.2:
+Changes in version 0.2.2 (2004-10-28):
 + Additional bitmaps are cached (+/- one screen) for more seamless scrolling
   in continuous mode.
 + Pages can be exported to .bmp files.
@@ -63,13 +64,13 @@ Changes in version 0.2.2:
 * Fixed horizontal centering in continuous view when switching from
   Actual Size mode to Zoom 100%.
 
-Changes in version 0.2.1:
-- Fixed several bugs in continuous mode.
+Changes in version 0.2.1 (2004-09-19):
+* Fixed several bugs in continuous mode.
 
-Changes in version 0.2:
+Changes in version 0.2 (2004-09-12):
 + Added continuous page display mode.
 + Improved speed; next/previous pages should display faster.
 - Removed non-functional "Print Preview" command
   (may be added in future releases).
 
-First public release: version 0.1
+First public release: version 0.1 (2004-07-22).

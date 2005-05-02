@@ -63,3 +63,5 @@ bool CAppSettings::bTwoPages = false;
 
 CString CAppSettings::strPrinter;
 WORD CAppSettings::nPaper = 0;
+
+CString CAppSettings::strVersion;

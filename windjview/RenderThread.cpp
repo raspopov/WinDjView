@@ -200,6 +200,8 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const GRect& rect, int nDispla
 		pBitmap = RenderPixmap(*pGPixmap);
 	else if (pGBitmap != NULL)
 		pBitmap = RenderBitmap(*pGBitmap);
+	else
+		pBitmap = RenderEmpty(CSize(rect.width(), rect.height()));
 
 	return pBitmap;
 }

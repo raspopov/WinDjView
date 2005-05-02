@@ -32,6 +32,7 @@
 #define IDC_CURSOR_HAND                 146
 #define IDD_UPDATE                      147
 #define IDD_GOTO_PAGE                   148
+#define IDB_DONATE                      148
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -85,6 +86,8 @@
 #define IDC_SEARCH_STATUS               1050
 #define IDC_PAGE                        1051
 #define IDC_PAGE_COUNT                  1052
+#define IDC_BUTTON1                     1053
+#define IDC_DONATE                      1053
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_ZOOM_50                      32777
@@ -148,9 +151,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        148
+#define _APS_NEXT_RESOURCE_VALUE        149
 #define _APS_NEXT_COMMAND_VALUE         32860
-#define _APS_NEXT_CONTROL_VALUE         1053
+#define _APS_NEXT_CONTROL_VALUE         1054
 #define _APS_NEXT_SYMED_VALUE           109
 #endif
 #endif

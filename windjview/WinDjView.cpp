@@ -61,6 +61,7 @@ const TCHAR* s_pszGlobalSettings = _T("Settings");
 const TCHAR* s_pszRestoreAssocs = _T("assocs");
 const TCHAR* s_pszGenAllThumbnails = _T("gen-all-thumbs");
 const TCHAR* s_pszFullscreenClicks = _T("fullscreen-clicks");
+const TCHAR* s_pszVersion = _T("version");
 
 const TCHAR* s_pszPrintSettings = _T("Print");
 const TCHAR* s_pszMarginLeft = _T("m-left");
@@ -158,6 +159,10 @@ BOOL CDjViewApp::InitInstance()
 	// The main window has been initialized, so show and update it
 	pMainFrame->ShowWindow(m_nCmdShow);
 	pMainFrame->UpdateWindow();
+
+	if (CAppSettings::strVersion != CURRENT_VERSION)
+		OnAppAbout();
+
 	return TRUE;
 }
 
@@ -181,6 +186,7 @@ public:
 	enum { IDD = IDD_ABOUTBOX };
 	CStatic m_weblinkLibrary;
 	CStatic m_weblink;
+	CMyBitmapButton m_btnDonate;
 
 // Overrides
 protected:
@@ -195,6 +201,7 @@ protected:
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnDonate();
 	DECLARE_MESSAGE_MAP()
 };
 
@@ -207,12 +214,14 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_STATIC_LINK, m_weblink);
 	DDX_Control(pDX, IDC_STATIC_LIB_LINK, m_weblinkLibrary);
+	DDX_Control(pDX, IDC_DONATE, m_btnDonate);
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	ON_WM_CTLCOLOR()
 	ON_WM_SETCURSOR()
 	ON_WM_LBUTTONDOWN()
+	ON_BN_CLICKED(IDC_DONATE, OnDonate)
 END_MESSAGE_MAP()
 
 // App command to run the dialog
@@ -296,6 +305,12 @@ void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 	CDialog::OnLButtonDown(nFlags, point);
 }
 
+void CAboutDlg::OnDonate()
+{
+	::ShellExecute(NULL, "open", "https://sourceforge.net/donate/index.php?group_id=114927",
+		NULL, NULL, SW_SHOWNORMAL);
+}
+
 BOOL CAboutDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
@@ -310,6 +325,8 @@ BOOL CAboutDlg::OnInitDialog()
 
 	m_weblink.SetFont(&m_font);
 	m_weblinkLibrary.SetFont(&m_font);
+
+	m_btnDonate.LoadBitmaps(IDB_DONATE);
 
 	return true;
 }
@@ -353,6 +370,7 @@ void CDjViewApp::LoadSettings()
 	CAppSettings::bRestoreAssocs = !!GetProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, 0);
 	CAppSettings::bGenAllThumbnails = !!GetProfileInt(s_pszGlobalSettings, s_pszGenAllThumbnails, 1);
 	CAppSettings::bFullscreenClicks = !!GetProfileInt(s_pszGlobalSettings, s_pszFullscreenClicks, 1);
+	CAppSettings::strVersion = GetProfileString(s_pszGlobalSettings, s_pszVersion, _T(""));
 
 	CDisplaySettings& ds = CAppSettings::displaySettings;
 	ds.bAdjustDisplay = !!GetProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, 0);
@@ -390,6 +408,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, CAppSettings::bRestoreAssocs);
 	WriteProfileInt(s_pszGlobalSettings, s_pszGenAllThumbnails, CAppSettings::bGenAllThumbnails);
 	WriteProfileInt(s_pszGlobalSettings, s_pszFullscreenClicks, CAppSettings::bFullscreenClicks);
+	WriteProfileString(s_pszGlobalSettings, s_pszVersion, CURRENT_VERSION);
 
 	CDisplaySettings& ds = CAppSettings::displaySettings;
 	WriteProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, ds.bAdjustDisplay);

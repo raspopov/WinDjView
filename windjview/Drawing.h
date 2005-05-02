@@ -82,6 +82,7 @@ CDIB* RenderPixmap(GPixmap& pm);
 CDIB* RenderBitmap(GBitmap& bm);
 CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip);
 CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip);
+CDIB* RenderEmpty(const CSize& szBitmap);
 
 void PrintPage(CDC* pDC, GP<DjVuImage> pImage, const CRect& rcPage,
 	double fPrinterMMx, double fPrinterMMy, CPrintSettings& settings, bool bPreview = false);

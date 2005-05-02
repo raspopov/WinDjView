@@ -349,6 +349,9 @@
 				RelativePath=".\res\DjVuDoc.ico">
 			</File>
 			<File
+				RelativePath=".\res\donate.bmp">
+			</File>
+			<File
 				RelativePath=".\res\drag.cur">
 			</File>
 			<File

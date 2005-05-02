@@ -118,6 +118,7 @@ IDR_DjVuTYPE            ICON                    "res\\DjVuDoc.ico"
 IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
 IDB_CLOSE               BITMAP                  "res\\close.bmp"
 IDB_BOOKMARKS           BITMAP                  "res\\bookmarks.bmp"
+IDB_DONATE              BITMAP                  "res\\donate.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -339,24 +340,30 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 252, 67
+IDD_ABOUTBOX DIALOGEX 0, 0, 251, 118
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,10,9,20,20
+    ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
     LTEXT           "WinDjView Version 0.3.4",IDC_STATIC,40,7,119,8,
                     SS_NOPREFIX
     LTEXT           "Copyright (C) 2004-2005 Andrew Zhezherun",IDC_STATIC,40,
-                    19,149,8
-    DEFPUSHBUTTON   "Close",IDOK,193,7,50,14,WS_GROUP
-    LTEXT           "Project homepage:",IDC_STATIC,40,39,64,8
-    LTEXT           "DjVuLibre homepage:",IDC_STATIC,40,51,72,8
+                    17,149,8
+    DEFPUSHBUTTON   "Close",IDOK,194,7,50,14,WS_GROUP
+    LTEXT           "Project homepage:",IDC_STATIC,40,35,64,8
+    LTEXT           "DjVuLibre homepage:",IDC_STATIC,40,45,72,8
     LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,106,
-                    39,139,8
-    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,114,51,
+                    35,139,8
+    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,114,45,
                     131,8
+    LTEXT           "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation.",
+                    IDC_STATIC,40,62,204,26
+    LTEXT           "You can support further development of this program by donating through PayPal",
+                    IDC_STATIC,40,94,137,17
+    CONTROL         "Donate",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | 
+                    WS_TABSTOP,181,95,63,16
 END
 
 IDD_PRINT DIALOGEX 0, 0, 431, 316
@@ -600,9 +607,9 @@ BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 245
+        RIGHTMARGIN, 244
         TOPMARGIN, 7
-        BOTTOMMARGIN, 60
+        BOTTOMMARGIN, 111
     END
 
     IDD_PRINT, DIALOG

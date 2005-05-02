@@ -86,17 +86,13 @@ CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip)
 	if (pBitmap->m_hObject == NULL)
 		return pBitmap;
 
+	int nRowLength = rcClip.Width()*3;
+	while (nRowLength % 4 != 0)
+		++nRowLength;
+
 	LPBYTE pBits = pBitmap->GetBits();
-
-	LPBYTE pNextBit = pBits;
-	for (int y = rcClip.top; y < rcClip.bottom; ++y)
-	{
-		memcpy(pNextBit, pm[y] + rcClip.left, rcClip.Width()*3);
-
-		pNextBit += rcClip.Width()*3;
-		while ((pNextBit - pBits) % 4 != 0)
-			++pNextBit;
-	}
+	for (int y = rcClip.top; y < rcClip.bottom; ++y, pBits += nRowLength)
+		memcpy(pBits, pm[y] + rcClip.left, rcClip.Width()*3);
 
 	int nBrightness = CAppSettings::displaySettings.GetBrightness();
 	int nContrast = CAppSettings::displaySettings.GetContrast();
@@ -115,18 +111,16 @@ CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip)
 		if (fGamma != 1.0)
 			BuildGammaTable(fGamma, table);
 
-		pNextBit = pBits;
-		for (int y = rcClip.top; y < rcClip.bottom; ++y)
+		pBits = pBitmap->GetBits();
+		for (int y = rcClip.top; y < rcClip.bottom; ++y, pBits += nRowLength)
 		{
-			LPBYTE pEndBit = pNextBit + rcClip.Width()*3;
-			while (pNextBit != pEndBit)
+			LPBYTE pCurBit = pBits;
+			LPBYTE pEndBit = pCurBit + rcClip.Width()*3;
+			while (pCurBit != pEndBit)
 			{
-				*pNextBit = table[*pNextBit];
-				++pNextBit;
+				*pCurBit = table[*pCurBit];
+				++pCurBit;
 			}
-
-			while ((pNextBit - pBits) % 4 != 0)
-				++pNextBit;
 		}
 	}
 
@@ -201,17 +195,69 @@ CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip)
 	if (pBitmap->m_hObject == NULL)
 		return pBitmap;
 
+	int nRowLength = rcClip.Width();
+	while (nRowLength % 4 != 0)
+		++nRowLength;
+
 	LPBYTE pBits = pBitmap->GetBits();
+	for (int y = rcClip.top; y < rcClip.bottom; ++y, pBits += nRowLength)
+		memcpy(pBits, bm[y] + rcClip.left, rcClip.Width());
 
-	LPBYTE pNextBit = pBits;
-	for (int y = rcClip.top; y < rcClip.bottom; ++y)
+	return pBitmap;
+}
+
+CDIB* RenderEmpty(const CSize& szBitmap)
+{
+	LPBITMAPINFO pBMI = (LPBITMAPINFO)malloc(
+		sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD));
+	BITMAPINFOHEADER& bmih = pBMI->bmiHeader;
+
+	bmih.biSize = sizeof(BITMAPINFOHEADER);
+	bmih.biWidth = szBitmap.cx;
+	bmih.biHeight = szBitmap.cy;
+	bmih.biBitCount = 1;
+	bmih.biCompression = BI_RGB;
+	bmih.biClrUsed = 1;
+
+	// Create palette for the bitmap
+	pBMI->bmiColors[0].rgbBlue = 0xff;
+	pBMI->bmiColors[0].rgbGreen = 0xff;
+	pBMI->bmiColors[0].rgbRed = 0xff;
+
+	int nBrightness = CAppSettings::displaySettings.GetBrightness();
+	int nContrast = CAppSettings::displaySettings.GetContrast();
+	double fGamma = CAppSettings::displaySettings.GetGamma();
+	if (fGamma != 1.0 || nBrightness != 0 || nContrast != 0)
 	{
-		memcpy(pNextBit, bm[y] + rcClip.left, rcClip.Width());
+		// Adjust gamma
+		BYTE table[256];
+		for (int i = 0; i < 256; ++i)
+			table[i] = i;
 
-		pNextBit += rcClip.Width();
-		while ((pNextBit - pBits) % 4 != 0)
-			++pNextBit;
+		if (nBrightness != 0)
+			BuildBrightnessTable(nBrightness, table);
+		if (nContrast != 0)
+			BuildContrastTable(nContrast, table);
+		if (fGamma != 1.0)
+			BuildGammaTable(fGamma, table);
+
+		pBMI->bmiColors[0].rgbBlue = table[pBMI->bmiColors[0].rgbBlue];
+		pBMI->bmiColors[0].rgbGreen = table[pBMI->bmiColors[0].rgbGreen];
+		pBMI->bmiColors[0].rgbRed = table[pBMI->bmiColors[0].rgbRed];
 	}
+
+	CDIB* pBitmap = CDIB::CreateDIB(pBMI);
+	free(pBMI);
+
+	if (pBitmap->m_hObject == NULL)
+		return pBitmap;
+
+	int nRowLength = (szBitmap.cx - 1) / 8 + 1;
+	while (nRowLength % 4 != 0)
+		++nRowLength;
+
+	LPBYTE pBits = pBitmap->GetBits();
+	memset(pBits, 0, nRowLength*szBitmap.cy);
 
 	return pBitmap;
 }

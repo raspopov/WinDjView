@@ -82,4 +82,6 @@ struct CAppSettings
 
 	static CString strPrinter;
 	static WORD nPaper;
+
+	static CString strVersion;
 };
