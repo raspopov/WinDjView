@@ -340,7 +340,7 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 251, 118
+IDD_ABOUTBOX DIALOGEX 0, 0, 251, 122
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "About WinDjView"
@@ -363,7 +363,7 @@ BEGIN
     LTEXT           "You can support further development of this program by donating through PayPal",
                     IDC_STATIC,40,94,137,17
     CONTROL         "Donate",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | 
-                    WS_TABSTOP,181,95,63,16
+                    WS_TABSTOP,181,94,63,21
 END
 
 IDD_PRINT DIALOGEX 0, 0, 431, 316
@@ -609,7 +609,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 244
         TOPMARGIN, 7
-        BOTTOMMARGIN, 111
+        BOTTOMMARGIN, 115
     END
 
     IDD_PRINT, DIALOG
