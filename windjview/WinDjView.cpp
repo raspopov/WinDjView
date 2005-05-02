@@ -166,7 +166,7 @@ void CDjViewApp::EnableShellOpen()
 	ASSERT(m_atomApp == NULL && m_atomSystemTopic == NULL); // do once
 
 	m_atomApp = ::GlobalAddAtom(_T("WinDjView"));
-	m_atomSystemTopic = ::GlobalAddAtom(_T("system"));
+	m_atomSystemTopic = ::GlobalAddAtom(_T("System"));
 }
 
 

@@ -169,7 +169,7 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
-        MENUITEM "Settin&gs...",                ID_FILE_SETTINGS
+        MENUITEM "&Settings...",                ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -192,22 +192,22 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
-        MENUITEM "&Close",                      ID_FILE_CLOSE
+        MENUITEM "&Close\tCtrl+W",              ID_FILE_CLOSE
         MENUITEM SEPARATOR
-        MENUITEM "Settin&gs...",                ID_FILE_SETTINGS
+        MENUITEM "&Settings...",                ID_FILE_SETTINGS
         MENUITEM "&Export Text...",             ID_FILE_EXPORT_TEXT
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       ID_APP_EXIT
+        MENUITEM "E&xit\tCtrl+Q",               ID_APP_EXIT
     END
     POPUP "&View"
     BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
-        MENUITEM "&Fullscreen\tCtrl+L",         ID_VIEW_FULLSCREEN
+        MENUITEM "F&ullscreen\tCtrl+L",         ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
         MENUITEM "Fit &Page\tCtrl+0",           ID_ZOOM_FITPAGE
         MENUITEM "Fit &Width\tCtrl+2",          ID_ZOOM_FITWIDTH
@@ -215,8 +215,8 @@ BEGIN
         MENUITEM "&Actual Size\tCtrl+4",        ID_ZOOM_ACTUALSIZE
         POPUP "&Zoom"
         BEGIN
-            MENUITEM "Zoom In\tCtrl+Plus",          ID_ZOOM_IN
-            MENUITEM "Zoom Out\tCtrl+Minus",        ID_ZOOM_OUT
+            MENUITEM "Zoom &In\tCtrl+Plus",         ID_ZOOM_IN
+            MENUITEM "Zoom &Out\tCtrl+Minus",       ID_ZOOM_OUT
             MENUITEM SEPARATOR
             MENUITEM "&50%",                        ID_ZOOM_50
             MENUITEM "&75%",                        ID_ZOOM_75
@@ -230,9 +230,10 @@ BEGIN
         POPUP "&Go To"
         BEGIN
             MENUITEM "&First Page\tCtrl+Home",      ID_VIEW_PREVIOUSPAGE
-            MENUITEM "&Previous Page\tCtrl+PgDn",   ID_VIEW_PREVIOUSPAGE
+            MENUITEM "P&revious Page\tCtrl+PgDn",   ID_VIEW_PREVIOUSPAGE
             MENUITEM "&Next Page\tCtrl+PgUp",       ID_VIEW_NEXTPAGE
             MENUITEM "&Last Page\tCtrl+End",        ID_VIEW_NEXTPAGE
+            MENUITEM "&Page...\tCtrl+G",            ID_VIEW_GOTO_PAGE
             MENUITEM SEPARATOR
             MENUITEM "Previous &View\tAlt+Left Arrow", ID_VIEW_BACK
             MENUITEM "N&ext View\tAlt+Right Arrow", ID_VIEW_FORWARD
@@ -248,7 +249,7 @@ BEGIN
             MENUITEM "&Single Page",                ID_LAYOUT_SINGLEPAGE
             MENUITEM "&Continuous",                 ID_LAYOUT_CONTINUOUS
         END
-        POPUP "Display"
+        POPUP "&Display"
         BEGIN
             MENUITEM "&Color",                      ID_DISPLAY_COLOR
             MENUITEM "Black && &White",             ID_DISPLAY_BW
@@ -257,7 +258,7 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "&Find...\tCtrl+F",            ID_VIEW_FIND
-        MENUITEM "Copy Text\tCtrl+C",           ID_EDIT_COPY
+        MENUITEM "&Copy Text\tCtrl+C",          ID_EDIT_COPY
     END
     POPUP "&Window"
     BEGIN
@@ -294,8 +295,10 @@ END
 
 IDR_MAINFRAME ACCELERATORS 
 BEGIN
+    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
@@ -313,6 +316,8 @@ BEGIN
     "4",            ID_ZOOM_ACTUALSIZE,     VIRTKEY, CONTROL, NOINVERT
     "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
     "0",            ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
+    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, NOINVERT
+    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
     "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
     VK_ADD,         ID_ZOOM_IN,             VIRTKEY, NOINVERT
     VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
@@ -323,8 +328,9 @@ BEGIN
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
     "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
-    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, NOINVERT
-    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_VIEW_GOTO_PAGE,      VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
 END
 
 
@@ -530,6 +536,19 @@ BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
 END
 
+IDD_GOTO_PAGE DIALOGEX 0, 0, 123, 48
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Go To Page"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Page:",IDC_STATIC,7,7,21,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_PAGE,30,7,55,12,ES_AUTOHSCROLL
+    LTEXT           "of 9999",IDC_PAGE_COUNT,89,7,27,12,SS_CENTERIMAGE
+    DEFPUSHBUTTON   "OK",IDOK,9,27,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,64,27,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -632,6 +651,14 @@ BEGIN
         RIGHTMARGIN, 160
         TOPMARGIN, 7
         BOTTOMMARGIN, 27
+    END
+
+    IDD_GOTO_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 116
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 41
     END
 END
 #endif    // APSTUDIO_INVOKED

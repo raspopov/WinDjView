@@ -347,6 +347,7 @@ protected:
 	afx_msg void OnViewFullscreen();
 	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
+	afx_msg void OnViewGotoPage();
 	DECLARE_MESSAGE_MAP()
 };
 

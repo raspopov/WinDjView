@@ -165,6 +165,9 @@
 				RelativePath=".\FullscreenWnd.cpp">
 			</File>
 			<File
+				RelativePath=".\GotoPageDlg.cpp">
+			</File>
+			<File
 				RelativePath=".\MainFrm.cpp">
 			</File>
 			<File
@@ -264,6 +267,9 @@
 			</File>
 			<File
 				RelativePath=".\FullscreenWnd.h">
+			</File>
+			<File
+				RelativePath=".\GotoPageDlg.h">
 			</File>
 			<File
 				RelativePath=".\MainFrm.h">

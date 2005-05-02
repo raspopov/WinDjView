@@ -29,6 +29,7 @@
 #include "Drawing.h"
 #include "ProgressDlg.h"
 #include "ZoomDlg.h"
+#include "GotoPageDlg.h"
 #include "FindDlg.h"
 #include "ChildFrm.h"
 #include "SearchResultsView.h"
@@ -109,6 +110,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_UPDATE_COMMAND_UI(ID_FILE_EXPORT_TEXT, OnUpdateFileExportText)
 	ON_COMMAND_RANGE(ID_DISPLAY_COLOR, ID_DISPLAY_FOREGROUND, OnViewDisplay)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_DISPLAY_COLOR, ID_DISPLAY_FOREGROUND, OnUpdateViewDisplay)
+	ON_COMMAND(ID_VIEW_GOTO_PAGE, OnViewGotoPage)
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -3015,6 +3017,9 @@ bool CDjVuView::IsSelectionBelowTop(int nPage, const DjVuSelection& selection)
 
 bool CDjVuView::IsSelectionVisible(int nPage, const DjVuSelection& selection)
 {
+	if (m_nLayout == SinglePage && nPage != m_nPage)
+		return false;
+
 	CPoint ptScroll = GetScrollPosition();
 
 	CRect rcClient;
@@ -3920,4 +3925,11 @@ void CDjVuView::ShowAllLinks(bool bShowAll)
 	m_bShowAllLinks = bShowAll;
 	Invalidate();
 	UpdateWindow();
+}
+
+void CDjVuView::OnViewGotoPage()
+{
+	CGotoPageDlg dlg(GetCurrentPage(), m_nPageCount);
+	if (dlg.DoModal() == IDOK)
+		GoToPage(dlg.m_nPage - 1);
 }
