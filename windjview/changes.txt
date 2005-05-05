@@ -2,6 +2,9 @@ WinDjView changes history
 Copyright (C) 2004-2005 Andrew Zhezherun
 ----------------------------------------
 
+Changes in version 0.3.5:
+* Fixed opening files with '#' character in filename.
+
 Changes in version 0.3.4 (2005-05-02):
 + Added "Go To Page" dialog.
 + Added licensing info to About dialog.

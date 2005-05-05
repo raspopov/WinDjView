@@ -105,7 +105,7 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 	G_TRY
 	{
-		m_pDjVuDoc = DjVuDocument::create("file://" + GUTF8String(pszName));
+		m_pDjVuDoc = DjVuDocument::create(GURL::Filename::Native(pszName));
 		m_pDjVuDoc->wait_get_pages_num();
 	}
 	G_CATCH(ex)

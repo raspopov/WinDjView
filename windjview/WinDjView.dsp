@@ -122,6 +122,10 @@ SOURCE=.\FullscreenWnd.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\GotoPageDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MainFrm.cpp
 # End Source File
 # Begin Source File
@@ -236,6 +240,10 @@ SOURCE=.\FindDlg.h
 # Begin Source File
 
 SOURCE=.\FullscreenWnd.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\GotoPageDlg.h
 # End Source File
 # Begin Source File
 
