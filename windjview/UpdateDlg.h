@@ -44,5 +44,6 @@ protected:
 	virtual BOOL OnInitDialog();
 
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	afx_msg void OnEndDialog();
 	DECLARE_MESSAGE_MAP()
 };

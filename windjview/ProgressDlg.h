@@ -75,5 +75,6 @@ protected:
 	DWORD_PTR m_dwUserData;
 
 // Generated message map functions
+	afx_msg LRESULT OnEndDialog(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };

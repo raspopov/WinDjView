@@ -39,6 +39,8 @@
 #pragma warning(disable: 4200 4786)
 #endif
 
+#define WM_ENDDIALOG (WM_USER+50)
+
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
 
 // turns off MFC's hiding of some common and often safely ignored warning messages

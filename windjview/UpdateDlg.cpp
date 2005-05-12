@@ -49,6 +49,7 @@ void CUpdateDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CUpdateDlg, CDialog)
 	ON_WM_SHOWWINDOW()
+	ON_MESSAGE_VOID(WM_ENDDIALOG, OnEndDialog)
 END_MESSAGE_MAP()
 
 
@@ -136,6 +137,11 @@ DWORD WINAPI CUpdateDlg::UpdateThreadProc(LPVOID pvData)
 		}
 	}
 
-	pDlg->EndDialog(IDOK);
+	pDlg->SendMessage(WM_ENDDIALOG);
 	return 0;
+}
+
+void CUpdateDlg::OnEndDialog()
+{
+	EndDialog(IDOK);
 }

@@ -50,6 +50,7 @@ void CProgressDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CProgressDlg, CDialog)
+	ON_MESSAGE(WM_ENDDIALOG, OnEndDialog)
 END_MESSAGE_MAP()
 
 
@@ -90,7 +91,7 @@ bool CProgressDlg::IsCancelled()
 void CProgressDlg::StopProgress(int nCode)
 {
 	InterlockedExchange(&m_nCode, nCode);
-	EndDialog(m_nCancelled ? IDCANCEL : IDOK);
+	SendMessage(WM_ENDDIALOG, m_nCancelled ? IDCANCEL : IDOK);
 }
 
 BOOL CProgressDlg::OnInitDialog()
@@ -118,4 +119,10 @@ void CProgressDlg::OnCancel()
 void CProgressDlg::OnOK()
 {
 	InterlockedExchange(&m_nCancelled, 1);
+}
+
+LRESULT CProgressDlg::OnEndDialog(WPARAM wParam, LPARAM lParam)
+{
+	EndDialog(wParam);
+	return 0;
 }
