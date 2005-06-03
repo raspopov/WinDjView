@@ -812,40 +812,62 @@ void CPrintDlg::SaveSettings()
 
 bool CPrintDlg::ParseRange()
 {
+	CString strPages = m_strPages;
+	strPages.TrimLeft();
+	strPages.TrimRight();
+
 	int i = 0;
-	while (i < m_strPages.GetLength())
+	while (i < strPages.GetLength())
 	{
-		if (m_strPages[i] < '0' || m_strPages[i] > '9')
+		while (i < strPages.GetLength() && strPages[i] <= ' ')
+			++i;
+
+		if (i >= strPages.GetLength() || strPages[i] < '0' || strPages[i] > '9')
 			return false;
 
 		int num = 0;
-		while (i < m_strPages.GetLength() && m_strPages[i] >= '0' && m_strPages[i] <= '9')
-			num = 10*num + m_strPages[i++] - '0';
-
+		while (i < strPages.GetLength() && strPages[i] >= '0' && strPages[i] <= '9')
+			num = 10*num + strPages[i++] - '0';
 		int num2 = num;
-		if (i < m_strPages.GetLength())
+
+		while (i < strPages.GetLength() && strPages[i] <= ' ')
+			++i;
+		if (i < strPages.GetLength())
 		{
 			if (m_strPages[i] == '-')
 			{
 				++i;
+				while (i < strPages.GetLength() && strPages[i] <= ' ')
+					++i;
 
-				if (m_strPages[i] < '0' || m_strPages[i] > '9')
+				if (i >= strPages.GetLength() || strPages[i] < '0' || strPages[i] > '9')
 					return false;
 
 				num2 = 0;
-				while (i < m_strPages.GetLength() && m_strPages[i] >= '0' && m_strPages[i] <= '9')
-					num2 = 10*num2 + m_strPages[i++] - '0';
+				while (i < strPages.GetLength() && strPages[i] >= '0' && strPages[i] <= '9')
+					num2 = 10*num2 + strPages[i++] - '0';
 
-				if (i < m_strPages.GetLength())
+				while (i < strPages.GetLength() && strPages[i] <= ' ')
+					++i;
+
+				if (i < strPages.GetLength())
 				{
-					if (m_strPages[i] == ',' || m_strPages[i] == ';')
+					if (strPages[i] == ',' || strPages[i] == ';')
+					{
 						++i;
+						while (i < strPages.GetLength() && strPages[i] <= ' ')
+							++i;
+					}
 					else
 						return false;
 				}
 			}
 			else if (m_strPages[i] == ',' || m_strPages[i] == ';')
+			{
 				++i;
+				while (i < strPages.GetLength() && strPages[i] <= ' ')
+					++i;
+			}
 			else
 				return false;
 		}
