@@ -615,6 +615,8 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, const CRect& rcFullPage,
 
 	CPoint ptSrcOffset(0, 0);
 	CSize szDjVuPage = CSize(pImage->get_width(), pImage->get_height());
+	if (szDjVuPage.cx <= 0 || szDjVuPage.cy <= 0)
+		return;
 
 	if (settings.bClipContent)
 	{

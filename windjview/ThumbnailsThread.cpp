@@ -128,18 +128,20 @@ void CThumbnailsThread::Render(Job& job)
 	{
 		pImage->set_rotate(job.nRotate);
 		CSize szPage(pImage->get_width(), pImage->get_height());
-
-		CSize szDisplay = m_szThumbnail;
-		szDisplay.cx = szDisplay.cy * szPage.cx / szPage.cy;
-
-		if (szDisplay.cx > m_szThumbnail.cx)
+		if (szPage.cx > 0 && szPage.cy > 0)
 		{
-			szDisplay.cx = m_szThumbnail.cx;
-			szDisplay.cy = szDisplay.cx * szPage.cy / szPage.cx;
-		}
+			CSize szDisplay = m_szThumbnail;
+			szDisplay.cx = szDisplay.cy * szPage.cx / szPage.cy;
 
-		GRect rect(0, 0, szDisplay.cx, szDisplay.cy);
-		pBitmap = CRenderThread::Render(pImage, rect);
+			if (szDisplay.cx > m_szThumbnail.cx)
+			{
+				szDisplay.cx = m_szThumbnail.cx;
+				szDisplay.cy = szDisplay.cx * szPage.cy / szPage.cx;
+			}
+
+			GRect rect(0, 0, szDisplay.cx, szDisplay.cy);
+			pBitmap = CRenderThread::Render(pImage, rect);
+		}
 	}
 
 	if (pBitmap == NULL || pBitmap->m_hObject == NULL)

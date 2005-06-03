@@ -35,8 +35,23 @@ struct PageInfo
 			pImage->set_rotate(0);
 			szPage = CSize(pImage->get_width(), pImage->get_height());
 			nDPI = pImage->get_dpi();
-			pTextStream = pImage->get_text();
-			pAnnoStream = pImage->get_anno();
+			if (szPage.cx <= 0 || szPage.cy <= 0)
+			{
+				szPage.cx = 100;
+				szPage.cy = 100;
+				nDPI = 100;
+			}
+
+			G_TRY
+			{
+				pTextStream = pImage->get_text();
+				pAnnoStream = pImage->get_anno();
+			}
+			G_CATCH(ex)
+			{
+				ex;
+			}
+			G_ENDCATCH;
 		}
 	}
 

@@ -1160,7 +1160,7 @@ double CDjVuView::GetZoom() const
 	const Page& page = m_pages[GetCurrentPage()];
 	CSize szPage = page.GetSize(m_nRotate);
 
-	if (szPage.cx == 0 || szPage.cy == 0)
+	if (szPage.cx <= 0 || szPage.cy <= 0)
 		return 100.0;
 
 	// Calculate zoom from display area size
@@ -1176,7 +1176,7 @@ double CDjVuView::GetZoom(ZoomType nZoomType) const
 	const Page& page = m_pages[GetCurrentPage()];
 	CSize szPage = page.GetSize(m_nRotate);
 
-	if (szPage.cx == 0 || szPage.cy == 0)
+	if (szPage.cx <= 0 || szPage.cy <= 0)
 		return 100.0;
 
 	// Calculate zoom from display area size
@@ -2725,6 +2725,10 @@ void CDjVuView::OnExportPage()
 		}
 
 		pBitmap->Save(strFileName);
+	}
+	else
+	{
+		AfxMessageBox(_T("Error rendering page"), MB_ICONERROR | MB_OK);
 	}
 
 	delete pBitmap;

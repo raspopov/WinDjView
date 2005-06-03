@@ -168,31 +168,42 @@ void CRenderThread::Render(Job& job)
 
 CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const GRect& rect, int nDisplayMode)
 {
+	if (rect.isempty())
+		return NULL;
+
 	GP<GBitmap> pGBitmap;
 	GP<GPixmap> pGPixmap;
 
-	switch (nDisplayMode)
+	G_TRY
 	{
-	case CDjVuView::BlackAndWhite:
-		pGBitmap = pImage->get_bitmap(rect, rect, 4);
-		break;
-
-	case CDjVuView::Foreground:
-		pGPixmap = pImage->get_fg_pixmap(rect, rect);
-		if (pGPixmap == NULL)
+		switch (nDisplayMode)
+		{
+		case CDjVuView::BlackAndWhite:
 			pGBitmap = pImage->get_bitmap(rect, rect, 4);
-		break;
+			break;
 
-	case CDjVuView::Background:
-		pGPixmap = pImage->get_bg_pixmap(rect, rect);
-		break;
+		case CDjVuView::Foreground:
+			pGPixmap = pImage->get_fg_pixmap(rect, rect);
+			if (pGPixmap == NULL)
+				pGBitmap = pImage->get_bitmap(rect, rect, 4);
+			break;
 
-	case CDjVuView::Color:
-	default:
-		pGPixmap = pImage->get_pixmap(rect, rect);
-		if (pGPixmap == NULL)
-			pGBitmap = pImage->get_bitmap(rect, rect, 4);
+		case CDjVuView::Background:
+			pGPixmap = pImage->get_bg_pixmap(rect, rect);
+			break;
+
+		case CDjVuView::Color:
+		default:
+			pGPixmap = pImage->get_pixmap(rect, rect);
+			if (pGPixmap == NULL)
+				pGBitmap = pImage->get_bitmap(rect, rect, 4);
+		}
 	}
+	G_CATCH(ex)
+	{
+		ex;
+	}
+	G_ENDCATCH
 
 	CDIB* pBitmap = NULL;
 

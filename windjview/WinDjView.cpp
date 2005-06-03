@@ -34,7 +34,7 @@
 #define new DEBUG_NEW
 #endif
 
-CString CURRENT_VERSION = _T("0.3.4");
+CString CURRENT_VERSION = _T("0.3.5");
 
 
 const TCHAR* s_pszDisplaySettings = _T("Display");
