@@ -253,10 +253,10 @@ BEGIN
         END
         POPUP "&Display"
         BEGIN
-            MENUITEM "&Color",                      ID_DISPLAY_COLOR
-            MENUITEM "Black && &White",             ID_DISPLAY_BW
-            MENUITEM "&Background",                 ID_DISPLAY_BACKGROUND
-            MENUITEM "&Foreground",                 ID_DISPLAY_FOREGROUND
+            MENUITEM "&Color\tCrtl+Shift+1",        ID_DISPLAY_COLOR
+            MENUITEM "Black && &White\tCtrl+Shift+2", ID_DISPLAY_BW
+            MENUITEM "&Background\tCtrl+Shift+3",   ID_DISPLAY_BACKGROUND
+            MENUITEM "&Foreground\tCtrl+Shift+4",   ID_DISPLAY_FOREGROUND
         END
         MENUITEM SEPARATOR
         MENUITEM "&Find...\tCtrl+F",            ID_VIEW_FIND
@@ -298,6 +298,13 @@ END
 IDR_MAINFRAME ACCELERATORS 
 BEGIN
     "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, CONTROL, ALT, NOINVERT
+    "2",            ID_DISPLAY_BW,          VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "1",            ID_DISPLAY_COLOR,       VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
