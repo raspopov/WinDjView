@@ -298,7 +298,8 @@ END
 IDR_MAINFRAME ACCELERATORS 
 BEGIN
     "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
-    "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, CONTROL, ALT, NOINVERT
+    "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     "2",            ID_DISPLAY_BW,          VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     "1",            ID_DISPLAY_COLOR,       VIRTKEY, SHIFT, CONTROL, 
