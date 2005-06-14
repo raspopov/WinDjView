@@ -2,7 +2,7 @@ WinDjView changes history
 Copyright (C) 2004-2005 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 0.3.5:
+Changes in version 0.3.5 (2005-06-14):
 + Added "Save Copy As" dialog.
 * Fixed a crash when opening some corrupted files.
 * Fixed opening files with '#' character in filename.
