@@ -131,6 +131,6 @@ protected:
 // Generated message map functions
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
+	afx_msg void OnSaveCopyAs();
 	DECLARE_MESSAGE_MAP()
 };
-

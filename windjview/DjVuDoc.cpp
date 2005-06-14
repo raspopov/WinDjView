@@ -35,6 +35,7 @@
 IMPLEMENT_DYNCREATE(CDjVuDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(CDjVuDoc, CDocument)
+	ON_COMMAND(ID_FILE_SAVE_COPY_AS, OnSaveCopyAs)
 END_MESSAGE_MAP()
 
 
@@ -391,4 +392,42 @@ CDjVuView* CDjVuDoc::GetDjVuView()
 
 	CDjVuView* pView = (CDjVuView*)GetNextView(pos);
 	return pView;
+}
+
+void CDjVuDoc::OnSaveCopyAs()
+{
+	CString strFileName = GetTitle();
+
+	const TCHAR szFilter[] = "DjVu Documents (*.djvu)|*.djvu|All Files (*.*)|*.*||";
+
+	CFileDialog dlg(false, "djvu", strFileName, OFN_OVERWRITEPROMPT |
+		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST, szFilter);
+	CString strTitle(_T("Save Copy As"));
+	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
+
+	UINT nResult = dlg.DoModal();
+	GetDjVuView()->SetFocus();
+	if (nResult != IDOK)
+		return;
+
+	CWaitCursor wait;
+	strFileName = dlg.GetPathName();
+
+	if (AfxComparePath(strFileName, GetPathName()))
+	{
+		AfxMessageBox(_T("Cannot save the document to its original location"), MB_ICONERROR | MB_OK);
+		return;
+	}
+
+	G_TRY
+	{
+		m_pDjVuDoc->wait_for_complete_init();
+		m_pDjVuDoc->save_as(GURL::Filename::Native((LPCSTR)strFileName), true);
+	}
+	G_CATCH(ex)
+	{
+		ex;
+		AfxMessageBox(_T("An error occurred while saving the document."), MB_ICONERROR | MB_OK);
+	}
+	G_ENDCATCH;
 }

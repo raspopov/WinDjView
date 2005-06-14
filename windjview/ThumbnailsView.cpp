@@ -547,7 +547,7 @@ BOOL CThumbnailsView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 {
 	// we don't handle anything but scrolling
 	if ((nFlags & MK_CONTROL) != 0)
-		return false;
+		return true;
 
 	CWnd* pWnd = WindowFromPoint(point);
 	if (pWnd != this && !IsChild(pWnd) && GetMainFrame()->IsChild(pWnd) &&

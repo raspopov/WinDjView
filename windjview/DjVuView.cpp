@@ -2576,6 +2576,11 @@ UINT GetMouseScrollLines()
 
 BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 {
+	CWnd* pWnd = WindowFromPoint(point);
+	if (pWnd != this && !IsChild(pWnd) && GetMainFrame()->IsChild(pWnd) &&
+			pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
+		return true;
+
 	if ((nFlags & MK_CONTROL) != 0)
 	{
 		// Zoom in/out
@@ -2586,11 +2591,6 @@ BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 
 		return true;
 	}
-
-	CWnd* pWnd = WindowFromPoint(point);
-	if (pWnd != this && !IsChild(pWnd) && GetMainFrame()->IsChild(pWnd) &&
-			pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
-		return true;
 
 	BOOL bHasHorzBar, bHasVertBar;
 	CheckScrollBars(bHasHorzBar, bHasVertBar);
@@ -2690,6 +2690,8 @@ void CDjVuView::OnExportPage()
 
 	CFileDialog dlg(false, "bmp", strFileName, OFN_OVERWRITEPROMPT |
 		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST, szFilter);
+	CString strTitle(_T("Export Page"));
+	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
 
 	UINT nResult = dlg.DoModal();
 	SetFocus();

@@ -3,6 +3,7 @@ Copyright (C) 2004-2005 Andrew Zhezherun
 ----------------------------------------
 
 Changes in version 0.3.5:
++ Added "Save Copy As" dialog.
 * Fixed a crash when opening some corrupted files.
 * Fixed opening files with '#' character in filename.
 * Fixed a problem which could cause crashes after printing and after
