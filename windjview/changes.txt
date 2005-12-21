@@ -9,6 +9,7 @@ Changes in version 0.3.6 (2005-12-21):
   by default; added an option to ignore them (old behavior).
 + Print dialog now takes into account display mode (foreground,
   background, black and white or color).
++ Display mode and/or zoom specified in the document are used when opening.
 * Fixed bug with preview in print dialog and printing: color pages
   sometimes were not shown in preview and not printed.
 * Fixed bug in print dialog: clicking Properties buttons
@@ -91,7 +92,7 @@ Changes in version 0.2.1 (2004-09-19):
 * Fixed several bugs in continuous mode.
 
 Changes in version 0.2 (2004-09-12):
-+ Added continuous page display mode.
+! Added continuous page display mode.
 + Improved speed; next/previous pages should display faster.
 - Removed non-functional "Print Preview" command
   (may be added in future releases).

@@ -244,6 +244,7 @@ protected:
 	void DeleteBitmaps();
 	int GetPageFromPoint(CPoint point);
 	void ReadZoomSettings(GP<DjVuANT> pAnt);
+	void ReadDisplayMode(GP<DjVuANT> pAnt);
 
 	enum UpdateType
 	{

@@ -442,7 +442,10 @@ void CDjVuView::OnInitialUpdate()
 		Page& page = m_pages[0];
 		page.Init(GetDocument()->GetPageInfo(0));
 		if (page.pAnt != NULL)
+		{
 			ReadZoomSettings(page.pAnt);
+			ReadDisplayMode(page.pAnt);
+		}
 	}
 
 	m_displaySettings = CAppSettings::displaySettings;
@@ -482,6 +485,24 @@ void CDjVuView::ReadZoomSettings(GP<DjVuANT> pAnt)
 			m_fZoom = 10.0;
 		if (m_fZoom > 800.0)
 			m_fZoom = 800.0;
+	}
+}
+
+void CDjVuView::ReadDisplayMode(GP<DjVuANT> pAnt)
+{
+	switch (pAnt->mode)
+	{
+	case DjVuANT::MODE_FORE:
+		m_nDisplayMode = Foreground;
+		break;
+
+	case DjVuANT::MODE_BACK:
+		m_nDisplayMode = Background;
+		break;
+
+	case DjVuANT::MODE_BW:
+		m_nDisplayMode = BlackAndWhite;
+		break;
 	}
 }
 
