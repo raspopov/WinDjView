@@ -34,7 +34,7 @@
 #define new DEBUG_NEW
 #endif
 
-CString CURRENT_VERSION = _T("0.3.5");
+CString CURRENT_VERSION = _T("0.3.6");
 
 
 const TCHAR* s_pszDisplaySettings = _T("Display");
@@ -71,6 +71,8 @@ const TCHAR* s_pszMarginBottom = _T("m-bottom");
 const TCHAR* s_pszPosLeft = _T("left");
 const TCHAR* s_pszPosTop = _T("top");
 const TCHAR* s_pszCenterImage = _T("center");
+const TCHAR* s_pszIgnoreMargins = _T("no-margins");
+const TCHAR* s_pszShrinkOversized = _T("shrink");
 
 
 // CDjViewApp
@@ -286,7 +288,7 @@ void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 
 	if (rcWeblink.PtInRect(point))
 	{
-		::ShellExecute(NULL, "open", "http://windjview.sourceforge.net/",
+		::ShellExecute(NULL, _T("open"), LoadString(IDS_WEBSITE_URL),
 			NULL, NULL, SW_SHOWNORMAL);
 		return;
 	}
@@ -297,7 +299,7 @@ void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 
 	if (rcWeblinkLibrary.PtInRect(point))
 	{
-		::ShellExecute(NULL, "open", "http://djvu.sourceforge.net",
+		::ShellExecute(NULL, _T("open"), LoadString(IDS_DJVULIBRE_URL),
 			NULL, NULL, SW_SHOWNORMAL);
 		return;
 	}
@@ -307,7 +309,7 @@ void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CAboutDlg::OnDonate()
 {
-	::ShellExecute(NULL, "open", "https://sourceforge.net/donate/index.php?group_id=114927",
+	::ShellExecute(NULL, _T("open"), LoadString(IDS_DONATE_URL),
 		NULL, NULL, SW_SHOWNORMAL);
 }
 
@@ -386,6 +388,8 @@ void CDjViewApp::LoadSettings()
 	ps.fPosLeft = GetProfileDouble(s_pszPrintSettings, s_pszPosLeft, 0.0);
 	ps.fPosTop = GetProfileDouble(s_pszPrintSettings, s_pszPosTop, 0.0);
 	ps.bCenterImage = !!GetProfileInt(s_pszPrintSettings, s_pszCenterImage, 0);
+	ps.bIgnorePrinterMargins = !!GetProfileInt(s_pszPrintSettings, s_pszIgnoreMargins, 0);
+	ps.bShrinkOversized = !!GetProfileInt(s_pszPrintSettings, s_pszShrinkOversized, 0);
 }
 
 void CDjViewApp::SaveSettings()
@@ -424,6 +428,8 @@ void CDjViewApp::SaveSettings()
 	WriteProfileDouble(s_pszPrintSettings, s_pszPosLeft, ps.fPosLeft);
 	WriteProfileDouble(s_pszPrintSettings, s_pszPosTop, ps.fPosTop);
 	WriteProfileInt(s_pszPrintSettings, s_pszCenterImage, ps.bCenterImage);
+	WriteProfileInt(s_pszPrintSettings, s_pszIgnoreMargins, ps.bIgnorePrinterMargins);
+	WriteProfileInt(s_pszPrintSettings, s_pszShrinkOversized, ps.bShrinkOversized);
 }
 
 int CDjViewApp::ExitInstance()

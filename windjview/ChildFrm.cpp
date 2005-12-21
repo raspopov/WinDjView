@@ -162,14 +162,14 @@ void CChildFrame::CreateNavPanes()
 		m_pBookmarksView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 			| TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP
 			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 1);
-		pNavPane->AddTab(_T("Bookmarks"), m_pBookmarksView);
+		pNavPane->AddTab(LoadString(IDS_BOOKMARKS_TAB), m_pBookmarksView);
 		m_pBookmarksView->SetDocument(pDoc);
 	}
 
 	m_pThumbnailsView = new CThumbnailsView();
 	m_pThumbnailsView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 		| WS_HSCROLL | WS_VSCROLL, CRect(), pNavPane, 2);
-	pNavPane->AddTab(_T("Thumbnails"), m_pThumbnailsView);
+	pNavPane->AddTab(LoadString(IDS_THUMBNAILS_TAB), m_pThumbnailsView);
 	m_pThumbnailsView->SetDocument(pDoc);
 }
 
@@ -299,7 +299,7 @@ CSearchResultsView* CChildFrame::GetResultsView()
 		m_pResultsView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 			| TVS_HASBUTTONS | TVS_DISABLEDRAGDROP | TVS_INFOTIP
 			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 3);
-		m_nResultsTab = pNavPane->AddTab(_T("Search Results"), m_pResultsView);
+		m_nResultsTab = pNavPane->AddTab(LoadString(IDS_SEARCH_RESULTS_TAB), m_pResultsView);
 		m_pResultsView->SetDocument(pDoc);
 		m_pResultsView->OnInitialUpdate();
 	}

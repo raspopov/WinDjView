@@ -1,4 +1,4 @@
-// Microsoft Visual C++ generated resource script.
+//Microsoft Developer Studio generated resource script.
 //
 #include "resource.h"
 
@@ -34,12 +34,12 @@ LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "#ifndef VK_OEM_PLUS\r\n"
@@ -52,7 +52,7 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
     "#define _AFX_NO_OLE_RESOURCES\r\n"
@@ -89,16 +89,16 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Cursor
 //
 
-IDC_CURSOR_DRAG         CURSOR                  "res\\drag.cur"
-IDC_CURSOR_LINK         CURSOR                  "res\\link.cur"
-IDC_CURSOR_HAND         CURSOR                  "res\\hand.cur"
+IDC_CURSOR_DRAG         CURSOR  DISCARDABLE     "res\\drag.cur"
+IDC_CURSOR_LINK         CURSOR  DISCARDABLE     "res\\link.cur"
+IDC_CURSOR_HAND         CURSOR  DISCARDABLE     "res\\hand.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// RT_MANIFEST
+// 24
 //
 
-IDR_MANIFEST            RT_MANIFEST             "res\\WinDjView.manifest"
+IDR_MANIFEST            24      MOVEABLE PURE   "res\\WinDjView.manifest"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -107,25 +107,25 @@ IDR_MANIFEST            RT_MANIFEST             "res\\WinDjView.manifest"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\WinDjView.ico"
-IDR_DjVuTYPE            ICON                    "res\\DjVuDoc.ico"
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\WinDjView.ico"
+IDR_DjVuTYPE            ICON    DISCARDABLE     "res\\DjVuDoc.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
-IDB_CLOSE               BITMAP                  "res\\close.bmp"
-IDB_BOOKMARKS           BITMAP                  "res\\bookmarks.bmp"
-IDB_DONATE              BITMAP                  "res\\donate.bmp"
+IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
+IDB_CLOSE               BITMAP  MOVEABLE PURE   "res\\close.bmp"
+IDB_BOOKMARKS           BITMAP  MOVEABLE PURE   "res\\bookmarks.bmp"
+IDB_DONATE              BITMAP  MOVEABLE PURE   "res\\donate.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR  16, 16
+IDR_MAINFRAME TOOLBAR MOVEABLE PURE  16, 16
 BEGIN
     BUTTON      ID_FILE_OPEN
     SEPARATOR
@@ -165,7 +165,7 @@ END
 // Menu
 //
 
-IDR_MAINFRAME MENU 
+IDR_MAINFRAME MENU DISCARDABLE 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -188,7 +188,7 @@ BEGIN
     END
 END
 
-IDR_DjVuTYPE MENU 
+IDR_DjVuTYPE MENU DISCARDABLE 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -278,7 +278,7 @@ BEGIN
     END
 END
 
-IDR_POPUP MENU 
+IDR_POPUP MENU DISCARDABLE 
 BEGIN
     POPUP "Popup"
     BEGIN
@@ -295,7 +295,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS 
+IDR_MAINFRAME ACCELERATORS MOVEABLE PURE 
 BEGIN
     "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
     "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, 
@@ -335,10 +335,10 @@ BEGIN
     "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
     VK_ADD,         ID_ZOOM_IN,             VIRTKEY, NOINVERT
     VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
-    VK_OEM_PLUS,    ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
-    VK_OEM_PLUS,    ID_ZOOM_IN,             VIRTKEY, SHIFT, CONTROL, 
+    187,            ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    187,            ID_ZOOM_IN,             VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
-    VK_OEM_MINUS,   ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    189,            ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
     "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
@@ -351,13 +351,12 @@ END
 //
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 251, 122
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
-    LTEXT           "WinDjView Version 0.3.5",IDC_STATIC,40,7,119,8,
+    LTEXT           "WinDjView Version 0.3.6",IDC_STATIC,40,7,119,8,
                     SS_NOPREFIX
     LTEXT           "Copyright (C) 2004-2005 Andrew Zhezherun",IDC_STATIC,40,
                     17,149,8
@@ -376,11 +375,10 @@ BEGIN
                     WS_TABSTOP,181,94,63,21
 END
 
-IDD_PRINT DIALOGEX 0, 0, 431, 316
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+IDD_PRINT DIALOG DISCARDABLE  0, 0, 431, 316
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Print"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "&Name:",IDC_STATIC,174,21,37,9
     COMBOBOX        IDC_COMBO_PRINTER,215,19,143,82,CBS_DROPDOWNLIST | 
@@ -417,10 +415,10 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,331,188,73,9
     CONTROL         "S&hrink oversized pages",IDC_SHRINK_OVERSIZED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,331,202,89,9
-    LTEXT           "&Left:",IDC_STATIC,14,252,21,9
-    EDITTEXT        IDC_MARGIN_LEFT,38,250,38,12,ES_AUTOHSCROLL
-    LTEXT           "&Top:",IDC_STATIC,14,270,21,9
-    EDITTEXT        IDC_MARGIN_TOP,38,268,38,12,ES_AUTOHSCROLL
+    LTEXT           "&Left:",IDC_STATIC,14,251,21,9
+    EDITTEXT        IDC_MARGIN_LEFT,38,249,38,12,ES_AUTOHSCROLL
+    LTEXT           "&Top:",IDC_STATIC,14,269,21,9
+    EDITTEXT        IDC_MARGIN_TOP,38,267,38,12,ES_AUTOHSCROLL
     LTEXT           "&Right:",IDC_STATIC,84,251,27,9
     EDITTEXT        IDC_MARGIN_RIGHT,113,249,38,12,ES_AUTOHSCROLL
     LTEXT           "&Bottom:",IDC_STATIC,84,269,27,9
@@ -465,10 +463,12 @@ BEGIN
                     WS_TABSTOP,14,297,66,9
     CONTROL         "Clip content",IDC_CLIP_CONTENT,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,198,216,55,9
+    CONTROL         "Ignore printer margins",IDC_IGNORE_MARGINS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,331,216,85,9
 END
 
 IDD_PROGRESS DIALOGEX 0, 0, 171, 61
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Cancel",IDOK,60,40,50,14
@@ -479,8 +479,7 @@ BEGIN
 END
 
 IDD_ZOOM DIALOGEX 0, 0, 119, 47
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Zoom Custom"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -491,8 +490,7 @@ BEGIN
 END
 
 IDD_SETTINGS DIALOGEX 0, 0, 219, 195
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -523,13 +521,12 @@ BEGIN
     LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,15,151,45,9
     CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,150,131,
                     12
-    LTEXT           "WinDjView 0.3.5\nby Andrew Zhezherun",IDC_STATIC_ABOUT,
+    LTEXT           "WinDjView 0.3.6\nby Andrew Zhezherun",IDC_STATIC_ABOUT,
                     7,174,92,18
 END
 
 IDD_FIND DIALOGEX 0, 0, 287, 64
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Find"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -545,7 +542,7 @@ BEGIN
 END
 
 IDD_UPDATE DIALOGEX 0, 0, 167, 34
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Checking for update. Please wait...",IDC_STATIC,39,10,
@@ -554,8 +551,7 @@ BEGIN
 END
 
 IDD_GOTO_PAGE DIALOGEX 0, 0, 123, 48
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Go To Page"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -567,14 +563,15 @@ BEGIN
 END
 
 
+#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,5,0
- PRODUCTVERSION 0,3,5,0
+ FILEVERSION 0,3,6,0
+ PRODUCTVERSION 0,3,6,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -589,14 +586,14 @@ BEGIN
     BEGIN
         BLOCK "04090000"
         BEGIN
-            VALUE "CompanyName", "Andrew Zhezherun"
-            VALUE "FileDescription", "WinDjView"
-            VALUE "FileVersion", "0.3.5"
-            VALUE "InternalName", "WinDjView.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2005 Andrew Zhezherun.  All rights reserved."
-            VALUE "OriginalFilename", "WinDjView.exe"
-            VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "0.3.5"
+            VALUE "CompanyName", "Andrew Zhezherun\0"
+            VALUE "FileDescription", "WinDjView\0"
+            VALUE "FileVersion", "0.3.6\0"
+            VALUE "InternalName", "WinDjView.exe\0"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2005 Andrew Zhezherun.  All rights reserved.\0"
+            VALUE "OriginalFilename", "WinDjView.exe\0"
+            VALUE "ProductName", "WinDjView\0"
+            VALUE "ProductVersion", "0.3.6\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -605,6 +602,8 @@ BEGIN
     END
 END
 
+#endif    // !_MAC
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -612,7 +611,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO MOVEABLE PURE 
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -686,22 +685,35 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     IDR_MAINFRAME           "WinDjView"
     IDR_DjVuTYPE            "\nDjVu\nDjVu\nDjVu Documents (*.djvu;*.djv)\n.djvu;.djv\nDjVu.Document\n"
+    IDS_BOOKMARKS_TAB       "Bookmarks"
     IDS_ASSOCIATE_SUCCESSFUL 
                             "Now you will be able to open .djvu and .djv files with WinDjView\nby double-clicking them in the Explorer."
     IDS_ASSOCIATE_FAILED    "An error occurred while trying to register file associations.\nYou may not have enough permissions to write to system registry."
+    IDS_THUMBNAILS_TAB      "Thumbnails"
+    IDS_SEARCH_RESULTS_TAB  "Search Results"
+    IDS_SAVE_COPY_AS        "Save Copy As"
+    IDS_DJVU_FILTER         "DjVu Documents (*.djvu)|*.djvu|All Files (*.*)|*.*||"
+    IDS_CANNOT_SAVE_TO_ORIG "Cannot save the document to its original location"
+    IDS_SAVE_ERROR          "An error occurred while saving the document"
+    IDS_ERROR_DECODING_PAGE "Error decoding page"
+    IDS_BMP_FILTER          "Bitmap Files (*.bmp)|*.bmp|All Files (*.*)|*.*||"
+    IDS_EXPORT_PAGE         "Export Page"
+    IDS_CONNECT_ERROR       "An error occurred while connecting to the server. Please check your internet settings."
+    IDS_NO_UPDATES_AVAILABLE 
+                            "No updates are available at this time. Please check again later."
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     AFX_IDS_APP_TITLE       "WinDjView"
     AFX_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing document\nOpen"
@@ -714,13 +726,13 @@ BEGIN
     ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_FILE_MRU_FILE1       "Open this document"
     ID_FILE_MRU_FILE2       "Open this document"
@@ -740,13 +752,13 @@ BEGIN
     ID_FILE_MRU_FILE16      "Open this document"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
     ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
     ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
@@ -756,7 +768,7 @@ BEGIN
     ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_EDIT_CLEAR           "Erase the selection\nErase"
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
@@ -771,13 +783,13 @@ BEGIN
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     AFX_IDS_SCSIZE          "Change the window size"
     AFX_IDS_SCMOVE          "Change the window position"
@@ -788,19 +800,19 @@ BEGIN
     AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     AFX_IDS_SCRESTORE       "Restore the window to normal size"
     AFX_IDS_SCTASKLIST      "Activate Task List"
     AFX_IDS_MDICHILD        "Activate this window"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_VIEW_NEXTPAGE        "Go to next page\nNext Page"
     ID_VIEW_PREVIOUSPAGE    "Go to previous page\nPrevious Page"
@@ -813,7 +825,7 @@ BEGIN
     ID_ZOOM_FITHEIGHT       "Fit page to height of the window"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_ZOOM_FITPAGE         "Fit page to the window\nFit Page"
     ID_ZOOM_ACTUALSIZE      "Display page in actual size"
@@ -826,7 +838,7 @@ BEGIN
     ID_VIEW_LASTPAGE        "Go to last page\nLast Page"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     IDC_PAGENUM             "Select page number\nPage"
     IDC_ZOOM                "Select zoom level\nZoom"
@@ -836,7 +848,7 @@ BEGIN
     ID_EXPORT_PAGE          "Exports current page as bmp file"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_VIEW_FIND            "Find text in current document\nFind"
     ID_VIEW_BACK            "Go to previous view\nPrevious View"
@@ -849,7 +861,7 @@ BEGIN
     ID_WINDOW_ACTIVATE_5    "Activate this window"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_WINDOW_ACTIVATE_6    "Activate this window"
     ID_WINDOW_ACTIVATE_7    "Activate this window"
@@ -867,7 +879,7 @@ BEGIN
     ID_MODE_SELECT          "Select Tool\nSelect Tool"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_CHECK_FOR_UPDATE     "Checks program website for available updates\nCheck for update"
     ID_DISPLAY_COLOR        "Display document in original color"
@@ -877,12 +889,24 @@ BEGIN
     ID_VIEW_FULLSCREEN      "Opens the document in fullscreen mode\nFullscreen"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_INDICATOR_PAGE       "  Page %d of %d  "
     ID_INDICATOR_SIZE       "  %s x %s %s  "
     ID_INDICATOR_ADJUST     "  Adjusted  "
     ID_INDICATOR_MODE       "  Display Mode  "
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_NEW_VERSION_AVAILABLE 
+                            "A new version %s is available. Do you want to go to program website now?"
+    IDS_VERSION_URL         "http://windjview.sourceforge.net/version.txt"
+    IDS_WEBSITE_URL         "http://windjview.sourceforge.net"
+    IDS_DJVULIBRE_URL       "http://djvu.sourceforge.net"
+    IDS_DONATE_URL          "https://sourceforge.net/donate/index.php?group_id=114927"
+    IDS_STRING_NOT_FOUND    "Search string not found"
+    IDS_PRINTING            "Printing, please wait..."
 END
 
 #endif    // English (U.S.) resources

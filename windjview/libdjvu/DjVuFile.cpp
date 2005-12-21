@@ -533,7 +533,9 @@ DjVuFile::decode_func(void)
     } G_ENDCATCH;
   } G_ENDCATCH;
   
-  decode_data_pool->clear_stream();
+//< Changed for WinDjView project
+//  decode_data_pool->clear_stream();
+//>
   G_TRY {
     if (flags.test_and_modify(DECODING, 0, DECODE_OK | INCL_FILES_CREATED, DECODING))
       pcaster->notify_file_flags_changed(this, DECODE_OK | INCL_FILES_CREATED, 

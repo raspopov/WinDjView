@@ -78,7 +78,7 @@ public:
 	bool HasText() const { return m_bHasText; }
 	int GetPageFromId(const GUTF8String& strPageId) const;
 
-	GP<DjVmNav> GetBookmarks() { return m_pDjVuDoc->get_bookmarks(); }
+	GP<DjVmNav> GetBookmarks() { return m_pDjVuDoc->get_djvm_nav(); }
 
 	CDjVuView* GetDjVuView();
 

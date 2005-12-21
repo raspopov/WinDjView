@@ -95,7 +95,7 @@ DWORD WINAPI CUpdateDlg::UpdateThreadProc(LPVOID pvData)
 		CInternetSession session;
 		session.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, 30000);
 
-		CFile* pFile = session.OpenURL(_T("http://windjview.sourceforge.net/version.txt"), 1,
+		CFile* pFile = session.OpenURL(LoadString(IDS_VERSION_URL), 1,
 			INTERNET_FLAG_TRANSFER_ASCII | INTERNET_FLAG_RELOAD);
 		if (pFile == NULL)
 			AfxThrowInternetException(1);
@@ -111,8 +111,7 @@ DWORD WINAPI CUpdateDlg::UpdateThreadProc(LPVOID pvData)
 		bOk = false;
 		e->Delete();
 
-		AfxMessageBox(_T("An error occurred while connecting to the server. Please check your internet settings."),
-			MB_ICONEXCLAMATION | MB_OK);
+		AfxMessageBox(IDS_CONNECT_ERROR, MB_ICONEXCLAMATION | MB_OK);
 	}
 
 	if (bOk)
@@ -122,16 +121,15 @@ DWORD WINAPI CUpdateDlg::UpdateThreadProc(LPVOID pvData)
 
 		if (strVersion == CURRENT_VERSION)
 		{
-			AfxMessageBox(_T("No updates are available at this time. Please check again later."),
-				MB_ICONINFORMATION | MB_OK);
+			AfxMessageBox(IDS_NO_UPDATES_AVAILABLE, MB_ICONINFORMATION | MB_OK);
 		}
 		else
 		{
-			CString strMessage = _T("A new version ") + strVersion
-				+ _T(" is available. Do you want to go to program website now?");
+			CString strMessage;
+			strMessage.Format(IDS_NEW_VERSION_AVAILABLE, strVersion);
 			if (AfxMessageBox(strMessage, MB_ICONQUESTION | MB_YESNO) == IDYES)
 			{
-				::ShellExecute(NULL, "open", "http://windjview.sourceforge.net/",
+				::ShellExecute(NULL, _T("open"), LoadString(IDS_WEBSITE_URL),
 					NULL, NULL, SW_SHOWNORMAL);
 			}
 		}

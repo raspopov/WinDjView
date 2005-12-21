@@ -106,8 +106,6 @@ DjVuMessage::programname(void)
 }
 
 static const char namestring[]="name";
-static const char valuestring[]="value";
-static const char numberstring[]="number";
 static const char srcstring[]="src";
 
 static const char *failed_to_parse_XML=ERR_MSG("DjVuMessage.failed_to_parse_XML");
@@ -144,7 +142,6 @@ static const char RootDjVuDir[] ="/etc/DjVu/";  // global last resort
 static const char DjVuEnv[] = "DJVU_CONFIG_DIR";
 
 //  The name of the message file
-static const char DjVuMessageFileName[] = "message";
 static const char MessageFile[]="messages.xml";
 static const char LanguageFile[]="languages.xml";
 
@@ -295,6 +292,8 @@ DjVuMessage::GetProfilePaths(void)
       appendPath(GURL::UTF8(DebugModuleDjVuDir,mpath),pathsmap,paths);
 #endif
       appendPath(mpath,pathsmap,paths);
+      mpath=mpath.base();
+      appendPath(GURL::UTF8(ModuleDjVuDir,mpath),pathsmap,paths);
       mpath=mpath.base();
       appendPath(GURL::UTF8(ModuleDjVuDir,mpath),pathsmap,paths);
       mpath=mpath.base();

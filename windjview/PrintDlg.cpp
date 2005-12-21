@@ -158,6 +158,7 @@ void CPrintDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CLIP_CONTENT, m_settings.bClipContent);
 	DDX_Check(pDX, IDC_SHRINK_OVERSIZED, m_settings.bShrinkOversized);
 	DDX_Check(pDX, IDC_SCALE_TO_FIT, m_settings.bScaleToFit);
+	DDX_Check(pDX, IDC_IGNORE_MARGINS, m_settings.bIgnorePrinterMargins);
 	DDX_Check(pDX, IDC_COLLATE, m_bCollate);
 	DDX_Text(pDX, IDC_PAGE_RANGES, m_strPages);
 	DDX_Check(pDX, IDC_PRINT_TO_FILE, m_bPrintToFile);
@@ -223,6 +224,7 @@ BEGIN_MESSAGE_MAP(CPrintDlg, CDialog)
 	ON_BN_CLICKED(IDC_RANGE_PAGES, OnPrintRange)
 	ON_BN_CLICKED(IDC_SCALE_TO_FIT, OnUpdateDialogData)
 	ON_BN_CLICKED(IDC_SHRINK_OVERSIZED, OnUpdateDialogData)
+	ON_BN_CLICKED(IDC_IGNORE_MARGINS, OnUpdateDialogData)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_COPIES, OnCopiesUpDown)
 	ON_BN_CLICKED(IDC_PROPERTIES, OnProperties)
 	ON_MESSAGE_VOID(WM_KICKIDLE, OnKickIdle)
@@ -477,9 +479,29 @@ void CPrintDlg::OnPaint()
 				m_pCurPage->set_rotate(m_nRotate);
 		}
 
+		double fScreenMM = rcPage.Width()*10.0 / szPaper.cx;
+
+		if (!m_settings.bIgnorePrinterMargins)
+		{
+			CDC infoDC;
+			infoDC.Attach(::CreateIC(m_pPrinter->pDriverName, m_pPrinter->pPrinterName, NULL, m_pPrinter->pDevMode));
+			ASSERT(infoDC.m_hDC);
+
+			int nPhysicalWidth = infoDC.GetDeviceCaps(PHYSICALWIDTH);
+			int nPhysicalHeight = infoDC.GetDeviceCaps(PHYSICALHEIGHT);
+			int nOffsetLeft = infoDC.GetDeviceCaps(PHYSICALOFFSETX);
+			int nOffsetTop = infoDC.GetDeviceCaps(PHYSICALOFFSETY);
+			int nOffsetRight = nPhysicalWidth - nOffsetLeft - infoDC.GetDeviceCaps(HORZRES);
+			int nOffsetBottom = nPhysicalHeight - nOffsetTop - infoDC.GetDeviceCaps(VERTRES);
+
+			rcPage.DeflateRect(nOffsetLeft * szPage.cx / nPhysicalWidth,
+				nOffsetTop * szPage.cy / nPhysicalHeight,
+				nOffsetRight * szPage.cx / nPhysicalWidth,
+				nOffsetBottom * szPage.cy / nPhysicalHeight);
+		}
+
 		if (!m_bTwoPages)
 		{
-			double fScreenMM = rcPage.Width()*10.0 / szPaper.cx;
 			PrintPage(&dc, m_pCurPage, rcPage, fScreenMM, fScreenMM, m_settings, true);
 		}
 		else
@@ -491,7 +513,7 @@ void CPrintDlg::OnPaint()
 					m_pNextPage->set_rotate(m_nRotate);
 			}
 
-			PreviewTwoPages(&dc, rcPage, szPaper);
+			PreviewTwoPages(&dc, rcPage, szPaper, fScreenMM);
 		}
 	}
 
@@ -501,7 +523,7 @@ void CPrintDlg::OnPaint()
 	dc.SelectObject(pBmpOld);
 }
 
-void CPrintDlg::PreviewTwoPages(CDC* pDC, const CRect& rcPage, const CSize& szPaper)
+void CPrintDlg::PreviewTwoPages(CDC* pDC, const CRect& rcPage, const CSize& szPaper, double fScreenMM)
 {
 	CSize szHalf = szPaper;
 	CRect rcFirstHalf = rcPage, rcSecondHalf = rcPage;
@@ -518,7 +540,6 @@ void CPrintDlg::PreviewTwoPages(CDC* pDC, const CRect& rcPage, const CSize& szPa
 		rcSecondHalf.top = rcFirstHalf.bottom;
 	}
 
-	double fScreenMM = rcPage.Width()*10.0 / szPaper.cx;
 	PrintPage(pDC, m_pCurPage, rcFirstHalf, fScreenMM, fScreenMM, m_settings, true);
 	PrintPage(pDC, m_pNextPage, rcSecondHalf, fScreenMM, fScreenMM, m_settings, true);
 }
@@ -715,6 +736,8 @@ void CPrintDlg::OnProperties()
 	if (m_hPrinter == NULL)
 		return;
 
+	UpdateData();
+
 	::DocumentProperties(m_hWnd, m_hPrinter, m_pPrinter->pPrinterName,
 			m_pPrinter->pDevMode, m_pPrinter->pDevMode,
 			DM_IN_PROMPT | DM_IN_BUFFER | DM_OUT_BUFFER);
@@ -834,7 +857,7 @@ bool CPrintDlg::ParseRange()
 			++i;
 		if (i < strPages.GetLength())
 		{
-			if (m_strPages[i] == '-')
+			if (strPages[i] == '-')
 			{
 				++i;
 				while (i < strPages.GetLength() && strPages[i] <= ' ')
@@ -862,7 +885,7 @@ bool CPrintDlg::ParseRange()
 						return false;
 				}
 			}
-			else if (m_strPages[i] == ',' || m_strPages[i] == ';')
+			else if (strPages[i] == ',' || strPages[i] == ';')
 			{
 				++i;
 				while (i < strPages.GetLength() && strPages[i] <= ' ')

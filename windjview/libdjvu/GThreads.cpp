@@ -98,7 +98,10 @@
 #endif
 #endif
 
-#if THREADMODEL==WINTHREADS
+//< Changed for WinDjView project
+//#if THREADMODEL==WINTHREADS
+#if THREADMODEL==WINTHREADS || defined(WIN32_MONITOR)
+//>
 # include <process.h>
 #endif
 #if THREADMODEL==COTHREADS
@@ -216,6 +219,11 @@ GThread::current()
 {
   return (void*) GetCurrentThreadId();
 }
+
+//< Changed for WinDjView project
+#endif // THREADMODEL==WINTHREADS
+#if THREADMODEL==WINTHREADS || defined(WIN32_MONITOR)
+//>
 
 struct thr_waiting {
   struct thr_waiting *next;

@@ -206,17 +206,35 @@ GP<DjVuImage> CDjVuDoc::GetPage(int nPage, bool bAddToCache)
 
 	data.hDecodingThread = ::GetCurrentThread();
 	data.nOrigThreadPriority = ::GetThreadPriority(data.hDecodingThread);
-	m_lock.Unlock();
 
+	GP<DjVuFile> file;
 	G_TRY
 	{
-		pImage = m_pDjVuDoc->get_page(nPage);
+		file = m_pDjVuDoc->get_djvu_file(nPage);
 	}
 	G_CATCH(ex)
 	{
 		ex;
 	}
 	G_ENDCATCH;
+
+	m_lock.Unlock();
+
+	if (file)
+	{
+		G_TRY
+		{
+			pImage = DjVuImage::create(file);
+			file->resume_decode();
+			if (pImage && THREADMODEL != NOTHREADS)
+				pImage->wait_for_complete_decode();
+		}
+		G_CATCH(ex)
+		{
+			ex;
+		}
+		G_ENDCATCH;
+	}
 
 	m_lock.Lock();
 	// Notify all waiting threads that image is ready
@@ -307,7 +325,10 @@ PageInfo CDjVuDoc::ReadPageInfo(int nPage)
 	G_TRY
 	{
 		// Get raw data from the document and decode only page info chunk
+		m_lock.Lock();
 		GP<DjVuFile> file(m_pDjVuDoc->get_djvu_file(nPage));
+		m_lock.Unlock();
+
 		GP<DataPool> pool = file->get_init_data_pool();
 		GP<ByteStream> stream = pool->get_stream();
 		GP<IFFByteStream> iff(IFFByteStream::create(stream));
@@ -398,11 +419,12 @@ void CDjVuDoc::OnSaveCopyAs()
 {
 	CString strFileName = GetTitle();
 
-	const TCHAR szFilter[] = "DjVu Documents (*.djvu)|*.djvu|All Files (*.*)|*.*||";
-
 	CFileDialog dlg(false, "djvu", strFileName, OFN_OVERWRITEPROMPT |
-		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST, szFilter);
-	CString strTitle(_T("Save Copy As"));
+		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
+		LoadString(IDS_DJVU_FILTER));
+
+	CString strTitle;
+	strTitle.LoadString(IDS_SAVE_COPY_AS);
 	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
 
 	UINT nResult = dlg.DoModal();
@@ -415,7 +437,7 @@ void CDjVuDoc::OnSaveCopyAs()
 
 	if (AfxComparePath(strFileName, GetPathName()))
 	{
-		AfxMessageBox(_T("Cannot save the document to its original location"), MB_ICONERROR | MB_OK);
+		AfxMessageBox(IDS_CANNOT_SAVE_TO_ORIG, MB_ICONERROR | MB_OK);
 		return;
 	}
 
@@ -427,7 +449,7 @@ void CDjVuDoc::OnSaveCopyAs()
 	G_CATCH(ex)
 	{
 		ex;
-		AfxMessageBox(_T("An error occurred while saving the document."), MB_ICONERROR | MB_OK);
+		AfxMessageBox(IDS_SAVE_ERROR, MB_ICONERROR | MB_OK);
 	}
 	G_ENDCATCH;
 }

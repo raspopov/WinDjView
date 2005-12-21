@@ -62,18 +62,23 @@
 #endif
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <locale.h>
 
 #ifdef HAVE_NAMESPACES
 namespace DJVU {
-  struct ddjvu_message_p;
-  struct ddjvu_thumbnail_p;
   struct ddjvu_context_s;
   struct ddjvu_job_s;
   struct ddjvu_document_s;
   struct ddjvu_page_s;
   struct ddjvu_format_s;
+  struct ddjvu_message_p;
+  struct ddjvu_thumbnail_p;
+  struct ddjvu_runnablejob_s;
+  struct ddjvu_printjob_s;
+  struct ddjvu_savejob_s;
 }
 using namespace DJVU;
 # define DJVUNS DJVU::
@@ -86,6 +91,8 @@ using namespace DJVU;
 #include "GThreads.h"
 #include "GContainer.h"
 #include "ByteStream.h"
+#include "IFFByteStream.h"
+#include "BSByteStream.h"
 #include "GString.h"
 #include "GBitmap.h"
 #include "GPixmap.h"
@@ -99,7 +106,13 @@ using namespace DJVU;
 #include "DjVuDocument.h"
 #include "DjVuMessageLite.h"
 #include "DjVuMessage.h"
+#include "DjVmNav.h"
+#include "DjVuText.h"
+#include "DjVuAnno.h"
+#include "DjVuToPS.h"
 
+
+#include "miniexp.h"
 #include "ddjvuapi.h"
 
 #if HAVE_STDINT_H
@@ -111,6 +124,7 @@ typedef unsigned int uint32_t;
 
 
 // ----------------------------------------
+// Private structures
 
 
 struct DJVUNS ddjvu_message_p : public GPEnabled
@@ -132,6 +146,7 @@ struct DJVUNS ddjvu_thumbnail_p : public GPEnabled
 
 
 // ----------------------------------------
+// Context, Jobs, Document, Pages
 
 
 struct DJVUNS ddjvu_context_s : public GPEnabled
@@ -150,6 +165,7 @@ struct DJVUNS ddjvu_job_s : public DjVuPort
   void *userdata;
   GP<ddjvu_context_s> myctx;
   GP<ddjvu_document_s> mydoc;
+  virtual ~ddjvu_job_s();
   // virtual port functions:
   virtual bool inherits(const GUTF8String&);
   virtual bool notify_error(const DjVuPort*, const GUTF8String&);  
@@ -169,6 +185,8 @@ struct DJVUNS ddjvu_document_s : public ddjvu_job_s
   bool fileflag;
   bool urlflag;
   bool docinfoflag;
+  bool pageinfoflag;
+  minivar_t protect;
   // virtual job functions:
   virtual ddjvu_status_t status();
   virtual void release();
@@ -177,6 +195,7 @@ struct DJVUNS ddjvu_document_s : public ddjvu_job_s
   virtual bool notify_error(const DjVuPort*, const GUTF8String&);  
   virtual bool notify_status(const DjVuPort*, const GUTF8String&);
   virtual void notify_doc_flags_changed(const DjVuDocument*, long, long);
+  virtual void notify_file_flags_changed(const DjVuFile*, long, long);
   virtual GP<DataPool> request_data(const DjVuPort*, const GURL&);
 };
 
@@ -184,8 +203,9 @@ struct DJVUNS ddjvu_page_s : public ddjvu_job_s
 {
   GP<DjVuImage> img;
   ddjvu_job_t *job;
-  bool pageinfoflag;
-  bool relayoutflag;
+  bool pageinfoflag;            // was the first m_pageinfo sent?
+  bool pagedoneflag;            // was the final m_pageinfo sent?
+  bool redisplayflag;           // did we receive a redisplay notification?
   // virtual job functions:
   virtual ddjvu_status_t status();
   virtual void release();
@@ -197,10 +217,12 @@ struct DJVUNS ddjvu_page_s : public ddjvu_job_s
   virtual void notify_relayout(const class DjVuImage*);
   virtual void notify_redisplay(const class DjVuImage*);
   virtual void notify_chunk_done(const DjVuPort*, const GUTF8String &);
+  void sendmessages();
 };
 
 
 // ----------------------------------------
+// Helpers
 
 
 // Hack to increment counter
@@ -304,6 +326,7 @@ xhead(ddjvu_message_tag_t tag,
 
 
 // ----------------------------------------
+// Context
 
 
 ddjvu_context_t *
@@ -349,6 +372,7 @@ ddjvu_context_release(ddjvu_context_t *ctx)
 
 
 // ----------------------------------------
+// Message helpers
 
 
 // post a new message
@@ -381,10 +405,6 @@ msg_push_nothrow(const ddjvu_message_any_t &head,
     }
   G_ENDCATCH;
 }
-
-
-// ----------------------------------------
-
 
 // prepare error message from string
 static GP<ddjvu_message_p>
@@ -460,8 +480,9 @@ msg_prep_info(GUTF8String message)
                      msg_prep_error(m,0,__FILE__,__LINE__))
 #endif
 
-// ----------------------------------------
 
+// ----------------------------------------
+// Cache
 
 void
 ddjvu_cache_set_size(ddjvu_context_t *ctx,
@@ -469,7 +490,7 @@ ddjvu_cache_set_size(ddjvu_context_t *ctx,
 {
   G_TRY
     {
-      GMonitorLock(&ctx->monitor);
+      GMonitorLock lock(&ctx->monitor);
       if (ctx->cache && cachesize>0)
         ctx->cache->set_max_size(cachesize);
     }
@@ -485,7 +506,7 @@ ddjvu_cache_get_size(ddjvu_context_t *ctx)
 {
   G_TRY
     {
-      GMonitorLock(&ctx->monitor);
+      GMonitorLock lock(&ctx->monitor);
       if (ctx->cache)
         return ctx->cache->get_max_size();
     }
@@ -502,7 +523,7 @@ ddjvu_cache_clear(ddjvu_context_t *ctx)
 {
   G_TRY
     {
-      GMonitorLock(&ctx->monitor);
+      GMonitorLock lock(&ctx->monitor);
       if (ctx->cache)
         return ctx->cache->clear();
     }
@@ -515,7 +536,27 @@ ddjvu_cache_clear(ddjvu_context_t *ctx)
 
 
 // ----------------------------------------
+// Jobs
 
+ddjvu_job_s::~ddjvu_job_s()
+{
+  G_TRY
+    {
+      ddjvu_context_t *ctx = myctx;
+      if (!ctx) return;
+      GMonitorLock lock(&ctx->monitor);
+      GPosition p = ctx->mlist;
+      while (p) {
+        GPosition s = p; ++p;
+        if (ctx->mlist[s]->p.m_any.job == this)
+          ctx->mlist.del(s);
+      }
+    }
+  G_CATCH()
+    {
+    }
+  G_ENDCATCH;
+}
 
 bool
 ddjvu_job_s::inherits(const GUTF8String &classname)
@@ -605,6 +646,7 @@ ddjvu_job_get_user_data(ddjvu_job_t *job)
 
 
 // ----------------------------------------
+// Message queue
 
 
 ddjvu_message_t *
@@ -612,7 +654,7 @@ ddjvu_message_peek(ddjvu_context_t *ctx)
 {
   G_TRY
     {
-      GMonitorLock(&ctx->monitor);
+      GMonitorLock lock(&ctx->monitor);
       GPosition p = ctx->mlist;
       if (p) 
         return &ctx->mlist[p]->p;
@@ -629,7 +671,7 @@ ddjvu_message_wait(ddjvu_context_t *ctx)
 {
   G_TRY
     {
-      GMonitorLock(&ctx->monitor);
+      GMonitorLock lock(&ctx->monitor);
       while (! ctx->mlist.size())
         ctx->monitor.wait();
       GPosition p = ctx->mlist;
@@ -648,7 +690,7 @@ ddjvu_message_pop(ddjvu_context_t *ctx)
 {
   G_TRY
     {
-      GMonitorLock(&ctx->monitor);
+      GMonitorLock lock(&ctx->monitor);
       GPosition p = ctx->mlist;
       if (p) 
         ctx->mlist.del(p);
@@ -664,13 +706,15 @@ ddjvu_message_set_callback(ddjvu_context_t *ctx,
                            ddjvu_message_callback_t callback,
                            void *closure)
 {
-  GMonitorLock(&ctx->monitor);
+  GMonitorLock lock(&ctx->monitor);
   ctx->callbackfun = callback;
   ctx->callbackarg = closure;
 }
 
 
 // ----------------------------------------
+// Document callbacks
+
 
 void
 ddjvu_document_s::release()
@@ -727,6 +771,7 @@ ddjvu_document_s::notify_status(const DjVuPort *p, const GUTF8String &m)
 void 
 ddjvu_document_s::notify_doc_flags_changed(const DjVuDocument *, long, long)
 {
+  GMonitorLock lock(&monitor);
   if (docinfoflag || !doc) return;
   long flags = doc->get_doc_flags();
   if ((flags & DjVuDocument::DOC_INIT_OK) ||
@@ -737,9 +782,18 @@ ddjvu_document_s::notify_doc_flags_changed(const DjVuDocument *, long, long)
   }
 }
 
-GP<DataPool> 
-ddjvu_document_s::request_data(const DjVuPort*p, const GURL &url)
+void 
+ddjvu_document_s::notify_file_flags_changed(const DjVuFile*, long s, long)
 {
+  if (pageinfoflag && !fileflag)
+    if (s & DjVuFile::ALL_DATA_PRESENT)
+      msg_push(xhead(DDJVU_PAGEINFO, this));
+}
+
+GP<DataPool> 
+ddjvu_document_s::request_data(const DjVuPort *p, const GURL &url)
+{
+  GMonitorLock lock(&monitor);
   GP<DataPool> pool;
   if (fileflag)
     {
@@ -748,14 +802,10 @@ ddjvu_document_s::request_data(const DjVuPort*p, const GURL &url)
     }
   else if (doc)
     {
-      streamid += 1;
-      {
-        GMonitorLock lock(&monitor);        
-        if (streamid > 0)
-          streams[streamid] = pool = DataPool::create();
-        else
-          pool = streams[(streamid = 0)];
-      }
+      if (++streamid > 0)
+        streams[streamid] = pool = DataPool::create();
+      else
+        pool = streams[(streamid = 0)];
       // build message
       GP<ddjvu_message_p> p = new ddjvu_message_p;
       p->p.m_newstream.streamid = streamid;
@@ -771,12 +821,14 @@ ddjvu_document_s::request_data(const DjVuPort*p, const GURL &url)
           p->tmp2 = (const char*)url.get_string();
           p->p.m_newstream.url = (const char*)(p->tmp2);
         }
+      msg_push(xhead(DDJVU_NEWSTREAM, this), p);
     }
   return pool;
 }
 
 
 // ----------------------------------------
+// Documents
 
 
 ddjvu_document_t *
@@ -791,10 +843,12 @@ ddjvu_document_create(ddjvu_context_t *ctx,
       if (! cache) xcache = 0;
       d = new ddjvu_document_s;
       ref(d);
+      GMonitorLock lock(&d->monitor);
       d->streams[0] = DataPool::create();
       d->streamid = -1;
       d->fileflag = false;
       d->docinfoflag = false;
+      d->pageinfoflag = false;
       d->myctx = ctx;
       d->mydoc = 0;
       d->userdata = 0;
@@ -838,8 +892,10 @@ ddjvu_document_create_by_filename(ddjvu_context_t *ctx,
       GURL gurl = GURL::Filename::UTF8(filename);
       d = new ddjvu_document_s;
       ref(d);
+      GMonitorLock lock(&d->monitor);
       d->streamid = -1;
       d->fileflag = true;
+      d->pageinfoflag = false;
       d->urlflag = false;
       d->docinfoflag = false;
       d->myctx = ctx;
@@ -867,6 +923,7 @@ ddjvu_document_job(ddjvu_document_t *document)
 
 
 // ----------------------------------------
+// Streams
 
 
 void
@@ -885,7 +942,8 @@ ddjvu_stream_write(ddjvu_document_t *doc,
       }
       if (! pool)
         G_THROW("Unknown stream ID");
-      pool->add_data(data, datalen);
+      if (datalen > 0)
+        pool->add_data(data, datalen);
     }
   G_CATCH(ex)
     {
@@ -923,6 +981,7 @@ ddjvu_stream_close(ddjvu_document_t *doc,
 
 
 // ----------------------------------------
+// Document queries
 
 
 ddjvu_document_type_t
@@ -975,9 +1034,82 @@ ddjvu_document_get_pagenum(ddjvu_document_t *document)
   return 1;
 }
 
+ddjvu_status_t
+ddjvu_document_get_pageinfo(ddjvu_document_t *document, int pageno, 
+                            ddjvu_pageinfo_t *pageinfo)
+{
+  G_TRY
+    {
+      DjVuDocument *doc = document->doc;
+      if (doc)
+        {
+          document->pageinfoflag = true;
+          GP<DjVuFile> file = doc->get_djvu_file(pageno);
+          if (! file || ! file->is_data_present() )
+            return DDJVU_JOB_STARTED;
+          const GP<ByteStream> pbs(file->get_djvu_bytestream(false, false));
+          const GP<IFFByteStream> iff(IFFByteStream::create(pbs));
+          GUTF8String chkid;
+          if (iff->get_chunk(chkid))
+            {
+              if (chkid == "FORM:DJVU")
+                {
+                  while (iff->get_chunk(chkid) && chkid!="INFO")
+                    iff->close_chunk();
+                  if (chkid == "INFO")
+                    {
+                      GP<ByteStream> gbs = iff->get_bytestream();
+                      GP<DjVuInfo> info=DjVuInfo::create();
+                      info->decode(*gbs);
+                      int rot = ((360-GRect::findangle(info->orientation))/90)%4;
+                      if (pageinfo)
+                        {
+                          pageinfo->width = (rot&1) ? info->height : info->width;
+                          pageinfo->height = (rot&1) ? info->width : info->height;
+                          pageinfo->dpi = info->dpi;
+                        }
+                      return DDJVU_JOB_OK;
+                    }
+                }
+              else if (chkid == "FORM:BM44" || chkid == "FORM:PM44")
+                {
+                  while (iff->get_chunk(chkid) && chkid!="BM44" && chkid!="PM44")
+                    iff->close_chunk();
+                  if (chkid=="BM44" || chkid=="PM44")
+                    {
+                      GP<ByteStream> gbs = iff->get_bytestream();
+                      if (gbs->read8() == 0)
+                        {
+                          gbs->read8();
+                          gbs->read8();
+                          unsigned char xhi = gbs->read8();
+                          unsigned char xlo = gbs->read8();
+                          unsigned char yhi = gbs->read8();
+                          unsigned char ylo = gbs->read8();
+                          if (pageinfo)
+                            {
+                              pageinfo->width = (xhi<<8)+xlo;
+                              pageinfo->height = (yhi<<8)+ylo;
+                              pageinfo->dpi = 100;
+                            }
+                          return DDJVU_JOB_OK;
+                        }
+                    }
+                }
+            }
+        }
+    }
+  G_CATCH(ex)
+    {
+      ERROR(document, ex);
+    }
+  G_ENDCATCH;
+  return DDJVU_JOB_FAILED;
+}
+
 
 // ----------------------------------------
-
+// Page
 
 static ddjvu_page_t *
 ddjvu_page_create(ddjvu_document_t *document, ddjvu_job_t *job,
@@ -990,11 +1122,13 @@ ddjvu_page_create(ddjvu_document_t *document, ddjvu_job_t *job,
       if (! doc) return 0;
       p = new ddjvu_page_s;
       ref(p);
+      GMonitorLock lock(&p->monitor);
       p->myctx = document->myctx;
       p->mydoc = document;
       p->userdata = 0;
       p->pageinfoflag = false;
-      p->relayoutflag = false;
+      p->pagedoneflag = false;
+      p->redisplayflag = false;
       if (job)
         p->job = job;
       else
@@ -1035,7 +1169,7 @@ ddjvu_page_job(ddjvu_page_t *page)
 
 
 // ----------------------------------------
-
+// Page callbacks
 
 void
 ddjvu_page_s::release()
@@ -1086,50 +1220,48 @@ ddjvu_page_s::notify_status(const DjVuPort *p, const GUTF8String &m)
 }
 
 void 
-ddjvu_page_s::notify_file_flags_changed(const DjVuFile*, long, long)
+ddjvu_page_s::notify_file_flags_changed(const DjVuFile *sender, long, long)
 {
-  if (pageinfoflag || !img) return;
+  GMonitorLock lock(&monitor);
+  if (!img) return;
   DjVuFile *file = img->get_djvu_file();
-  if (!file) return;
+  if (file==0 || file!=sender) return;
   long flags = file->get_flags();
-  if ((flags && DjVuFile::DECODE_OK) ||
-      (flags && DjVuFile::DECODE_FAILED) ||
-      (flags && DjVuFile::DECODE_STOPPED) )
+  if ((flags & DjVuFile::DECODE_OK) ||
+      (flags & DjVuFile::DECODE_FAILED) ||
+      (flags & DjVuFile::DECODE_STOPPED) )
     {
+      if (pagedoneflag) return;
       msg_push(xhead(DDJVU_PAGEINFO, this));
-      pageinfoflag = true;
+      pageinfoflag = pagedoneflag = true;
     }
 }
 
 void 
 ddjvu_page_s::notify_relayout(const DjVuImage *dimg)
 {
-  if (! img) 
-    return;
-  if (! pageinfoflag) 
-    msg_push(xhead(DDJVU_PAGEINFO, this));
+  GMonitorLock lock(&monitor);
+  if (! img || pageinfoflag) return;
+  msg_push(xhead(DDJVU_PAGEINFO, this));
   pageinfoflag = true;
   msg_push(xhead(DDJVU_RELAYOUT, this));
-  relayoutflag = true;
+  if ( redisplayflag )
+    notify_redisplay(img);
 }
 
 void 
 ddjvu_page_s::notify_redisplay(const DjVuImage *dimg)
 {
-  if (! img) 
-    return;
-  if (! pageinfoflag) 
-    msg_push(xhead(DDJVU_PAGEINFO, this));
-  pageinfoflag = true;
-  if (! relayoutflag)
-    msg_push(xhead(DDJVU_RELAYOUT, this));
-  relayoutflag = true;
-  msg_push(xhead(DDJVU_REDISPLAY, this));
+  GMonitorLock lock(&monitor);
+  redisplayflag = true;
+  if (img && pageinfoflag)
+    msg_push(xhead(DDJVU_REDISPLAY, this));
 }
 
 void 
 ddjvu_page_s::notify_chunk_done(const DjVuPort*, const GUTF8String &name)
 {
+  GMonitorLock lock(&monitor);
   if (! img) return;
   GP<ddjvu_message_p> p = new ddjvu_message_p;
   p->tmp1 = name;
@@ -1139,14 +1271,14 @@ ddjvu_page_s::notify_chunk_done(const DjVuPort*, const GUTF8String &name)
 
 
 // ----------------------------------------
-
+// Page queries
 
 int
 ddjvu_page_get_width(ddjvu_page_t *page)
 {
   G_TRY
     {
-      if (page->img)
+      if (page && page->img)
         return page->img->get_width();
     }
   G_CATCH(ex)
@@ -1162,7 +1294,7 @@ ddjvu_page_get_height(ddjvu_page_t *page)
 {
   G_TRY
     {
-      if (page->img)
+      if (page && page->img)
         return page->img->get_height();
     }
   G_CATCH(ex)
@@ -1178,7 +1310,7 @@ ddjvu_page_get_resolution(ddjvu_page_t *page)
 {
   G_TRY
     {
-      if (page->img)
+      if (page && page->img)
         return page->img->get_dpi();
     }
   G_CATCH(ex)
@@ -1194,7 +1326,7 @@ ddjvu_page_get_gamma(ddjvu_page_t *page)
 {
   G_TRY
     {
-      if (page->img)
+      if (page && page->img)
         return page->img->get_gamma();
     }
   G_CATCH(ex)
@@ -1210,7 +1342,7 @@ ddjvu_page_get_version(ddjvu_page_t *page)
 {
   G_TRY
     {
-      if (page->img)
+      if (page && page->img)
         return page->img->get_version();
     }
   G_CATCH(ex)
@@ -1226,7 +1358,7 @@ ddjvu_page_get_type(ddjvu_page_t *page)
 {
   G_TRY
     {
-      if (! page->img)
+      if (! (page && page->img))
         return DDJVU_PAGETYPE_UNKNOWN;
       else if (page->img->is_legal_bilevel())
         return DDJVU_PAGETYPE_BITONAL;
@@ -1283,7 +1415,7 @@ ddjvu_page_get_long_description(ddjvu_page_t *page)
 
 
 // ----------------------------------------
-
+// Rotations
 
 ddjvu_page_rotation_t
 ddjvu_page_get_rotation(ddjvu_page_t *page)
@@ -1291,7 +1423,7 @@ ddjvu_page_get_rotation(ddjvu_page_t *page)
   ddjvu_page_rotation_t rot = DDJVU_ROTATE_0;
   G_TRY
     {
-      if (page->img)
+      if (page && page->img)
         rot = (ddjvu_page_rotation_t)page->img->get_rotate();
     }
   G_CATCH(ex)
@@ -1314,14 +1446,15 @@ ddjvu_page_set_rotation(ddjvu_page_t *page,
         case DDJVU_ROTATE_90:
         case DDJVU_ROTATE_180:
         case DDJVU_ROTATE_270:
-          if (page->img)
+          if (page && page->img && page->pageinfoflag)
             {
               int old = page->img->get_rotate();
               if (old != (int)rot)
                 {
                   page->img->set_rotate((int)rot);
                   msg_push(xhead(DDJVU_RELAYOUT, page));
-                  msg_push(xhead(DDJVU_REDISPLAY, page));
+                  if (page->redisplayflag)
+                    msg_push(xhead(DDJVU_REDISPLAY, page));
                 }
             }
           break;
@@ -1339,7 +1472,7 @@ ddjvu_page_set_rotation(ddjvu_page_t *page,
 
 
 // ----------------------------------------
-
+// Render
 
 struct DJVUNS ddjvu_format_s
 {
@@ -1768,7 +1901,7 @@ ddjvu_page_render(ddjvu_page_t *page,
 
 
 // ----------------------------------------
-
+// Thumbnails
 
 void
 ddjvu_thumbnail_p::callback(void *cldata)
@@ -1776,7 +1909,7 @@ ddjvu_thumbnail_p::callback(void *cldata)
   ddjvu_thumbnail_p *thumb = (ddjvu_thumbnail_p*)cldata;
   if (thumb->document)
     {
-      GMonitorLock(&thumb->document->monitor);
+      GMonitorLock lock(&thumb->document->monitor);
       if (thumb->pool && thumb->pool->is_eof())
         {
           GP<DataPool> pool = thumb->pool;
@@ -1808,7 +1941,7 @@ ddjvu_thumbnail_status(ddjvu_document_t *document, int pagenum, int start)
 {
   G_TRY
     {
-      GMonitorLock(&document->monitor);
+      GMonitorLock lock(&document->monitor);
       GPosition p = document->thumbnails.contains(pagenum);
       GP<ddjvu_thumbnail_p> thumb;
       if (p)
@@ -1858,7 +1991,7 @@ ddjvu_thumbnail_render(ddjvu_document_t *document, int pagenum,
       ddjvu_status_t status = ddjvu_thumbnail_status(document,pagenum,FALSE);
       if (status == DDJVU_JOB_OK)
         {
-          GMonitorLock(&document->monitor);
+          GMonitorLock lock(&document->monitor);
           thumb = document->thumbnails[pagenum];
         }
       if (! (thumb && wptr && hptr))
@@ -1904,7 +2037,972 @@ ddjvu_thumbnail_render(ddjvu_document_t *document, int pagenum,
 
 
 // ----------------------------------------
+// Threaded jobs
 
+struct DJVUNS ddjvu_runnablejob_s : public ddjvu_job_s
+{
+  bool mystop;
+  int  myprogress;
+  ddjvu_status_t mystatus;
+  // methods
+  ddjvu_runnablejob_s();
+  ddjvu_status_t start();
+  void progress(int p);
+  // thread function
+  virtual ddjvu_status_t run() = 0;
+  // virtual port functions:
+  virtual bool inherits(const GUTF8String&);
+  virtual ddjvu_status_t status();
+  virtual void stop();
+private:
+  static void cbstart(void*);
+};
+
+ddjvu_runnablejob_s::ddjvu_runnablejob_s()
+  : mystop(false), myprogress(-1),
+    mystatus(DDJVU_JOB_NOTSTARTED) 
+{
+}
+
+void 
+ddjvu_runnablejob_s::progress(int x)
+{
+  if ((mystatus>=DDJVU_JOB_OK) || (x>myprogress && x<100))
+    {
+      GMonitorLock lock(&monitor);
+      GP<ddjvu_message_p> p = new ddjvu_message_p;
+      p->p.m_progress.status = mystatus;
+      p->p.m_progress.percent = myprogress = x;
+      msg_push(xhead(DDJVU_PROGRESS,this),p);
+    }
+}
+
+ddjvu_status_t
+ddjvu_runnablejob_s::start()
+{
+  GMonitorLock lock(&monitor);
+  if (mystatus==DDJVU_JOB_NOTSTARTED && myctx)
+    {
+      GThread thr;
+      thr.create(cbstart, (void*)this);
+      monitor.wait();
+    }
+  return mystatus;
+}
+
+void
+ddjvu_runnablejob_s::cbstart(void *arg)
+{
+  GP<ddjvu_runnablejob_s> self = (ddjvu_runnablejob_s*)arg;
+  {
+    GMonitorLock lock(&self->monitor);
+    self->mystatus = DDJVU_JOB_STARTED;
+    self->monitor.signal();
+  }
+  ddjvu_status_t r;
+  G_TRY
+    {
+      self->progress(0);
+      r = self->run();
+    }
+  G_CATCH(ex)
+    {
+      r = DDJVU_JOB_FAILED;
+      if (self && self->mystop)
+        r = DDJVU_JOB_STOPPED;
+    }
+  G_ENDCATCH;
+  {
+    GMonitorLock lock(&self->monitor);
+    self->mystatus = r;
+  }
+  if (self && self->mystatus> DDJVU_JOB_OK)
+    self->progress(self->myprogress);
+  else
+    self->progress(100);
+}
+
+bool 
+ddjvu_runnablejob_s::inherits(const GUTF8String &classname)
+{
+  return (classname == "ddjvu_runnablejob_s") 
+    || ddjvu_job_s::inherits(classname);
+}
+
+ddjvu_status_t 
+ddjvu_runnablejob_s::status()
+{
+  return mystatus;
+}
+
+void
+ddjvu_runnablejob_s::stop()
+{
+  mystop = true;
+}
+
+
+// ----------------------------------------
+// Printing
+
+struct DJVUNS ddjvu_printjob_s : public ddjvu_runnablejob_s
+{
+  DjVuToPS printer;
+  GUTF8String pages;
+  GP<ByteStream> obs;
+  virtual ddjvu_status_t run();
+  // virtual port functions:
+  virtual bool inherits(const GUTF8String&);
+  // progress
+  static void cbrefresh(void*);
+  static void cbprogress(double, void*);
+  static void cbinfo(int, int, int, DjVuToPS::Stage, void*);
+  double progress_low;
+  double progress_high;
+};
+
+ddjvu_status_t 
+ddjvu_printjob_s::run()
+{
+  progress_low = 0;
+  progress_high = 1;
+  printer.set_refresh_cb(cbrefresh, (void*)this);
+  printer.set_dec_progress_cb(cbprogress, (void*)this);
+  printer.set_prn_progress_cb(cbprogress, (void*)this);
+  printer.set_info_cb(cbinfo, (void*)this);
+  printer.print(*obs, mydoc->doc, pages);
+  return DDJVU_JOB_OK;
+}
+
+bool 
+ddjvu_printjob_s::inherits(const GUTF8String &classname)
+{
+  return (classname == "ddjvu_printjob_s") 
+    || ddjvu_runnablejob_s::inherits(classname);
+}
+
+void
+ddjvu_printjob_s::cbrefresh(void *data)
+{
+  ddjvu_printjob_s *self = (ddjvu_printjob_s*)data;
+  if (self->mystop)
+    {
+      msg_push(xhead(DDJVU_INFO,self), msg_prep_info("Print job stopped"));
+      G_THROW("STOP");
+    }
+}
+
+void
+ddjvu_printjob_s::cbprogress(double done, void *data)
+{
+  ddjvu_printjob_s *self = (ddjvu_printjob_s*)data;
+  double &low = self->progress_low;
+  double &high = self->progress_high;
+  double progress = low;
+  if (done >= 1)
+    progress = high;
+  else if (done >= 0)
+    progress = low + done * (high-low);
+  self->progress((int)(progress * 100));
+  ddjvu_printjob_s::cbrefresh(data);
+}
+
+void
+ddjvu_printjob_s::cbinfo(int pnum, int pcnt, int ptot,
+                         DjVuToPS::Stage stage, void *data)
+{
+  ddjvu_printjob_s *self = (ddjvu_printjob_s*)data;
+  double &low = self->progress_low;
+  double &high = self->progress_high;
+  low = 0;
+  high = 1;
+  if (ptot > 0) 
+    {
+      double step = 1.0 / (double)ptot;
+      low = (double)pcnt * step;
+      if (stage != DjVuToPS::DECODING) 
+	low += step / 2.0;
+      high = low  + step / 2.0;
+    }
+  if (low < 0)
+    low = 0;
+  if (low > 1) 
+    low = 1;
+  if (high < low) 
+    high = low;
+  if (high > 1)
+    high = 1;
+  self->progress((int)(low * 100));
+  ddjvu_printjob_s::cbrefresh(data);
+}
+
+static void
+complain(GUTF8String opt, const char *msg)
+{
+  GUTF8String message;
+  if (opt.length() > 0)
+    message = "Parsing \"" + opt + "\": " + msg;
+  else
+    message = msg;
+  G_EMTHROW(GException((const char*)message));
+}
+
+ddjvu_job_t *
+ddjvu_document_print(ddjvu_document_t *document, FILE *output,
+                     int optc, const char * const * optv)
+{
+  ddjvu_printjob_s *job = 0;
+  G_TRY
+    {
+      job = new ddjvu_printjob_s;
+      ref(job);
+      job->myctx = document->myctx;
+      job->mydoc = document;
+      // parse options (see djvups(1))
+      DjVuToPS::Options &options = job->printer.options;
+      GUTF8String &pages = job->pages;
+      while (optc>0)
+        {
+          // normalize
+          GNativeString narg(optv[0]);
+          GUTF8String uarg = narg;
+          const char *s1 = (const char*)narg;
+          if (s1[0] == '-') s1++;
+          if (s1[0] == '-') s1++;
+          // separate arguments
+          const char *s2 = s1;
+          while (*s2 && *s2 != '=') s2++;
+          GUTF8String s( s1, s2-s1 );
+          GUTF8String arg( s2[0] && s2[1] ? s2+1 : "" );
+          // rumble!
+          if (s == "page" || s == "pages")
+            {
+              if (pages.length())
+                pages = pages + ",";
+              pages = pages + arg;
+            }
+          else if (s == "format")
+            {
+              if (arg == "ps")
+                options.set_format(DjVuToPS::Options::PS);
+              else if (arg == "eps")
+                options.set_format(DjVuToPS::Options::EPS);
+              else
+                complain(uarg,"Invalid format. Use \"ps\" or \"eps\".");
+            }
+          else if (s == "level")
+            {
+              int endpos;
+              int lvl = arg.toLong(0, endpos);
+              if (endpos != (int)arg.length() || lvl < 1 || lvl > 4)
+                complain(uarg,"Invalid Postscript language level.");
+              options.set_level(lvl);
+            }
+          else if (s == "orient" || s == "orientation")
+            {
+              if (arg == "a" || arg == "auto" )
+                options.set_orientation(DjVuToPS::Options::AUTO);
+              if (arg == "l" || arg == "landscape" )
+                options.set_orientation(DjVuToPS::Options::LANDSCAPE);
+              if (arg == "p" || arg == "portrait" )
+                options.set_orientation(DjVuToPS::Options::PORTRAIT);
+              else
+                complain(uarg,"Invalid orientation. Use \"auto\", "
+                         "\"landscape\" or \"portrait\".");
+            }
+          else if (s == "mode")
+            {
+              if (arg == "c" || arg == "color" )
+                options.set_mode(DjVuToPS::Options::COLOR);
+              else if (arg == "black" || arg == "bw")
+                options.set_mode(DjVuToPS::Options::BW);
+              else if (arg == "fore" || arg == "foreground")
+                options.set_mode(DjVuToPS::Options::FORE);
+              else if (arg == "back" || arg == "background" )
+                options.set_mode(DjVuToPS::Options::BACK);
+              else
+                complain(uarg,"Invalid mode. Use \"color\", \"bw\", "
+                         "\"foreground\", or \"background\".");
+            }
+          else if (s == "zoom")
+            {
+              if (arg == "auto" || arg == "fit" || arg == "fit_page")
+                options.set_zoom(0);
+              else if (arg == "1to1" || arg == "onetoone")
+                options.set_zoom(100);                
+              else 
+                {
+                  int endpos;
+                  int z = arg.toLong(0,endpos);
+                  if (endpos != (int)arg.length() || z < 25 || z > 2400)
+                    complain(uarg,"Invalid zoom factor.");
+                  options.set_zoom(z);
+                }
+            }
+          else if (s == "color")
+            {
+              if (arg == "yes" || arg == "")
+                options.set_color(true);
+              else if (arg == "no")
+                options.set_color(false);
+              else
+                complain(uarg,"Invalid argument. Use \"yes\" or \"no\".");
+            }
+          else if (s == "gray" || s == "grayscale")
+            {
+              if (arg.length())
+                complain(uarg,"No argument was expected.");
+              options.set_color(false);
+            }
+          else if (s == "srgb" || s == "colormatch")
+            {
+              if (arg == "yes" || arg == "")
+                options.set_sRGB(true);
+              else if (arg == "no")
+                options.set_sRGB(false);
+              else
+                complain(uarg,"Invalid argument. Use \"yes\" or \"no\".");
+            }
+          else if (s == "gamma")
+            {
+              int endpos;
+              double g = arg.toDouble(0,endpos);
+              if (endpos != (int)arg.length() || g < 0.3 || g > 5.0)
+                complain(uarg,"Invalid gamma factor. "
+                              "Use a number in range 0.3 ... 5.0.");
+              options.set_gamma(g);
+            }
+          else if (s == "copies")
+            {
+              int endpos;
+              int n = arg.toLong(0, endpos);
+              if (endpos != (int)arg.length() || n < 1 || n > 999999)
+                complain(uarg,"Invalid number of copies.");
+              options.set_copies(n);
+            }
+          else if (s == "frame")
+            {
+              if (arg == "yes" || arg == "")
+                options.set_frame(true);
+              else if (arg == "no")
+                options.set_frame(false);
+              else
+                complain(uarg,"Invalid argument. Use \"yes\" or \"no\".");
+            }
+          else if (s == "cropmarks")
+            {
+              if (arg == "yes" || arg == "")
+                options.set_cropmarks(true);
+              else if (arg == "no")
+                options.set_cropmarks(false);
+              else
+                complain(uarg,"Invalid argument. Use \"yes\" or \"no\".");
+            }
+          else if (s == "text")
+            {
+              if (arg == "yes" || arg == "")
+                options.set_text(true);
+              else if (arg == "no")
+                options.set_text(false);
+              else
+                complain(uarg,"Invalid argument. Use \"yes\" or \"no\".");
+            }
+          else if (s == "booklet")
+            {
+              if (arg == "no")
+                options.set_bookletmode(DjVuToPS::Options::OFF);
+              else if (arg == "recto")
+                options.set_bookletmode(DjVuToPS::Options::RECTO);
+              else if (arg == "verso")
+                options.set_bookletmode(DjVuToPS::Options::VERSO);
+              else if (arg == "rectoverso" || arg=="yes" || arg=="")
+                options.set_bookletmode(DjVuToPS::Options::RECTOVERSO);
+              else 
+                complain(uarg,"Invalid argument."
+                         "Use \"no\", \"yes\", \"recto\", or \"verso\".");
+            }
+          else if (s == "bookletmax")
+            {
+              int endpos;
+              int n = arg.toLong(0, endpos);
+              if (endpos != (int)arg.length() || n < 0 || n > 999999)
+                complain(uarg,"Invalid argument.");
+              options.set_bookletmax(n);
+            }
+          else if (s == "bookletalign")
+            {
+              int endpos;
+              int n = arg.toLong(0, endpos);
+              if (endpos != (int)arg.length() || n < -720 || n > +720)
+                complain(uarg,"Invalid argument.");
+              options.set_bookletalign(n);
+            }
+          else if (s == "bookletfold")
+            {
+              int endpos = 0;
+              int m = 250;
+              int n = arg.toLong(0, endpos);
+              if (endpos>0 && endpos<(int)arg.length() && arg[endpos]=='+')
+                m = arg.toLong(endpos+1, endpos);
+              if (endpos != (int)arg.length() || m<0 || m>720 || n<0 || n>9999 )
+                complain(uarg,"Invalid argument.");
+              options.set_bookletfold(n,m);
+            }
+          else
+            {
+              complain(uarg, "Unrecognized option.");
+            }
+          // Next option
+          optc -= 1;
+          optv += 1;
+        }
+      // go
+      job->obs = ByteStream::create(output, "wb", false);
+      job->start();
+    }
+  G_CATCH(ex)
+    {
+      if (job) 
+        unref(job);
+      job = 0;
+      ERROR(document, ex);
+    }
+  G_ENDCATCH;
+  return job;
+}
+
+// ----------------------------------------
+// Not yet implemented
+
+ddjvu_job_t *
+ddjvu_document_save(ddjvu_document_t *document, FILE *output, 
+                    int optc, const char * const * optv)
+{
+  return 0;
+}
+
+
+
+// ----------------------------------------
+// S-Expressions (generic)
+
+static miniexp_t
+miniexp_status(ddjvu_status_t status)
+{
+  if (status < DDJVU_JOB_OK)
+    return miniexp_dummy;
+  else if (status == DDJVU_JOB_STOPPED)
+    return miniexp_symbol("stopped");
+  else if (status > DDJVU_JOB_OK)
+    return miniexp_symbol("failed");    
+  return miniexp_nil;
+}
+
+static void
+miniexp_protect(ddjvu_document_t *document, miniexp_t expr)
+{
+  for(miniexp_t p=document->protect; miniexp_consp(p); p=miniexp_cdr(p))
+    if (miniexp_car(p) == expr)
+      return;
+  if (miniexp_consp(expr) || miniexp_objectp(expr))
+    document->protect = miniexp_cons(expr, document->protect);
+}
+
+void
+ddjvu_miniexp_release(ddjvu_document_t *document, miniexp_t expr)
+{
+  miniexp_t q = miniexp_nil;
+  miniexp_t p = document->protect;
+  while (miniexp_consp(p))
+    {
+      if (miniexp_car(p) != expr)
+        q = p;
+      else if (q)
+        miniexp_rplacd(q, miniexp_cdr(p));
+      else
+        document->protect = miniexp_cdr(p);
+      p = miniexp_cdr(p);
+    }
+}
+
+
+
+// ----------------------------------------
+// S-Expressions (outline)
+
+static miniexp_t
+outline_sub(const GP<DjVmNav> &nav, int &pos, int count)
+{
+  GP<DjVmNav::DjVuBookMark> entry;
+  minivar_t p,q,s;
+  while (count > 0 && pos < nav->getBookMarkCount())
+    {
+      nav->getBookMark(entry, pos++);
+      q = outline_sub(nav, pos, entry->count);
+      s = miniexp_string((const char*)(entry->url));
+      q = miniexp_cons(s, q);
+      s = miniexp_string((const char*)(entry->displayname));
+      q = miniexp_cons(s, q);
+      p = miniexp_cons(q, p);
+      count--;
+    }
+  return miniexp_reverse(p);
+}
+
+miniexp_t
+ddjvu_document_get_outline(ddjvu_document_t *document)
+{
+  G_TRY
+    {
+      ddjvu_status_t status = document->status();
+      if (status != DDJVU_JOB_OK)
+        return miniexp_status(status);
+      DjVuDocument *doc = document->doc;
+      if (doc)
+        {
+          GP<DjVmNav> nav = doc->get_djvm_nav();
+          if (! nav) 
+            return miniexp_nil;
+          minivar_t result;
+          int pos = 0;
+          result = outline_sub(nav, pos, nav->getBookMarkCount());
+          result = miniexp_cons(miniexp_symbol("bookmarks"), result);
+          miniexp_protect(document, result);
+          return result;
+        }
+    }
+  G_CATCH(ex)
+    {
+      ERROR(document, ex);
+    }
+  G_ENDCATCH;
+  return miniexp_status(DDJVU_JOB_FAILED);
+}
+
+
+// ----------------------------------------
+// S-Expressions (text)
+
+static struct zone_names_s {
+  char *name;
+  DjVuTXT::ZoneType ztype;
+  char separator;
+} zone_names[] = {
+  { "page",   DjVuTXT::PAGE,      0 },
+  { "column", DjVuTXT::COLUMN,    DjVuTXT::end_of_column },
+  { "region", DjVuTXT::REGION,    DjVuTXT::end_of_region },
+  { "para",   DjVuTXT::PARAGRAPH, DjVuTXT::end_of_paragraph },
+  { "line",   DjVuTXT::LINE,      DjVuTXT::end_of_line },
+  { "word",   DjVuTXT::WORD,      ' ' },
+  { "char",   DjVuTXT::CHARACTER, 0 },
+  { 0, (DjVuTXT::ZoneType)0 ,0 }
+};
+
+static miniexp_t
+pagetext_sub(const GP<DjVuTXT> &txt, DjVuTXT::Zone &zone, 
+             DjVuTXT::ZoneType detail)
+{
+  int zinfo;
+  for (zinfo=0; zone_names[zinfo].name; zinfo++)
+    if (zone.ztype == zone_names[zinfo].ztype)
+      break;
+  minivar_t p;
+  minivar_t a;
+  bool gather = zone.children.isempty();
+  for (GPosition pos=zone.children; pos; ++pos)
+    if (zone.children[pos].ztype > detail)
+      gather = true;
+  if (gather)
+    {
+      const char *data = (const char*)(txt->textUTF8) + zone.text_start;
+      int length = zone.text_length;
+      if (length>0 && data[length-1]==zone_names[zinfo].separator)
+        length -= 1;
+      a = miniexp_substring(data, length);
+      p = miniexp_cons(a, p);
+    }
+  else
+    {
+      for (GPosition pos=zone.children; pos; ++pos)
+        {
+          a = pagetext_sub(txt, zone.children[pos], detail);
+          p = miniexp_cons(a, p);
+        }
+    }
+  p = miniexp_reverse(p);
+  const char *s = zone_names[zinfo].name;
+  if (s)
+    {
+      p = miniexp_cons(miniexp_number(zone.rect.ymax), p);
+      p = miniexp_cons(miniexp_number(zone.rect.xmax), p);
+      p = miniexp_cons(miniexp_number(zone.rect.ymin), p);
+      p = miniexp_cons(miniexp_number(zone.rect.xmin), p);
+      p = miniexp_cons(miniexp_symbol(s), p);
+      return p;
+    }
+  return miniexp_nil;
+}
+
+miniexp_t
+ddjvu_document_get_pagetext(ddjvu_document_t *document, int pageno,
+                            const char *maxdetail)
+{
+  G_TRY
+    {
+      DjVuDocument *doc = document->doc;
+      if (doc)
+        {
+          document->pageinfoflag = true;
+          GP<DjVuFile> file = doc->get_djvu_file(pageno);
+          if (! file || ! file->is_data_present() )
+            return miniexp_dummy;
+          GP<ByteStream> bs = file->get_text();
+          if (! bs)
+            return miniexp_nil;
+          GP<DjVuText> text = DjVuText::create();
+          text->decode(bs);
+          GP<DjVuTXT> txt = text->txt;
+          if (! txt)
+            return miniexp_nil;
+          minivar_t result;
+          DjVuTXT::ZoneType detail = DjVuTXT::CHARACTER;
+          for (int i=0; zone_names[i].name; i++)
+            if (maxdetail && !strcmp(maxdetail, zone_names[i].name))
+              detail = zone_names[i].ztype;
+          result = pagetext_sub(txt, txt->page_zone, detail);
+          miniexp_protect(document, result);
+          return result;
+        }
+    }
+  G_CATCH(ex)
+    {
+      ERROR(document, ex);
+    }
+  G_ENDCATCH;
+  return miniexp_status(DDJVU_JOB_FAILED);
+}
+
+
+// ----------------------------------------
+// S-Expressions (annotations)
+
+// The difficulty here lies with the syntax of strings in annotation chunks.
+// - Early versions of djvu only had one possible escape 
+//   sequence (\") in annotation strings. All other characters
+//   are accepted literally until reaching the closing double quote.
+// - Current versions of djvu understand the usual backslash escapes.
+//   All non printable ascii characters must however be escaped.
+//   This is a subset of the miniexp syntax.
+// We first check if strings in the annotation chunk obey the modern syntax.
+// The compatibility mode is turned on if they contain non printable ascii 
+// characters or illegal backslash sequences. Function <anno_getc()> then 
+// creates the proper escapes on the fly.
+
+static struct {
+  const char *s;
+  char buf[8];
+  int  blen;
+  int  state;
+  bool compat;
+  bool eof;
+} anno_dat;
+
+static bool
+anno_compat(const char *s)
+{
+  int state = 0;
+  bool compat = false;
+  while (s && *s && !compat)
+    {
+      int i = (int)(unsigned char)*s++;
+      switch(state)
+        {
+        case 0:
+          if (i == '\"')
+            state = '\"';
+          break;
+        case '\"':
+          if (i == '\"')
+            state = 0;
+          else if (i == '\\')
+            state = '\\';
+          else if (isascii(i) && !isprint(i))
+            compat = true;
+          break;
+        case '\\':
+          if (!strchr("01234567abtnvfr\"\\",i))
+            compat = true;
+          state = '\"';
+          break;
+        }
+    }
+  return compat;
+}
+
+static int
+anno_getc(void)
+{
+  if (anno_dat.blen>0)
+    {
+      anno_dat.blen--;
+      char c = anno_dat.buf[0];
+      for (int i=0; i<anno_dat.blen; i++)
+        anno_dat.buf[i] = anno_dat.buf[i+1];
+      return c;
+    }
+  if (! *anno_dat.s)
+    return EOF;
+  int c = (int)(unsigned char)*anno_dat.s++;
+  if (anno_dat.compat)
+    {
+      switch (anno_dat.state)
+        {
+        case 0:
+          if (c == '\"') 
+            anno_dat.state = '\"';
+          break;
+        case '\"':
+          if (c == '\"') 
+            anno_dat.state = 0;
+          else if (c == '\\')
+            anno_dat.state = '\\';
+          else if (isascii(c) && !isprint(c))
+            {
+              sprintf(anno_dat.buf,"%03o", c);
+              anno_dat.blen = strlen(anno_dat.buf);
+              c = '\\';
+            }
+          break;
+        case '\\':
+          anno_dat.state = '\"';
+          if (c != '\"')
+            {
+              sprintf(anno_dat.buf,"\\%03o", c);
+              anno_dat.blen = strlen(anno_dat.buf);
+              c = '\\';
+            }
+          break;
+        }
+    }
+  return c;
+}
+
+static int
+anno_ungetc(int c)
+{
+  if (c == EOF)
+    return EOF;
+  if (anno_dat.blen>=(int)sizeof(anno_dat.buf))
+    return EOF;
+  for (int i=anno_dat.blen; i>0; i--)
+    anno_dat.buf[i] = anno_dat.buf[i-1];
+  anno_dat.blen += 1;
+  anno_dat.buf[0] = c;
+  return c;
+}
+
+static void
+anno_sub(ByteStream *bs, miniexp_t &result)
+{
+  // Read bs
+  GUTF8String raw;
+  char buffer[1024];
+  int length;
+  while ((length=bs->read(buffer, sizeof(buffer))))
+    raw += GUTF8String(buffer, length);
+  // Prepare 
+  minivar_t a;
+  anno_dat.s = (const char*)raw;
+  anno_dat.compat = anno_compat(anno_dat.s);
+  anno_dat.blen = 0;
+  anno_dat.state = 0;
+  anno_dat.eof = false;
+  minilisp_getc = anno_getc;
+  minilisp_ungetc = anno_ungetc;
+  // Process
+  while (* anno_dat.s )
+    if ((a = miniexp_read()) != miniexp_dummy)
+      result = miniexp_cons(a, result);
+}
+
+miniexp_t
+ddjvu_document_get_pageanno(ddjvu_document_t *document, int pageno)
+{
+  G_TRY
+    {
+      DjVuDocument *doc = document->doc;
+      if (doc)
+        {
+          document->pageinfoflag = true;
+          GP<DjVuFile> file = doc->get_djvu_file(pageno);
+          // Make sure all data is present
+          if (! file || ! file->is_all_data_present())
+            {
+              if (file->is_data_present())
+                {
+                  if (! file->are_incl_files_created())
+                    file->process_incl_chunks();
+                  if (! file->are_incl_files_created())
+                    return miniexp_status(DDJVU_JOB_FAILED);
+                }
+              return miniexp_dummy;
+            }
+          // Access annotation data
+          GP<ByteStream> annobs = file->get_merged_anno();
+          if (! (annobs && annobs->size()))
+            return miniexp_nil;
+          minivar_t result;
+          GP<IFFByteStream> iff = IFFByteStream::create(annobs);
+          GUTF8String chkid;
+          while (iff->get_chunk(chkid))
+            {
+              GP<ByteStream> bs;
+              if (chkid == "ANTa") 
+                bs = iff->get_bytestream();
+              else if (chkid == "ANTz")
+                bs = BSByteStream::create(iff->get_bytestream());
+              if (bs)
+                anno_sub(bs, result);
+              iff->close_chunk();
+            }
+          result = miniexp_reverse(result);
+          miniexp_protect(document, result);
+          return result;
+        }
+    }
+  G_CATCH(ex)
+    {
+      ERROR(document, ex);
+    }
+  G_ENDCATCH;
+  return miniexp_status(DDJVU_JOB_FAILED);
+}
+
+
+
+/* ------ helpers for annotations ---- */
+
+static const char *
+simple_anno_sub(miniexp_t p, miniexp_t s, int i)
+{
+  const char *result = 0;
+  while (miniexp_consp(p))
+    {
+      miniexp_t a = miniexp_car(p);
+      p = miniexp_cdr(p);
+      if (miniexp_car(a) == s)
+        {
+          miniexp_t q = miniexp_nth(i, a);
+          if (miniexp_symbolp(q))
+            result = miniexp_to_name(q);
+        }
+    }
+  return result;
+}
+
+const char *
+ddjvu_anno_get_bgcolor(miniexp_t p)
+{
+  return simple_anno_sub(p, miniexp_symbol("background"), 1);
+}
+
+const char *
+ddjvu_anno_get_zoom(miniexp_t p)
+{
+  return simple_anno_sub(p, miniexp_symbol("zoom"), 1);
+}
+
+const char *
+ddjvu_anno_get_mode(miniexp_t p)
+{
+  return simple_anno_sub(p, miniexp_symbol("mode"), 1);
+}
+
+const char *
+ddjvu_anno_get_horizalign(miniexp_t p)
+{
+  return simple_anno_sub(p, miniexp_symbol("align"), 1);
+}
+
+const char *
+ddjvu_anno_get_vertalign(miniexp_t p)
+{
+  return simple_anno_sub(p, miniexp_symbol("align"), 2);
+}
+
+miniexp_t *
+ddjvu_anno_get_hyperlinks(miniexp_t annotations)
+{
+  miniexp_t p;
+  miniexp_t s_maparea = miniexp_symbol("maparea");
+  int i = 0;
+  for (p = annotations; miniexp_consp(p); p = miniexp_cdr(p))
+    if (miniexp_caar(p) == s_maparea)
+      i += 1;
+  miniexp_t *k = (miniexp_t*)malloc((1+i)*sizeof(miniexp_t));
+  if (! k) return 0;
+  i = 0;
+  for (p = annotations; miniexp_consp(p); p = miniexp_cdr(p))
+    if (miniexp_caar(p) == s_maparea)
+      k[i++] = miniexp_car(p);
+  k[i] = 0;
+  return k;
+}
+
+static void
+metadata_sub(miniexp_t p, GMap<miniexp_t,miniexp_t> &m)
+{
+  miniexp_t s_metadata = miniexp_symbol("metadata");
+  while (miniexp_consp(p))
+    {
+      if (miniexp_caar(p) == s_metadata)
+        {
+          miniexp_t q = miniexp_cdar(p);
+          while (miniexp_consp(q))
+            {
+              miniexp_t a = miniexp_car(q);
+              q = miniexp_cdr(q);
+              if (miniexp_consp(a) && 
+                  miniexp_symbolp(miniexp_car(a)) &&
+                  miniexp_stringp(miniexp_cadr(a)) )
+                {
+                  m[miniexp_car(a)] = miniexp_cadr(a);
+                }
+            }
+        }
+      p = miniexp_cdr(p);
+    }
+}
+
+miniexp_t *
+ddjvu_anno_get_metadata_keys(miniexp_t p)
+{
+  minivar_t l;
+  GMap<miniexp_t,miniexp_t> m;
+  metadata_sub(p, m);
+  int i = m.size();
+  miniexp_t *k = (miniexp_t*)malloc((1+i)*sizeof(miniexp_t));
+  if (! k) return 0;
+  i = 0;
+  for (GPosition p=m; p; ++p)
+    k[i++] = m.key(p);
+  k[i] = 0;
+  return k;
+}
+
+const char *
+ddjvu_anno_get_metadata(miniexp_t p, miniexp_t key)
+{
+  GMap<miniexp_t,miniexp_t> m;
+  metadata_sub(p, m);
+  if (m.contains(key))
+    return miniexp_to_str(m[key]);
+  return 0;
+}
+
+
+// ----------------------------------------
+// Backdoors
 
 GP<DjVuImage>
 ddjvu_get_DjVuImage(ddjvu_page_t *page)
@@ -1920,19 +3018,3 @@ ddjvu_get_DjVuDocument(ddjvu_document_t *document)
 }
 
 
-// ----------------------------------------
-
-
-// ----------------------------------------
-
-
-// ----------------------------------------
-
-
-// ----------------------------------------
-
-
-// ----------------------------------------
-
-
-// ----------------------------------------

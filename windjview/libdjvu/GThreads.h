@@ -164,7 +164,10 @@
 // ----------------------------------------
 // INCLUDES
 
-#if THREADMODEL==WINTHREADS
+//< Changed for WinDjView project
+//#if THREADMODEL==WINTHREADS
+#if THREADMODEL==WINTHREADS || defined(WIN32_MONITOR)
+//>
 #ifndef _WINDOWS_
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
@@ -396,7 +399,10 @@ public:
       function is called by a thread which does not own the monitor. */
   void broadcast();
 private:
-#if THREADMODEL==WINTHREADS
+//< Changed for WinDjView project
+//#if THREADMODEL==WINTHREADS
+#if THREADMODEL==WINTHREADS || defined(WIN32_MONITOR)
+//>
   int ok;
   int count;
   DWORD locker;
@@ -442,6 +448,9 @@ inline GThread::~GThread(void) {}
 inline void GThread::terminate() {}
 inline int GThread::yield() { return 0; }
 inline void* GThread::current() { return 0; }
+//< Changed for WinDjView project
+#if !defined(WIN32_MONITOR)
+//>
 inline GMonitor::GMonitor() {}
 inline GMonitor::~GMonitor() {}
 inline void GMonitor::enter() {}
@@ -450,6 +459,9 @@ inline void GMonitor::wait() {}
 inline void GMonitor::wait(unsigned long timeout) {}
 inline void GMonitor::signal() {}
 inline void GMonitor::broadcast() {}
+//< Changed for WinDjView project
+#endif // !defined(WIN32_MONITOR)
+//>
 #endif // NOTHREADS
 
 

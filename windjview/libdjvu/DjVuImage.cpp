@@ -446,6 +446,10 @@ DjVuImage::notify_chunk_done(const DjVuPort *, const GUTF8String & name)
 
 //// DJVUIMAGE: OLD-STYLE DECODING
 
+DjVuInterface::~DjVuInterface() 
+{
+}
+
 class DjVuImageNotifier : public DjVuPort
 {
   friend class DjVuImage;
@@ -1241,6 +1245,7 @@ void DjVuImage::set_rotate(int count)
 GP<DjVuAnno> 
 DjVuImage::get_decoded_anno()
 {
+    GP<DjVuInfo> djvuinfo = get_info();
     GP<DjVuAnno> djvuanno = DjVuAnno::create();
     GP<ByteStream> bs=get_anno();
     if( bs )

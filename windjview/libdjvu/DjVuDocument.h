@@ -76,14 +76,12 @@ namespace DJVU {
 class DjVmDoc;
 class DjVmDir;
 class DjVmDir0;
+class DjVmNav;
 class DjVuImage;
 class DjVuFile;
 class DjVuFileCache;
 class DjVuNavDir;
 class ByteStream;
-//< Changed for WinDjView project
-class DjVmNav;
-//>
 
 /** @name DjVuDocument.h
     Files #"DjVuDocument.h"# and #"DjVuDocument.cpp"# contain implementation
@@ -769,6 +767,17 @@ public:
 	  not been set yet). Check \Ref{is_init_complete}() and \Ref{init}()
           for details. */
    GP<DjVmDir>		get_djvm_dir(void) const;
+      /** Returns pointer to the document bookmarks.
+          This applies to #BUNDLED# and #INDIRECT# documents.
+
+	  #ZERO# will also be returned if the initializing thread has not
+	  learnt enough information about the document (#DOC_DIR_KNOWN# has
+	  not been set yet). Check \Ref{is_init_complete}() and \Ref{init}()
+          for details. */
+   GP<DjVmNav>		get_djvm_nav(void) const;
+//< Changed for WinDjView project
+   void set_djvm_nav(GP<DjVmNav> nav);
+//>
       /** Returns pointer to the internal directory of the document, if it
 	  is in obsolete #OLD_BUNDLED# format.
 
@@ -806,11 +815,6 @@ public:
    static void set_import_codec(
      void (*codec)(GP<DataPool> &,const GURL &url,bool &, bool &));
 
-//< Changed for WinDjView project
-   GP<DjVmNav> get_bookmarks();
-   void set_bookmarks(GP<DjVmNav> bookmarks);
-//>
-
 protected:
    static void (*djvu_import_codec) (
      GP<DataPool> &pool, const GURL &url,bool &needs_compression, bool &needs_rename );
@@ -820,14 +824,12 @@ protected:
    GURL			init_url;
    GP<DataPool>		init_data_pool;
    GP<DjVmDir>		djvm_dir;	// New-style DjVm directory
-   int			doc_type;
+   GP<DjVmNav>          djvm_nav;
+   int	doc_type;
    bool needs_compression_flag;
    bool can_compress_flag;
    bool needs_rename_flag;
 
-//< Changed for WinDjView project
-   GP<DjVmNav> bookmarks;
-//>
    
 
    bool			has_url_names;
@@ -1026,6 +1028,22 @@ DjVuDocument::get_djvm_dir(void) const
    return djvm_dir;
 }
 
+inline GP<DjVmNav>
+DjVuDocument::get_djvm_nav(void) const
+{
+  if (doc_type==BUNDLED || doc_type==INDIRECT)
+    return djvm_nav;
+  return 0;
+}
+
+//< Changed for WinDjView project
+inline void
+DjVuDocument::set_djvm_nav(GP<DjVmNav> nav)
+{
+  djvm_nav = nav;
+}
+//>
+
 inline GP<DjVmDir0>
 DjVuDocument::get_djvm_dir0(void) const
 {
@@ -1051,20 +1069,6 @@ DjVuDocument::set_verbose_eof(bool verbose)
 {
   verbose_eof=verbose;
 }
-
-//< Changed for WinDjView project
-inline GP<DjVmNav>
-DjVuDocument::get_bookmarks()
-{
-   return bookmarks;
-}
-
-inline void
-DjVuDocument::set_bookmarks(GP<DjVmNav> bookmarks)
-{
-   this->bookmarks = bookmarks;
-}
-//>
 
 //@}
 

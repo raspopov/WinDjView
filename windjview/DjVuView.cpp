@@ -735,7 +735,7 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient)
 		page.DeleteBitmap();
 
 		if (page.rcDisplay.top < nTop + 11*rcClient.Height() &&
-			page.rcDisplay.bottom > nTop - 10*rcClient.Height())
+			page.rcDisplay.bottom > nTop - 10*rcClient.Height() || nPage == 0 || nPage == m_nPageCount - 1)
 		{
 			m_pRenderThread->AddDecodeJob(nPage);
 		}
@@ -775,7 +775,7 @@ void CDjVuView::UpdatePageCacheSingle(int nPage)
 	{
 		page.DeleteBitmap();
 
-		if (abs(nPage - m_nPage) <= 10)
+		if (abs(nPage - m_nPage) <= 10 || nPage == 0 || nPage == m_nPageCount - 1)
 		{
 			m_pRenderThread->AddDecodeJob(nPage);
 		}
@@ -2017,7 +2017,7 @@ void CDjVuView::OnPageInformation()
 	GP<DjVuImage> pImage = GetDocument()->GetPage(m_nClickedPage);
 	if (pImage == NULL)
 	{
-		AfxMessageBox(_T("Error decoding page"), MB_ICONERROR | MB_OK);
+		AfxMessageBox(IDS_ERROR_DECODING_PAGE, MB_ICONERROR | MB_OK);
 		return;
 	}
 
@@ -2686,11 +2686,12 @@ void CDjVuView::OnExportPage()
 	CString strFileName;
 	strFileName.Format(_T("p%04d.bmp"), m_nClickedPage);
 
-	const TCHAR szFilter[] = "Bitmap Files (*.bmp)|*.bmp|All Files (*.*)|*.*||";
-
 	CFileDialog dlg(false, "bmp", strFileName, OFN_OVERWRITEPROMPT |
-		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST, szFilter);
-	CString strTitle(_T("Export Page"));
+		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
+		LoadString(IDS_BMP_FILTER));
+
+	CString strTitle;
+	strTitle.LoadString(IDS_EXPORT_PAGE);
 	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
 
 	UINT nResult = dlg.DoModal();
@@ -2704,7 +2705,7 @@ void CDjVuView::OnExportPage()
 	GP<DjVuImage> pImage = GetDocument()->GetPage(m_nClickedPage);
 	if (pImage == NULL)
 	{
-		AfxMessageBox(_T("Error decoding page"), MB_ICONERROR | MB_OK);
+		AfxMessageBox(IDS_ERROR_DECODING_PAGE, MB_ICONERROR | MB_OK);
 		return;
 	}
 
@@ -2854,7 +2855,7 @@ void CDjVuView::OnFindString()
 	if (bNeedUpdate)
 		UpdateView();
 
-	GetMainFrame()->HilightStatusMessage(_T("Search string not found"));
+	GetMainFrame()->HilightStatusMessage(LoadString(IDS_STRING_NOT_FOUND));
 	::MessageBeep(MB_OK);
 }
 
@@ -2936,7 +2937,7 @@ void CDjVuView::OnFindAll()
 	}
 	else
 	{
-		GetMainFrame()->HilightStatusMessage(_T("Search string not found"));
+		GetMainFrame()->HilightStatusMessage(LoadString(IDS_STRING_NOT_FOUND));
 		::MessageBeep(MB_OK);
 	}
 }

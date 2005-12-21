@@ -7,7 +7,7 @@ OUTOTHER =
 
 !IFDEF DEBUG
 INTDIR = .\Objs.dbg
-OPTS = /nologo /MTd /W3 /GX /Ox /Ob2 /Ot /Og /G6
+OPTS = /nologo /MTd /W3 /GX /Zi
 !ELSE
 INTDIR = .\Objs
 OPTS = /nologo /MT /W3 /GX /Ox /Ob2 /Ot /Og /G6
@@ -39,8 +39,8 @@ OUTOPT = /nologo /nodefaultlib:"msvcrt.lib" /out:
 
 !ENDIF
 
-COMPOPT = /c /Fo"$(INTDIR)\\" /D"HAS_WCTYPE=1" /D"BUILD_LIB" /D"DJVU_STATIC_LIBRARY" \
-			/D"WIN32" /D"_WINDOWS" /D"_CONSOLE" /D"NDEBUG" /D"DJVUREFAPI="
+COMPOPT = /c /Fo"$(INTDIR)\\" /D"HAS_WCTYPE=1" /D"THREADMODEL=0" /D"WIN32_MONITOR" \
+			/D"WIN32" /D"_WINDOWS" /D"_CONSOLE" /D"NDEBUG"
 
 all: $(OUT)
 

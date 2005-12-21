@@ -62,13 +62,11 @@
 #endif
 
 #include "DjVmDoc.h"
+#include "DjVmNav.h"
 #include "DataPool.h"
 #include "IFFByteStream.h"
 #include "GOS.h"
 #include "debug.h"
-//< Changed for WinDjView project
-#include "DjVmNav.h"
-//>
 
 
 #ifdef HAVE_NAMESPACES
@@ -233,6 +231,14 @@ DjVmDoc::delete_file(const GUTF8String &id)
    dir->delete_file(id);
 }
 
+void 
+DjVmDoc::set_djvm_nav(GP<DjVmNav> n)
+{
+  if (n && ! n->isValidBookmark())
+    G_THROW("Invalid bookmark data");
+  nav = n;
+}
+
 GP<DataPool>
 DjVmDoc::get_data(const GUTF8String &id) const
 {
@@ -275,7 +281,7 @@ get_name(const DjVmDir::File &file)
 
 void
 DjVmDoc::write(const GP<ByteStream> &gstr,
-  const GMap<GUTF8String,void *> &reserved)
+               const GMap<GUTF8String,void *> &reserved)
 {
   DEBUG_MSG("DjVmDoc::write(): Storing document into the byte stream.\n");
   DEBUG_MAKE_INDENT(3);
@@ -374,14 +380,12 @@ DjVmDoc::write(const GP<ByteStream> &gstr,
   tmp_iff.put_chunk("DIRM");
   dir->encode(tmp_iff.get_bytestream(),do_rename);
   tmp_iff.close_chunk();
-//< Changed for WinDjView project
-  if (bookmarks != NULL)
-  {
-    tmp_iff.put_chunk("NAVM");
-    bookmarks->encode(tmp_iff.get_bytestream());
-    tmp_iff.close_chunk();
-  }
-//>
+  if (nav)
+    {
+      tmp_iff.put_chunk("NAVM");
+      nav->encode(tmp_iff.get_bytestream());
+      tmp_iff.close_chunk();
+    }
   tmp_iff.close_chunk();
   int offset=tmp_iff.tell();
 
@@ -403,14 +407,12 @@ DjVmDoc::write(const GP<ByteStream> &gstr,
   iff.put_chunk("DIRM");
   dir->encode(iff.get_bytestream(),do_rename);
   iff.close_chunk();
-//< Changed for WinDjView project
-  if (bookmarks != NULL)
-  {
-    iff.put_chunk("NAVM");
-    bookmarks->encode(iff.get_bytestream());
-    iff.close_chunk();
-  }
-//>
+  if (nav)
+    {
+      iff.put_chunk("NAVM");
+      nav->encode(iff.get_bytestream());
+      iff.close_chunk();
+    }
 
   for(pos=files_list;pos;++pos)
   {
@@ -553,6 +555,12 @@ DjVmDoc::write_index(const GP<ByteStream> &str)
    iff.put_chunk("DIRM");
    dir->encode(iff.get_bytestream());
    iff.close_chunk();
+   if (nav)
+     {
+       iff.put_chunk("NAVM");
+       nav->encode(iff.get_bytestream());
+       iff.close_chunk();
+     }
    iff.close_chunk();
    iff.flush();
 }

@@ -61,7 +61,8 @@ struct CPrintSettings
 	CPrintSettings() :
 		fMarginLeft(0.0), fMarginTop(0.0), fMarginRight(0.0), fMarginBottom(0.0),
 		fPosLeft(0.0), fPosTop(0.0), bCenterImage(false), bClipContent(false),
-		fScale(100.0), bShrinkOversized(false), bScaleToFit(false) {}
+		fScale(100.0), bShrinkOversized(false), bScaleToFit(false),
+		bIgnorePrinterMargins(false) {}
 
 	double fMarginLeft;
 	double fMarginTop;
@@ -76,6 +77,7 @@ struct CPrintSettings
 	double fScale;
 	BOOL bShrinkOversized;
 	BOOL bScaleToFit;
+	BOOL bIgnorePrinterMargins;
 };
 
 CDIB* RenderPixmap(GPixmap& pm);

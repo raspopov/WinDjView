@@ -813,8 +813,10 @@ DataPool::clear_stream(const bool release)
 {
   DEBUG_MSG("DataPool::clear_stream()\n");
   DEBUG_MAKE_INDENT(3);
-  if(fstream)
-  {
+//< Changed for WinDjView project
+//  if(fstream)
+//  {
+//>
     GCriticalSectionLock lock1(&class_stream_lock);
     GP<OpenFiles_File> f=fstream;
     if(f)
@@ -824,7 +826,9 @@ DataPool::clear_stream(const bool release)
       if(release)
         OpenFiles::get()->stream_released(f->stream, this);
     }
-  }
+//< Changed for WinDjView project
+//  }
+//>
 }
 
 DataPool::~DataPool(void)
@@ -1154,11 +1158,15 @@ DataPool::get_data(void * buffer, int offset, int sz, int level)
              } 
            G_CATCH(exc) 
              {
-               pool->clear_stream(true);
+//< Changed for WinDjView project
+//               pool->clear_stream(true);
+//>
                if ((exc.get_cause() != GUTF8String( ERR_MSG("DataPool.reenter") ) ) || level)
                  G_RETHROW;
              } G_ENDCATCH;
-           pool->clear_stream(true);
+//< Changed for WinDjView project
+//           pool->clear_stream(true);
+//>
            return retval;
          }
      }
@@ -1185,9 +1193,12 @@ DataPool::get_data(void * buffer, int offset, int sz, int level)
          sz=length-offset;
        if (sz<0)
          sz=0;
-       
-       GP<OpenFiles_File> f=fstream;
-       if (!f)
+
+//< Changed for WinDjView project
+       GP<OpenFiles_File> f;
+//       GP<OpenFiles_File> f=fstream;
+//       if (!f)
+//>
          {
            GCriticalSectionLock lock(&class_stream_lock);
            f=fstream;

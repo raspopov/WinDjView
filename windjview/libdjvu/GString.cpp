@@ -543,9 +543,11 @@ unsigned char *
 GStringRep::UCS4toNative(
   const unsigned long w0,unsigned char *ptr, mbstate_t *ps)
 {
-  unsigned short w1, w2;
-  for(int count=(sizeof(wchar_t) == sizeof(w1))?UCS4toUTF16(w0,w1,w2):1;
-    count;--count,w1=w2)
+  unsigned short w1;
+  unsigned short w2=1;
+  for(int count=(sizeof(wchar_t)==sizeof(w1)) ? UCS4toUTF16(w0,w1,w2) : 1;
+      count;
+      --count,w1=w2)
   {
     // wchar_t can be either UCS4 or UCS2
     const wchar_t w=(sizeof(wchar_t) == sizeof(w1))?(wchar_t)w1:(wchar_t)w0;
@@ -1105,7 +1107,7 @@ GStringRep::substr(const unsigned short *s,const int start,const int len) const
       eptr=&(s[len]);
     }
     s=&s[start];
-    if((size_t)s>(size_t)eptr)
+    if((size_t)s<(size_t)eptr)
     {
       mbstate_t ps;
       memset(&ps,0,sizeof(mbstate_t));
@@ -1143,7 +1145,7 @@ GStringRep::substr(const unsigned long *s,const int start,const int len) const
       eptr=&(s[len]);
     }
     s=&s[start];
-    if((size_t)s>(size_t)eptr)
+    if((size_t)s<(size_t)eptr)
     {
       mbstate_t ps;
       memset(&ps,0,sizeof(mbstate_t));
@@ -1901,9 +1903,11 @@ GStringRep::UTF8::ncopy(
       for(const unsigned char *s=(const unsigned char *)data;(r<rend)&&(s<eptr)&&*s;)
 	  {
         const unsigned long w0=UTF8toUCS4(s,eptr);
-        unsigned short w1, w2;
+        unsigned short w1;
+        unsigned short w2=1;
         for(int count=(sizeof(wchar_t) == sizeof(w1))?UCS4toUTF16(w0,w1,w2):1;
-          count&&(r<rend);--count,w1=w2,++r)
+            count&&(r<rend);
+            --count,w1=w2,++r)
 		{
 		  r[0]=(sizeof(wchar_t) == sizeof(w1))?(wchar_t)w1:(wchar_t)w0;
 		}

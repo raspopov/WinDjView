@@ -114,7 +114,7 @@ protected:
 	bool ParseRange();
 	void SaveSettings();
 	void UpdateDevMode();
-	void PreviewTwoPages(CDC* pDC, const CRect& rcPage, const CSize& szPaper);
+	void PreviewTwoPages(CDC* pDC, const CRect& rcPage, const CSize& szPaper, double fScreenMM);
 
 // Generated message map functions
 	virtual BOOL OnInitDialog();

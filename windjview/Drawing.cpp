@@ -694,10 +694,15 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, const CRect& rcFullPage,
 	}
 
 	CDIB* pBmpPage = NULL;
-	if (pImage->is_legal_photo() || pImage->is_legal_compound())
-	{
-		GP<GPixmap> pm = pImage->get_pixmap(rect, rectAll);
+	GP<GPixmap> pm;
+	GP<GBitmap> bm;
 
+	pm = pImage->get_pixmap(rect, rectAll);
+	if (pm == NULL)
+		bm = pImage->get_bitmap(rect, rectAll, 4);
+
+	if (pm != NULL)
+	{
 		if (settings.bClipContent && bPreview)
 		{
 			// Scale the pixmap to needed size
@@ -717,10 +722,8 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, const CRect& rcFullPage,
 
 		pBmpPage = RenderPixmap(*pm);
 	}
-	else if (pImage->is_legal_bilevel())
+	else if (bm != NULL)
 	{
-		GP<GBitmap> bm = pImage->get_bitmap(rect, rectAll, 4);
-
 		if (settings.bClipContent && bPreview)
 		{
 			// Scale the bitmap to needed size
@@ -776,11 +779,11 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 
 	int nPages = dlg.m_arrPages.size();
 	pProgress->SetRange(0, nPages);
-	pProgress->SetStatus(_T("Printing, please wait..."));
+	pProgress->SetStatus(LoadString(IDS_PRINTING));
 
 	// Printing
 	CDC print_dc;
-	print_dc.CreateDC(dlg.m_pPrinter->pDriverName, dlg.m_pPrinter->pPrinterName, dlg.m_pPrinter->pPortName, dlg.m_pPrinter->pDevMode);
+	print_dc.CreateDC(dlg.m_pPrinter->pDriverName, dlg.m_pPrinter->pPrinterName, NULL, dlg.m_pPrinter->pDevMode);
 
 	if (print_dc.m_hDC == NULL)
 	{
@@ -791,13 +794,23 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 	double fPrinterMMx = print_dc.GetDeviceCaps(LOGPIXELSX) / 25.4;
 	double fPrinterMMy = print_dc.GetDeviceCaps(LOGPIXELSY) / 25.4;
 
-	int nPageWidth = print_dc.GetDeviceCaps(PHYSICALWIDTH);
-	int nPageHeight = print_dc.GetDeviceCaps(PHYSICALHEIGHT);
-	CSize szPaper(nPageWidth, nPageHeight);
+	int nPageWidth, nPageHeight;
+	if (dlg.m_settings.bIgnorePrinterMargins)
+	{
+		nPageWidth = print_dc.GetDeviceCaps(PHYSICALWIDTH);
+		nPageHeight = print_dc.GetDeviceCaps(PHYSICALHEIGHT);
 
-	int nOffsetX = print_dc.GetDeviceCaps(PHYSICALOFFSETX);
-	int nOffsetY = print_dc.GetDeviceCaps(PHYSICALOFFSETY);
-	print_dc.SetViewportOrg(-nOffsetX, -nOffsetY);
+		int nOffsetX = print_dc.GetDeviceCaps(PHYSICALOFFSETX);
+		int nOffsetY = print_dc.GetDeviceCaps(PHYSICALOFFSETY);
+		print_dc.SetViewportOrg(-nOffsetX, -nOffsetY);
+	}
+	else
+	{
+		nPageWidth = print_dc.GetDeviceCaps(HORZRES);
+		nPageHeight = print_dc.GetDeviceCaps(VERTRES);
+	}
+
+	CSize szPaper(nPageWidth, nPageHeight);
 
 	CRect rcOddPage = CRect(CPoint(0, 0), szPaper), rcEvenPage = rcOddPage;
 	if (dlg.m_bTwoPages)

@@ -78,8 +78,9 @@ using namespace std;
 #define NO_DEBUG
 #endif
 
-#define HAS_WCTYPE
-#define DJVUREFAPI
+#define HAS_WCTYPE 1
+#define THREADMODEL 0
+#define WIN32_MONITOR
 
 #include "libdjvu/DjVuDocument.h"
 #include "libdjvu/DjVuImage.h"
@@ -95,3 +96,10 @@ using namespace std;
 #define DWORD_PTR DWORD
 #define IDC_HAND MAKEINTRESOURCE(32649)
 #endif
+
+inline CString LoadString(UINT nID)
+{
+	CString strResult;
+	strResult.LoadString(nID);
+	return strResult;
+}

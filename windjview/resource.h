@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
+// Microsoft Developer Studio generated include file.
 // Used by WinDjView.rc
 //
 #define IDR_MANIFEST                    1
@@ -17,22 +17,40 @@
 #define ID_FIND_ALL                     108
 #define IDR_MAINFRAME                   128
 #define IDR_DjVuTYPE                    129
-#define IDR_ElibTYPE                    130
+#define IDS_BOOKMARKS_TAB               130
 #define IDS_ASSOCIATE_SUCCESSFUL        131
 #define IDS_ASSOCIATE_FAILED            132
 #define IDC_CURSOR_DRAG                 133
+#define IDS_THUMBNAILS_TAB              133
+#define IDS_SEARCH_RESULTS_TAB          134
 #define IDD_PROGRESS                    135
+#define IDS_SAVE_COPY_AS                135
 #define IDD_ZOOM                        136
+#define IDS_DJVU_FILTER                 136
 #define IDR_POPUP                       137
+#define IDS_CANNOT_SAVE_TO_ORIG         137
+#define IDS_SAVE_ERROR                  138
 #define IDC_CURSOR_LINK                 139
+#define IDS_ERROR_DECODING_PAGE         139
 #define IDD_SETTINGS                    140
+#define IDS_BMP_FILTER                  140
 #define IDD_FIND                        141
+#define IDS_EXPORT_PAGE                 141
+#define IDS_CONNECT_ERROR               142
+#define IDS_NO_UPDATES_AVAILABLE        143
 #define IDB_CLOSE                       144
+#define IDS_NEW_VERSION_AVAILABLE       144
 #define IDB_BOOKMARKS                   145
+#define IDS_VERSION_URL                 145
 #define IDC_CURSOR_HAND                 146
+#define IDS_WEBSITE_URL                 146
 #define IDD_UPDATE                      147
+#define IDS_DJVULIBRE_URL               147
 #define IDD_GOTO_PAGE                   148
 #define IDB_DONATE                      148
+#define IDS_DONATE_URL                  148
+#define IDS_STRING_NOT_FOUND            149
+#define IDS_PRINTING                    150
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -65,6 +83,7 @@
 #define IDC_STATIC_PAPER                1030
 #define IDC_CLIP_CONTENT                1031
 #define IDC_PROGRESS                    1032
+#define IDC_IGNORE_MARGINS              1032
 #define IDC_STATIC_TEXT                 1033
 #define IDC_REVERSE                     1035
 #define IDC_RESTORE_ASSOCS              1035
@@ -152,7 +171,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        149
-#define _APS_NEXT_COMMAND_VALUE         32860
+#define _APS_NEXT_COMMAND_VALUE         32867
 #define _APS_NEXT_CONTROL_VALUE         1054
 #define _APS_NEXT_SYMED_VALUE           109
 #endif
