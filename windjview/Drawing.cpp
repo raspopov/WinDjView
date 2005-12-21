@@ -25,6 +25,7 @@
 #include "PrintDlg.h"
 #include "ProgressDlg.h"
 #include "DjVuDoc.h"
+#include "DjVuView.h"
 #include "AppSettings.h"
 
 #ifdef _DEBUG
@@ -599,7 +600,7 @@ CRect FindContentRect(GP<DjVuImage> pImage)
 	return rcResult;
 }
 
-void PrintPage(CDC* pDC, GP<DjVuImage> pImage, const CRect& rcFullPage,
+void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPage,
 	double fPrinterMMx, double fPrinterMMy, CPrintSettings& settings, bool bPreview)
 {
 	if (pImage == NULL)
@@ -697,9 +698,36 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, const CRect& rcFullPage,
 	GP<GPixmap> pm;
 	GP<GBitmap> bm;
 
-	pm = pImage->get_pixmap(rect, rectAll);
-	if (pm == NULL)
-		bm = pImage->get_bitmap(rect, rectAll, 4);
+	G_TRY
+	{
+		switch (nMode)
+		{
+		case CDjVuView::BlackAndWhite:
+			bm = pImage->get_bitmap(rect, rectAll, 4);
+			break;
+
+		case CDjVuView::Foreground:
+			pm = pImage->get_fg_pixmap(rect, rectAll);
+			if (pm == NULL)
+				bm = pImage->get_bitmap(rect, rectAll, 4);
+			break;
+
+		case CDjVuView::Background:
+			pm = pImage->get_bg_pixmap(rect, rectAll);
+			break;
+
+		case CDjVuView::Color:
+		default:
+			pm = pImage->get_pixmap(rect, rectAll);
+			if (pm == NULL)
+				bm = pImage->get_bitmap(rect, rectAll, 4);
+		}
+	}
+	G_CATCH(ex)
+	{
+		ex;
+	}
+	G_ENDCATCH
 
 	if (pm != NULL)
 	{
@@ -830,6 +858,7 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 	}
 
 	int nRotate = dlg.GetRotate();
+	int nMode = dlg.GetMode();
 
 	DOCINFO di;
 	di.cbSize = sizeof(DOCINFO);
@@ -872,8 +901,8 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 			pImage = pDoc->GetPage(nPage, false);
 		if (pImage != NULL)
 		{
-			pImage->set_rotate(nRotate);
-			PrintPage(&print_dc, pImage, rcOddPage, fPrinterMMx, fPrinterMMy, dlg.m_settings);
+			RotateImage(pImage, nRotate);
+			PrintPage(&print_dc, pImage, nMode, rcOddPage, fPrinterMMx, fPrinterMMy, dlg.m_settings);
 		}
 
 		pImage = NULL;
@@ -881,8 +910,8 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 			pImage = pDoc->GetPage(nSecondPage, false);
 		if (pImage != NULL)
 		{
-			pImage->set_rotate(nRotate);
-			PrintPage(&print_dc, pImage, rcEvenPage, fPrinterMMx, fPrinterMMy, dlg.m_settings);
+			RotateImage(pImage, nRotate);
+			PrintPage(&print_dc, pImage, nMode, rcEvenPage, fPrinterMMx, fPrinterMMy, dlg.m_settings);
 		}
 
 		if (print_dc.EndPage() <= 0)

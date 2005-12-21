@@ -126,7 +126,7 @@ void CThumbnailsThread::Render(Job& job)
 	GP<DjVuImage> pImage = m_pDoc->GetPage(job.nPage, false);
 	if (pImage != NULL)
 	{
-		pImage->set_rotate(job.nRotate);
+		RotateImage(pImage, job.nRotate);
 		CSize szPage(pImage->get_width(), pImage->get_height());
 		if (szPage.cx > 0 && szPage.cy > 0)
 		{

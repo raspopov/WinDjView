@@ -147,7 +147,7 @@ void CRenderThread::Render(Job& job)
 
 	if (pImage != NULL)
 	{
-		pImage->set_rotate(job.nRotate);
+		RotateImage(pImage, job.nRotate);
 
 		GRect rect(job.rect.left, job.rect.top, job.rect.Width(), job.rect.Height());
 		if (!rect.isempty())

@@ -103,3 +103,26 @@ inline CString LoadString(UINT nID)
 	strResult.LoadString(nID);
 	return strResult;
 }
+
+inline RotateImage(GP<DjVuImage> pImage, int nRotate)
+{
+	GP<DjVuInfo> info = pImage->get_info();
+
+	int nOrigRotate = 0;
+	switch (info->orientation)
+	{
+	case GRect::BULRCW:
+		nOrigRotate = 3;
+		break;
+
+	case GRect::TDRLNR:
+		nOrigRotate = 2;
+		break;
+
+	case GRect::TDRLCW:
+		nOrigRotate = 1;
+		break;
+	}
+
+	pImage->set_rotate((nRotate + nOrigRotate) % 4);
+}

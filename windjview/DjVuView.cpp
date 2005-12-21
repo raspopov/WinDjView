@@ -1914,7 +1914,7 @@ void CDjVuView::SelectTextRange(int nPage, int nStart, int nEnd,
 
 void CDjVuView::OnFilePrint()
 {
-	CPrintDlg dlg(GetDocument(), GetCurrentPage(), m_nRotate);
+	CPrintDlg dlg(GetDocument(), GetCurrentPage(), m_nRotate, m_nDisplayMode);
 	if (dlg.DoModal() == IDOK)
 	{
 		ASSERT(dlg.m_hPrinter != NULL && dlg.m_pPrinter != NULL && dlg.m_pPaper != NULL);
@@ -2709,7 +2709,7 @@ void CDjVuView::OnExportPage()
 		return;
 	}
 
-	pImage->set_rotate(m_nRotate);
+	RotateImage(pImage, m_nRotate);
 
 	GRect rect(0, 0, pImage->get_width(), pImage->get_height());
 	CDIB* pBitmap = CRenderThread::Render(pImage, rect);

@@ -31,7 +31,7 @@ class CPrintDlg : public CDialog
 	DECLARE_DYNAMIC(CPrintDlg)
 
 public:
-	CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, CWnd* pParent = NULL);   // standard constructor
+	CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, int nMode, CWnd* pParent = NULL);   // standard constructor
 	virtual ~CPrintDlg();
 
 // Dialog Data
@@ -58,6 +58,7 @@ public:
 
 	CDjVuDoc* GetDocument() const { return m_pDoc; }
 	int GetRotate() const { return m_nRotate; }
+	int GetMode() const { return m_nMode; }
 
 public:
 	CPrintSettings m_settings;
@@ -107,7 +108,9 @@ protected:
 
 	CDjVuDoc* m_pDoc;
 	GP<DjVuImage> m_pCurPage, m_pNextPage;
-	int m_nCurPage, m_nRotate;
+	int m_nCurPage;
+	int m_nRotate;
+	int m_nMode;
 	set<int> m_pages;
 
 	void LoadPaperTypes();

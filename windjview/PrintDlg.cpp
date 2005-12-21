@@ -137,13 +137,14 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def, LP
 
 IMPLEMENT_DYNAMIC(CPrintDlg, CDialog)
 
-CPrintDlg::CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, CWnd* pParent)
+CPrintDlg::CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, int nMode, CWnd* pParent)
 	: CDialog(CPrintDlg::IDD, pParent),
 	  m_bCollate(FALSE), m_nCopies(1), m_strPages(_T("")), m_bPrintToFile(FALSE),
 	  m_strStatus(_T("")), m_strType(_T("")), m_strLocation(_T("")),
 	  m_strComment(_T("")), m_bLandscape(FALSE), m_nRangeType(0),
 	  m_pPrinter(NULL), m_hPrinter(NULL), m_pPaper(NULL), m_bReverse(false),
-	  m_pDoc(pDoc), m_nCurPage(nPage), m_nRotate(nRotate), m_bTwoPages(false)
+	  m_pDoc(pDoc), m_nCurPage(nPage), m_nRotate(nRotate), m_nMode(nMode),
+	  m_bTwoPages(false)
 {
 }
 
@@ -389,15 +390,15 @@ void CPrintDlg::OnOK()
 
 	for (set<int>::iterator it = m_pages.begin(); it != m_pages.end(); ++it, ++i)
 	{
+		int nFirst = *it;
 		if (!m_bTwoPages)
 		{
-			if (bAllPages || bOddPages && (i % 2) == 1 || bEvenPages && (i % 2) == 0)
-				m_arrPages.push_back(make_pair(*it, 0));
+			if (bAllPages || bOddPages && (nFirst % 2) == 1 || bEvenPages && (nFirst % 2) == 0)
+				m_arrPages.push_back(make_pair(nFirst, 0));
 		}
 		else
 		{
-			int nFirst = *it++;
-			if (it == m_pages.end())
+			if (++it == m_pages.end())
 			{
 				if (bAllPages || bOddPages && (i % 2) == 1 || bEvenPages && (i % 2) == 0)
 					m_arrPages.push_back(make_pair(nFirst, 0));
@@ -476,7 +477,7 @@ void CPrintDlg::OnPaint()
 		{
 			m_pCurPage = m_pDoc->GetPage(m_nCurPage, false);
 			if (m_pCurPage != NULL)
-				m_pCurPage->set_rotate(m_nRotate);
+				RotateImage(m_pCurPage, m_nRotate);
 		}
 
 		double fScreenMM = rcPage.Width()*10.0 / szPaper.cx;
@@ -502,7 +503,7 @@ void CPrintDlg::OnPaint()
 
 		if (!m_bTwoPages)
 		{
-			PrintPage(&dc, m_pCurPage, rcPage, fScreenMM, fScreenMM, m_settings, true);
+			PrintPage(&dc, m_pCurPage, m_nMode, rcPage, fScreenMM, fScreenMM, m_settings, true);
 		}
 		else
 		{
@@ -510,7 +511,7 @@ void CPrintDlg::OnPaint()
 			{
 				m_pNextPage = m_pDoc->GetPage(m_nCurPage + 1, false);
 				if (m_pNextPage != NULL)
-					m_pNextPage->set_rotate(m_nRotate);
+					RotateImage(m_pNextPage, m_nRotate);
 			}
 
 			PreviewTwoPages(&dc, rcPage, szPaper, fScreenMM);
@@ -540,8 +541,8 @@ void CPrintDlg::PreviewTwoPages(CDC* pDC, const CRect& rcPage, const CSize& szPa
 		rcSecondHalf.top = rcFirstHalf.bottom;
 	}
 
-	PrintPage(pDC, m_pCurPage, rcFirstHalf, fScreenMM, fScreenMM, m_settings, true);
-	PrintPage(pDC, m_pNextPage, rcSecondHalf, fScreenMM, fScreenMM, m_settings, true);
+	PrintPage(pDC, m_pCurPage, m_nMode, rcFirstHalf, fScreenMM, fScreenMM, m_settings, true);
+	PrintPage(pDC, m_pNextPage, m_nMode, rcSecondHalf, fScreenMM, fScreenMM, m_settings, true);
 }
 
 void CPrintDlg::OnChangePagesPerSheet()

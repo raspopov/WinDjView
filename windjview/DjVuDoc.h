@@ -32,7 +32,7 @@ struct PageInfo
 	{
 		if (pImage != NULL)
 		{
-			pImage->set_rotate(0);
+			RotateImage(pImage, 0);
 			szPage = CSize(pImage->get_width(), pImage->get_height());
 			nDPI = pImage->get_dpi();
 			if (szPage.cx <= 0 || szPage.cy <= 0)

@@ -2,16 +2,21 @@ WinDjView changes history
 Copyright (C) 2004-2005 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 0.3.6 (2005-):
+Changes in version 0.3.6 (2005-12-21):
 ! Multithreading fixes: WinDjView should work more stable, especially
   on multicore, multiprocessor and hyperthreaded systems.
 + Print dialog now takes into account physical printer margins
   by default; added an option to ignore them (old behavior).
++ Print dialog now takes into account display mode (foreground,
+  background, black and white or color).
 * Fixed bug with preview in print dialog and printing: color pages
   sometimes were not shown in preview and not printed.
 * Fixed bug in print dialog: clicking Properties buttons
   sometimes resets printing options.
 * Fixed parsing print ranges in print dialog.
+* Fixed paper orientation: original orientation as specified
+  in the file is correctly applied.
+* Fixed printing odd/even pages in one page per sheet mode.
 
 Changes in version 0.3.5 (2005-06-14):
 + Added "Save Copy As" dialog.

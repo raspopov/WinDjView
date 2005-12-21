@@ -86,7 +86,7 @@ CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip);
 CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip);
 CDIB* RenderEmpty(const CSize& szBitmap);
 
-void PrintPage(CDC* pDC, GP<DjVuImage> pImage, const CRect& rcPage,
+void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcPage,
 	double fPrinterMMx, double fPrinterMMy, CPrintSettings& settings, bool bPreview = false);
 
 DWORD WINAPI PrintThreadProc(LPVOID pvData);
