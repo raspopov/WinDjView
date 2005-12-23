@@ -876,7 +876,7 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 	for (size_t i = 0; i < dlg.m_arrPages.size(); ++i)
 	{
 		CString strText;
-		strText.Format(_T("Printing page %d of %d, please wait..."), i + 1, nPages);
+		strText.Format(IDS_PRINTING_PAGE, i + 1, nPages);
 		pProgress->SetStatus(strText);
 		pProgress->SetPos(i);
 

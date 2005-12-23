@@ -102,7 +102,7 @@ BOOL CProgressDlg::OnInitDialog()
 	m_nCode = 0;
 	m_progress.SetRange32(0, 1);
 	m_progress.SetPos(0);
-	m_status.SetWindowText(_T("Please wait..."));
+	m_status.SetWindowText(LoadString(IDS_PLEASE_WAIT));
 
 	DWORD dwThreadID;
 	HANDLE hThread = ::CreateThread(NULL, 0, m_pfnThreadProc,

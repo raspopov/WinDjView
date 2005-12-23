@@ -29,6 +29,7 @@ class CDjVuView;
 class CFullscreenWnd;
 
 #define WM_SHOWALLLINKS (WM_USER + 20)
+#define WM_LANGUAGE_CHANGED (WM_USER + 40)
 
 
 class CMainFrame : public CMDIFrameWnd
@@ -51,11 +52,13 @@ public:
 
 	void AddToHistory(CDjVuView* pView, int nPage);
 	void SetFullscreenWnd(CFullscreenWnd* pWnd) { m_pFullscreenWnd = pWnd; }
+	void SetStartupLanguage();
 
 // Overrides
 protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
+	virtual void OnUpdateFrameMenu(HMENU hMenuAlt);
 	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 
@@ -92,6 +95,18 @@ protected:
 	list<HistoryPos>::iterator m_historyPos;
 	void GoToHistoryPos(const HistoryPos& pos);
 
+	struct LanguageInfo
+	{
+		CString strLanguage;
+		CString strLibraryPath;
+		HINSTANCE hInstance;
+		bool bEnabled;
+	};
+	vector<LanguageInfo> m_languages;
+	int m_nLanguage;
+	void LoadLanguages();
+	void SetLanguage(int nLanguage);
+
 protected:
 	// Generated message map functions
 	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
@@ -120,6 +135,10 @@ protected:
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnDestroy();
 	afx_msg LRESULT OnShowAllLinks(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnSetLanguage(UINT nID);
+	afx_msg void OnUpdateLanguageList(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateLanguage(CCmdUI *pCmdUI);
+	afx_msg void OnLanguageChanged();
 	DECLARE_MESSAGE_MAP()
 };
 

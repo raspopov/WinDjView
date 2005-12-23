@@ -2,6 +2,11 @@ WinDjView changes history
 Copyright (C) 2004-2005 Andrew Zhezherun
 ----------------------------------------
 
+Changes in version 0.3.7 (2005-12-):
+! Added support for multiple languages.
+* Fixed crash in print dialog when last page is selected and
+  two pages per sheet mode is activated.
+
 Changes in version 0.3.6 (2005-12-21):
 ! Multithreading fixes: WinDjView should work more stable, especially
   on multicore, multiprocessor and hyperthreaded systems.

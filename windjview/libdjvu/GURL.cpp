@@ -1591,8 +1591,12 @@ GURL::listdir(void) const
     closedir(dir);
 #elif defined (WIN32)
     GURL::UTF8 wildcard("*.*",*this);
-    WIN32_FIND_DATA finddata;
-    HANDLE handle = FindFirstFile(wildcard.NativeFilename(), &finddata);//MBCS cvt
+//< Changed for WinDjView project
+//    WIN32_FIND_DATA finddata;
+//    HANDLE handle = FindFirstFile(wildcard.NativeFilename(), &finddata);//MBCS cvt
+    WIN32_FIND_DATAA finddata;
+    HANDLE handle = FindFirstFileA(wildcard.NativeFilename(), &finddata);//MBCS cvt
+//>
     const GUTF8String gpathname=pathname();
     const GUTF8String gbase=base().pathname();
     if( handle != INVALID_HANDLE_VALUE)
@@ -1603,7 +1607,10 @@ GURL::listdir(void) const
         const GUTF8String gentry=Entry.pathname();
         if((gentry != gpathname) && (gentry != gbase))
           retval.append(Entry);
-      } while( FindNextFile(handle, &finddata) );
+//< Changed for WinDjView project
+//      } while( FindNextFile(handle, &finddata) );
+      } while( FindNextFileA(handle, &finddata) );
+//>
 
       FindClose(handle);
     }
@@ -1793,7 +1800,10 @@ GURL::expand_name(const GUTF8String &xfname, const char *from)
           drv[1]=colon;
           drv[2]= dot ;
           drv[3]=0;
-          GetFullPathName(drv, maxlen, string_buffer, &s);
+//< Changed for WinDjView project
+//          GetFullPathName(drv, maxlen, string_buffer, &s);
+          GetFullPathNameA(drv, maxlen, string_buffer, &s);
+//>
           strcpy(string_buffer,(const char *)GUTF8String(string_buffer).getNative2UTF8());
           s = string_buffer;
         }
@@ -1829,8 +1839,12 @@ GURL::expand_name(const GUTF8String &xfname, const char *from)
           && (fname[2]== slash || fname[2]==backslash || !fname[2]))
         {
           fname += 2;
-          char *back=_tcsrchr(string_buffer,backslash);
-          char *forward=_tcsrchr(string_buffer,slash);
+//< Changed for WinDjView project
+//          char *back=_tcsrchr(string_buffer,backslash);
+//          char *forward=_tcsrchr(string_buffer,slash);
+          char *back=strrchr(string_buffer,backslash);
+          char *forward=strrchr(string_buffer,slash);
+//>
           if(back>forward)
           {
             *back=0;
@@ -1844,7 +1858,10 @@ GURL::expand_name(const GUTF8String &xfname, const char *from)
         char* s2=s;//MBCS DBCS
         for(;*s;s++) 
           EMPTY_LOOP;
-        char* back = _tcsrchr(s2,backslash);//MBCS DBCS
+//< Changed for WinDjView project
+//        char* back = _tcsrchr(s2,backslash);//MBCS DBCS
+        char* back = strrchr(s2,backslash);//MBCS DBCS
+//>
         if ((s>string_buffer)&&(*(s-1)!= slash)&&
             (back == NULL || (back!=NULL && s-1 != back) ))//MBCS DBCS
         {
@@ -1862,7 +1879,10 @@ GURL::expand_name(const GUTF8String &xfname, const char *from)
       char* s2=s;//MBCS DBCS
       for(;*s;s++) 
         EMPTY_LOOP;
-      char* back = _tcsrchr(s2,backslash);//MBCS DBCS
+//< Changed for WinDjView project
+//      char* back = _tcsrchr(s2,backslash);//MBCS DBCS
+      char* back = strrchr(s2,backslash);//MBCS DBCS
+//>
       if ((s>string_buffer)&&(*(s-1)!= slash)
           &&(back == NULL || (back!=NULL && s-1 != back) ))//MBCS DBCS
       {

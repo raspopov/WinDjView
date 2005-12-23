@@ -62,6 +62,7 @@ const TCHAR* s_pszRestoreAssocs = _T("assocs");
 const TCHAR* s_pszGenAllThumbnails = _T("gen-all-thumbs");
 const TCHAR* s_pszFullscreenClicks = _T("fullscreen-clicks");
 const TCHAR* s_pszVersion = _T("version");
+const TCHAR* s_pszLanguage = _T("language");
 
 const TCHAR* s_pszPrintSettings = _T("Print");
 const TCHAR* s_pszMarginLeft = _T("m-left");
@@ -161,6 +162,8 @@ BOOL CDjViewApp::InitInstance()
 	// The main window has been initialized, so show and update it
 	pMainFrame->ShowWindow(m_nCmdShow);
 	pMainFrame->UpdateWindow();
+
+	pMainFrame->SetStartupLanguage();
 
 	if (CAppSettings::strVersion != CURRENT_VERSION)
 		OnAppAbout();
@@ -373,6 +376,7 @@ void CDjViewApp::LoadSettings()
 	CAppSettings::bGenAllThumbnails = !!GetProfileInt(s_pszGlobalSettings, s_pszGenAllThumbnails, 1);
 	CAppSettings::bFullscreenClicks = !!GetProfileInt(s_pszGlobalSettings, s_pszFullscreenClicks, 1);
 	CAppSettings::strVersion = GetProfileString(s_pszGlobalSettings, s_pszVersion, _T(""));
+	CAppSettings::strLanguage = GetProfileString(s_pszGlobalSettings, s_pszLanguage, _T(""));
 
 	CDisplaySettings& ds = CAppSettings::displaySettings;
 	ds.bAdjustDisplay = !!GetProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, 0);
@@ -413,6 +417,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszGlobalSettings, s_pszGenAllThumbnails, CAppSettings::bGenAllThumbnails);
 	WriteProfileInt(s_pszGlobalSettings, s_pszFullscreenClicks, CAppSettings::bFullscreenClicks);
 	WriteProfileString(s_pszGlobalSettings, s_pszVersion, CURRENT_VERSION);
+	WriteProfileString(s_pszGlobalSettings, s_pszLanguage, CAppSettings::strLanguage);
 
 	CDisplaySettings& ds = CAppSettings::displaySettings;
 	WriteProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, ds.bAdjustDisplay);
@@ -598,7 +603,7 @@ CDjVuDoc* CDjViewApp::OpenDocument(const CString& strPathName, const GUTF8String
 
 	if (pDoc == NULL)
 	{
-		AfxMessageBox(_T("Failed to open document\n") + strPathName);
+		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + strPathName);
 		return NULL;
 	}
 

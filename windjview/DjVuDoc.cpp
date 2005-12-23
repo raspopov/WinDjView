@@ -87,6 +87,22 @@ void CDjVuDoc::Dump(CDumpContext& dc) const
 }
 #endif //_DEBUG
 
+GURL MakeFilenameURL(const CString& strFilename)
+{
+#ifdef _UNICODE
+	int nSize = ::WideCharToMultiByte(CP_UTF8, 0, strFilename, -1, NULL, 0, NULL, NULL);
+	LPSTR pszText = new CHAR[nSize];
+	::WideCharToMultiByte(CP_UTF8, 0, strFilename, -1, pszText, nSize, NULL, NULL);
+
+	GURL url = GURL::Filename::UTF8(pszText);
+	delete[] pszText;
+
+	return url;
+#else
+	return GURL::Filename::Native((LPCSTR)strFilename);
+#endif
+}
+
 
 BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 {
@@ -99,19 +115,20 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	CFile file;
 	if (!file.Open(pszName, CFile::modeRead | CFile::shareDenyWrite))
 	{
-		AfxMessageBox("Failed to open file " + CString(pszName));
+		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + pszName);
 		return false;
 	}
 	file.Close();
 
 	G_TRY
 	{
-		m_pDjVuDoc = DjVuDocument::create(GURL::Filename::Native(pszName));
+		m_pDjVuDoc = DjVuDocument::create(MakeFilenameURL(pszName));
 		m_pDjVuDoc->wait_get_pages_num();
 	}
 	G_CATCH(ex)
 	{
-		AfxMessageBox("Error opening file " + CString(pszName) + ":\n" + CString(ex.get_cause()));
+		ex;
+		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + pszName + LoadString(IDS_NOT_VALID_DOCUMENT));
 		return false;
 	}
 	G_ENDCATCH;
@@ -119,7 +136,7 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	m_nPageCount = m_pDjVuDoc->get_pages_num();
 	if (m_nPageCount == 0)
 	{
-		AfxMessageBox("Error opening file " + CString(pszName) + ":\nNot a valid DjVu document.");
+		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + pszName + LoadString(IDS_NOT_VALID_DOCUMENT));
 		return false;
 	}
 
@@ -419,7 +436,7 @@ void CDjVuDoc::OnSaveCopyAs()
 {
 	CString strFileName = GetTitle();
 
-	CFileDialog dlg(false, "djvu", strFileName, OFN_OVERWRITEPROMPT |
+	CFileDialog dlg(false, _T("djvu"), strFileName, OFN_OVERWRITEPROMPT |
 		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
 		LoadString(IDS_DJVU_FILTER));
 
@@ -444,7 +461,7 @@ void CDjVuDoc::OnSaveCopyAs()
 	G_TRY
 	{
 		m_pDjVuDoc->wait_for_complete_init();
-		m_pDjVuDoc->save_as(GURL::Filename::Native((LPCSTR)strFileName), true);
+		m_pDjVuDoc->save_as(MakeFilenameURL(strFileName), true);
 	}
 	G_CATCH(ex)
 	{

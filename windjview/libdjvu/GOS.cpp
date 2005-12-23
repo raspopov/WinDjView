@@ -337,7 +337,10 @@ GOS::cwd(const GUTF8String &dirname)
   char *string_buffer;
   GPBuffer<char> gstring_buffer(string_buffer,MAXPATHLEN+1);
   char *result = getcwd(string_buffer,MAXPATHLEN);
-  GetFullPathName(drv, MAXPATHLEN, string_buffer, &result);
+//< Changed for WinDjView project
+//  GetFullPathName(drv, MAXPATHLEN, string_buffer, &result);
+  GetFullPathNameA(drv, MAXPATHLEN, string_buffer, &result);
+//>
   return GNativeString(string_buffer).getNative2UTF8();//MBCS cvt
 #else
 #error "Define something here for your operating system"

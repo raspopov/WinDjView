@@ -50,7 +50,7 @@ void CGotoPageDlg::DoDataExchange(CDataExchange* pDX)
 	if (!pDX->m_bSaveAndValidate)
 	{
 		CString strPageCount;
-		strPageCount.Format(_T("of %d"), m_nPageCount);
+		strPageCount.Format(IDS_OF_PAGE_COUNT, m_nPageCount);
 		DDX_Text(pDX, IDC_PAGE_COUNT, strPageCount);
 	}
 }

@@ -82,7 +82,7 @@ void CFindDlg::OnFindAll()
 	if (!UpdateData())
 		return;
 
-	SetStatusText(_T("Searching"));
+	SetStatusText(LoadString(IDS_SEARCHING));
 	GetDlgItem(IDC_SEARCH_STATUS)->ShowWindow(SW_SHOW);
 
 	GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);

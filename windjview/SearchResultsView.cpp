@@ -151,7 +151,7 @@ void CSearchResultsView::OnGetInfoTip(NMHDR *pNMHDR, LRESULT *pResult)
 	ResultData* data = (ResultData*)GetTreeCtrl().GetItemData(hItem);
 
 	CString strText;
-	strText.Format(_T("p# %d"), data->nPage + 1);
+	strText.Format(IDS_PAGE_NO_TOOLTIP, data->nPage + 1);
 
 	pNMInfoTip->pszText[pNMInfoTip->cchTextMax - 1] = '\0';
 	_tcsnccpy(pNMInfoTip->pszText, strText, pNMInfoTip->cchTextMax - 1);

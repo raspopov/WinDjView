@@ -45,7 +45,11 @@ public:
 // Operations
 public:
 	int AddTab(const CString& strName, CWnd* pWnd);
+	int GetTabIndex(CWnd* pTabContent);
+	void ActivateTab(CWnd* pTabContent);
 	void ActivateTab(int nTab);
+	void SetTabName(CWnd* pTabContent, const CString& strName);
+	void SetTabName(int nTab, const CString& strName);
 
 // Implementation
 protected:
@@ -63,7 +67,7 @@ protected:
 	void UpdateCloseButton(bool bLButtonDown);
 	void UpdateCloseButtonImpl(bool bPressed, bool bActive, const CRect& rcButton);
 	int GetTabFromPoint(CPoint point);
-	void UpdateTabSizes();
+	void UpdateTabContents();
 	bool PtInTab(int nTab, CPoint point);
 	CToolTipCtrl m_toolTip;
 
@@ -82,6 +86,7 @@ protected:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnLanguageChanged();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()

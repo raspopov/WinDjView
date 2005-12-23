@@ -32,66 +32,6 @@
 #endif
 
 
-CString GetStatusString(DWORD dwStatus)
-{
-	vector<CString> status;
-	if (dwStatus & PRINTER_STATUS_BUSY) // The printer is busy.
-		status.push_back(_T("Busy"));
-	if (dwStatus & PRINTER_STATUS_DOOR_OPEN) // The printer door is open.
-		status.push_back(_T("Door open"));
-	if (dwStatus & PRINTER_STATUS_ERROR) // The printer is in an error state.
-		status.push_back(_T("Error"));
-	if (dwStatus & PRINTER_STATUS_INITIALIZING) // The printer is initializing.
-		status.push_back(_T("Initializing"));
-	if (dwStatus & PRINTER_STATUS_IO_ACTIVE) // The printer is in an active input/output state.
-		status.push_back(_T("Printing"));
-	if (dwStatus & PRINTER_STATUS_MANUAL_FEED) // The printer is in a manual feed state.
-		status.push_back(_T("Manual feed"));
-	if (dwStatus & PRINTER_STATUS_NO_TONER) // The printer is out of toner.
-		status.push_back(_T("Out of toner"));
-	if (dwStatus & PRINTER_STATUS_NOT_AVAILABLE) // The printer is not available for printing.
-		status.push_back(_T("Not available"));
-	if (dwStatus & PRINTER_STATUS_OFFLINE) // The printer is offline.
-		status.push_back(_T("Offline"));
-	if (dwStatus & PRINTER_STATUS_OUT_OF_MEMORY) // The printer has run out of memory.
-		status.push_back(_T("Out of memory"));
-	if (dwStatus & PRINTER_STATUS_OUTPUT_BIN_FULL) // The printer's output bin is full.
-		status.push_back(_T("Output bin full"));
-	if (dwStatus & PRINTER_STATUS_PAGE_PUNT) // The printer cannot print the current page.
-		status.push_back(_T("Page punted"));
-	if (dwStatus & PRINTER_STATUS_PAPER_JAM) // Paper is jammed in the printer.
-		status.push_back(_T("Paper jam"));
-	if (dwStatus & PRINTER_STATUS_PAPER_OUT) // The printer is out of paper.
-		status.push_back(_T("Out of paper"));
-	if (dwStatus & PRINTER_STATUS_PAPER_PROBLEM) // The printer has a paper problem.
-		status.push_back(_T("Paper problem"));
-	if (dwStatus & PRINTER_STATUS_PAUSED) // The printer is paused.
-		status.push_back(_T("Paused"));
-	if (dwStatus & PRINTER_STATUS_PENDING_DELETION) // The printer is being deleted.
-		status.push_back(_T("Deleted"));
-	if (dwStatus & PRINTER_STATUS_POWER_SAVE) // The printer is in power save mode.
-		status.push_back(_T("Power saving"));
-	if (dwStatus & PRINTER_STATUS_PRINTING) // The printer is printing.
-		status.push_back(_T("Printing"));
-	if (dwStatus & PRINTER_STATUS_PROCESSING) // The printer is processing a print job.
-		status.push_back(_T("Processing"));
-	if (dwStatus & PRINTER_STATUS_SERVER_UNKNOWN) // The printer status is unknown.
-		status.push_back(_T("Unknown"));
-	if (dwStatus & PRINTER_STATUS_TONER_LOW) // The printer is low on toner.
-		status.push_back(_T("Low on toner"));
-	if (dwStatus & PRINTER_STATUS_USER_INTERVENTION) // The printer has an error that requires the user to do something.
-		status.push_back(_T("Fatal error"));
-	if (dwStatus & PRINTER_STATUS_WAITING) // The printer is waiting.
-		status.push_back(_T("Waiting"));
-	if (dwStatus & PRINTER_STATUS_WARMING_UP) // The printer is warming up.
-		status.push_back(_T("Warming up"));
-
-	CString strStatus;
-	for (size_t i = 0; i < status.size(); ++i)
-		strStatus += (i > 0 ? _T("; ") : _T("")) + status[i];
-	return strStatus.IsEmpty() ? _T("Ready") : strStatus;
-}
-
 CString FormatDouble(double fValue)
 {
 	CString strResult;
@@ -140,7 +80,7 @@ IMPLEMENT_DYNAMIC(CPrintDlg, CDialog)
 CPrintDlg::CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, int nMode, CWnd* pParent)
 	: CDialog(CPrintDlg::IDD, pParent),
 	  m_bCollate(FALSE), m_nCopies(1), m_strPages(_T("")), m_bPrintToFile(FALSE),
-	  m_strStatus(_T("")), m_strType(_T("")), m_strLocation(_T("")),
+	  m_strType(_T("")), m_strLocation(_T("")),
 	  m_strComment(_T("")), m_bLandscape(FALSE), m_nRangeType(0),
 	  m_pPrinter(NULL), m_hPrinter(NULL), m_pPaper(NULL), m_bReverse(false),
 	  m_pDoc(pDoc), m_nCurPage(nPage), m_nRotate(nRotate), m_nMode(nMode),
@@ -163,7 +103,6 @@ void CPrintDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_COLLATE, m_bCollate);
 	DDX_Text(pDX, IDC_PAGE_RANGES, m_strPages);
 	DDX_Check(pDX, IDC_PRINT_TO_FILE, m_bPrintToFile);
-	DDX_Text(pDX, IDC_STATIC_STATUS, m_strStatus);
 	DDX_Text(pDX, IDC_STATIC_TYPE, m_strType);
 	DDX_Text(pDX, IDC_STATIC_LOCATION, m_strLocation);
 	DDX_Text(pDX, IDC_STATIC_COMMENT, m_strComment);
@@ -183,7 +122,7 @@ void CPrintDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_POSITION_TOP, m_edtPosTop);
 	DDX_Control(pDX, IDC_SCALE, m_edtScale);
 
-	DDX_MyText(pDX, IDC_SCALE, m_settings.fScale, 100.0, "%");
+	DDX_MyText(pDX, IDC_SCALE, m_settings.fScale, 100.0, _T("%"));
 	DDX_MyText(pDX, IDC_POSITION_LEFT, m_settings.fPosLeft);
 	DDX_MyText(pDX, IDC_POSITION_TOP, m_settings.fPosTop);
 	DDX_MyText(pDX, IDC_MARGIN_BOTTOM, m_settings.fMarginBottom);
@@ -201,7 +140,7 @@ void CPrintDlg::DoDataExchange(CDataExchange* pDX)
 			if (m_bLandscape)
 				swap(szPaper.cx, szPaper.cy);
 
-			strPaperSize.Format(_T("%s x %s mm"),
+			strPaperSize.Format(IDS_PAPER_SIZE_MM,
 				(LPCTSTR)FormatDouble(szPaper.cx / 10.0),
 				(LPCTSTR)FormatDouble(szPaper.cy / 10.0));
 		}
@@ -343,13 +282,13 @@ BOOL CPrintDlg::OnInitDialog()
 
 	OnChangePrinter();
 
-	m_cboPagesInRange.AddString(_T("All Pages In Range"));
-	m_cboPagesInRange.AddString(_T("Odd Pages"));
-	m_cboPagesInRange.AddString(_T("Even Pages"));
+	m_cboPagesInRange.AddString(LoadString(IDS_PRINT_ALL_PAGES));
+	m_cboPagesInRange.AddString(LoadString(IDS_PRINT_ODD_PAGES));
+	m_cboPagesInRange.AddString(LoadString(IDS_PRINT_EVEN_PAGES));
 	m_cboPagesInRange.SetCurSel(0);
 
-	m_cboPagesPerSheet.AddString(_T("One Page Per Sheet"));
-	m_cboPagesPerSheet.AddString(_T("Two Pages Per Sheet"));
+	m_cboPagesPerSheet.AddString(LoadString(IDS_PRINT_ONE_PAGE));
+	m_cboPagesPerSheet.AddString(LoadString(IDS_PRINT_TWO_PAGES));
 	m_cboPagesPerSheet.SetCurSel(m_bTwoPages ? 1 : 0);
 
 	return true;
@@ -507,7 +446,7 @@ void CPrintDlg::OnPaint()
 		}
 		else
 		{
-			if (m_pNextPage == NULL)
+			if (m_pNextPage == NULL && m_nCurPage < m_pDoc->GetPageCount() - 1)
 			{
 				m_pNextPage = m_pDoc->GetPage(m_nCurPage + 1, false);
 				if (m_pNextPage != NULL)
@@ -542,7 +481,9 @@ void CPrintDlg::PreviewTwoPages(CDC* pDC, const CRect& rcPage, const CSize& szPa
 	}
 
 	PrintPage(pDC, m_pCurPage, m_nMode, rcFirstHalf, fScreenMM, fScreenMM, m_settings, true);
-	PrintPage(pDC, m_pNextPage, m_nMode, rcSecondHalf, fScreenMM, fScreenMM, m_settings, true);
+
+	if (m_pNextPage != NULL)
+		PrintPage(pDC, m_pNextPage, m_nMode, rcSecondHalf, fScreenMM, fScreenMM, m_settings, true);
 }
 
 void CPrintDlg::OnChangePagesPerSheet()
@@ -593,7 +534,6 @@ void CPrintDlg::OnChangePrinter()
 	int nPrinter = m_cboPrinter.GetCurSel();
 	if (nPrinter == -1)
 	{
-		m_strStatus.Empty();
 		m_strLocation.Empty();
 		m_strComment.Empty();
 		m_strType.Empty();
@@ -618,7 +558,6 @@ void CPrintDlg::OnChangePrinter()
 	m_strComment = m_pPrinter->pComment;
 	m_strLocation = m_pPrinter->pPortName;
 	m_strType = m_pPrinter->pDriverName;
-	m_strStatus = GetStatusString(m_pPrinter->Status);
 
 	LoadPaperTypes();
 

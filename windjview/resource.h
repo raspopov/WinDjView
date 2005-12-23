@@ -51,6 +51,44 @@
 #define IDS_DONATE_URL                  148
 #define IDS_STRING_NOT_FOUND            149
 #define IDS_PRINTING                    150
+#define IDS_ERROR_RENDERING_PAGE        151
+#define IDS_SEARCHING_PAGE              152
+#define IDS_NUM_OCCURRENCES             153
+#define IDS_EXPORT_TEXT                 154
+#define IDS_TEXT_FILTER                 155
+#define IDS_PRINTING_PAGE               156
+#define IDS_SEARCHING                   157
+#define IDS_OF_PAGE_COUNT               158
+#define IDS_FIT_WIDTH                   159
+#define IDS_FIT_HEIGHT                  160
+#define IDS_FIT_PAGE                    161
+#define IDS_ACTUAL_SIZE                 162
+#define IDS_STRETCH                     163
+#define IDS_TOOLTIP_BRIGHTNESS          164
+#define IDS_TOOLTIP_CONTRAST            165
+#define IDS_TOOLTIP_GAMMA               166
+#define IDS_STATUS_BLACKANDWHITE        167
+#define IDS_STATUS_FOREGROUND           168
+#define IDS_STATUS_BACKGROUND           169
+#define IDS_PRINT_ALL_PAGES             170
+#define IDS_PRINT_ODD_PAGES             171
+#define IDS_PRINT_EVEN_PAGES            172
+#define IDS_PRINT_ONE_PAGE              173
+#define IDS_PRINT_TWO_PAGES             174
+#define IDS_PLEASE_WAIT                 175
+#define IDS_PAGE_NO_TOOLTIP             176
+#define IDS_BRIGHTNESS_TEXT_ZERO        177
+#define IDS_BRIGHTNESS_TEXT             178
+#define IDS_CONTRAST_TEXT_ZERO          179
+#define IDS_CONTRAST_TEXT               180
+#define IDS_GAMMA_TEXT                  181
+#define IDS_FAILED_TO_OPEN              182
+#define IDS_TOOLBAR_TITLE               183
+#define IDS_TOOLTIP_HIDE                184
+#define IDS_NOT_VALID_DOCUMENT          185
+#define IDS_PRINTING_FAILED             186
+#define IDS_PAPER_SIZE_MM               187
+#define IDS_CENTIMETER                  188
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -61,7 +99,6 @@
 #define IDC_SPIN_COPIES                 1007
 #define IDC_EDIT_COPIES                 1008
 #define IDC_COLLATE                     1009
-#define IDC_STATIC_STATUS               1010
 #define IDC_STATIC_TYPE                 1011
 #define IDC_STATIC_LOCATION             1012
 #define IDC_STATIC_COMMENT              1013
@@ -165,13 +202,15 @@
 #define ID_DISPLAY_FOREGROUND           32857
 #define ID_VIEW_FULLSCREEN              32858
 #define ID_VIEW_GOTO_PAGE               32859
+#define ID_LANGUAGE_FIRST               32860
+#define ID_LANGUAGE_LAST                33115
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        149
-#define _APS_NEXT_COMMAND_VALUE         32867
+#define _APS_NEXT_COMMAND_VALUE         33116
 #define _APS_NEXT_CONTROL_VALUE         1054
 #define _APS_NEXT_SYMED_VALUE           109
 #endif

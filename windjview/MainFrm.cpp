@@ -49,7 +49,7 @@ void CreateSystemDialogFont(CFont& font)
 	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
 		vi.dwMajorVersion >= 5)
 	{
-		strcpy(lf.lfFaceName, "MS Shell Dlg 2");
+		_tcscpy(lf.lfFaceName, _T("MS Shell Dlg 2"));
 	}
 
 	font.CreateFontIndirect(&lf);
@@ -88,6 +88,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_WM_SETFOCUS()
 	ON_WM_DESTROY()
 	ON_MESSAGE(WM_SHOWALLLINKS, OnShowAllLinks)
+	ON_COMMAND_RANGE(ID_LANGUAGE_FIRST + 1, ID_LANGUAGE_LAST, OnSetLanguage)
+	ON_UPDATE_COMMAND_UI(ID_LANGUAGE_FIRST, OnUpdateLanguageList)
+	ON_UPDATE_COMMAND_UI_RANGE(ID_LANGUAGE_FIRST + 1, ID_LANGUAGE_LAST, OnUpdateLanguage)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -104,7 +107,7 @@ static UINT indicators[] =
 
 CMainFrame::CMainFrame()
 	: m_pFindDlg(NULL), m_bFirstShow(true), m_historyPos(m_history.end()),
-	  m_pFullscreenWnd(NULL)
+	  m_pFullscreenWnd(NULL), m_nLanguage(0)
 {
 }
 
@@ -126,20 +129,20 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		| CBRS_TOOLTIPS | CBRS_GRIPPER | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) ||
 		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME))
 	{
-		TRACE0("Failed to create toolbar\n");
+		TRACE(_T("Failed to create toolbar\n"));
 		return -1;      // fail to create
 	}
 
 	if (!m_wndStatusBar.CreateEx(this, SBT_TOOLTIPS) ||
 		!m_wndStatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT)))
 	{
-		TRACE0("Failed to create status bar\n");
+		TRACE(_T("Failed to create status bar\n"));
 		return -1;      // fail to create
 	}
 
 	m_wndToolBar.SetHeight(30);
 	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
-	m_wndToolBar.SetWindowText(_T("Toolbar"));
+	m_wndToolBar.SetWindowText(LoadString(IDS_TOOLBAR_TITLE));
 
 	EnableDocking(CBRS_ALIGN_ANY);
 	DockControlBar(&m_wndToolBar);
@@ -182,6 +185,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_cboZoom.GetEditCtrl().SetPercent();
 
 	hHook = ::SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, NULL, ::GetCurrentThreadId());
+
+	LoadLanguages();
 
 	return 0;
 }
@@ -363,25 +368,25 @@ void CMainFrame::UpdateZoomCombo(int nZoomType, double fZoom)
 		m_cboZoom.AddString(_T("100%"));
 		m_cboZoom.AddString(_T("200%"));
 		m_cboZoom.AddString(_T("400%"));
-		m_cboZoom.AddString(_T("Fit Width"));
-		m_cboZoom.AddString(_T("Fit Height"));
-		m_cboZoom.AddString(_T("Fit Page"));
-		m_cboZoom.AddString(_T("Actual Size"));
-		m_cboZoom.AddString(_T("Stretch"));
+		m_cboZoom.AddString(LoadString(IDS_FIT_WIDTH));
+		m_cboZoom.AddString(LoadString(IDS_FIT_HEIGHT));
+		m_cboZoom.AddString(LoadString(IDS_FIT_PAGE));
+		m_cboZoom.AddString(LoadString(IDS_ACTUAL_SIZE));
+		m_cboZoom.AddString(LoadString(IDS_STRETCH));
 	}
 
 	if (nZoomType == CDjVuView::ZoomFitWidth)
-		m_cboZoom.SelectString(-1, _T("Fit Width"));
+		m_cboZoom.SelectString(-1, LoadString(IDS_FIT_WIDTH));
 	else if (nZoomType == CDjVuView::ZoomFitHeight)
-		m_cboZoom.SelectString(-1, _T("Fit Height"));
+		m_cboZoom.SelectString(-1, LoadString(IDS_FIT_HEIGHT));
 	else if (nZoomType == CDjVuView::ZoomFitPage)
-		m_cboZoom.SelectString(-1, _T("Fit Page"));
+		m_cboZoom.SelectString(-1, LoadString(IDS_FIT_PAGE));
 	else if (nZoomType == CDjVuView::ZoomActualSize)
-		m_cboZoom.SelectString(-1, _T("Actual Size"));
+		m_cboZoom.SelectString(-1, LoadString(IDS_ACTUAL_SIZE));
 	else if (nZoomType == CDjVuView::ZoomStretch)
-		m_cboZoom.SelectString(-1, _T("Stretch"));
+		m_cboZoom.SelectString(-1, LoadString(IDS_STRETCH));
 	else
-		m_cboZoom.SetWindowText(FormatDouble(fZoom) + "%");
+		m_cboZoom.SetWindowText(FormatDouble(fZoom) + _T("%"));
 }
 
 void CMainFrame::UpdatePageCombo(CDjVuView* pView)
@@ -430,15 +435,15 @@ void CMainFrame::OnChangeZoom()
 	CString strZoom;
 	m_cboZoom.GetLBText(nSel, strZoom);
 
-	if (strZoom == _T("Fit Width"))
+	if (strZoom == LoadString(IDS_FIT_WIDTH))
 		pView->ZoomTo(CDjVuView::ZoomFitWidth);
-	else if (strZoom == _T("Fit Height"))
+	else if (strZoom == LoadString(IDS_FIT_HEIGHT))
 		pView->ZoomTo(CDjVuView::ZoomFitHeight);
-	else if (strZoom == _T("Fit Page"))
+	else if (strZoom == LoadString(IDS_FIT_PAGE))
 		pView->ZoomTo(CDjVuView::ZoomFitPage);
-	else if (strZoom == _T("Actual Size"))
+	else if (strZoom == LoadString(IDS_ACTUAL_SIZE))
 		pView->ZoomTo(CDjVuView::ZoomActualSize);
-	else if (strZoom == _T("Stretch"))
+	else if (strZoom == LoadString(IDS_STRETCH))
 		pView->ZoomTo(CDjVuView::ZoomStretch);
 	else
 	{
@@ -461,15 +466,15 @@ void CMainFrame::OnChangeZoomEdit()
 	CString strZoom;
 	m_cboZoom.GetWindowText(strZoom);
 
-	if (strZoom == _T("Fit Width"))
+	if (strZoom == LoadString(IDS_FIT_WIDTH))
 		pView->ZoomTo(CDjVuView::ZoomFitWidth);
-	else if (strZoom == _T("Fit Height"))
+	else if (strZoom == LoadString(IDS_FIT_HEIGHT))
 		pView->ZoomTo(CDjVuView::ZoomFitHeight);
-	else if (strZoom == _T("Fit Page"))
+	else if (strZoom == LoadString(IDS_FIT_PAGE))
 		pView->ZoomTo(CDjVuView::ZoomFitPage);
-	else if (strZoom == _T("Actual Size"))
+	else if (strZoom == LoadString(IDS_ACTUAL_SIZE))
 		pView->ZoomTo(CDjVuView::ZoomActualSize);
-	else if (strZoom == _T("Stretch"))
+	else if (strZoom == LoadString(IDS_STRETCH))
 		pView->ZoomTo(CDjVuView::ZoomStretch);
 	else
 	{
@@ -498,7 +503,7 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 	if (commandLength >= _countof(szCommand))
 	{
 		// The command would be truncated. This could be a security problem
-		TRACE0("Warning: Command was ignored because it was too long.\n");
+		TRACE(_T("Warning: Command was ignored because it was too long.\n"));
 		return 0;
 	}
 	// !!! MFC Bug Fix
@@ -650,7 +655,7 @@ void CMainFrame::GoToHistoryPos(const HistoryPos& pos)
 	CDjVuDoc* pDoc = theApp.OpenDocument(pos.strFileName, "");
 	if (pDoc == NULL)
 	{
-		AfxMessageBox(_T("Failed to open document\n") + pos.strFileName, MB_ICONERROR | MB_OK);
+		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + pos.strFileName, MB_ICONERROR | MB_OK);
 		return;
 	}
 
@@ -753,21 +758,21 @@ void CMainFrame::OnUpdateStatusAdjust(CCmdUI* pCmdUI)
 	int nBrightness = CAppSettings::displaySettings.GetBrightness();
 	if (nBrightness != 0)
 	{
-		strTemp.Format(_T("Brightness: %+d"), nBrightness);
+		strTemp.Format(IDS_TOOLTIP_BRIGHTNESS, nBrightness);
 		strNewTooltip += (!strNewTooltip.IsEmpty() ? _T(", ") : _T("")) + strTemp;
 	}
 
 	int nContrast = CAppSettings::displaySettings.GetContrast();
 	if (nContrast != 0)
 	{
-		strTemp.Format(_T("Contrast: %+d"), nContrast);
+		strTemp.Format(IDS_TOOLTIP_CONTRAST, nContrast);
 		strNewTooltip += (!strNewTooltip.IsEmpty() ? _T(", ") : _T("")) + strTemp;
 	}
 
 	double fGamma = CAppSettings::displaySettings.GetGamma();
 	if (fGamma != 1.0)
 	{
-		strTemp.Format(_T("Gamma: %1.1f"), fGamma);
+		strTemp.Format(IDS_TOOLTIP_GAMMA, fGamma);
 		strNewTooltip += (!strNewTooltip.IsEmpty() ? _T(", ") : _T("")) + strTemp;
 	}
 
@@ -793,15 +798,15 @@ void CMainFrame::OnUpdateStatusMode(CCmdUI* pCmdUI)
 		switch (nMode)
 		{
 		case CDjVuView::BlackAndWhite:
-			strNewMessage = _T("  Black & White  ");
+			strNewMessage.LoadString(IDS_STATUS_BLACKANDWHITE);
 			break;
 
 		case CDjVuView::Foreground:
-			strNewMessage = _T("  Foreground  ");
+			strNewMessage.LoadString(IDS_STATUS_FOREGROUND);
 			break;
 
 		case CDjVuView::Background:
-			strNewMessage = _T("  Background  ");
+			strNewMessage.LoadString(IDS_STATUS_BACKGROUND);
 			break;
 		}
 	}
@@ -885,7 +890,8 @@ void CMainFrame::OnUpdateStatusSize(CCmdUI* pCmdUI)
 	double fHeight = static_cast<int>(25.4 * szPage.cy / nDPI) * 0.1;
 
 	strNewMessage.Format(ID_INDICATOR_SIZE, 
-			(LPCTSTR)FormatDouble(fWidth), (LPCTSTR)FormatDouble(fHeight), "cm");
+			(LPCTSTR)FormatDouble(fWidth), (LPCTSTR)FormatDouble(fHeight),
+			LoadString(IDS_CENTIMETER));
 
 	if (strMessage != strNewMessage)
 	{
@@ -975,4 +981,216 @@ LRESULT CMainFrame::OnShowAllLinks(WPARAM wParam, LPARAM lParam)
 		m_pFullscreenWnd->GetView()->ShowAllLinks(wParam != 0);
 
 	return 0;
+}
+
+void CMainFrame::OnUpdateFrameMenu(HMENU hMenuAlt)
+{
+	// From MFC's CMDIFrameWnd::OnUpdateFrameMenu
+	// Takes into account localized menus
+
+	CMDIChildWnd* pActiveWnd = MDIGetActive();
+	if (pActiveWnd != NULL)
+	{
+		// let child update the menu bar
+		pActiveWnd->OnUpdateFrameMenu(TRUE, pActiveWnd, hMenuAlt);
+	}
+	else
+	{
+		// no child active, so have to update it ourselves
+		//  (we can't send it to a child window, since pActiveWnd is NULL)
+		// use localized menu if localization is enabled
+		if (hMenuAlt == NULL)
+		{
+			hMenuAlt = m_hMenuDefault;
+			if (CAppSettings::bLocalized)
+				hMenuAlt = CAppSettings::hDefaultMenu;
+		}
+		::SendMessage(m_hWndMDIClient, WM_MDISETMENU, (WPARAM)hMenuAlt, NULL);
+	}
+}
+
+void CMainFrame::OnSetLanguage(UINT nID)
+{
+	int nLanguage = nID - ID_LANGUAGE_FIRST - 1;
+	SetLanguage(nLanguage);
+}
+
+void CMainFrame::SetLanguage(int nLanguage)
+{
+	if (nLanguage < 0 || nLanguage >= m_languages.size() || nLanguage == m_nLanguage)
+		return;
+
+	LanguageInfo& info = m_languages[nLanguage];
+	if (info.hInstance == NULL)
+	{
+		info.hInstance = ::LoadLibrary(info.strLibraryPath);
+		if (info.hInstance == NULL)
+		{
+			AfxMessageBox(_T("Could not change the language to ") + info.strLanguage);
+			return;
+		}
+	}
+
+	CAppSettings::bLocalized = (nLanguage != 0);
+	AfxSetResourceHandle(info.hInstance);
+	m_nLanguage = nLanguage;
+	CAppSettings::strLanguage = info.strLanguage;
+
+	OnLanguageChanged();
+}
+
+void CMainFrame::OnLanguageChanged()
+{
+	if (CAppSettings::bLocalized)
+	{
+		CMenu* pDjVuMenu = new CMenu();
+		pDjVuMenu->LoadMenu(IDR_DjVuTYPE);
+		CMenu* pDefaultMenu = new CMenu();
+		pDefaultMenu->LoadMenu(IDR_MAINFRAME);
+
+		CAppSettings::hDjVuMenu = pDjVuMenu->m_hMenu;
+		CAppSettings::hDefaultMenu = pDefaultMenu->m_hMenu;
+	}
+
+	OnUpdateFrameMenu(NULL);
+	DrawMenuBar();
+
+	m_cboZoom.ResetContent();
+	if (m_pFindDlg != NULL)
+	{
+		m_pFindDlg->UpdateData();
+		CString strFind = m_pFindDlg->m_strFind;
+		bool bMatchCase = !!m_pFindDlg->m_bMatchCase;
+
+		bool bVisible = !!m_pFindDlg->IsWindowVisible();
+
+		CRect rcFindDlg;
+		m_pFindDlg->GetWindowRect(rcFindDlg);
+		m_pFindDlg->DestroyWindow();
+		delete m_pFindDlg;
+
+		m_pFindDlg = new CFindDlg();
+		m_pFindDlg->m_strFind = strFind;
+		m_pFindDlg->m_bMatchCase = bMatchCase;
+		m_pFindDlg->Create(IDD_FIND, this);
+
+		CRect rcNewFindDlg;
+		m_pFindDlg->GetWindowRect(rcNewFindDlg);
+
+		m_pFindDlg->MoveWindow(rcFindDlg.left, rcFindDlg.top,
+			rcNewFindDlg.Width(), rcNewFindDlg.Height());
+		m_pFindDlg->ShowWindow(bVisible ? SW_SHOWNOACTIVATE : SW_HIDE);
+		SetFocus();
+	}
+
+	SendMessageToDescendants(WM_LANGUAGE_CHANGED, 0, 0, true, true);
+}
+
+void CMainFrame::LoadLanguages()
+{
+	LanguageInfo english;
+	english.strLanguage = _T("&English");
+	english.hInstance = AfxGetInstanceHandle();
+	m_languages.push_back(english);
+
+	CString strPathName;
+	GetModuleFileName(theApp.m_hInstance, strPathName.GetBuffer(_MAX_PATH), _MAX_PATH);
+	strPathName.ReleaseBuffer();
+
+	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
+	_tsplitpath(strPathName, szDrive, szPath, szName, szExt);
+	CString strFileName = szDrive + CString(szPath) + _T("WinDjView*.dll");
+
+	WIN32_FIND_DATA fd;
+	HANDLE hFind = FindFirstFile(strFileName, &fd);
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			DWORD dwHandle;
+			DWORD dwSize = ::GetFileVersionInfoSize(fd.cFileName, &dwHandle);
+			if (dwSize <= 0)
+				continue;
+
+			LPBYTE pVersionInfo = new BYTE[dwSize];
+			if (::GetFileVersionInfo(fd.cFileName, dwHandle, dwSize, pVersionInfo) == 0)
+			{
+				delete[] pVersionInfo;
+				continue;
+			}
+
+			LPCTSTR pszBuffer;
+			UINT dwBytes;
+			if (VerQueryValue(pVersionInfo, _T("\\StringFileInfo\\04090000\\FileVersion"),
+					(void**)&pszBuffer, &dwBytes) == 0 || dwBytes == 0)
+			{
+				delete[] pVersionInfo;
+				continue;
+			}
+
+			CString strVersion(pszBuffer);
+			if (strVersion != CURRENT_VERSION)
+			{
+				delete[] pVersionInfo;
+				continue;
+			}
+
+			if (VerQueryValue(pVersionInfo, _T("\\StringFileInfo\\04090000\\Comments"),
+					(void**)&pszBuffer, &dwBytes) == 0 || dwBytes == 0)
+			{
+				delete[] pVersionInfo;
+				continue;
+			}
+
+			CString strLanguage(pszBuffer);
+			delete[] pVersionInfo;
+
+			LanguageInfo info;
+			info.strLanguage = strLanguage;
+			info.strLibraryPath = szDrive + CString(szPath) + fd.cFileName;
+			info.hInstance = NULL;
+			m_languages.push_back(info);
+		} while (FindNextFile(hFind, &fd) != 0);
+
+		FindClose(hFind);
+	}
+}
+
+void CMainFrame::OnUpdateLanguageList(CCmdUI* pCmdUI)
+{
+	if (pCmdUI->m_pMenu == NULL)
+		return;
+
+	int nIndex = pCmdUI->m_nIndex;
+	int nAdded = 0;
+
+	for (int i = 0; i < m_languages.size() && i < ID_LANGUAGE_LAST - ID_LANGUAGE_FIRST - 1; ++i)
+	{
+		CString strText = m_languages[i].strLanguage;
+		pCmdUI->m_pMenu->InsertMenu(ID_LANGUAGE_FIRST, MF_BYCOMMAND, ID_LANGUAGE_FIRST + i + 1, strText);
+		++nAdded;
+	}
+	pCmdUI->m_pMenu->DeleteMenu(ID_LANGUAGE_FIRST, MF_BYCOMMAND);
+
+	// update end menu count
+	pCmdUI->m_nIndex -= 1;
+	pCmdUI->m_nIndexMax += nAdded - 1;
+}
+
+void CMainFrame::OnUpdateLanguage(CCmdUI* pCmdUI)
+{
+	int nLanguage = pCmdUI->m_nID - ID_LANGUAGE_FIRST - 1;
+	pCmdUI->SetCheck(nLanguage == m_nLanguage);
+}
+
+void CMainFrame::SetStartupLanguage()
+{
+	for (int i = 0; i < m_languages.size(); ++i)
+	{
+		if (CAppSettings::strLanguage == m_languages[i].strLanguage)
+		{
+			SetLanguage(i);
+			return;
+		}
+	}
 }

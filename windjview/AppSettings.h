@@ -69,6 +69,8 @@ struct CAppSettings
 	static bool bGenAllThumbnails;
 	static bool bFullscreenClicks;
 
+	static CString strLanguage;
+
 	static CDisplaySettings displaySettings;
 
 	static CPrintSettings printSettings;
@@ -84,4 +86,8 @@ struct CAppSettings
 	static WORD nPaper;
 
 	static CString strVersion;
+
+	static bool bLocalized;
+	static HMENU hDjVuMenu;
+	static HMENU hDefaultMenu;
 };

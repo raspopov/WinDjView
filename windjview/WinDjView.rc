@@ -174,12 +174,17 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       ID_APP_EXIT
+        MENUITEM "E&xit\tCtrl+Q",               ID_APP_EXIT
     END
     POPUP "&View"
     BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        POPUP "&Language"
+        BEGIN
+            MENUITEM "&English",                    ID_LANGUAGE_FIRST
+        END
     END
     POPUP "&Help"
     BEGIN
@@ -246,7 +251,7 @@ BEGIN
             MENUITEM "&Right",                      ID_ROTATE_RIGHT
             MENUITEM "&180°",                       ID_ROTATE_180
         END
-        POPUP "&Layout"
+        POPUP "La&yout"
         BEGIN
             MENUITEM "&Single Page",                ID_LAYOUT_SINGLEPAGE
             MENUITEM "&Continuous",                 ID_LAYOUT_CONTINUOUS
@@ -261,6 +266,11 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Find...\tCtrl+F",            ID_VIEW_FIND
         MENUITEM "&Copy Text\tCtrl+C",          ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        POPUP "&Language"
+        BEGIN
+            MENUITEM "&English",                    ID_LANGUAGE_FIRST
+        END
     END
     POPUP "&Window"
     BEGIN
@@ -385,7 +395,8 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Properties",IDC_PROPERTIES,364,18,50,14
     CONTROL         "Print to &file",IDC_PRINT_TO_FILE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,364,77,52,9
+                    BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,364,77,52,
+                    9
     CONTROL         "Portra&it",IDC_PORTRAIT,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,174,112,53,11
     CONTROL         "Lan&dscape",IDC_LANDSCAPE,"Button",BS_AUTORADIOBUTTON,
@@ -397,15 +408,15 @@ BEGIN
     CONTROL         "Collate",IDC_COLLATE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,379,131,37,11
     CONTROL         "&All",IDC_RANGE_ALL,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,14,165,37,11
+                    WS_GROUP,14,166,37,11
     CONTROL         "C&urrent page",IDC_RANGE_CURRENT,"Button",
-                    BS_AUTORADIOBUTTON,14,179,59,11
+                    BS_AUTORADIOBUTTON,14,180,59,11
     CONTROL         "Pa&ges:",IDC_RANGE_PAGES,"Button",BS_AUTORADIOBUTTON,14,
-                    193,37,11
+                    194,37,11
     EDITTEXT        IDC_PAGE_RANGES,56,193,95,12,ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "L&eft:",IDC_STATIC,173,168,21,9
+    LTEXT           "L&eft:",IDC_STATIC,174,168,21,9
     EDITTEXT        IDC_POSITION_LEFT,198,166,38,12,ES_AUTOHSCROLL
-    LTEXT           "T&op:",IDC_STATIC,173,186,21,9
+    LTEXT           "T&op:",IDC_STATIC,174,186,21,9
     EDITTEXT        IDC_POSITION_TOP,198,184,38,12,ES_AUTOHSCROLL
     CONTROL         "Center i&mage",IDC_CENTER_IMAGE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,198,202,57,9
@@ -432,17 +443,15 @@ BEGIN
     LTEXT           "Print",IDC_STATIC,304,269,17,9
     COMBOBOX        IDC_COMBO_PAGESPERSHEET,326,267,91,84,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "Print",IDOK,318,295,50,14
+    DEFPUSHBUTTON   "Print",IDOK,319,295,50,14
     PUSHBUTTON      "Close",IDCANCEL,374,295,50,14
     GROUPBOX        "Printer",IDC_STATIC,167,7,257,87
-    LTEXT           "Status:",IDC_STATIC,174,38,37,9
-    LTEXT           "Location:",IDC_STATIC,174,64,37,9
-    LTEXT           "Type:",IDC_STATIC,174,51,37,9
-    LTEXT           "Comment:",IDC_STATIC,174,77,37,9
-    LTEXT           "Ready",IDC_STATIC_STATUS,216,38,138,9
-    LTEXT           "Ready",IDC_STATIC_TYPE,216,51,138,9
-    LTEXT           "Ready",IDC_STATIC_LOCATION,216,64,138,9
-    LTEXT           "Ready",IDC_STATIC_COMMENT,216,77,138,9
+    LTEXT           "Location:",IDC_STATIC,174,55,37,9
+    LTEXT           "Type:",IDC_STATIC,174,40,37,9
+    LTEXT           "Comment:",IDC_STATIC,174,70,37,9
+    LTEXT           "Type",IDC_STATIC_TYPE,216,40,138,9
+    LTEXT           "Location",IDC_STATIC_LOCATION,216,55,138,9
+    LTEXT           "Comment",IDC_STATIC_COMMENT,216,70,138,9
     GROUPBOX        "Print range",IDC_STATIC,7,154,153,78
     GROUPBOX        "Copies",IDC_STATIC,296,98,128,51
     CONTROL         "",IDC_PREVIEW_AREA,"Static",SS_BLACKFRAME | NOT 
@@ -460,7 +469,7 @@ BEGIN
     LTEXT           "mm",IDC_STATIC,242,186,21,9
     CTEXT           "Paper size",IDC_STATIC_PAPER,14,138,138,8
     CONTROL         "Reverse order",IDC_REVERSE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,297,66,9
+                    WS_TABSTOP,12,297,66,9
     CONTROL         "Clip content",IDC_CLIP_CONTENT,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,198,216,55,9
     CONTROL         "Ignore printer margins",IDC_IGNORE_MARGINS,"Button",
@@ -525,13 +534,13 @@ BEGIN
                     7,174,92,18
 END
 
-IDD_FIND DIALOGEX 0, 0, 287, 64
+IDD_FIND DIALOG DISCARDABLE  0, 0, 287, 64
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Find"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "Fi&nd what:",IDC_STATIC,7,7,35,12,SS_CENTERIMAGE
-    EDITTEXT        IDC_FIND,59,7,161,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FIND,47,7,173,12,ES_AUTOHSCROLL
     CONTROL         "Match &case",IDC_MATCH_CASE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,28,64,8
     DEFPUSHBUTTON   "&Find Next",IDOK,230,7,50,14
@@ -729,7 +738,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
-    ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
+    ID_APP_EXIT             "Quit the application\nExit"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -797,7 +806,7 @@ BEGIN
     AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
     AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
     AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
-    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+    AFX_IDS_SCCLOSE         "Close the active window"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -907,6 +916,52 @@ BEGIN
     IDS_DONATE_URL          "https://sourceforge.net/donate/index.php?group_id=114927"
     IDS_STRING_NOT_FOUND    "Search string not found"
     IDS_PRINTING            "Printing, please wait..."
+    IDS_ERROR_RENDERING_PAGE "Error rendering page"
+    IDS_SEARCHING_PAGE      "Searching page %d of %d"
+    IDS_NUM_OCCURRENCES     "%d occurrences found"
+    IDS_EXPORT_TEXT         "Export Text"
+    IDS_TEXT_FILTER         "Text Documents (*.txt)|*.txt|All Files (*.*)|*.*||"
+    IDS_PRINTING_PAGE       "Printing page %d of %d, please wait..."
+    IDS_SEARCHING           "Searching"
+    IDS_OF_PAGE_COUNT       "of %d"
+    IDS_FIT_WIDTH           "Fit Width"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_FIT_HEIGHT          "Fit Height"
+    IDS_FIT_PAGE            "Fit Page"
+    IDS_ACTUAL_SIZE         "Actual Size"
+    IDS_STRETCH             "Stretch"
+    IDS_TOOLTIP_BRIGHTNESS  "Brightness: %+d"
+    IDS_TOOLTIP_CONTRAST    "Contrast: %+d"
+    IDS_TOOLTIP_GAMMA       "Gamma: %1.1f"
+    IDS_STATUS_BLACKANDWHITE "  Black & White  "
+    IDS_STATUS_FOREGROUND   "  Foreground  "
+    IDS_STATUS_BACKGROUND   "  Background  "
+    IDS_PRINT_ALL_PAGES     "All Pages In Range"
+    IDS_PRINT_ODD_PAGES     "Odd Pages"
+    IDS_PRINT_EVEN_PAGES    "Even Pages"
+    IDS_PRINT_ONE_PAGE      "One Page Per Sheet"
+    IDS_PRINT_TWO_PAGES     "Two Pages Per Sheet"
+    IDS_PLEASE_WAIT         "Please wait..."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_PAGE_NO_TOOLTIP     "p# %d"
+    IDS_BRIGHTNESS_TEXT_ZERO "&Brightness: %d"
+    IDS_BRIGHTNESS_TEXT     "&Brightness: %+d"
+    IDS_CONTRAST_TEXT_ZERO  "&Contrast: %d"
+    IDS_CONTRAST_TEXT       "&Contrast: %+d"
+    IDS_GAMMA_TEXT          "&Gamma: %1.1f"
+    IDS_FAILED_TO_OPEN      "Failed to open document\n"
+    IDS_TOOLBAR_TITLE       "Toolbar"
+    IDS_TOOLTIP_HIDE        "Hide"
+    IDS_NOT_VALID_DOCUMENT  "\nThis is not a valid DjVu document."
+    IDS_PRINTING_FAILED     "Failed to print the document. There could be a problem\n with the printer or with the printer driver."
+    IDS_PAPER_SIZE_MM       "%s x %s mm"
+    IDS_CENTIMETER          "cm"
 END
 
 #endif    // English (U.S.) resources

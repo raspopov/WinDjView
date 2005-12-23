@@ -51,6 +51,8 @@ bool CAppSettings::bRestoreAssocs = false;
 bool CAppSettings::bGenAllThumbnails = true;
 bool CAppSettings::bFullscreenClicks = true;
 
+CString CAppSettings::strLanguage;
+
 CDisplaySettings CAppSettings::displaySettings;
 
 CPrintSettings CAppSettings::printSettings;
@@ -65,3 +67,7 @@ CString CAppSettings::strPrinter;
 WORD CAppSettings::nPaper = 0;
 
 CString CAppSettings::strVersion;
+
+bool CAppSettings::bLocalized = false;
+HMENU CAppSettings::hDjVuMenu = NULL;
+HMENU CAppSettings::hDefaultMenu = NULL;

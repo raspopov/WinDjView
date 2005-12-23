@@ -41,7 +41,7 @@ CNavPaneWnd::CNavPaneWnd()
 	LOGFONT lf;
 	::GetObject(systemFont.m_hObject, sizeof(LOGFONT), &lf);
 
-	strcpy(lf.lfFaceName, "Arial");
+	_tcscpy(lf.lfFaceName, _T("Arial"));
 	lf.lfHeight = -13;
 	lf.lfEscapement = lf.lfOrientation = 900;
 	m_font.CreateFontIndirect(&lf);
@@ -66,6 +66,7 @@ BEGIN_MESSAGE_MAP(CNavPaneWnd, CWnd)
 	ON_WM_MOUSEMOVE()
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
+	ON_MESSAGE_VOID(WM_LANGUAGE_CHANGED, OnLanguageChanged)
 END_MESSAGE_MAP()
 
 
@@ -261,10 +262,10 @@ void CNavPaneWnd::OnWindowPosChanged(WINDOWPOS FAR* lpwndpos)
 	CWnd::OnWindowPosChanged(lpwndpos);
 	UpdateCloseButton(false);
 
-	UpdateTabSizes();
+	UpdateTabContents();
 }
 
-void CNavPaneWnd::UpdateTabSizes()
+void CNavPaneWnd::UpdateTabContents()
 {
 	CRect rc;
 	GetClientRect(&rc);
@@ -327,7 +328,7 @@ int CNavPaneWnd::AddTab(const CString& strName, CWnd* pWnd)
 
 	if (::IsWindow(m_hWnd))
 	{
-		UpdateTabSizes();
+		UpdateTabContents();
 		Invalidate();
 	}
 
@@ -446,7 +447,7 @@ int CNavPaneWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
 	m_toolTip.Create(this);
-	m_toolTip.AddTool(this, _T("Hide"));
+	m_toolTip.AddTool(this, LoadString(IDS_TOOLTIP_HIDE));
 
 	return 0;
 }
@@ -500,6 +501,24 @@ int CNavPaneWnd::GetTabFromPoint(CPoint point)
 	return nTabClicked;
 }
 
+int CNavPaneWnd::GetTabIndex(CWnd* pTabContent)
+{
+	for (int nTab = 0; nTab < m_tabs.size(); ++nTab)
+		if (m_tabs[nTab].pWnd->GetSafeHwnd() == pTabContent->GetSafeHwnd())
+			return nTab;
+
+	return -1;
+}
+
+void CNavPaneWnd::ActivateTab(CWnd* pTabContent)
+{
+	int nTab = GetTabIndex(pTabContent);
+	if (nTab == -1)
+		return;
+
+	ActivateTab(nTab);
+}
+
 void CNavPaneWnd::ActivateTab(int nTab)
 {
 	m_nActiveTab = nTab;
@@ -517,4 +536,43 @@ void CNavPaneWnd::PostNcDestroy()
 {
 	// Should be created on heap
 	delete this;
+}
+
+void CNavPaneWnd::SetTabName(CWnd* pTabContent, const CString& strName)
+{
+	int nTab = GetTabIndex(pTabContent);
+	if (nTab == -1)
+		return;
+
+	SetTabName(nTab, strName);
+}
+
+void CNavPaneWnd::SetTabName(int nTab, const CString& strName)
+{
+	Tab& tab = m_tabs[nTab];
+	tab.strName = strName;
+
+	CDC dcScreen;
+	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+	CFont* pOldFont = dcScreen.SelectObject(&m_fontActive);
+	CSize szText = dcScreen.GetTextExtent(strName);
+	dcScreen.SelectObject(pOldFont);
+
+	int offset = szText.cx - tab.rcTab.Height();
+	tab.rcTab.bottom += offset;
+
+	for (int i = nTab + 1; i < m_tabs.size(); ++i)
+		m_tabs[i].rcTab.OffsetRect(0, offset);
+
+	if (::IsWindow(m_hWnd))
+	{
+		UpdateTabContents();
+		Invalidate();
+	}
+}
+
+void CNavPaneWnd::OnLanguageChanged()
+{
+	m_toolTip.DelTool(this);
+	m_toolTip.AddTool(this, IDS_TOOLTIP_HIDE);
 }

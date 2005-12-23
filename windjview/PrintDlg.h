@@ -68,7 +68,6 @@ public:
 protected:
 	BOOL m_bCollate;
 	DWORD m_nCopies;
-	CString m_strStatus;
 	CString m_strType;
 	CString m_strLocation;
 	CString m_strComment;

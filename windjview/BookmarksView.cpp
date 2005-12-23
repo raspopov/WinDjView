@@ -90,7 +90,7 @@ int CBookmarksView::InitBookmarks(GP<DjVmNav> bookmarks, HTREEITEM hParent, int 
 		GP<DjVmNav::DjVuBookMark> bm;
 		bookmarks->getBookMark(bm, nPos);
 
-		GNativeString strTitle = bm->displayname.UTF8ToNative();
+		CString strTitle = MakeCString(bm->displayname);
 		HTREEITEM hItem = GetTreeCtrl().InsertItem(strTitle, 0, 1, hParent);
 
 		m_links.push_back(bm->url);

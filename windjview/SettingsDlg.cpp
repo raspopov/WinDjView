@@ -61,12 +61,12 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_GAMMA, m_sliderGamma);
 
 	m_strBrightnessValue.Format(m_displaySettings.nBrightness == 0 ?
-		_T("&Brightness: %d") : _T("&Brightness: %+d"), m_displaySettings.nBrightness);
+		IDS_BRIGHTNESS_TEXT_ZERO : IDS_BRIGHTNESS_TEXT, m_displaySettings.nBrightness);
 	DDX_Text(pDX, IDC_BRIGHTNESS_TEXT, m_strBrightnessValue);
 	m_strContrastValue.Format(m_displaySettings.nContrast == 0 ?
-		_T("&Contrast: %d") : _T("&Contrast: %+d"), m_displaySettings.nContrast);
+		IDS_CONTRAST_TEXT_ZERO : IDS_CONTRAST_TEXT, m_displaySettings.nContrast);
 	DDX_Text(pDX, IDC_CONTRAST_TEXT, m_strContrastValue);
-	m_strGammaValue.Format(_T("&Gamma: %1.1f"), m_displaySettings.fGamma);
+	m_strGammaValue.Format(IDS_GAMMA_TEXT, m_displaySettings.fGamma);
 	DDX_Text(pDX, IDC_GAMMA_TEXT, m_strGammaValue);
 
 	m_sliderBrightness.EnableWindow(m_bAdjustDisplay);

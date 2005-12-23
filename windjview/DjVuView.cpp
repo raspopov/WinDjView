@@ -1946,7 +1946,7 @@ void CDjVuView::OnFilePrint()
 		if (progress_dlg.DoModal() == IDOK)
 		{
 			if (progress_dlg.GetResultCode() > 0)
-				AfxMessageBox("Error while sending data to printer.");
+				AfxMessageBox(IDS_PRINTING_FAILED);
 		}
 	}
 }
@@ -2707,7 +2707,7 @@ void CDjVuView::OnExportPage()
 	CString strFileName;
 	strFileName.Format(_T("p%04d.bmp"), m_nClickedPage);
 
-	CFileDialog dlg(false, "bmp", strFileName, OFN_OVERWRITEPROMPT |
+	CFileDialog dlg(false, _T("bmp"), strFileName, OFN_OVERWRITEPROMPT |
 		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
 		LoadString(IDS_BMP_FILTER));
 
@@ -2752,10 +2752,26 @@ void CDjVuView::OnExportPage()
 	}
 	else
 	{
-		AfxMessageBox(_T("Error rendering page"), MB_ICONERROR | MB_OK);
+		AfxMessageBox(IDS_ERROR_RENDERING_PAGE, MB_ICONERROR | MB_OK);
 	}
 
 	delete pBitmap;
+}
+
+GUTF8String MakeUTF8String(const CString& strText)
+{
+#ifdef _UNICODE
+	int nSize = ::WideCharToMultiByte(CP_UTF8, 0, strText, -1, NULL, 0, NULL, NULL);
+	LPSTR pszTextUTF8 = new CHAR[nSize];
+	::WideCharToMultiByte(CP_UTF8, 0, strText, -1, pszTextUTF8, nSize, NULL, NULL);
+
+	GUTF8String utf8String(pszTextUTF8);
+	delete[] pszTextUTF8;
+
+	return utf8String;
+#else
+	return GNativeString(strText).NativeToUTF8();
+#endif
 }
 
 void CDjVuView::OnFindString()
@@ -2764,7 +2780,19 @@ void CDjVuView::OnFindString()
 
 	CFindDlg* pDlg = GetMainFrame()->m_pFindDlg;
 	ASSERT(pDlg != NULL);
-	GUTF8String strFind = GNativeString(pDlg->m_strFind).NativeToUTF8();
+
+	GUTF8String strFindUTF8 = MakeUTF8String(pDlg->m_strFind);
+	GUTF8String strFindUp;
+	if (!pDlg->m_bMatchCase)
+		strFindUp = strFindUTF8.upcase();
+
+	GUTF8String& strFind = (pDlg->m_bMatchCase ? strFindUTF8 : strFindUp);
+
+	if (strFind.length() == 0)
+	{
+		::MessageBeep(MB_OK);
+		return;
+	}
 
 	int nStartPage, nStartPos;
 	bool bHasSelection = false;
@@ -2815,8 +2843,7 @@ void CDjVuView::OnFindString()
 			else
 			{
 				GUTF8String textUp = pText->textUTF8.upcase();
-				GUTF8String strFindUp = strFind.upcase();
-				nPos = textUp.search(strFindUp, nStartPos);
+				nPos = textUp.search(strFind, nStartPos);
 			}
 
 			if (nPos != -1)
@@ -2887,12 +2914,18 @@ void CDjVuView::OnFindAll()
 	CFindDlg* pDlg = GetMainFrame()->m_pFindDlg;
 	ASSERT(pDlg != NULL);
 
-	GUTF8String strFindUTF8 = GNativeString(pDlg->m_strFind).NativeToUTF8();
+	GUTF8String strFindUTF8 = MakeUTF8String(pDlg->m_strFind);
 	GUTF8String strFindUp;
 	if (!pDlg->m_bMatchCase)
 		strFindUp = strFindUTF8.upcase();
 
 	GUTF8String& strFind = (pDlg->m_bMatchCase ? strFindUTF8 : strFindUp);
+
+	if (strFind.length() == 0)
+	{
+		::MessageBeep(MB_OK);
+		return;
+	}
 
 	CSearchResultsView* pResults = NULL;
 	int nResultCount = 0;
@@ -2901,7 +2934,7 @@ void CDjVuView::OnFindAll()
 	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 	{
 		CString strStatus;
-		strStatus.Format(_T("Searching page %d of %d"), nPage + 1, m_nPageCount);
+		strStatus.Format(IDS_SEARCHING_PAGE, nPage + 1, m_nPageCount);
 		pDlg->SetStatusText(strStatus);
 
 		Page& page = m_pages[nPage];
@@ -2952,7 +2985,7 @@ void CDjVuView::OnFindAll()
 	if (nResultCount > 0)
 	{
 		CString strMessage;
-		strMessage.Format(_T("%d occurrences found"), nResultCount);
+		strMessage.Format(IDS_NUM_OCCURRENCES, nResultCount);
 		GetMainFrame()->SetMessageText(strMessage);
 		pDlg->ShowWindow(SW_HIDE);
 	}
@@ -2965,10 +2998,10 @@ void CDjVuView::OnFindAll()
 
 CString MakePreviewString(const GUTF8String& text, int nStart, int nEnd)
 {
-	// Convert text to ANSI encoding and add -1/+10 words to the string
-	CString strPreview = MakeANSIString(text.substr(nStart, nEnd - nStart));
+	// Convert text to CString and add -1/+10 words to the string
+	CString strPreview = MakeCString(text.substr(nStart, nEnd - nStart));
 
-	CString strBefore = MakeANSIString(text.substr(0, nStart));
+	CString strBefore = MakeCString(text.substr(0, nStart));
 
 	int nPos = strBefore.GetLength() - 1;
 	for (int i = 0; i < 2 && nPos >= 0; ++i)
@@ -2986,7 +3019,7 @@ CString MakePreviewString(const GUTF8String& text, int nStart, int nEnd)
 			--nPos;
 	}
 
-	CString strAfter = MakeANSIString(text.substr(nEnd, text.length() - nEnd));
+	CString strAfter = MakeCString(text.substr(nEnd, text.length() - nEnd));
 
 	nPos = 0;
 	for (int j = 0; j < 11 && nPos < strAfter.GetLength(); ++j)
@@ -3331,7 +3364,7 @@ BOOL CDjVuView::OnToolTipNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
 		CString strTip = m_pActiveLink->url;
 
 		ASSERT(strTip.GetLength() < sizeof(pTTT->szText));
-		::strcpy(pTTT->szText, strTip);
+		_tcscpy(pTTT->szText, strTip);
 	}
 	else
 		pTTT->szText[0] = '\0';
@@ -3476,7 +3509,7 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory
 	}
 
 	// Open a web link
-	::ShellExecute(NULL, "open", (const char*)url, NULL, NULL, SW_SHOWNORMAL);
+	::ShellExecute(NULL, _T("open"), MakeCString(url), NULL, NULL, SW_SHOWNORMAL);
 }
 
 void CDjVuView::GoToPage(int nPage, int nLinkPage, int nAddToHistory)
@@ -3600,13 +3633,13 @@ void CDjVuView::OnEditCopy()
 	HGLOBAL hText = NULL, hUnicodeText = NULL;
 
 	// Prepare Unicode text
-	int nSize = MultiByteToWideChar(CP_UTF8, 0, (LPCTSTR)text, -1, NULL, 0);
+	int nSize = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)text, -1, NULL, 0);
 	hUnicodeText = ::GlobalAlloc(GMEM_MOVEABLE, nSize*sizeof(WCHAR));
 	if (hUnicodeText != NULL)
 	{
 		// Lock the handle and copy the text to the buffer.
 		LPWSTR pszUnicodeText = (LPWSTR)::GlobalLock(hUnicodeText);
-		MultiByteToWideChar(CP_UTF8, 0, (LPCTSTR)text, -1, pszUnicodeText, nSize);
+		MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)text, -1, pszUnicodeText, nSize);
 
 		// Prepare ANSI text
 		nSize = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
@@ -3678,23 +3711,26 @@ GUTF8String CDjVuView::GetFullText()
 	return text;
 }
 
-CString MakeANSIString(const GUTF8String& text)
+CString MakeCString(const GUTF8String& text)
 {
+	CString strResult;
+
 	// Prepare Unicode text
-	int nSize = ::MultiByteToWideChar(CP_UTF8, 0, (LPCTSTR)text, -1, NULL, 0);
+	int nSize = ::MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)text, -1, NULL, 0);
 	LPWSTR pszUnicodeText = new WCHAR[nSize];
-	::MultiByteToWideChar(CP_UTF8, 0, (LPCTSTR)text, -1, pszUnicodeText, nSize);
+	::MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)text, -1, pszUnicodeText, nSize);
 
+#ifdef _UNICODE
+	strResult = pszUnicodeText;
+#else
 	// Prepare ANSI text
-      nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+	nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
 		pszUnicodeText, -1, NULL, 0, NULL, NULL);
-	LPSTR pszText = new CHAR[nSize];
 	::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-		pszUnicodeText, -1, pszText, nSize, NULL, NULL);
+		pszUnicodeText, -1, strResult.GetBuffer(nSize), nSize, NULL, NULL);
+	strResult.ReleaseBuffer();
+#endif
 
-	CString strResult(pszText);
-
-	delete[] pszText;
 	delete[] pszUnicodeText;
 
 	return strResult;
@@ -3705,13 +3741,14 @@ void CDjVuView::OnFileExportText()
 	CString strPathName = GetDocument()->GetPathName();
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
 	_tsplitpath(strPathName, szDrive, szPath, szName, szExt);
-	CString strFileName = szName + CString(".txt");
+	CString strFileName = szName + CString(_T(".txt"));
 
-	const TCHAR szFilter[] = "Text Documents (*.txt)|*.txt|All Files (*.*)|*.*||";
+	CFileDialog dlg(false, _T("txt"), strFileName, OFN_OVERWRITEPROMPT |
+		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
+		LoadString(IDS_TEXT_FILTER));
 
-	CFileDialog dlg(false, "txt", strFileName, OFN_OVERWRITEPROMPT |
-		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST, szFilter);
-	CString strTitle(_T("Export Text"));
+	CString strTitle;
+	strTitle.LoadString(IDS_EXPORT_TEXT);
 	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
 
 	if (dlg.DoModal() != IDOK)
@@ -3721,12 +3758,24 @@ void CDjVuView::OnFileExportText()
 
 	strFileName = dlg.GetPathName();
 	GUTF8String text = GetFullText();
-	CString strANSIText = MakeANSIString(text);
+	CString strANSIText = MakeCString(text);
 
 	CFile file;
 	if (file.Open(strFileName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive))
 	{
+#ifdef _UNICODE
+		// Get ANSI text
+		int nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+			strANSIText, -1, NULL, 0, NULL, NULL);
+		LPSTR pszText = new CHAR[nSize];
+		::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+			strANSIText, -1, pszText, nSize, NULL, NULL);
+
+		file.Write(pszText, strlen(pszText));
+		delete[] pszText;
+#else
 		file.Write(strANSIText, strANSIText.GetLength());
+#endif
 		file.Close();
 	}
 }

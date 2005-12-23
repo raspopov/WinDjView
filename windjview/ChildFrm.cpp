@@ -46,6 +46,7 @@ BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 	ON_MESSAGE_VOID(ID_COLLAPSE_PANE, OnCollapsePane)
 	ON_WM_ERASEBKGND()
 	ON_WM_CLOSE()
+	ON_MESSAGE_VOID(WM_LANGUAGE_CHANGED, OnLanguageChanged)
 END_MESSAGE_MAP()
 
 
@@ -229,6 +230,7 @@ void CChildFrame::OnUpdateFrameMenu(
 {
 	// Fixed MFC's CMDIChildWnd::OnUpdateFrameMenu
 	// Do not pass our Windows menu to Win32, we will build window list ourselves
+	// Takes into account localized menus
 
 	CMDIFrameWnd* pFrame = GetMDIFrame();
 	if (hMenuAlt == NULL && bActivate)
@@ -240,22 +242,29 @@ void CChildFrame::OnUpdateFrameMenu(
 	}
 
 	// use default menu stored in frame if none from document
+	// use localized menu if localization is enabled
 	if (hMenuAlt == NULL)
+	{
 		hMenuAlt = m_hMenuShared;
+		if (CAppSettings::bLocalized)
+			hMenuAlt = CAppSettings::hDjVuMenu;
+	}
 
 	if (hMenuAlt != NULL && bActivate)
 	{
 		ASSERT(pActivateWnd == this);
 
 		// activating child, set parent menu
-		::SendMessage(pFrame->m_hWndMDIClient, WM_MDISETMENU,
-			(WPARAM)hMenuAlt, NULL);
+		::SendMessage(pFrame->m_hWndMDIClient, WM_MDISETMENU, (WPARAM)hMenuAlt, NULL);
 	}
 	else if (hMenuAlt != NULL && !bActivate && pActivateWnd == NULL)
 	{
+		HMENU hMainMenu = pFrame->m_hMenuDefault;
+		if (CAppSettings::bLocalized)
+			hMainMenu = CAppSettings::hDefaultMenu;
+
 		// destroying last child
-		::SendMessage(pFrame->m_hWndMDIClient, WM_MDISETMENU,
-			(WPARAM)pFrame->m_hMenuDefault, NULL);
+		::SendMessage(pFrame->m_hWndMDIClient, WM_MDISETMENU, (WPARAM)hMainMenu, NULL);
 	}
 	else
 	{
@@ -299,13 +308,30 @@ CSearchResultsView* CChildFrame::GetResultsView()
 		m_pResultsView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 			| TVS_HASBUTTONS | TVS_DISABLEDRAGDROP | TVS_INFOTIP
 			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 3);
-		m_nResultsTab = pNavPane->AddTab(LoadString(IDS_SEARCH_RESULTS_TAB), m_pResultsView);
+		pNavPane->AddTab(LoadString(IDS_SEARCH_RESULTS_TAB), m_pResultsView);
 		m_pResultsView->SetDocument(pDoc);
 		m_pResultsView->OnInitialUpdate();
 	}
 
-	pNavPane->ActivateTab(m_nResultsTab);
+	pNavPane->ActivateTab(m_pResultsView);
 	pNavPane->UpdateWindow();
 
 	return m_pResultsView;
+}
+
+void CChildFrame::OnLanguageChanged()
+{
+	CNavPaneWnd* pNavPane = GetNavPane();
+
+	if (m_pThumbnailsView != NULL)
+		pNavPane->SetTabName(m_pThumbnailsView, LoadString(IDS_THUMBNAILS_TAB));
+
+	if (m_pBookmarksView != NULL)
+		pNavPane->SetTabName(m_pBookmarksView, LoadString(IDS_BOOKMARKS_TAB));
+
+	if (m_pResultsView != NULL)
+		pNavPane->SetTabName(m_pResultsView, LoadString(IDS_SEARCH_RESULTS_TAB));
+
+	if (GetMainFrame()->MDIGetActive() == this)
+		OnMDIActivate(true, this, NULL);
 }

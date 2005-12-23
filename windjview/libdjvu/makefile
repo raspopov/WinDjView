@@ -1,16 +1,28 @@
 CPP = cl
 GENLIB = lib
-DEFOPT = /D
 OUTOTHER =
 
 #MAKEDLL = 1
 
 !IFDEF DEBUG
+
+!IFDEF UNICODE
+INTDIR = .\ObjsU.dbg
+!ELSE
 INTDIR = .\Objs.dbg
+!ENDIF
+
 OPTS = /nologo /MTd /W3 /GX /Zi
+
+!ELSE
+
+!IFDEF UNICODE
+INTDIR = .\ObjsU
 !ELSE
 INTDIR = .\Objs
+!ENDIF
 OPTS = /nologo /MT /W3 /GX /Ox /Ob2 /Ot /Og /G6
+
 !ENDIF
 
 !IFDEF MAKEDLL
@@ -30,17 +42,33 @@ OUTOTHER = libcpmt.lib /link /def:libdjvu.def
 !ELSE
 
 !IFDEF DEBUG
+
+!IFDEF UNICODE
+OUT = ..\Debug_Unicode\libdjvud.lib
+!ELSE
 OUT = ..\Debug\libdjvud.lib
+!ENDIF
 OUTOPT = /nologo /nodefaultlib:"msvcrtd.lib" /out:
+
+!ELSE
+
+!IFDEF UNICODE
+OUT = ..\Release_Unicode\libdjvu.lib
 !ELSE
 OUT = ..\Release\libdjvu.lib
+!ENDIF
 OUTOPT = /nologo /nodefaultlib:"msvcrt.lib" /out:
+
 !ENDIF
 
 !ENDIF
 
 COMPOPT = /c /Fo"$(INTDIR)\\" /D"HAS_WCTYPE=1" /D"THREADMODEL=0" /D"WIN32_MONITOR" \
 			/D"WIN32" /D"_WINDOWS" /D"_CONSOLE" /D"NDEBUG"
+
+!IFDEF UNICODE
+COMPOPT = $(COMPOPT) /D"_UNICODE" /D"UNICODE"
+!ENDIF
 
 all: $(OUT)
 

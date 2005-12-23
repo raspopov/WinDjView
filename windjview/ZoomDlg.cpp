@@ -45,7 +45,7 @@ void CCustomZoomDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_ZOOM, m_edtZoom);
-	DDX_MyText(pDX, IDC_ZOOM, m_fZoom, 100.0, "%");
+	DDX_MyText(pDX, IDC_ZOOM, m_fZoom, 100.0, _T("%"));
 	DDV_MinMaxDouble(pDX, m_fZoom, 10.0, 1600.0);
 }
 

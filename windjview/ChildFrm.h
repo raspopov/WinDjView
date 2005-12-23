@@ -67,7 +67,6 @@ protected:
 	CThumbnailsView* m_pThumbnailsView;
 	CBookmarksView* m_pBookmarksView;
 	CSearchResultsView* m_pResultsView;
-	int m_nResultsTab;
 
 // Generated message map functions
 	afx_msg void OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeactivateWnd);
@@ -76,5 +75,6 @@ protected:
 	afx_msg void OnCollapsePane();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnClose();
+	afx_msg void OnLanguageChanged();
 	DECLARE_MESSAGE_MAP()
 };

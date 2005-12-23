@@ -50,7 +50,7 @@ LRESULT CMyStatusBar::OnSetText(WPARAM wParam, LPARAM lParam)
 	ASSERT_VALID(this);
 	ASSERT(::IsWindow(m_hWnd));
 
-	m_strHilightMsg = "";
+	m_strHilightMsg = _T("");
 	LRESULT result = CStatusBar::OnSetText(wParam, lParam);
 	GetStatusBarCtrl().SetText((LPCTSTR)lParam, 0, SBT_NOBORDERS);
 

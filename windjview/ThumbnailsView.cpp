@@ -79,7 +79,7 @@ CThumbnailsView::CThumbnailsView()
 	LOGFONT lf;
 	::GetObject(systemFont.m_hObject, sizeof(LOGFONT), &lf);
 
-	strcpy(lf.lfFaceName, "Arial");
+	_tcscpy(lf.lfFaceName, _T("Arial"));
 	lf.lfHeight = -12;
 	m_font.CreateFontIndirect(&lf);
 }
