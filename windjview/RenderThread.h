@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2005 Andrew Zhezherun
+//	Copyright (C) 2004-2006 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 
 #pragma once
 
-#define WM_RENDER_FINISHED (WM_USER + 17)
+#define WM_RENDER_FINISHED (WM_APP + 2)
 
 #include "DjVuView.h"
 

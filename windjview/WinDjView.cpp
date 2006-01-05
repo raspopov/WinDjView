@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2005 Andrew Zhezherun
+//	Copyright (C) 2004-2006 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@
 #define new DEBUG_NEW
 #endif
 
-CString CURRENT_VERSION = _T("0.3.6");
+CString CURRENT_VERSION = _T("0.3.7");
 
 
 const TCHAR* s_pszDisplaySettings = _T("Display");

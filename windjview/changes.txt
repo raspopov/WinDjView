@@ -1,9 +1,13 @@
 WinDjView changes history
-Copyright (C) 2004-2005 Andrew Zhezherun
+Copyright (C) 2004-2006 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 0.3.7 (2005-12-):
-! Added support for multiple languages.
+Changes in version 0.3.7 (2006-01-):
+! Unicode build for Windows 2k/XP.
+! Added support for switching user interface languages.
++ Added support for hilighted annotations.
+* Fixed a problem with WinDjView not responding for a few seconds
+  after opening a document on some systems.
 * Fixed crash in print dialog when last page is selected and
   two pages per sheet mode is activated.
 

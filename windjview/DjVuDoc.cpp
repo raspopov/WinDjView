@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2005 Andrew Zhezherun
+//	Copyright (C) 2004-2006 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -339,13 +339,25 @@ PageInfo CDjVuDoc::ReadPageInfo(int nPage)
 	pageInfo.szPage.cy = 100;
 	pageInfo.nDPI = 100;
 
+	GP<DjVuFile> file;
+
+	m_lock.Lock();
+	G_TRY
+	{
+		file = (m_pDjVuDoc->get_djvu_file(nPage));
+	}
+	G_CATCH(ex)
+	{
+		ex;
+		m_lock.Unlock();
+		return pageInfo;
+	}
+	G_ENDCATCH;
+	m_lock.Unlock();
+
 	G_TRY
 	{
 		// Get raw data from the document and decode only page info chunk
-		m_lock.Lock();
-		GP<DjVuFile> file(m_pDjVuDoc->get_djvu_file(nPage));
-		m_lock.Unlock();
-
 		GP<DataPool> pool = file->get_init_data_pool();
 		GP<ByteStream> stream = pool->get_stream();
 		GP<IFFByteStream> iff(IFFByteStream::create(stream));

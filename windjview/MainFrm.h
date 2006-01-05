@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2005 Andrew Zhezherun
+//	Copyright (C) 2004-2006 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -28,8 +28,8 @@
 class CDjVuView;
 class CFullscreenWnd;
 
-#define WM_SHOWALLLINKS (WM_USER + 20)
-#define WM_LANGUAGE_CHANGED (WM_USER + 40)
+#define WM_SHOWALLLINKS (WM_APP + 4)
+#define WM_LANGUAGE_CHANGED (WM_APP + 5)
 
 
 class CMainFrame : public CMDIFrameWnd

@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2005 Andrew Zhezherun
+//	Copyright (C) 2004-2006 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -111,6 +111,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND_RANGE(ID_DISPLAY_COLOR, ID_DISPLAY_FOREGROUND, OnViewDisplay)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_DISPLAY_COLOR, ID_DISPLAY_FOREGROUND, OnUpdateViewDisplay)
 	ON_COMMAND(ID_VIEW_GOTO_PAGE, OnViewGotoPage)
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -121,7 +122,8 @@ CDjVuView::CDjVuView()
 	  m_pRenderThread(NULL), m_bInsideUpdateView(false), m_bClick(false),
 	  m_evtRendered(false, true), m_nPendingPage(-1), m_nClickedPage(-1),
 	  m_nMode(Drag), m_pOffscreenBitmap(NULL), m_szOffscreen(0, 0),
-	  m_bHasSelection(false), m_nDisplayMode(Color), m_bShowAllLinks(false)
+	  m_bHasSelection(false), m_nDisplayMode(Color), m_bShowAllLinks(false),
+	  m_bNeedUpdate(false)
 {
 }
 
@@ -256,36 +258,83 @@ void CDjVuView::OnDraw(CDC* pDC)
 
 void CDjVuView::DrawMapArea(CDC* pDC, GP<GMapArea> pArea, int nPage, bool bActive)
 {
-	if (pArea->border_type == GMapArea::NO_BORDER ||
-			!bActive && !pArea->border_always_visible)
-		return;
-
 	CRect rcArea = TranslatePageRect(nPage, pArea->get_bound_rect());
 	rcArea.OffsetRect(-GetDeviceScrollPosition());
 	CPoint points[] = { rcArea.TopLeft(), CPoint(rcArea.right, rcArea.top),
 		rcArea.BottomRight(), CPoint(rcArea.left, rcArea.bottom), rcArea.TopLeft() };
 
-	if (pArea->border_type == GMapArea::SOLID_BORDER)
+	// Draw border
+	if (bActive || pArea->border_always_visible)
 	{
-		DWORD dwColor = pArea->border_color;
-		COLORREF crBorder = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
-		CPen pen(PS_SOLID, 1, crBorder);
-		CPen* pOldPen = pDC->SelectObject(&pen);
-		pDC->Polyline((LPPOINT)points, 5);
-		pDC->SelectObject(pOldPen);
-	}
-	else
-	{
-		// Draw XOR border
-		CRect rcHorz(rcArea.TopLeft(), CSize(rcArea.Width() + 1, 1));
-		pDC->InvertRect(rcHorz);
-		rcHorz.OffsetRect(0, rcArea.Height());
-		pDC->InvertRect(rcHorz);
+		if (pArea->border_type == GMapArea::SOLID_BORDER)
+		{
+			DWORD dwColor = pArea->border_color;
+			COLORREF crBorder = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
+			CPen pen(PS_SOLID, 1, crBorder);
+			CPen* pOldPen = pDC->SelectObject(&pen);
+			pDC->Polyline((LPPOINT)points, 5);
+			pDC->SelectObject(pOldPen);
+		}
+		else if (pArea->border_type != GMapArea::NO_BORDER)
+		{
+			// Draw XOR border
+			CRect rcHorz(rcArea.TopLeft(), CSize(rcArea.Width() + 1, 1));
+			pDC->InvertRect(rcHorz);
+			rcHorz.OffsetRect(0, rcArea.Height());
+			pDC->InvertRect(rcHorz);
 
-		CRect rcVert(rcArea.TopLeft() + CPoint(0, 1), CSize(1, rcArea.Height() - 1));
-		pDC->InvertRect(rcVert);
-		rcVert.OffsetRect(rcArea.Width(), 0);
-		pDC->InvertRect(rcVert);
+			CRect rcVert(rcArea.TopLeft() + CPoint(0, 1), CSize(1, rcArea.Height() - 1));
+			pDC->InvertRect(rcVert);
+			rcVert.OffsetRect(rcArea.Width(), 0);
+			pDC->InvertRect(rcVert);
+		}
+	}
+
+	rcArea.DeflateRect(1, 1);
+
+	// Hilight area
+	if (pArea->hilite_color == 0xff000000)
+	{
+		// XOR hilighting
+		pDC->InvertRect(rcArea);
+	}
+	else if (pArea->hilite_color != 0xffffffff)
+	{
+		// Color hilighting
+		CDIB* pDIB = CDIB::CreateDIB(rcArea.Width(), rcArea.Height(), 24);
+		CDC dc;
+		dc.CreateCompatibleDC(pDC);
+		CBitmap* pOldBitmap = dc.SelectObject(pDIB);
+
+		dc.BitBlt(0, 0, rcArea.Width(), rcArea.Height(), pDC, rcArea.left, rcArea.top, SRCCOPY);
+
+		int nRowLength = rcArea.Width()*3;
+		while (nRowLength % 4 != 0)
+			++nRowLength;
+
+		LPBYTE pBits = pDIB->GetBits();
+
+		int nRed = (pArea->hilite_color & 0xff0000) >> (16 + 2);
+		int nGreen = (pArea->hilite_color & 0xff00) >> (8 + 2);
+		int nBlue = (pArea->hilite_color & 0xff) >> 2;
+		for (int y = 0; y < rcArea.Height(); ++y, pBits += nRowLength)
+		{
+			LPBYTE pPixel = pBits;
+			for (int x = 0; x < rcArea.Width(); ++x)
+			{
+				*pPixel = ((((int) *pPixel << 1) + (int) *pPixel) >> 2) + nBlue;
+				++pPixel;
+				*pPixel = ((((int) *pPixel << 1) + (int) *pPixel) >> 2) + nGreen;
+				++pPixel;
+				*pPixel = ((((int) *pPixel << 1) + (int) *pPixel) >> 2) + nRed;
+				++pPixel;
+			}
+		}
+
+		pDC->BitBlt(rcArea.left, rcArea.top, rcArea.Width(), rcArea.Height(), &dc, 0, 0, SRCCOPY);
+
+		dc.SelectObject(pOldBitmap);
+		delete pDIB;
 	}
 }
 
@@ -418,6 +467,8 @@ CDjVuDoc* CDjVuView::GetDocument() const // non-debug version is inline
 void CDjVuView::OnInitialUpdate()
 {
 	CMyScrollView::OnInitialUpdate();
+
+	m_nTimerID = SetTimer(1, 100, NULL);
 
 	if (m_toolTip.Create(this, TTS_ALWAYSTIP) && m_toolTip.AddTool(this))
 	{
@@ -1491,7 +1542,7 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 			CRect rcArea = TranslatePageRect(nPage, pArea->get_bound_rect());
 			rcArea.OffsetRect(-GetDeviceScrollPosition());
 
-			if (rcArea.PtInRect(ptCursor))
+			if (rcArea.PtInRect(ptCursor) && pArea->url != "")
 			{
 				SetCursor(hCursorLink);
 				return true;
@@ -1535,7 +1586,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 	++m_nClickCount;
 	::GetCursorPos(&m_ptClick);
 
-	if (m_pActiveLink != NULL)
+	if (m_pActiveLink != NULL && m_pActiveLink->url != "")
 	{
 		SetCapture();
 		m_bDragging = true;
@@ -2264,7 +2315,7 @@ void CDjVuView::OnPageInformation()
 LRESULT CDjVuView::OnRenderFinished(WPARAM wParam, LPARAM lParam)
 {
 	int nPage = (int)wParam;
-	OnPageDecoded(nPage);
+	OnPageDecoded(nPage, true);
 
 	Page& page = m_pages[nPage];
 	CDIB* pBitmap = reinterpret_cast<CDIB*>(lParam);
@@ -2291,6 +2342,8 @@ void CDjVuView::OnDestroy()
 	delete m_pRenderThread;
 	m_pRenderThread = NULL;
 
+	KillTimer(m_nTimerID);
+
 	CMyScrollView::OnDestroy();
 }
 
@@ -2310,7 +2363,15 @@ LRESULT CDjVuView::OnPageDecoded(WPARAM wParam, LPARAM lParam)
 
 	page.Init(info);
 	if (!bHadInfo && m_nLayout == Continuous)
-		UpdateView();
+	{
+		if (lParam || m_nTimerID == 0)
+		{
+			UpdateView();
+			m_bNeedUpdate = false;
+		}
+		else
+			m_bNeedUpdate = true;
+	}
 
 	return 0;
 }
@@ -2396,6 +2457,12 @@ void CDjVuView::UpdatePageSizes(int nTop, int nScroll)
 {
 	CRect rcClient;
 	GetClientRect(rcClient);
+
+	if (m_bNeedUpdate)
+	{
+		UpdateView();
+		m_bNeedUpdate = false;
+	}
 
 	if (nScroll < 0)
 	{
@@ -2816,8 +2883,6 @@ void CDjVuView::OnFindString()
 		nStartPos = 0;
 	}
 
-	bool bNeedUpdate = false;
-
 	int nPage = nStartPage;
 	while (nPage < m_nPageCount)
 	{
@@ -2826,7 +2891,7 @@ void CDjVuView::OnFindString()
 		{
 			PageInfo info = GetDocument()->GetPageInfo(nPage);
 			page.Init(info);
-			bNeedUpdate = true;
+			m_bNeedUpdate = true;
 		}
 
 		page.DecodeText();
@@ -2848,10 +2913,10 @@ void CDjVuView::OnFindString()
 
 			if (nPos != -1)
 			{
-				if (bNeedUpdate)
+				if (m_bNeedUpdate)
 				{
 					UpdateView();
-					bNeedUpdate = false;
+					m_bNeedUpdate = false;
 				}
 
 				int nSelEnd = nPos + strFind.length();
@@ -2900,8 +2965,11 @@ void CDjVuView::OnFindString()
 		++nPage;
 	}
 
-	if (bNeedUpdate)
+	if (m_bNeedUpdate)
+	{
 		UpdateView();
+		m_bNeedUpdate = false;
+	}
 
 	GetMainFrame()->HilightStatusMessage(LoadString(IDS_STRING_NOT_FOUND));
 	::MessageBeep(MB_OK);
@@ -2929,7 +2997,6 @@ void CDjVuView::OnFindAll()
 
 	CSearchResultsView* pResults = NULL;
 	int nResultCount = 0;
-	bool bNeedUpdate = false;
 
 	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 	{
@@ -2942,7 +3009,7 @@ void CDjVuView::OnFindAll()
 		{
 			PageInfo info = GetDocument()->GetPageInfo(nPage);
 			page.Init(info);
-			bNeedUpdate = true;
+			m_bNeedUpdate = true;
 		}
 
 		page.DecodeText();
@@ -2979,8 +3046,11 @@ void CDjVuView::OnFindAll()
 		} while (nPos != -1);
 	}
 
-	if (bNeedUpdate)
+	if (m_bNeedUpdate)
+	{
 		UpdateView();
+		m_bNeedUpdate = false;
+	}
 
 	if (nResultCount > 0)
 	{
@@ -4009,4 +4079,18 @@ void CDjVuView::OnViewGotoPage()
 	CGotoPageDlg dlg(GetCurrentPage(), m_nPageCount);
 	if (dlg.DoModal() == IDOK)
 		GoToPage(dlg.m_nPage - 1);
+}
+
+void CDjVuView::OnTimer(UINT nIDEvent)
+{
+	if (nIDEvent == 1)
+	{
+		if (m_bNeedUpdate)
+		{
+			UpdateView();
+			m_bNeedUpdate = false;
+		}
+	}
+	
+	CView::OnTimer(nIDEvent);
 }

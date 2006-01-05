@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2005 Andrew Zhezherun
+//	Copyright (C) 2004-2006 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 
 #pragma once
 
-#define WM_PAGE_DECODED (WM_USER + 18)
+#define WM_PAGE_DECODED (WM_APP + 1)
 
 class CDjVuView;
 

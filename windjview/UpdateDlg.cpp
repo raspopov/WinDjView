@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2005 Andrew Zhezherun
+//	Copyright (C) 2004-2006 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -100,11 +100,11 @@ DWORD WINAPI CUpdateDlg::UpdateThreadProc(LPVOID pvData)
 		if (pFile == NULL)
 			AfxThrowInternetException(1);
 
-		LPTSTR pszBuffer = strVersion.GetBuffer(1024);
-		int nRead = pFile->Read(pszBuffer, 1023);
-		pszBuffer[nRead] = '\0';
+		CHAR szBuffer[1024];
+		int nRead = pFile->Read(szBuffer, 1023);
+		szBuffer[nRead] = '\0';
 
-		strVersion.ReleaseBuffer();
+		strVersion = szBuffer;
 	}
 	catch (CException* e)
 	{

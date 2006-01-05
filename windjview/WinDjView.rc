@@ -360,15 +360,15 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 251, 122
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 251, 122
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About WinDjView"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
-    LTEXT           "WinDjView Version 0.3.6",IDC_STATIC,40,7,119,8,
+    LTEXT           "WinDjView Version 0.3.7",IDC_STATIC,40,7,119,8,
                     SS_NOPREFIX
-    LTEXT           "Copyright (C) 2004-2005 Andrew Zhezherun",IDC_STATIC,40,
+    LTEXT           "Copyright (C) 2004-2006 Andrew Zhezherun",IDC_STATIC,40,
                     17,149,8
     DEFPUSHBUTTON   "Close",IDOK,194,7,50,14,WS_GROUP
     LTEXT           "Project homepage:",IDC_STATIC,40,35,64,8
@@ -498,10 +498,10 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS DIALOGEX 0, 0, 219, 195
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 219, 195
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Settings"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,106,174,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,162,174,50,14
@@ -530,7 +530,7 @@ BEGIN
     LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,15,151,45,9
     CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,150,131,
                     12
-    LTEXT           "WinDjView 0.3.6\nby Andrew Zhezherun",IDC_STATIC_ABOUT,
+    LTEXT           "WinDjView 0.3.7\nby Andrew Zhezherun",IDC_STATIC_ABOUT,
                     7,174,92,18
 END
 
@@ -579,8 +579,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,6,0
- PRODUCTVERSION 0,3,6,0
+ FILEVERSION 0,3,7,0
+ PRODUCTVERSION 0,3,7,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -595,14 +595,18 @@ BEGIN
     BEGIN
         BLOCK "04090000"
         BEGIN
+            VALUE "Comments", "\0"
             VALUE "CompanyName", "Andrew Zhezherun\0"
             VALUE "FileDescription", "WinDjView\0"
-            VALUE "FileVersion", "0.3.6\0"
+            VALUE "FileVersion", "0.3.7\0"
             VALUE "InternalName", "WinDjView.exe\0"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2005 Andrew Zhezherun.  All rights reserved.\0"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun.  All rights reserved.\0"
+            VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "WinDjView.exe\0"
+            VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "WinDjView\0"
-            VALUE "ProductVersion", "0.3.6\0"
+            VALUE "ProductVersion", "0.3.7\0"
+            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"
