@@ -136,7 +136,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 Release/libdjvu.lib msimg32.lib /nologo /subsystem:windows /machine:I386 /nodefaultlib:"msvcrt.lib"
-# ADD LINK32 Release/libdjvu.lib msimg32.lib version.lib /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /machine:I386 /nodefaultlib:"msvcrt.lib"
+# ADD LINK32 Release_Unicode/libdjvu.lib msimg32.lib version.lib /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /machine:I386 /nodefaultlib:"msvcrt.lib"
 
 !ENDIF 
 

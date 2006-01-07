@@ -392,7 +392,7 @@ GURL::init(const bool nothrow)
            for(ptr=url_ptr;*ptr&&!is_argument(ptr);ptr++)
            		EMPTY_LOOP;
            arg=ptr;
-           url=url.substr(0,(size_t)ptr-(size_t)url_ptr);
+           url=url.substr(0,(size_t)(ptr-url_ptr));
          }
 
             // Do double conversion
@@ -827,12 +827,13 @@ GURL::clear_cgi_arguments(void)
    cgi_value_arr.empty();
 
       // And clear everything past the '?' sign in the URL
-   for(const char * ptr=url;*ptr;ptr++)
-      if (*ptr=='?')
-      {
-         url.setat(ptr-url, 0);
+   const char * ptrurl = url;
+   for(const char *ptr = ptrurl; *ptr; ptr++)
+     if (*ptr=='?')
+       {
+         url.setat(ptr-ptrurl, 0);
          break;
-      }
+       }
 }
 
 void

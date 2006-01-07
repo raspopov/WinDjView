@@ -1196,7 +1196,7 @@ ByteStream::create(FILE * const f,char const * const mode,const bool closeme)
 }
 
 GP<ByteStream>
-ByteStream::create_static(const void * const buffer, size_t sz)
+ByteStream::create_static(const void * buffer, size_t sz)
 {
   return new Static(buffer, sz);
 }
@@ -1288,21 +1288,21 @@ ByteStream::Wrapper::~Wrapper() {}
 
 
 GP<ByteStream> 
-ByteStream::get_stdin(char const * const mode)
+ByteStream::get_stdin(char const *mode)
 {
   static GP<ByteStream> gp = ByteStream::create(0,mode,false);
   return gp;
 }
 
 GP<ByteStream> 
-ByteStream::get_stdout(char const * const mode)
+ByteStream::get_stdout(char const *mode)
 {
   static GP<ByteStream> gp = ByteStream::create(1,mode,false);
   return gp;
 }
 
 GP<ByteStream> 
-ByteStream::get_stderr(char const * const mode)
+ByteStream::get_stderr(char const *mode)
 {
   static GP<ByteStream> gp = ByteStream::create(2,mode,false);
   return gp;
