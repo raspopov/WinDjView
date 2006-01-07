@@ -236,10 +236,10 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "&Go To"
         BEGIN
-            MENUITEM "&First Page\tCtrl+Home",      ID_VIEW_PREVIOUSPAGE
-            MENUITEM "P&revious Page\tCtrl+PgDn",   ID_VIEW_PREVIOUSPAGE
-            MENUITEM "&Next Page\tCtrl+PgUp",       ID_VIEW_NEXTPAGE
-            MENUITEM "&Last Page\tCtrl+End",        ID_VIEW_NEXTPAGE
+            MENUITEM "&First Page\tCtrl+Home",      ID_VIEW_FIRSTPAGE
+            MENUITEM "P&revious Page\tCtrl+PgUp",   ID_VIEW_PREVIOUSPAGE
+            MENUITEM "&Next Page\tCtrl+PgDn",       ID_VIEW_NEXTPAGE
+            MENUITEM "&Last Page\tCtrl+End",        ID_VIEW_LASTPAGE
             MENUITEM "&Page...\tCtrl+G",            ID_VIEW_GOTO_PAGE
             MENUITEM SEPARATOR
             MENUITEM "Previous &View\tAlt+Left Arrow", ID_VIEW_BACK
@@ -307,51 +307,51 @@ END
 
 IDR_MAINFRAME ACCELERATORS MOVEABLE PURE 
 BEGIN
-    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
-    "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
-    "2",            ID_DISPLAY_BW,          VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    "0",            ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_ZOOM_100,            VIRTKEY, CONTROL, NOINVERT
     "1",            ID_DISPLAY_COLOR,       VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
-    "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
-    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-    "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
-    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
-    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
-    "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
-    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
-    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
-    VK_LEFT,        ID_VIEW_BACK,           VIRTKEY, ALT, NOINVERT
-    "F",            ID_VIEW_FIND,           VIRTKEY, CONTROL, NOINVERT
-    VK_HOME,        ID_VIEW_FIRSTPAGE,      VIRTKEY, CONTROL, NOINVERT
-    VK_RIGHT,       ID_VIEW_FORWARD,        VIRTKEY, ALT, NOINVERT
-    "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
-    VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
-    "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
-    "N",            ID_VIEW_GOTO_PAGE,      VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
-    VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, CONTROL, NOINVERT
-    VK_NEXT,        ID_VIEW_NEXTPAGE,       VIRTKEY, CONTROL, NOINVERT
-    VK_PRIOR,       ID_VIEW_PREVIOUSPAGE,   VIRTKEY, CONTROL, NOINVERT
-    "1",            ID_ZOOM_100,            VIRTKEY, CONTROL, NOINVERT
-    "4",            ID_ZOOM_ACTUALSIZE,     VIRTKEY, CONTROL, NOINVERT
-    "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
-    "0",            ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
-    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, NOINVERT
-    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
-    "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
-    VK_ADD,         ID_ZOOM_IN,             VIRTKEY, NOINVERT
-    VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
     187,            ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
     187,            ID_ZOOM_IN,             VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     189,            ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_DISPLAY_BW,          VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "4",            ID_ZOOM_ACTUALSIZE,     VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_VIEW_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_VIEW_GOTO_PAGE,      VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
+    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_ZOOM_IN,             VIRTKEY, NOINVERT
+    VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, CONTROL, NOINVERT
+    VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_HOME,        ID_VIEW_FIRSTPAGE,      VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_LEFT,        ID_VIEW_BACK,           VIRTKEY, ALT, NOINVERT
+    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, NOINVERT
+    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
+    VK_NEXT,        ID_VIEW_NEXTPAGE,       VIRTKEY, CONTROL, NOINVERT
+    VK_PRIOR,       ID_VIEW_PREVIOUSPAGE,   VIRTKEY, CONTROL, NOINVERT
+    VK_RIGHT,       ID_VIEW_FORWARD,        VIRTKEY, ALT, NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
-    "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
+    "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
 END
 
 

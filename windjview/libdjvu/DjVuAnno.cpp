@@ -1295,13 +1295,21 @@ DjVuANT::encode_raw(void) const
 
       //*** Zoom
    del_all_items(ZOOM_TAG, parser);
-   if (zoom!=ZOOM_UNSPEC)
+//< Changed for WinDjView project
+//   if (zoom!=ZOOM_UNSPEC)
+   if (zoom != ZOOM_UNSPEC && zoom > -zoom_strings_size)
+//>
    {
       buffer="(" ZOOM_TAG " ";
-      const int i=1-zoom;
-      if((i>=0)&& (i<zoom_strings_size))
+//< Changed for WinDjView project
+//      const int i=1-zoom;
+//      if((i>=0)&& (i<zoom_strings_size))
+//      {
+//        buffer+=zoom_strings[i];
+      if (zoom < 0)
       {
-        buffer+=zoom_strings[i];
+        buffer+=zoom_strings[-zoom];
+//>
       }else
       {
         buffer+="d"+GUTF8String(zoom);
@@ -1312,11 +1320,16 @@ DjVuANT::encode_raw(void) const
 
       //*** Mode
    del_all_items(MODE_TAG, parser);
-   if (mode!=MODE_UNSPEC)
+//< Changed for WinDjView project
+//   if (mode!=MODE_UNSPEC)
+   if (mode > MODE_UNSPEC && mode < mode_strings_size)
+//>
    {
-      const int i=mode-1;
-      if((i>=0)&& (i<mode_strings_size))
-      { 
+//< Changed for WinDjView project
+//      const int i=mode-1;
+//      if((i>=0)&& (i<mode_strings_size))
+//>
+      {
         buffer="(" MODE_TAG " " + GUTF8String(mode_strings[mode]) + ")";
       }
       parser.parse(buffer);
