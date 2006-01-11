@@ -34,7 +34,7 @@
 #define new DEBUG_NEW
 #endif
 
-CString CURRENT_VERSION = _T("0.3.7");
+CString CURRENT_VERSION = _T("0.4");
 
 
 const TCHAR* s_pszDisplaySettings = _T("Display");
@@ -220,6 +220,10 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_STATIC_LINK, m_weblink);
 	DDX_Control(pDX, IDC_STATIC_LIB_LINK, m_weblinkLibrary);
 	DDX_Control(pDX, IDC_DONATE, m_btnDonate);
+
+	CString strVersion;
+	strVersion.Format(IDS_VERSION_ABOUT, CURRENT_VERSION);
+	DDX_Text(pDX, IDC_STATIC_VERSION, strVersion);
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)

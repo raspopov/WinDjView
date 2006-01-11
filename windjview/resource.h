@@ -144,6 +144,7 @@
 #define IDC_PAGE_COUNT                  1052
 #define IDC_BUTTON1                     1053
 #define IDC_DONATE                      1053
+#define IDC_STATIC_VERSION              1054
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_ZOOM_50                      32777
@@ -167,8 +168,6 @@
 #define IDC_ZOOM                        32807
 #define ID_PAGE_INFORMATION             32809
 #define ID_VIEW_LAYOUT                  32810
-#define ID_LAYOUT_SINGLEPAGE            32811
-#define ID_LAYOUT_CONTINUOUS            32812
 #define ID_FILE_SETTINGS                32813
 #define ID_EXPORT_PAGE                  32815
 #define ID_VIEW_FIND                    32816
@@ -204,14 +203,20 @@
 #define ID_VIEW_GOTO_PAGE               32859
 #define ID_LANGUAGE_FIRST               32860
 #define ID_LANGUAGE_LAST                33115
+#define ID_LAYOUT_SINGLEPAGE            33116
+#define ID_LAYOUT_CONTINUOUS            33117
+#define ID_LAYOUT_FACING                33118
+#define ID_LAYOUT_FACING_CONTINUOUS     33119
+#define IDS_VERSION_INFO                33120
+#define IDS_VERSION_ABOUT               33121
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        149
-#define _APS_NEXT_COMMAND_VALUE         33116
-#define _APS_NEXT_CONTROL_VALUE         1054
+#define _APS_NEXT_COMMAND_VALUE         33121
+#define _APS_NEXT_CONTROL_VALUE         1055
 #define _APS_NEXT_SYMED_VALUE           109
 #endif
 #endif

@@ -53,12 +53,16 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_RESTORE_ASSOCS, m_bRestoreAssocs);
 	DDX_Check(pDX, IDC_GEN_ALL_THUMBNAILS, m_bGenAllThumbnails);
 	DDX_Check(pDX, IDC_FULLSCREEN_CLICKS, m_bFullscreenClicks);
-	DDX_Control(pDX, IDC_STATIC_ABOUT, m_ctlAbout);
 
 	DDX_Check(pDX, IDC_ADJUST_DISPLAY, m_bAdjustDisplay);
 	DDX_Control(pDX, IDC_BRIGHTNESS, m_sliderBrightness);
 	DDX_Control(pDX, IDC_CONTRAST, m_sliderContrast);
 	DDX_Control(pDX, IDC_GAMMA, m_sliderGamma);
+
+	DDX_Control(pDX, IDC_STATIC_ABOUT, m_ctlAbout);
+	CString strVersion;
+	strVersion.Format(IDS_VERSION_INFO, CURRENT_VERSION);
+	DDX_Text(pDX, IDC_STATIC_ABOUT, strVersion);
 
 	m_strBrightnessValue.Format(m_displaySettings.nBrightness == 0 ?
 		IDS_BRIGHTNESS_TEXT_ZERO : IDS_BRIGHTNESS_TEXT, m_displaySettings.nBrightness);

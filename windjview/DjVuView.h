@@ -96,7 +96,8 @@ public:
 	enum LayoutType
 	{
 		SinglePage = 0,
-		Continuous = 1
+		Continuous = 1,
+		Facing = 2
 	};
 
 	double GetZoom(ZoomType nZoomType) const;
@@ -239,7 +240,14 @@ protected:
 	vector<Page> m_pages;
 
 	void UpdatePageSize(int nPage);
+	CSize UpdatePageSizeFacing(int nPage);
 	CSize CalcPageSize(const CSize& szPage, int nDPI);
+	CSize CalcPageSize(const CSize& szPage, int nDPI, int nZoomType) const;
+	CSize CalcZoomedPageSize(const CSize& szPage, const CSize& szFrame, int nZoomType) const;
+	void CalcPageSizeFacing(const CSize& szPage1, int nDPI1, CSize& szDisplay1,
+			const CSize& szPage2, int nDPI2, CSize& szDisplay2);
+	void CalcPageSizeFacing(const CSize& szPage1, int nDPI1, CSize& szDisplay1,
+			const CSize& szPage2, int nDPI2, CSize& szDisplay2, int nZoomType) const;
 	void UpdatePageSizes(int nTop, int nScroll = 0);
 	bool UpdatePagesFromTop(int nTop, int nBottom);
 	void UpdatePagesFromBottom(int nTop, int nBottom);
@@ -256,9 +264,14 @@ protected:
 	};
 	void UpdateView(UpdateType updateType = TOP);
 	void UpdateVisiblePages();
-	void UpdatePagesCache();
+	void UpdatePagesCacheSingle();
+	void UpdatePagesCacheFacing();
+	void UpdatePagesCacheContinuous();
 	void UpdatePageCache(int nPage, const CRect& rcClient);
 	void UpdatePageCacheSingle(int nPage);
+	void UpdatePageCacheFacing(int nPage);
+	bool IsViewNextpageEnabled();
+	bool IsViewPreviouspageEnabled();
 	void ClearSelection(int nPage = -1);
 	void UpdateSelectionStatus();
 	bool IsSelectionBelowTop(int nPage, const DjVuSelection& selection);

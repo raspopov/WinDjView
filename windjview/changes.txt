@@ -2,10 +2,13 @@ WinDjView changes history
 Copyright (C) 2004-2006 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 0.3.7 (2006-01-):
+Changes in version 0.4 (2006-01-):
 ! Unicode build for Windows 2k/XP.
 ! Added support for switching user interface languages.
+! Added facing page layout.
 + Added support for hilighted annotations.
++ Display mode and/or zoom specified in the document are used when opening.
++ Improved page display (borders and background).
 * Fixed a problem with WinDjView not responding for a few seconds
   after opening a document on some systems.
 * Fixed crash in print dialog when last page is selected and
@@ -18,7 +21,6 @@ Changes in version 0.3.6 (2005-12-21):
   by default; added an option to ignore them (old behavior).
 + Print dialog now takes into account display mode (foreground,
   background, black and white or color).
-+ Display mode and/or zoom specified in the document are used when opening.
 * Fixed bug with preview in print dialog and printing: color pages
   sometimes were not shown in preview and not printed.
 * Fixed bug in print dialog: clicking Properties buttons

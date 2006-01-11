@@ -147,6 +147,7 @@ BEGIN
     SEPARATOR
     BUTTON      ID_LAYOUT_SINGLEPAGE
     BUTTON      ID_LAYOUT_CONTINUOUS
+    BUTTON      ID_LAYOUT_FACING
     SEPARATOR
     BUTTON      ID_ZOOM_OUT
     SEPARATOR
@@ -255,6 +256,7 @@ BEGIN
         BEGIN
             MENUITEM "&Single Page",                ID_LAYOUT_SINGLEPAGE
             MENUITEM "&Continuous",                 ID_LAYOUT_CONTINUOUS
+            MENUITEM "&Facing",                     ID_LAYOUT_FACING
         END
         POPUP "&Display"
         BEGIN
@@ -366,8 +368,7 @@ CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
-    LTEXT           "WinDjView Version 0.3.7",IDC_STATIC,40,7,119,8,
-                    SS_NOPREFIX
+    LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2004-2006 Andrew Zhezherun",IDC_STATIC,40,
                     17,149,8
     DEFPUSHBUTTON   "Close",IDOK,194,7,50,14,WS_GROUP
@@ -530,8 +531,8 @@ BEGIN
     LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,15,151,45,9
     CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,150,131,
                     12
-    LTEXT           "WinDjView 0.3.7\nby Andrew Zhezherun",IDC_STATIC_ABOUT,
-                    7,174,92,18
+    LTEXT           "WinDjView\nby Andrew Zhezherun",IDC_STATIC_ABOUT,7,174,
+                    92,18
 END
 
 IDD_FIND DIALOG DISCARDABLE  0, 0, 287, 64
@@ -579,8 +580,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,7,0
- PRODUCTVERSION 0,3,7,0
+ FILEVERSION 0,4,0,0
+ PRODUCTVERSION 0,4,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -598,14 +599,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "Andrew Zhezherun\0"
             VALUE "FileDescription", "WinDjView\0"
-            VALUE "FileVersion", "0.3.7\0"
+            VALUE "FileVersion", "0.4\0"
             VALUE "InternalName", "WinDjView.exe\0"
             VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun.  All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "WinDjView.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "WinDjView\0"
-            VALUE "ProductVersion", "0.3.7\0"
+            VALUE "ProductVersion", "0.4\0"
             VALUE "SpecialBuild", "\0"
         END
     END
@@ -856,9 +857,20 @@ BEGIN
     IDC_PAGENUM             "Select page number\nPage"
     IDC_ZOOM                "Select zoom level\nZoom"
     ID_PAGE_INFORMATION     "Displays page information"
+    ID_EXPORT_PAGE          "Exports current page as bmp file"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
     ID_LAYOUT_SINGLEPAGE    "Single page layout\nSingle Page"
     ID_LAYOUT_CONTINUOUS    "Continuous page layout\nContinuous"
-    ID_EXPORT_PAGE          "Exports current page as bmp file"
+    ID_LAYOUT_FACING        "Facing page layout\nFacing"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
+    IDS_VERSION_ABOUT       "WinDjView %s"
 END
 
 STRINGTABLE DISCARDABLE 

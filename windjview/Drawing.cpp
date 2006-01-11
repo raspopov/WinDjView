@@ -631,6 +631,12 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPag
 	CSize szScaled;
 	CPoint ptOffset;
 
+	if (!settings.bCenterImage)
+	{
+		ptOffset.x = static_cast<int>(settings.fPosLeft * fPrinterMMx);
+		ptOffset.y = static_cast<int>(settings.fPosTop * fPrinterMMy);
+	}
+
 	if (!settings.bScaleToFit)
 	{
 		szScaled.cx = static_cast<int>(szDjVuPage.cx * fPrinterMMx * settings.fScale * 0.01 / fSourceMM);
@@ -640,11 +646,6 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPag
 		{
 			ptOffset.x = (rcPage.Width() - szScaled.cx) / 2;
 			ptOffset.y = (rcPage.Height() - szScaled.cy) / 2;
-		}
-		else
-		{
-			ptOffset.x = static_cast<int>(settings.fPosLeft * fPrinterMMx);
-			ptOffset.y = static_cast<int>(settings.fPosTop * fPrinterMMy);
 		}
 	}
 
@@ -658,22 +659,10 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPag
 			szScaled.cx = szScaled.cy * szDjVuPage.cx / szDjVuPage.cy;
 		}
 
-		if (settings.bScaleToFit)
+		if (settings.bCenterImage)
 		{
 			ptOffset.x = (rcPage.Width() - szScaled.cx) / 2;
 			ptOffset.y = (rcPage.Height() - szScaled.cy) / 2;
-		}
-		else
-		{
-			if (ptOffset.x < 0)
-				ptOffset.x = 0;
-			else if (ptOffset.x + szScaled.cx > rcPage.Width())
-				ptOffset.x = rcPage.Width() - szScaled.cx;
-
-			if (ptOffset.y < 0)
-				ptOffset.y = 0;
-			else if (ptOffset.y + szScaled.cy > rcPage.Height())
-				ptOffset.y = rcPage.Height() - szScaled.cy;
 		}
 	}
 

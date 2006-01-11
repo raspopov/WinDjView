@@ -123,7 +123,7 @@ DWORD WINAPI CUpdateDlg::UpdateThreadProc(LPVOID pvData)
 		{
 			AfxMessageBox(IDS_NO_UPDATES_AVAILABLE, MB_ICONINFORMATION | MB_OK);
 		}
-		else
+		else if (strVersion.GetLength() < 16 && strVersion.Find('<') == -1)
 		{
 			CString strMessage;
 			strMessage.Format(IDS_NEW_VERSION_AVAILABLE, strVersion);
@@ -132,6 +132,10 @@ DWORD WINAPI CUpdateDlg::UpdateThreadProc(LPVOID pvData)
 				::ShellExecute(NULL, _T("open"), LoadString(IDS_WEBSITE_URL),
 					NULL, NULL, SW_SHOWNORMAL);
 			}
+		}
+		else
+		{
+			AfxMessageBox(IDS_CONNECT_ERROR, MB_ICONINFORMATION | MB_OK);
 		}
 	}
 
