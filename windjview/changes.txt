@@ -5,10 +5,11 @@ Copyright (C) 2004-2006 Andrew Zhezherun
 Changes in version 0.4 (2006-01-):
 ! Unicode build for Windows 2k/XP.
 ! Added support for switching user interface languages.
-! Added facing page layout.
+! Added facing and continuous-facing page layouts.
 + Added support for hilighted annotations.
 + Display mode and/or zoom specified in the document are used when opening.
 + Improved page display (borders and background).
++ Printer settings are retained while application is running.
 * Fixed a problem with WinDjView not responding for a few seconds
   after opening a document on some systems.
 * Fixed crash in print dialog when last page is selected and

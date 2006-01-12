@@ -148,6 +148,7 @@ BEGIN
     BUTTON      ID_LAYOUT_SINGLEPAGE
     BUTTON      ID_LAYOUT_CONTINUOUS
     BUTTON      ID_LAYOUT_FACING
+    BUTTON      ID_LAYOUT_CONTINUOUS_FACING
     SEPARATOR
     BUTTON      ID_ZOOM_OUT
     SEPARATOR
@@ -257,6 +258,8 @@ BEGIN
             MENUITEM "&Single Page",                ID_LAYOUT_SINGLEPAGE
             MENUITEM "&Continuous",                 ID_LAYOUT_CONTINUOUS
             MENUITEM "&Facing",                     ID_LAYOUT_FACING
+            MENUITEM "C&ontinuous - Facing",        ID_LAYOUT_CONTINUOUS_FACING
+
         END
         POPUP "&Display"
         BEGIN
@@ -865,10 +868,25 @@ BEGIN
     ID_LAYOUT_SINGLEPAGE    "Single page layout\nSingle Page"
     ID_LAYOUT_CONTINUOUS    "Continuous page layout\nContinuous"
     ID_LAYOUT_FACING        "Facing page layout\nFacing"
+    ID_LAYOUT_CONTINUOUS_FACING
+                            "Continuous-facing page layout\nContinuous - Facing"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    IDS_PAGE_NO_TOOLTIP     "p# %d"
+    IDS_BRIGHTNESS_TEXT_ZERO "&Brightness: %d"
+    IDS_BRIGHTNESS_TEXT     "&Brightness: %+d"
+    IDS_CONTRAST_TEXT_ZERO  "&Contrast: %d"
+    IDS_CONTRAST_TEXT       "&Contrast: %+d"
+    IDS_GAMMA_TEXT          "&Gamma: %1.1f"
+    IDS_FAILED_TO_OPEN      "Failed to open document\n"
+    IDS_TOOLBAR_TITLE       "Toolbar"
+    IDS_TOOLTIP_HIDE        "Hide"
+    IDS_NOT_VALID_DOCUMENT  "\nThis is not a valid DjVu document."
+    IDS_PRINTING_FAILED     "Failed to print the document. There could be a problem\n with the printer or with the printer driver."
+    IDS_PAPER_SIZE_MM       "%s x %s mm"
+    IDS_CENTIMETER          "cm"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
 END
@@ -961,23 +979,6 @@ BEGIN
     IDS_PRINT_ONE_PAGE      "One Page Per Sheet"
     IDS_PRINT_TWO_PAGES     "Two Pages Per Sheet"
     IDS_PLEASE_WAIT         "Please wait..."
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    IDS_PAGE_NO_TOOLTIP     "p# %d"
-    IDS_BRIGHTNESS_TEXT_ZERO "&Brightness: %d"
-    IDS_BRIGHTNESS_TEXT     "&Brightness: %+d"
-    IDS_CONTRAST_TEXT_ZERO  "&Contrast: %d"
-    IDS_CONTRAST_TEXT       "&Contrast: %+d"
-    IDS_GAMMA_TEXT          "&Gamma: %1.1f"
-    IDS_FAILED_TO_OPEN      "Failed to open document\n"
-    IDS_TOOLBAR_TITLE       "Toolbar"
-    IDS_TOOLTIP_HIDE        "Hide"
-    IDS_NOT_VALID_DOCUMENT  "\nThis is not a valid DjVu document."
-    IDS_PRINTING_FAILED     "Failed to print the document. There could be a problem\n with the printer or with the printer driver."
-    IDS_PAPER_SIZE_MM       "%s x %s mm"
-    IDS_CENTIMETER          "cm"
 END
 
 #endif    // English (U.S.) resources

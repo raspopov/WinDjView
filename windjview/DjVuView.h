@@ -97,7 +97,8 @@ public:
 	{
 		SinglePage = 0,
 		Continuous = 1,
-		Facing = 2
+		Facing = 2,
+		ContinuousFacing = 3
 	};
 
 	double GetZoom(ZoomType nZoomType) const;
@@ -153,7 +154,7 @@ protected:
 
 	int m_nPage, m_nPageCount;
 	CSize m_szDisplay;
-	void CalcTopPage();
+	int CalcTopPage() const;
 	void RenderPage(int nPage, int nTimeout = -1);
 
 	bool InvalidatePage(int nPage);
@@ -173,7 +174,7 @@ protected:
 		Page() :
 			bInfoLoaded(false), szDisplay(0, 0), ptOffset(0, 0),
 			pBitmap(NULL), bTextDecoded(false), bAnnoDecoded(false),
-			nSelStart(-1), nSelEnd(-1) {}
+			nSelStart(-1), nSelEnd(-1), bHasSize(false) {}
 		~Page() { delete pBitmap; }
 
 		CSize GetSize(int nRotate) const
@@ -194,6 +195,7 @@ protected:
 		bool bInfoLoaded;
 		PageInfo info;
 
+		bool bHasSize;
 		CPoint ptOffset;
 		CSize szDisplay;
 		CRect rcDisplay;
@@ -239,11 +241,13 @@ protected:
 	};
 	vector<Page> m_pages;
 
-	void UpdatePageSize(int nPage);
-	CSize UpdatePageSizeFacing(int nPage);
+	CSize UpdatePageRect(int nPage);
+	CSize UpdatePageRectFacing(int nPage);
+	void PreparePageRect(int nPage);
+	void PreparePageRectFacing(int nPage);
 	CSize CalcPageSize(const CSize& szPage, int nDPI);
 	CSize CalcPageSize(const CSize& szPage, int nDPI, int nZoomType) const;
-	CSize CalcZoomedPageSize(const CSize& szPage, const CSize& szFrame, int nZoomType) const;
+	CSize CalcZoomedPageSize(const CSize& szPage, CSize szBounds, int nZoomType) const;
 	void CalcPageSizeFacing(const CSize& szPage1, int nDPI1, CSize& szDisplay1,
 			const CSize& szPage2, int nDPI2, CSize& szDisplay2);
 	void CalcPageSizeFacing(const CSize& szPage1, int nDPI1, CSize& szDisplay1,
@@ -251,6 +255,8 @@ protected:
 	void UpdatePageSizes(int nTop, int nScroll = 0);
 	bool UpdatePagesFromTop(int nTop, int nBottom);
 	void UpdatePagesFromBottom(int nTop, int nBottom);
+	void UpdatePageSize(int nPage);
+	void UpdatePageSizeFacing(int nPage);
 	void DeleteBitmaps();
 	int GetPageFromPoint(CPoint point);
 	void ReadZoomSettings(GP<DjVuANT> pAnt);

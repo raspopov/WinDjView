@@ -89,6 +89,8 @@
 #define IDS_PRINTING_FAILED             186
 #define IDS_PAPER_SIZE_MM               187
 #define IDS_CENTIMETER                  188
+#define IDS_VERSION_INFO                189
+#define IDS_VERSION_ABOUT               190
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -206,16 +208,14 @@
 #define ID_LAYOUT_SINGLEPAGE            33116
 #define ID_LAYOUT_CONTINUOUS            33117
 #define ID_LAYOUT_FACING                33118
-#define ID_LAYOUT_FACING_CONTINUOUS     33119
-#define IDS_VERSION_INFO                33120
-#define IDS_VERSION_ABOUT               33121
+#define ID_LAYOUT_CONTINUOUS_FACING     33119
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        149
-#define _APS_NEXT_COMMAND_VALUE         33121
+#define _APS_NEXT_COMMAND_VALUE         33120
 #define _APS_NEXT_CONTROL_VALUE         1055
 #define _APS_NEXT_SYMED_VALUE           109
 #endif

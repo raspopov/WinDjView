@@ -112,6 +112,10 @@ protected:
 	int m_nMode;
 	set<int> m_pages;
 
+	static map<CString, vector<byte> > s_devModes;
+	static LPDEVMODE GetCachedDevMode(const CString& strPrinter);
+	static void UpdateDevModeCache(const CString& strPrinter, LPDEVMODE pDevMode);
+
 	void LoadPaperTypes();
 	bool ParseRange();
 	void SaveSettings();

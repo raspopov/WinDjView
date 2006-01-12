@@ -72,6 +72,7 @@
 #include <algorithm>
 #include <cmath>
 #include <list>
+#include <map>
 using namespace std;
 
 #ifdef NDEBUG

@@ -75,6 +75,8 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def, LP
 
 // CPrintDlg dialog
 
+map<CString, vector<byte> > CPrintDlg::s_devModes;
+
 IMPLEMENT_DYNAMIC(CPrintDlg, CDialog)
 
 CPrintDlg::CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, int nMode, CWnd* pParent)
@@ -526,18 +528,22 @@ void CPrintDlg::OnChangePrinter()
 		return;
 
 	if (m_hPrinter != NULL)
+	{
+		UpdateDevMode();
 		::ClosePrinter(m_hPrinter);
+	}
+
 	m_hPrinter = NULL;
 	m_pPrinter = NULL;
 	m_pPaper = NULL;
 
+	m_strLocation.Empty();
+	m_strComment.Empty();
+	m_strType.Empty();
+
 	int nPrinter = m_cboPrinter.GetCurSel();
 	if (nPrinter == -1)
 	{
-		m_strLocation.Empty();
-		m_strComment.Empty();
-		m_strType.Empty();
-
 		UpdateData(false);
 		return;
 	}
@@ -545,8 +551,17 @@ void CPrintDlg::OnChangePrinter()
 	CString strPrinter;
 	m_cboPrinter.GetLBText(nPrinter, strPrinter);
 
+	PRINTER_DEFAULTS defaults;
+	defaults.pDatatype = NULL;
+	defaults.pDevMode = GetCachedDevMode(strPrinter);
+	defaults.DesiredAccess = PRINTER_ACCESS_USE;
+
 	// Get full information about the printer into PRINTER_INFO_2 member variable
-	::OpenPrinter(strPrinter.GetBuffer(0), &m_hPrinter, NULL);
+	if (!::OpenPrinter(strPrinter.GetBuffer(0), &m_hPrinter, &defaults))
+	{
+		UpdateData(false);
+		return;
+	}
 
 	DWORD cbNeeded;
 	::GetPrinter(m_hPrinter, 2, NULL, 0, &cbNeeded);
@@ -554,6 +569,11 @@ void CPrintDlg::OnChangePrinter()
 	m_printerData.resize(cbNeeded + 1);
 	::GetPrinter(m_hPrinter, 2, &m_printerData[0], cbNeeded, &cbNeeded);
 	m_pPrinter = reinterpret_cast<PRINTER_INFO_2*>(&m_printerData[0]);
+
+	if (defaults.pDevMode != NULL && m_pPrinter->pDevMode->dmSize == defaults.pDevMode->dmSize &&
+			m_pPrinter->pDevMode->dmDriverExtra == defaults.pDevMode->dmDriverExtra &&
+			m_pPrinter->pDevMode->dmSpecVersion == defaults.pDevMode->dmSpecVersion)
+		memcpy(m_pPrinter->pDevMode, defaults.pDevMode, defaults.pDevMode->dmSize + defaults.pDevMode->dmDriverExtra);
 
 	m_strComment = m_pPrinter->pComment;
 	m_strLocation = m_pPrinter->pPortName;
@@ -756,6 +776,8 @@ void CPrintDlg::UpdateDevMode()
 	m_pPrinter->pDevMode->dmOrientation = (m_bLandscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT);
 	m_pPrinter->pDevMode->dmCollate = (m_bCollate ? DMCOLLATE_TRUE : DMCOLLATE_FALSE);
 	m_pPrinter->pDevMode->dmCopies = (WORD)m_nCopies;
+
+	UpdateDevModeCache(m_pPrinter->pPrinterName, m_pPrinter->pDevMode);
 }
 
 void CPrintDlg::SaveSettings()
@@ -840,4 +862,23 @@ bool CPrintDlg::ParseRange()
 	}
 
 	return true;
+}
+
+LPDEVMODE CPrintDlg::GetCachedDevMode(const CString& strPrinter)
+{
+	map<CString, vector<byte> >::iterator it = s_devModes.find(strPrinter);
+	if (it != s_devModes.end())
+		return (LPDEVMODE) &(it->second[0]);
+
+	return NULL;
+}
+
+void CPrintDlg::UpdateDevModeCache(const CString& strPrinter, LPDEVMODE pDevMode)
+{
+	map<CString, vector<byte> >::iterator it = s_devModes.find(strPrinter);
+	if (it == s_devModes.end())
+		it = s_devModes.insert(make_pair(strPrinter, vector<byte>())).first;
+
+	it->second.resize(pDevMode->dmSize + pDevMode->dmDriverExtra);
+	memcpy(&(it->second[0]), pDevMode, it->second.size());
 }
