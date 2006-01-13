@@ -9,6 +9,7 @@ Changes in version 0.4 (2006-01-):
 + Added support for hilighted annotations.
 + Display mode and/or zoom specified in the document are used when opening.
 + Improved page display (borders and background).
++ In fullscreen mode cursor is hidden if mouse doesn't move for a few seconds.
 + Printer settings are retained while application is running.
 * Fixed a problem with WinDjView not responding for a few seconds
   after opening a document on some systems.

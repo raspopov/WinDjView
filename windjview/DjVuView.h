@@ -308,8 +308,11 @@ protected:
 	CPoint m_ptStart, m_ptStartPos;
 	int m_nStartPage, m_nPrevPage;
 	bool m_bClick;
-	CPoint m_ptClick;
+	CPoint m_ptClick, m_ptMouse;
 	int m_nClickCount;
+	DWORD m_nCursorTime;
+	bool m_bCursorHidden;
+	void ShowCursor();
 	static HCURSOR hCursorHand;
 	static HCURSOR hCursorDrag;
 	static HCURSOR hCursorLink;

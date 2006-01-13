@@ -45,7 +45,6 @@ void CGotoPageDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_PAGE, m_edtPage);
 	DDX_Text(pDX, IDC_PAGE, m_nPage);
-	DDV_MinMaxInt(pDX, m_nPage, 1, m_nPageCount);
 
 	if (!pDX->m_bSaveAndValidate)
 	{
@@ -57,7 +56,49 @@ void CGotoPageDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CGotoPageDlg, CDialog)
+	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_PAGE, OnPageUpDown)
+	ON_EN_KILLFOCUS(IDC_PAGE, OnUpdateDialogData)
 END_MESSAGE_MAP()
 
 
 // CGotoPageDlg message handlers
+
+void CGotoPageDlg::OnPageUpDown(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	UpdateData();
+
+	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+
+	if (pNMUpDown->iDelta < 0)
+		++m_nPage;
+	else
+		--m_nPage;
+
+	if (m_nPage < 1)
+		m_nPage = 1;
+	else if (m_nPage > m_nPageCount)
+		m_nPage = m_nPageCount;
+
+	UpdateData(false);
+
+	*pResult = 0;
+}
+
+void CGotoPageDlg::OnUpdateDialogData()
+{
+	UpdateData();
+
+	if (m_nPage < 1)
+		m_nPage = 1;
+	else if (m_nPage > m_nPageCount)
+		m_nPage = m_nPageCount;
+
+	UpdateData(false);
+}
+
+void CGotoPageDlg::OnOK()
+{
+	OnUpdateDialogData();
+
+	CDialog::OnOK();
+}

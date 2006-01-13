@@ -40,6 +40,7 @@ public:
 // Overrides
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void OnOK();
 
 // Implementation
 protected:
@@ -47,5 +48,7 @@ protected:
 	int m_nPageCount;
 
 // Generated message map functions
+	afx_msg void OnPageUpDown(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnUpdateDialogData();
 	DECLARE_MESSAGE_MAP()
 };

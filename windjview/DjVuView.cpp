@@ -49,11 +49,13 @@ HCURSOR CDjVuView::hCursorDrag = NULL;
 HCURSOR CDjVuView::hCursorLink = NULL;
 HCURSOR CDjVuView::hCursorText = NULL;
 
-const int c_nPageGap = 5;
+const int c_nPageGap = 4;
 const int c_nPageShadow = 3;
-const int c_nFacingGap = 5;
+const int c_nFacingGap = 4;
 const int c_nMargin = 4;
 const int c_nShadowMargin = 3;
+
+const int s_nCursorHideDelay = 3500;
 
 IMPLEMENT_DYNCREATE(CDjVuView, CMyScrollView)
 
@@ -126,7 +128,7 @@ CDjVuView::CDjVuView()
 	  m_evtRendered(false, true), m_nPendingPage(-1), m_nClickedPage(-1),
 	  m_nMode(Drag), m_pOffscreenBitmap(NULL), m_szOffscreen(0, 0),
 	  m_bHasSelection(false), m_nDisplayMode(Color), m_bShowAllLinks(false),
-	  m_bNeedUpdate(false)
+	  m_bNeedUpdate(false), m_bCursorHidden(false)
 {
 }
 
@@ -475,6 +477,7 @@ void CDjVuView::OnInitialUpdate()
 	CMyScrollView::OnInitialUpdate();
 
 	m_nTimerID = SetTimer(1, 100, NULL);
+	ShowCursor();
 
 	if (m_toolTip.Create(this, TTS_ALWAYSTIP) && m_toolTip.AddTool(this))
 	{
@@ -1299,15 +1302,14 @@ void CDjVuView::CalcPageSizeFacing(const CSize& szPage1, int nDPI1, CSize& szDis
 
 		CRect rcClient;
 		GetClientRect(rcClient);
-		CSize szBounds = rcClient.Size() - szFrame;
 
-		CSize szFirst(szBounds.cx / 2, szBounds.cy);
-		CSize szSecond(szBounds.cx - szBounds.cx / 2, szBounds.cy);
+		CSize szBounds = rcClient.Size() - szFrame;
+		CSize szHalf(szBounds.cx / 2, szBounds.cy);
 
 		if (bFirstPageOk)
-			szDisplay1 = CalcZoomedPageSize(szPage1, szFirst, nZoomType);
+			szDisplay1 = CalcZoomedPageSize(szPage1, szHalf, nZoomType);
 		if (bSecondPageOk)
-			szDisplay2 = CalcZoomedPageSize(szPage2, szSecond, nZoomType);
+			szDisplay2 = CalcZoomedPageSize(szPage2, szHalf, nZoomType);
 	}
 	else
 	{
@@ -2130,6 +2132,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	if (m_pActiveLink != NULL && m_pActiveLink->url != "")
 	{
+		ShowCursor();
 		SetCapture();
 		m_bDragging = true;
 		return;
@@ -2140,6 +2143,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 	{
 		UpdateActiveHyperlink(CPoint(-1, -1));
 
+		ShowCursor();
 		SetCapture();
 		m_bDragging = true;
 
@@ -2161,6 +2165,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 		if (m_nStartPage == -1)
 			return;
 
+		ShowCursor();
 		SetCapture();
 		m_bDragging = true;
 		m_nPrevPage = m_nStartPage;
@@ -2285,6 +2290,7 @@ void CDjVuView::OnLButtonUp(UINT nFlags, CPoint point)
 	{
 		m_bDragging = false;
 		ReleaseCapture();
+		m_nCursorTime = ::GetTickCount();
 	}
 
 	if (m_pActiveLink != NULL)
@@ -2317,6 +2323,12 @@ void CDjVuView::OnLButtonUp(UINT nFlags, CPoint point)
 
 void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 {
+	if (point != m_ptMouse)
+	{
+		m_ptMouse = point;
+		ShowCursor();
+	}
+
 	if (m_bClick)
 	{
 		CPoint ptCursor;
@@ -2889,6 +2901,7 @@ void CDjVuView::OnDestroy()
 	m_pRenderThread = NULL;
 
 	KillTimer(m_nTimerID);
+	ShowCursor();
 
 	CMyScrollView::OnDestroy();
 }
@@ -4700,7 +4713,28 @@ void CDjVuView::OnTimer(UINT nIDEvent)
 			UpdateView();
 			m_bNeedUpdate = false;
 		}
+
+		if (m_nMode == Fullscreen && !m_bCursorHidden && !m_bDragging)
+		{
+			int nTickCount = ::GetTickCount();
+			if (nTickCount - m_nCursorTime > s_nCursorHideDelay)
+			{
+				m_bCursorHidden = true;
+				::ShowCursor(false);
+			}
+		}
 	}
 	
 	CView::OnTimer(nIDEvent);
+}
+
+void CDjVuView::ShowCursor()
+{
+	if (m_bCursorHidden)
+	{
+		::ShowCursor(true);
+		m_bCursorHidden = false;
+	}
+
+	m_nCursorTime = ::GetTickCount();
 }

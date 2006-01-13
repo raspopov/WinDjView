@@ -147,6 +147,7 @@
 #define IDC_BUTTON1                     1053
 #define IDC_DONATE                      1053
 #define IDC_STATIC_VERSION              1054
+#define IDC_SPIN_PAGE                   1055
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_ZOOM_50                      32777
@@ -216,7 +217,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        149
 #define _APS_NEXT_COMMAND_VALUE         33120
-#define _APS_NEXT_CONTROL_VALUE         1055
+#define _APS_NEXT_CONTROL_VALUE         1056
 #define _APS_NEXT_SYMED_VALUE           109
 #endif
 #endif
