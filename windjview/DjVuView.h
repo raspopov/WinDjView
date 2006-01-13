@@ -81,7 +81,7 @@ public:
 	int GetPageDPI(int nPage) const { return m_pages[nPage].info.nDPI; }
 
 	void OnSettingsChanged();
-	void ShowAllLinks(bool bShowAll);
+	void UpdateShiftKey(bool bShiftDown);
 
 	enum ZoomType
 	{
@@ -145,7 +145,7 @@ protected:
 	CToolTipCtrl m_toolTip;
 	CRenderThread* m_pRenderThread;
 	CEvent m_evtRendered;
-	bool m_bShowAllLinks;
+	bool m_bShiftDown;
 	bool m_bNeedUpdate;
 	UINT m_nTimerID;
 
@@ -268,7 +268,7 @@ protected:
 		BOTTOM = 1,
 		RECALC = 2
 	};
-	void UpdateView(UpdateType updateType = TOP);
+	void UpdateLayout(UpdateType updateType = TOP);
 	void UpdateVisiblePages();
 	void UpdatePagesCacheSingle();
 	void UpdatePagesCacheFacing();
@@ -285,7 +285,7 @@ protected:
 	void EnsureSelectionVisible(int nPage, const DjVuSelection& selection);
 	CRect GetSelectionRect(int nPage, const DjVuSelection& selection) const;
 	CRect TranslatePageRect(int nPage, GRect rect) const;
-	bool m_bInsideUpdateView;
+	bool m_bInsideUpdateLayout;
 
 	GP<GMapArea> m_pActiveLink;
 	int m_nLinkPage;
@@ -304,7 +304,7 @@ protected:
 	bool m_bHasSelection;
 
 	int m_nClickedPage;
-	bool m_bDragging;
+	bool m_bDragging, m_bDraggingPage, m_bDraggingText;
 	CPoint m_ptStart, m_ptStartPos;
 	int m_nStartPage, m_nPrevPage;
 	bool m_bClick;

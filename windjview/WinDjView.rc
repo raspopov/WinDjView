@@ -259,7 +259,6 @@ BEGIN
             MENUITEM "&Continuous",                 ID_LAYOUT_CONTINUOUS
             MENUITEM "&Facing",                     ID_LAYOUT_FACING
             MENUITEM "C&ontinuous - Facing",        ID_LAYOUT_CONTINUOUS_FACING
-
         END
         POPUP "&Display"
         BEGIN

@@ -973,12 +973,12 @@ LRESULT CMainFrame::OnShowAllLinks(WPARAM wParam, LPARAM lParam)
 		{
 			CDocument* pDoc = pTemplate->GetNextDoc(posDoc);
 			CDjVuView* pView = ((CDjVuDoc*)pDoc)->GetDjVuView();
-			pView->ShowAllLinks(wParam != 0);
+			pView->UpdateShiftKey(wParam != 0);
 		}
 	}
 
 	if (m_pFullscreenWnd != NULL)
-		m_pFullscreenWnd->GetView()->ShowAllLinks(wParam != 0);
+		m_pFullscreenWnd->GetView()->UpdateShiftKey(wParam != 0);
 
 	return 0;
 }
