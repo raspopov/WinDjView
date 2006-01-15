@@ -129,7 +129,10 @@ public:
 class DataPool::OpenFiles : public GPEnabled
 {
 private:
-   static OpenFiles	* global_ptr;
+//< Changed for WinDjView project
+//   static OpenFiles	* global_ptr;
+   static GP<OpenFiles> global_ptr;
+//>
 
    GPList<DataPool::OpenFiles_File>		files_list;
    GCriticalSection	files_lock;
@@ -152,7 +155,10 @@ public:
    void 	close_all(void);
 };
 
-DataPool::OpenFiles * DataPool::OpenFiles::global_ptr;
+//< Changed for WinDjView project
+//DataPool::OpenFiles * DataPool::OpenFiles::global_ptr;
+GP<DataPool::OpenFiles> DataPool::OpenFiles::global_ptr;
+//>
 
 DataPool::OpenFiles_File::OpenFiles_File(const GURL &xurl, GP<DataPool> &pool) : url(xurl)
 {
@@ -314,13 +320,19 @@ DataPool::OpenFiles::close_all(void)
     will break DataPools directly connected to it, it would be nice to have
     a mechanism for signaling all the related DataPools to read data into
     memory. This is precisely the purpose of this class. */
-class FCPools
+//< Changed for WinDjView project
+//class FCPools
+class FCPools : public GPEnabled
+//>
 {
 private:
    GMap<GURL, GPList<DataPool> >	map;	// GMap<GUTF8String, GPList<DataPool>> in fact
    GCriticalSection		map_lock;
 
-   static FCPools	* global_ptr;
+//< Changed for WinDjView project
+//   static FCPools	* global_ptr;
+   static GP<FCPools> global_ptr;
+//>
 public:
    static FCPools *	get(void);
       // Adds the <furl, pool> pair into the list
@@ -469,7 +481,10 @@ FCPools::load_file(const GURL &url)
    }
 }
 
-FCPools	* FCPools::global_ptr;
+//< Changed for WinDjView project
+//FCPools	* FCPools::global_ptr;
+GP<FCPools> FCPools::global_ptr;
+//>
 
 inline FCPools *
 FCPools::get(void)

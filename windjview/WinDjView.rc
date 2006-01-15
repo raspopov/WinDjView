@@ -259,6 +259,7 @@ BEGIN
             MENUITEM "&Continuous",                 ID_LAYOUT_CONTINUOUS
             MENUITEM "&Facing",                     ID_LAYOUT_FACING
             MENUITEM "C&ontinuous - Facing",        ID_LAYOUT_CONTINUOUS_FACING
+
         END
         POPUP "&Display"
         BEGIN
@@ -742,6 +743,7 @@ BEGIN
     ID_FILE_PRINT_SETUP     "Change the printer and printing options\nPrint Setup"
     ID_FILE_PRINT           "Print the active document\nPrint"
     ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
+    ID_FILE_SAVE_COPY_AS    "Save a copy of the active document with a new name\nSave Copy As"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -861,6 +863,7 @@ BEGIN
     IDC_PAGENUM             "Select page number\nPage"
     IDC_ZOOM                "Select zoom level\nZoom"
     ID_PAGE_INFORMATION     "Displays page information"
+    ID_FILE_SETTINGS        "Change application settings\nSettings"
     ID_EXPORT_PAGE          "Exports current page as bmp file"
 END
 
@@ -925,12 +928,14 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    ID_FILE_EXPORT_TEXT     "Extract text from the active document and save it into a file\nExport Text"
     ID_CHECK_FOR_UPDATE     "Checks program website for available updates\nCheck for update"
     ID_DISPLAY_COLOR        "Display document in original color"
     ID_DISPLAY_BW           "Display document in black and white"
     ID_DISPLAY_BACKGROUND   "Display document background"
     ID_DISPLAY_FOREGROUND   "Display document foreground"
-    ID_VIEW_FULLSCREEN      "Opens the document in fullscreen mode\nFullscreen"
+    ID_VIEW_FULLSCREEN      "Open the document in fullscreen mode\nFullscreen"
+    ID_VIEW_GOTO_PAGE       "Specify page number"
 END
 
 STRINGTABLE DISCARDABLE 
