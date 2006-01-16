@@ -744,8 +744,6 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 
 		for (int i = 0; i < 3; ++i)
 		{
-			GetClientRect(rcClient);
-
 			m_szDisplay = CSize(0, 0);
 			int nTop = c_nMargin;
 
@@ -1604,7 +1602,7 @@ bool CDjVuView::IsViewPreviouspageEnabled()
 
 void CDjVuView::OnSize(UINT nType, int cx, int cy)
 {
-	if (m_nPage != -1)
+	if (m_nPage != -1 && !m_bInsideUpdateLayout)
 	{
 		if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 			UpdatePageSizes(GetScrollPos(SB_VERT));
