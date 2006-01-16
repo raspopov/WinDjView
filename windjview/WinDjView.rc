@@ -260,6 +260,7 @@ BEGIN
             MENUITEM "&Facing",                     ID_LAYOUT_FACING
             MENUITEM "C&ontinuous - Facing",        ID_LAYOUT_CONTINUOUS_FACING
 
+            MENUITEM SEPARATOR
             MENUITEM "First page &alone",           ID_LAYOUT_FIRSTPAGE_ALONE
 
         END
