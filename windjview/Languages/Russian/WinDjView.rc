@@ -732,6 +732,7 @@ BEGIN
     ID_FILE_PRINT_SETUP     "Change the printer and printing options\nPrint Setup"
     ID_FILE_PRINT           "Печать текущего документа\nПечать"
     ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
+    ID_FILE_SAVE_COPY_AS    "Сохранить копию файла"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -837,7 +838,7 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_ZOOM_FITPAGE         "Подобрать масштаб, чтобы страница помещалась на экран целиком\nСтраница целиком"
     ID_ZOOM_ACTUALSIZE      "Показать страницу в исходном размере"
-    ID_ZOOM_STRETCH         "Растянуть страницу под размеры окна"
+    ID_ZOOM_STRETCH         "Растянуть страницу по размерам окна"
     ID_ZOOM_CUSTOM          "Задать другой масштаб"
     ID_ROTATE_RIGHT         "Повернуть страницу вправо на 90 градусов\nПовернуть вправо"
     ID_ROTATE_LEFT          "Повернуть страницу влево на 90 градусов\nПовернуть влево"
@@ -851,6 +852,7 @@ BEGIN
     IDC_PAGENUM             "Выберите номер страницы\nСтраница"
     IDC_ZOOM                "Выберите масштаб\nМасштаб"
     ID_PAGE_INFORMATION     "Показать служебную информацию о странице"
+    ID_FILE_SETTINGS        "Изменить настройки программы"
     ID_EXPORT_PAGE          "Сохранить эту страницу в отдельный файл"
 END
 
@@ -903,6 +905,7 @@ BEGIN
     ID_DISPLAY_BACKGROUND   "Показать задний план документа"
     ID_DISPLAY_FOREGROUND   "Показать передний план документа"
     ID_VIEW_FULLSCREEN      "Открыть документ в полноэкранном режиме\nНа полный экран"
+    ID_VIEW_GOTO_PAGE       "Задать номер страницы"
 END
 
 STRINGTABLE DISCARDABLE 
