@@ -247,7 +247,9 @@ BEGIN
             MENUITEM "&Одна страница",              ID_LAYOUT_SINGLEPAGE
             MENUITEM "&Подряд",                     ID_LAYOUT_CONTINUOUS
             MENUITEM "&Соседние",                   ID_LAYOUT_FACING
-            MENUITEM "П&одряд - соседние",          ID_LAYOUT_CONTINUOUS_FACING
+            MENUITEM "По&дряд - соседние",          ID_LAYOUT_CONTINUOUS_FACING
+
+            MENUITEM "П&ервая страница отдельно",   ID_LAYOUT_FIRSTPAGE_ALONE
 
         END
         POPUP "Ре&жим"
@@ -974,6 +976,12 @@ BEGIN
     IDS_CENTIMETER          "см"
     IDS_VERSION_INFO        "WinDjView %s\n(C) Андрей Жежерун"
     IDS_VERSION_ABOUT       "WinDjView %s"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_LAYOUT_FIRSTPAGE_ALONE 
+                            "При группировке соседних страниц отображать первую страницу отдельно"
 END
 
 #endif    // Russian resources

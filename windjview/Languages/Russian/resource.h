@@ -210,13 +210,14 @@
 #define ID_LAYOUT_CONTINUOUS            33117
 #define ID_LAYOUT_FACING                33118
 #define ID_LAYOUT_CONTINUOUS_FACING     33119
+#define ID_LAYOUT_FIRSTPAGE_ALONE       33120
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        149
-#define _APS_NEXT_COMMAND_VALUE         33120
+#define _APS_NEXT_COMMAND_VALUE         33121
 #define _APS_NEXT_CONTROL_VALUE         1056
 #define _APS_NEXT_SYMED_VALUE           109
 #endif
