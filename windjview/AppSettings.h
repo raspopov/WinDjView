@@ -60,6 +60,7 @@ struct CAppSettings
 	static int nDefaultZoomType;
 	static double fDefaultZoom;
 	static int nDefaultLayout;
+	static bool bFirstPageAlone;
 	static int nDefaultMode;
 
 	static bool bNavPaneCollapsed;

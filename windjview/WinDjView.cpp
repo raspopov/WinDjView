@@ -49,6 +49,7 @@ const TCHAR* s_pszStatusBar = _T("statusbar");
 const TCHAR* s_pszZoom = _T("zoom");
 const TCHAR* s_pszZoomPercent = _T("%");
 const TCHAR* s_pszLayout = _T("layout");
+const TCHAR* s_pszFirstPage = _T("first-page");
 const TCHAR* s_pszMode = _T("mode");
 const TCHAR* s_pszNavCollapsed = _T("nav-collapsed");
 const TCHAR* s_pszNavWidth = _T("nav-width");
@@ -372,6 +373,7 @@ void CDjViewApp::LoadSettings()
 	CAppSettings::nDefaultZoomType = GetProfileInt(s_pszDisplaySettings, s_pszZoom, -3); // Fit page
 	CAppSettings::fDefaultZoom = GetProfileDouble(s_pszDisplaySettings, s_pszZoomPercent, 100.0);
 	CAppSettings::nDefaultLayout = GetProfileInt(s_pszDisplaySettings, s_pszLayout, 1); // Continuous
+	CAppSettings::bFirstPageAlone = !!GetProfileInt(s_pszDisplaySettings, s_pszFirstPage, 1);
 	CAppSettings::nDefaultMode = GetProfileInt(s_pszDisplaySettings, s_pszMode, 0); // Drag
 	CAppSettings::bNavPaneCollapsed = !!GetProfileInt(s_pszDisplaySettings, s_pszNavCollapsed, 0);
 	CAppSettings::nNavPaneWidth = GetProfileInt(s_pszDisplaySettings, s_pszNavWidth, 200);
@@ -413,6 +415,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySettings, s_pszZoom, CAppSettings::nDefaultZoomType);
 	WriteProfileDouble(s_pszDisplaySettings, s_pszZoomPercent, CAppSettings::fDefaultZoom);
 	WriteProfileInt(s_pszDisplaySettings, s_pszLayout, CAppSettings::nDefaultLayout);
+	WriteProfileInt(s_pszDisplaySettings, s_pszFirstPage, CAppSettings::bFirstPageAlone);
 	WriteProfileInt(s_pszDisplaySettings, s_pszMode, CAppSettings::nDefaultMode);
 	WriteProfileInt(s_pszDisplaySettings, s_pszNavCollapsed, CAppSettings::bNavPaneCollapsed);
 	WriteProfileInt(s_pszDisplaySettings, s_pszNavWidth, CAppSettings::nNavPaneWidth);

@@ -166,6 +166,7 @@ protected:
 	int m_nLayout;
 	int m_nDisplayMode;
 	int m_nRotate;
+	bool m_bFirstPageAlone;
 
 	CDisplaySettings m_displaySettings;
 
@@ -261,6 +262,11 @@ protected:
 	int GetPageFromPoint(CPoint point);
 	void ReadZoomSettings(GP<DjVuANT> pAnt);
 	void ReadDisplayMode(GP<DjVuANT> pAnt);
+	bool IsValidPage(int nPage) const;
+	bool HasFacingPage(int nPage) const;
+	int FixPageNumber(int nPage) const;
+	int GetNextPage(int nPage) const;
+	void SetLayout(int nLayout, int nPage, int nOffset);
 
 	enum UpdateType
 	{
@@ -374,6 +380,8 @@ protected:
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg void OnViewGotoPage();
 	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg void OnFirstPageAlone();
+	afx_msg void OnUpdateFirstPageAlone(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 };
 

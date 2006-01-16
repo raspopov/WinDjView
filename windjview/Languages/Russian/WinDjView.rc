@@ -249,6 +249,7 @@ BEGIN
             MENUITEM "&Соседние",                   ID_LAYOUT_FACING
             MENUITEM "По&дряд - соседние",          ID_LAYOUT_CONTINUOUS_FACING
 
+            MENUITEM SEPARATOR
             MENUITEM "П&ервая страница отдельно",   ID_LAYOUT_FIRSTPAGE_ALONE
 
         END
