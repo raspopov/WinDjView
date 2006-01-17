@@ -530,6 +530,7 @@ void CPrintDlg::OnChangePrinter()
 	if (m_hPrinter != NULL)
 	{
 		UpdateDevMode();
+		SaveSettings();
 		::ClosePrinter(m_hPrinter);
 	}
 
@@ -550,6 +551,7 @@ void CPrintDlg::OnChangePrinter()
 
 	CString strPrinter;
 	m_cboPrinter.GetLBText(nPrinter, strPrinter);
+	CAppSettings::strPrinter = strPrinter;
 
 	PRINTER_DEFAULTS defaults;
 	defaults.pDatatype = NULL;
@@ -718,7 +720,6 @@ void CPrintDlg::OnKickIdle()
 {
 	bool bOk = (m_pPrinter != NULL);
 
-	m_cboPaper.EnableWindow(bOk);
 	GetDlgItem(IDC_PORTRAIT)->EnableWindow(bOk && (m_pPrinter->pDevMode->dmFields & DM_ORIENTATION));
 	GetDlgItem(IDC_LANDSCAPE)->EnableWindow(bOk && (m_pPrinter->pDevMode->dmFields & DM_ORIENTATION));
 
@@ -735,9 +736,13 @@ void CPrintDlg::OnKickIdle()
 
 	GetDlgItem(IDC_SCALE)->EnableWindow(bOk && !m_settings.bScaleToFit);
 	GetDlgItem(IDC_SHRINK_OVERSIZED)->EnableWindow(bOk && !m_settings.bScaleToFit);
+	GetDlgItem(IDC_SCALE_TO_FIT)->EnableWindow(bOk);
+	GetDlgItem(IDC_IGNORE_MARGINS)->EnableWindow(bOk);
 
 	GetDlgItem(IDC_POSITION_TOP)->EnableWindow(bOk && !m_settings.bCenterImage);
 	GetDlgItem(IDC_POSITION_LEFT)->EnableWindow(bOk && !m_settings.bCenterImage);
+	GetDlgItem(IDC_CENTER_IMAGE)->EnableWindow(bOk);
+	GetDlgItem(IDC_CLIP_CONTENT)->EnableWindow(bOk);
 
 	GetDlgItem(IDC_MARGIN_LEFT)->EnableWindow(bOk);
 	GetDlgItem(IDC_MARGIN_TOP)->EnableWindow(bOk);
@@ -749,6 +754,8 @@ void CPrintDlg::OnKickIdle()
 	m_cboPagesPerSheet.EnableWindow(bOk);
 
 	GetDlgItem(IDOK)->EnableWindow(bOk);
+	GetDlgItem(IDC_REVERSE)->EnableWindow(bOk);
+	GetDlgItem(IDC_PROPERTIES)->EnableWindow(bOk);
 }
 
 void CPrintDlg::OnUpdateDialogData()
