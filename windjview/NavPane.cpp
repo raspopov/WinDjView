@@ -503,9 +503,9 @@ int CNavPaneWnd::GetTabFromPoint(CPoint point)
 
 int CNavPaneWnd::GetTabIndex(CWnd* pTabContent)
 {
-	for (int nTab = 0; nTab < m_tabs.size(); ++nTab)
+	for (size_t nTab = 0; nTab < m_tabs.size(); ++nTab)
 		if (m_tabs[nTab].pWnd->GetSafeHwnd() == pTabContent->GetSafeHwnd())
-			return nTab;
+			return static_cast<int>(nTab);
 
 	return -1;
 }
@@ -561,7 +561,7 @@ void CNavPaneWnd::SetTabName(int nTab, const CString& strName)
 	int offset = szText.cx - tab.rcTab.Height();
 	tab.rcTab.bottom += offset;
 
-	for (int i = nTab + 1; i < m_tabs.size(); ++i)
+	for (size_t i = nTab + 1; i < m_tabs.size(); ++i)
 		m_tabs[i].rcTab.OffsetRect(0, offset);
 
 	if (::IsWindow(m_hWnd))

@@ -105,7 +105,7 @@ protected:
 	vector<LanguageInfo> m_languages;
 	int m_nLanguage;
 	void LoadLanguages();
-	void SetLanguage(int nLanguage);
+	void SetLanguage(UINT nLanguage);
 
 protected:
 	// Generated message map functions

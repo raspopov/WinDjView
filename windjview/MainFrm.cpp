@@ -1015,7 +1015,7 @@ void CMainFrame::OnSetLanguage(UINT nID)
 	SetLanguage(nLanguage);
 }
 
-void CMainFrame::SetLanguage(int nLanguage)
+void CMainFrame::SetLanguage(UINT nLanguage)
 {
 	if (nLanguage < 0 || nLanguage >= m_languages.size() || nLanguage == m_nLanguage)
 		return;
@@ -1164,7 +1164,7 @@ void CMainFrame::OnUpdateLanguageList(CCmdUI* pCmdUI)
 	int nIndex = pCmdUI->m_nIndex;
 	int nAdded = 0;
 
-	for (int i = 0; i < m_languages.size() && i < ID_LANGUAGE_LAST - ID_LANGUAGE_FIRST - 1; ++i)
+	for (size_t i = 0; i < m_languages.size() && i < ID_LANGUAGE_LAST - ID_LANGUAGE_FIRST - 1; ++i)
 	{
 		CString strText = m_languages[i].strLanguage;
 		pCmdUI->m_pMenu->InsertMenu(ID_LANGUAGE_FIRST, MF_BYCOMMAND, ID_LANGUAGE_FIRST + i + 1, strText);
@@ -1185,7 +1185,7 @@ void CMainFrame::OnUpdateLanguage(CCmdUI* pCmdUI)
 
 void CMainFrame::SetStartupLanguage()
 {
-	for (int i = 0; i < m_languages.size(); ++i)
+	for (size_t i = 0; i < m_languages.size(); ++i)
 	{
 		if (CAppSettings::strLanguage == m_languages[i].strLanguage)
 		{

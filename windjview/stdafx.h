@@ -31,8 +31,11 @@
 #if (_MSC_VER >= 1300)
 #define WINVER			0x0500
 #define _WIN32_WINNT	0x0400
-#define _WIN32_WINDOWS	0x0410
 #define _WIN32_IE		0x0400
+#endif
+
+#if (_MFC_VER > 0x0600)
+#define _WIN32_WINDOWS	0x0410
 #endif
 
 #if (_MSC_VER < 1300)
@@ -56,7 +59,7 @@
 #include <afxcmn.h>			// MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
-#if (_MSC_VER >= 1300)
+#if (_MFC_VER > 0x0600)
 #include <../src/mfc/afximpl.h>
 #else
 #include <../src/afximpl.h>
