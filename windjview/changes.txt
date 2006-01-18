@@ -2,7 +2,7 @@ WinDjView changes history
 Copyright (C) 2004-2006 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 0.4 (2006-01-):
+Changes in version 0.4 (2006-01-18):
 ! Unicode build for Windows 2k/XP.
 ! Added support for switching user interface languages.
 ! Added facing and continuous-facing page layouts.
@@ -14,8 +14,7 @@ Changes in version 0.4 (2006-01-):
 + To quickly enter drag more, shift key can be pressed.
 * Fixed a problem with WinDjView not responding for a few seconds
   after opening a document on some systems.
-* Fixed crash in print dialog when last page is selected and
-  two pages per sheet mode is activated.
+* Fixed a few crashes in print dialog.
 
 Changes in version 0.3.6 (2005-12-21):
 ! Multithreading fixes: WinDjView should work more stable, especially
