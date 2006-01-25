@@ -34,12 +34,14 @@
 
 CString FormatDouble(double fValue)
 {
+	char nDecimalPoint = localeconv()->decimal_point[0];
+
 	CString strResult;
 	strResult.Format(_T("%.6f"), fValue);
 	while (!strResult.IsEmpty() && strResult[strResult.GetLength() - 1] == '0')
 		strResult = strResult.Left(strResult.GetLength() - 1);
 
-	if (!strResult.IsEmpty() && strResult[strResult.GetLength() - 1] == '.')
+	if (!strResult.IsEmpty() && strResult[strResult.GetLength() - 1] == nDecimalPoint)
 		strResult = strResult.Left(strResult.GetLength() - 1);
 
 	if (strResult.IsEmpty())

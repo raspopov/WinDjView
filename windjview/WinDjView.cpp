@@ -104,6 +104,8 @@ CDjViewApp theApp;
 
 BOOL CDjViewApp::InitInstance()
 {
+	_tsetlocale(LC_ALL, _T(""));
+
 	// InitCommonControls() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
 	// visual styles.  Otherwise, any window creation will fail.
@@ -346,18 +348,28 @@ BOOL CAboutDlg::OnInitDialog()
 
 BOOL CDjViewApp::WriteProfileDouble(LPCTSTR pszSection, LPCTSTR pszEntry, double fValue)
 {
-	return WriteProfileString(pszSection, pszEntry, FormatDouble(fValue));
+	CString strLocale = _tsetlocale(LC_NUMERIC, NULL);
+
+	_tsetlocale(LC_NUMERIC, _T("C"));
+	BOOL result = WriteProfileString(pszSection, pszEntry, FormatDouble(fValue));
+	_tsetlocale(LC_NUMERIC, strLocale);
+
+	return result;
 }
 
 double CDjViewApp::GetProfileDouble(LPCTSTR pszSection, LPCTSTR pszEntry, double fDefault)
 {
+	CString strLocale = _tsetlocale(LC_NUMERIC, NULL);
+	_tsetlocale(LC_NUMERIC, _T("C"));
+
 	CString strValue = GetProfileString(pszSection, pszEntry);
 
 	double fValue;
-	if (_stscanf(strValue, _T("%lf"), &fValue) != 1)
-		return fDefault;
+	int result = _stscanf(strValue, _T("%lf"), &fValue);
 
-	return fValue;
+	_tsetlocale(LC_NUMERIC, strLocale);
+
+	return (result != 1 ? fDefault : fValue);
 }
 
 void CDjViewApp::LoadSettings()
@@ -389,6 +401,7 @@ void CDjViewApp::LoadSettings()
 	ds.fGamma = GetProfileDouble(s_pszDisplaySettings, s_pszGamma, 1.0);
 	ds.nBrightness = GetProfileInt(s_pszDisplaySettings, s_pszBrightness, 0);
 	ds.nContrast = GetProfileInt(s_pszDisplaySettings, s_pszContrast, 0);
+	ds.Fix();
 
 	CPrintSettings& ps = CAppSettings::printSettings;
 	ps.fMarginLeft = GetProfileDouble(s_pszPrintSettings, s_pszMarginLeft, 0.0);

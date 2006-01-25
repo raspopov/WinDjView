@@ -31,6 +31,13 @@ struct CDisplaySettings
 	int GetContrast() const { return bAdjustDisplay ? nContrast : 0; }
 	double GetGamma() const { return bAdjustDisplay ? fGamma : 1.0; }
 
+	void Fix()
+	{
+		nBrightness = (nBrightness < -100 || nBrightness > 100 ? 0 : nBrightness);
+		nContrast = (nContrast < -100 || nContrast > 100 ? 0 : nContrast);
+		fGamma = (fGamma < 0.1 || fGamma > 5.0 ? 1.0 : fGamma);
+	}
+
 	bool operator!=(const CDisplaySettings& rhs) const { return !(*this == rhs); }
 	bool operator==(const CDisplaySettings& rhs) const
 	{

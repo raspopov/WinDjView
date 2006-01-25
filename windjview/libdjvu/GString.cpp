@@ -2225,7 +2225,10 @@ GStringRep::concat(const GP<GStringRep> &s1,const GP<GStringRep> &s2) const
   return retval;
 }
 
-#ifdef WIN32
+//< Changed for WinDjView project
+//#ifdef WIN32
+#if 0
+//>
 static const char *setlocale_win32(void)
 {
   static const char *locale=setlocale(LC_ALL,0);
@@ -2239,7 +2242,10 @@ static const char *setlocale_win32(void)
 
 GStringRep::GStringRep(void)
 {
-#ifdef WIN32
+//< Changed for WinDjView project
+//#ifdef WIN32
+#if 0
+//>
   static const char *locale=setlocale_win32();
 #endif
   size=0;

@@ -69,6 +69,7 @@
 #include <winspool.h>
 #include <afxmt.h>
 
+#include <locale.h>
 #include <vector>
 #include <set>
 #include <stack>
@@ -85,6 +86,7 @@ using namespace std;
 #define HAS_WCTYPE 1
 #define THREADMODEL 0
 #define WIN32_MONITOR
+#define DO_CHANGELOCALE 0
 
 #include "libdjvu/DjVuDocument.h"
 #include "libdjvu/DjVuImage.h"

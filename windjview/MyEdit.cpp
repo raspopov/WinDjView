@@ -50,9 +50,11 @@ END_MESSAGE_MAP()
 
 void CMyEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
+	char nDecimalPoint = localeconv()->decimal_point[0];
+
 	if (m_nType == EditReal)
 	{
-		if ((nChar < '0' || nChar > '9') && nChar != '.' && nChar != VK_BACK &&
+		if ((nChar < '0' || nChar > '9') && nChar != nDecimalPoint && nChar != VK_BACK &&
 				(!m_bPercent || nChar != '%'))
 			return;
 	}
