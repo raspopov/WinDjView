@@ -21,7 +21,7 @@ INTDIR = .\ObjsU
 !ELSE
 INTDIR = .\Objs
 !ENDIF
-OPTS = /nologo /MT /W3 /GX /Ox /Ob2 /Ot /Og /G6
+OPTS = /nologo /MT /W3 /GX /Ox /Og /Ot /Oi /Ob2
 
 !ENDIF
 
@@ -29,7 +29,6 @@ OPTS = /nologo /MT /W3 /GX /Ox /Ob2 /Ot /Og /G6
 
 GENLIB = cl
 OUTOPT = /nologo /LD /Fe
-#OUTOTHER = libcpmt.lib /link /map:libdjvu.map
 
 !IFDEF DEBUG
 OUT = ..\Debug\libdjvud.dll
@@ -48,7 +47,7 @@ OUT = ..\Debug_Unicode\libdjvud.lib
 !ELSE
 OUT = ..\Debug\libdjvud.lib
 !ENDIF
-OUTOPT = /nologo /nodefaultlib:"msvcrtd.lib" /out:
+OUTOPT = /nologo /subsystem:windows /machine:x86 /nodefaultlib:"msvcrtd.lib" /out:
 
 !ELSE
 
@@ -57,10 +56,19 @@ OUT = ..\Release_Unicode\libdjvu.lib
 !ELSE
 OUT = ..\Release\libdjvu.lib
 !ENDIF
-OUTOPT = /nologo /nodefaultlib:"msvcrt.lib" /out:
+OUTOPT = /nologo /subsystem:windows /machine:x86 /nodefaultlib:"msvcrt.lib" /out:
 
 !ENDIF
 
+!ENDIF
+
+!IFDEF NEWCL
+!IFDEF DEBUG
+OPTS = $(OPTS) /GR-
+!ELSE
+OPTS = $(OPTS) /GR- /G6 /GL
+OUTOPT = /ltcg $(OUTOPT)
+!ENDIF
 !ENDIF
 
 COMPOPT = /c /Fo"$(INTDIR)\\" /D"HAS_WCTYPE=1" /D"THREADMODEL=0" /D"WIN32_MONITOR" \
