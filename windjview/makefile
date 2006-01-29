@@ -24,12 +24,12 @@ PCH = "$(INTDIR)\WinDjView.pch"
 CPP_PCH = /Yu"stdafx.h"
 CPP_PCH_CREATE = /Yc"stdafx.h"
 
-CPP_FLAGS = $(CPP_FLAGS) /nologo /MT /W3 /GX /Ox /Ob2 /Ot /Og /G6 \
-            /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Fp$(PCH) /Fo"$(INTDIR)/" /FD /c
+CPP_FLAGS = $(CPP_FLAGS) /nologo /MT /W3 /GX /Ox /Ob2 /Ot /Oi /Og /G6 /GR- \
+            /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Fp$(PCH) /Fo"$(INTDIR)/" /c
 
 LINK_FLAGS = $(LINK_FLAGS) "$(INTDIR)\libdjvu.lib" msimg32.lib version.lib \
-             /nologo /subsystem:windows /incremental:no /machine:I386 \
-             /nodefaultlib:"msvcrt.lib" /out:$(OUT)
+             /nologo /subsystem:windows /incremental:no /machine:x86 \
+             /nodefaultlib:"msvcrt.lib" /ltcg /out:$(OUT)
 
 RSC_FLAGS = /l 0x409 /fo"$(INTDIR)\WinDjView.res" /d "NDEBUG"
 

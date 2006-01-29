@@ -42,9 +42,10 @@
 #pragma warning(disable: 4200 4786)
 #endif
 
-#define WM_ENDDIALOG (WM_USER+50)
+#define WM_ENDDIALOG (WM_APP+6)
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
+#define _CRT_SECURE_NO_DEPRECATE // Turn off warnings in VC++ 2005
 
 // turns off MFC's hiding of some common and often safely ignored warning messages
 #define _AFX_ALL_WARNINGS
