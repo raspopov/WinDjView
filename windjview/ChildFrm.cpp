@@ -116,9 +116,16 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 
 void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 {
-	CMDIChildWnd* pActive = GetMainFrame()->MDIGetActive();
+	BOOL bMaximized = false;
+	CMDIChildWnd* pActive = GetMainFrame()->MDIGetActive(&bMaximized);
+
+	if (bMaximized)
+		GetMainFrame()->LockWindowUpdate();
 
 	CMDIChildWnd::OnWindowPosChanged(lpwndpos);
+
+	if (bMaximized)
+		GetMainFrame()->UnlockWindowUpdate();
 
 	if (pActive == this && IsWindowVisible() && !IsIconic())
 		CAppSettings::bChildMaximized = !!IsZoomed();
