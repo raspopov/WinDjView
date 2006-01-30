@@ -82,6 +82,7 @@ public:
 
 	void OnSettingsChanged();
 	void UpdateShiftKey(bool bShiftDown);
+	void UpdateVisiblePages();
 
 	enum ZoomType
 	{
@@ -275,13 +276,12 @@ protected:
 		RECALC = 2
 	};
 	void UpdateLayout(UpdateType updateType = TOP);
-	void UpdateVisiblePages();
-	void UpdatePagesCacheSingle();
-	void UpdatePagesCacheFacing();
-	void UpdatePagesCacheContinuous();
-	void UpdatePageCache(int nPage, const CRect& rcClient);
-	void UpdatePageCacheSingle(int nPage);
-	void UpdatePageCacheFacing(int nPage);
+	void UpdatePagesCacheSingle(bool bUpdateImages);
+	void UpdatePagesCacheFacing(bool bUpdateImages);
+	void UpdatePagesCacheContinuous(bool bUpdateImages);
+	void UpdatePageCache(int nPage, const CRect& rcClient, bool bUpdateImages);
+	void UpdatePageCacheSingle(int nPage, bool bUpdateImages);
+	void UpdatePageCacheFacing(int nPage, bool bUpdateImages);
 	bool IsViewNextpageEnabled();
 	bool IsViewPreviouspageEnabled();
 	void ClearSelection(int nPage = -1);

@@ -34,7 +34,7 @@
 #define new DEBUG_NEW
 #endif
 
-CString CURRENT_VERSION = _T("0.4");
+CString CURRENT_VERSION;
 
 
 const TCHAR* s_pszDisplaySettings = _T("Display");
@@ -120,6 +120,7 @@ BOOL CDjViewApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	SetRegistryKey(_T("Andrew Zhezherun"));
 
+	CURRENT_VERSION.LoadString(IDS_CURRENT_VERSION);
 	LoadStdProfileSettings(10);  // Load standard INI file options (including MRU)
 	LoadSettings();
 

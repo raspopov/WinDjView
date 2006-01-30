@@ -93,6 +93,7 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 	if (bActivate)
 	{
 		CDjVuView* pView = GetDjVuView();
+		pView->UpdateVisiblePages();
 
 		cboPage.EnableWindow(true);
 		int nPage = pView->GetCurrentPage();
@@ -115,9 +116,11 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 
 void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 {
+	CMDIChildWnd* pActive = GetMainFrame()->MDIGetActive();
+
 	CMDIChildWnd::OnWindowPosChanged(lpwndpos);
 
-	if (IsWindowVisible() && !IsIconic())
+	if (pActive == this && IsWindowVisible() && !IsIconic())
 		CAppSettings::bChildMaximized = !!IsZoomed();
 
 	if (m_bCreated)
