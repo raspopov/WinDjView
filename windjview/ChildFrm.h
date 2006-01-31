@@ -63,6 +63,7 @@ public:
 
 protected:
 	bool m_bCreated;
+	bool m_bActivating;
 	CMySplitterWnd m_wndSplitter;
 	CThumbnailsView* m_pThumbnailsView;
 	CBookmarksView* m_pBookmarksView;
@@ -76,5 +77,6 @@ protected:
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnClose();
 	afx_msg void OnLanguageChanged();
+	afx_msg void OnNcPaint();
 	DECLARE_MESSAGE_MAP()
 };

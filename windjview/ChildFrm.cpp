@@ -47,17 +47,16 @@ BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 	ON_WM_ERASEBKGND()
 	ON_WM_CLOSE()
 	ON_MESSAGE_VOID(WM_LANGUAGE_CHANGED, OnLanguageChanged)
+	ON_WM_NCPAINT()
 END_MESSAGE_MAP()
 
 
 // CChildFrame construction/destruction
 
 CChildFrame::CChildFrame()
+	: m_bCreated(false), m_bActivating(false), m_pThumbnailsView(NULL),
+	  m_pBookmarksView(NULL), m_pResultsView(NULL)
 {
-	m_bCreated = false;
-	m_pThumbnailsView = NULL;
-	m_pBookmarksView = NULL;
-	m_pResultsView = NULL;
 }
 
 CChildFrame::~CChildFrame()
@@ -93,7 +92,9 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 	if (bActivate)
 	{
 		CDjVuView* pView = GetDjVuView();
-		pView->UpdateVisiblePages();
+
+		if (!m_bActivating)
+			pView->UpdateVisiblePages();
 
 		cboPage.EnableWindow(true);
 		int nPage = pView->GetCurrentPage();
@@ -138,10 +139,15 @@ void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 
 void CChildFrame::ActivateFrame(int nCmdShow)
 {
+	m_bActivating = true;
+
 	if (CAppSettings::bChildMaximized)
 		nCmdShow = SW_SHOWMAXIMIZED;
 
 	CMDIChildWnd::ActivateFrame(nCmdShow);
+
+	m_bActivating = false;
+	GetDjVuView()->UpdateVisiblePages();
 }
 
 BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
@@ -344,4 +350,14 @@ void CChildFrame::OnLanguageChanged()
 
 	if (GetMainFrame()->MDIGetActive() == this)
 		OnMDIActivate(true, this, NULL);
+}
+
+void CChildFrame::OnNcPaint()
+{
+	BOOL bMaximized = false;
+	GetMainFrame()->MDIGetActive(&bMaximized);
+	if (bMaximized)
+		return;
+
+	CMDIChildWnd::OnNcPaint();
 }

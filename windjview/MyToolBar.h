@@ -36,7 +36,7 @@ public:
 	void EraseNonClient();
 
 protected:
-	DECLARE_MESSAGE_MAP()
 	afx_msg void OnNcPaint();
+	DECLARE_MESSAGE_MAP()
 };
 

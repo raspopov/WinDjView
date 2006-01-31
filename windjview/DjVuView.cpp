@@ -131,7 +131,7 @@ CDjVuView::CDjVuView()
 	  m_nMode(Drag), m_pOffscreenBitmap(NULL), m_szOffscreen(0, 0),
 	  m_bHasSelection(false), m_nDisplayMode(Color), m_bShiftDown(false),
 	  m_bNeedUpdate(false), m_bCursorHidden(false), m_bDraggingPage(false),
-	  m_bDraggingText(false), m_bFirstPageAlone(false)
+	  m_bDraggingText(false), m_bFirstPageAlone(false), m_bInitialized(false)
 {
 }
 
@@ -518,6 +518,8 @@ void CDjVuView::OnInitialUpdate()
 
 	UpdateLayout(RECALC);
 	RenderPage(m_nPage);
+
+	m_bInitialized = true;
 }
 
 void CDjVuView::ReadZoomSettings(GP<DjVuANT> pAnt)
@@ -1204,7 +1206,10 @@ void CDjVuView::UpdatePagesCacheContinuous(bool bUpdateImages)
 void CDjVuView::UpdateVisiblePages()
 {
 	CMDIChildWnd* pActive = GetMainFrame()->MDIGetActive();
-	bool bUpdateImages = (pActive == NULL || pActive->GetActiveView() == this);
+	if (!m_bInitialized || pActive == NULL)
+		return;
+
+	bool bUpdateImages = (pActive->GetActiveView() == this);
 
 	if (m_nLayout == SinglePage)
 		UpdatePagesCacheSingle(bUpdateImages);

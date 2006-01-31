@@ -65,6 +65,7 @@ protected:
 	afx_msg void OnAppAbout();
 	afx_msg void OnFileSettings();
 	afx_msg void OnCheckForUpdate();
+	afx_msg BOOL OnOpenRecentFile(UINT nID);
 	DECLARE_MESSAGE_MAP()
 };
 

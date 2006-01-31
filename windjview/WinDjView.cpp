@@ -86,6 +86,7 @@ BEGIN_MESSAGE_MAP(CDjViewApp, CWinApp)
 	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
 	ON_COMMAND(ID_FILE_SETTINGS, OnFileSettings)
 	ON_COMMAND(ID_CHECK_FOR_UPDATE, OnCheckForUpdate)
+	ON_COMMAND_EX_RANGE(ID_FILE_MRU_FILE1, ID_FILE_MRU_FILE16, OnOpenRecentFile)
 END_MESSAGE_MAP()
 
 
@@ -676,4 +677,28 @@ void CDjViewApp::OnCheckForUpdate()
 {
 	CUpdateDlg dlg;
 	dlg.DoModal();
+}
+
+BOOL CDjViewApp::OnOpenRecentFile(UINT nID)
+{
+	// Fixed MFC's CWinApp::OnOpenRecentFile
+	// Always moves the file to the top of the recents list
+
+	ASSERT_VALID(this);
+	ASSERT(m_pRecentFileList != NULL);
+
+	ASSERT(nID >= ID_FILE_MRU_FILE1 && nID < ID_FILE_MRU_FILE1 + (UINT)m_pRecentFileList->GetSize());
+	int nIndex = nID - ID_FILE_MRU_FILE1;
+
+	CString& strPathName = (*m_pRecentFileList)[nIndex];
+	ASSERT(strPathName.GetLength() != 0);
+	TRACE(_T("MRU: open file (%d) '%s'.\n"), nIndex + 1, strPathName);
+
+	CDocument* pDoc = OpenDocumentFile(strPathName);
+	if (pDoc == NULL)
+		m_pRecentFileList->Remove(nIndex);
+	else
+		AddToRecentFileList(pDoc->GetPathName());
+
+	return true;
 }

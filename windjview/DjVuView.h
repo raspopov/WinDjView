@@ -149,6 +149,7 @@ protected:
 	bool m_bShiftDown;
 	bool m_bNeedUpdate;
 	UINT m_nTimerID;
+	bool m_bInitialized;
 
 	CBitmap* m_pOffscreenBitmap;
 	CSize m_szOffscreen;
