@@ -897,6 +897,7 @@ BEGIN
     IDS_CENTIMETER          "cm"
     IDS_VERSION_INFO        "WinDjView %s\npor Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
+    IDS_CURRENT_VERSION     "0.4"
 END
 
 STRINGTABLE DISCARDABLE 
