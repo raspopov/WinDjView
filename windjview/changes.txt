@@ -4,6 +4,7 @@ Copyright (C) 2004-2006 Andrew Zhezherun
 
 Changes in version 0.4.1 (2006-):
 + Reduced unnecessary redrawing when switching documents.
++ Added autoscroll when selecting text by dragging.
 * Fixed displaying floating-point numbers in non-English locales.
 
 Changes in version 0.4 (2006-01-18):

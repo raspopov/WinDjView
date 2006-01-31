@@ -1627,6 +1627,7 @@ void CDjVuView::OnSize(UINT nType, int cx, int cy)
 void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	CSize szScroll(0, 0);
+	bool bScroll = true;
 	bool bNextPage = false;
 	bool bPrevPage = false;
 
@@ -1666,6 +1667,16 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		szScroll.cy = -m_pageDev.cy;
 		bPrevPage = true;
 		break;
+
+	default:
+		bScroll = false;
+		break;
+	}
+
+	if (!bScroll)
+	{
+		CMyScrollView::OnKeyDown(nChar, nRepCnt, nFlags);
+		return;
 	}
 
 	if ((m_nLayout == Continuous || m_nLayout == ContinuousFacing) && szScroll.cy != 0)
@@ -1691,6 +1702,8 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		UpdateVisiblePages();
 		GetMainFrame()->UpdatePageCombo(this);
 	}
+
+	UpdateTextSelection();
 
 	CMyScrollView::OnKeyDown(nChar, nRepCnt, nFlags);
 }
@@ -2169,7 +2182,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 		UpdateActiveHyperlink(CPoint(-1, -1));
 		ClearSelection();
 
-		m_nStartPage = GetPageFromPoint(point);
+		m_nStartPage = GetPageNearPoint(point);
 		if (m_nStartPage == -1)
 			return;
 
@@ -2271,15 +2284,18 @@ void CDjVuView::GetTextPosFromBottom(DjVuTXT::Zone& zone,  const CPoint& pt, int
 	}
 }
 
-int CDjVuView::GetTextPosFromPoint(int nPage, const CPoint& point)
+int CDjVuView::GetTextPosFromPoint(int nPage, CPoint point)
 {
 	Page& page = m_pages[nPage];
 	page.DecodeText();
 	if (page.pText == NULL)
 		return 0;
 
-	CPoint pt = TranslateToDjVuCoord(nPage,
-			point + GetScrollPosition() - page.ptOffset);
+	point += GetScrollPosition() - page.ptOffset;
+	point.x = max(0, min(page.szDisplay.cx - 1, point.x));
+	point.y = max(0, min(page.szDisplay.cy - 1, point.y));
+
+	CPoint pt = TranslateToDjVuCoord(nPage, point);
 
 	int nPos = -1;
 	GetTextPosFromTop(page.pText->page_zone, pt, nPos);
@@ -2384,7 +2400,7 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 	}
 	else if (m_bDraggingText)
 	{
-		int nCurPage = GetPageFromPoint(point);
+		int nCurPage = GetPageNearPoint(point);
 		if (nCurPage == -1)
 			return;
 
@@ -2593,6 +2609,39 @@ int CDjVuView::GetPageFromPoint(CPoint point)
 			rcPage.InflateRect(rcFrame);
 
 			if (rcPage.PtInRect(point))
+				return nPage;
+		}
+	}
+
+	return -1;
+}
+
+int CDjVuView::GetPageNearPoint(CPoint point)
+{
+	CRect rcClient;
+	GetClientRect(rcClient);
+
+	point.x = max(0, min(rcClient.Width() - 1, point.x));
+	point.y = max(0, min(rcClient.Height() - 1, point.y));
+	point += GetScrollPosition();
+
+	CRect rcFrame(0, 0, 0, 0);
+	if (m_nMode != Fullscreen)
+		rcFrame.InflateRect(1, 1, 1 + c_nPageShadow, 1 + c_nPageShadow);
+
+	if (m_nLayout == SinglePage || m_nLayout == Facing)
+	{
+		if (m_pages[m_nPage].rcDisplay.PtInRect(point))
+			return m_nPage;
+
+		if (m_nLayout == Facing && HasFacingPage(m_nPage))
+			return (m_pages[m_nPage + 1].rcDisplay.PtInRect(point) ? m_nPage + 1 : -1);
+	}
+	else if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
+	{
+		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+		{
+			if (m_pages[nPage].rcDisplay.PtInRect(point))
 				return nPage;
 		}
 	}
@@ -3378,6 +3427,9 @@ BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 	}
 
 	UpdateWindow();
+
+	UpdateTextSelection();
+
 	return true;
 }
 
@@ -4736,6 +4788,37 @@ void CDjVuView::OnTimer(UINT nIDEvent)
 				::ShowCursor(false);
 			}
 		}
+
+		if (m_nMode == Select && m_bDraggingText)
+		{
+			// Autoscroll
+			CPoint ptCursor;
+			::GetCursorPos(&ptCursor);
+
+			CRect rcClient;
+			GetClientRect(rcClient);
+			ClientToScreen(rcClient);
+
+			CSize szOffset(0, 0);
+			if (ptCursor.x < rcClient.left)
+				szOffset.cx = -50;
+			if (ptCursor.x >= rcClient.right)
+				szOffset.cx = 50;
+
+			if (ptCursor.y < rcClient.top)
+				szOffset.cy = -50;
+			if (ptCursor.y >= rcClient.bottom)
+				szOffset.cy = 50;
+
+			if (szOffset.cx != 0 || szOffset.cy != 0)
+			{
+				if (OnScrollBy(szOffset))
+				{
+					UpdateVisiblePages();
+					UpdateTextSelection();
+				}
+			}
+		}
 	}
 	
 	CView::OnTimer(nIDEvent);
@@ -4847,4 +4930,15 @@ void CDjVuView::SetLayout(int nLayout, int nPage, int nOffset)
 	}
 
 	Invalidate();
+}
+
+void CDjVuView::UpdateTextSelection()
+{
+	if (m_bDraggingText)
+	{
+		CPoint ptCursor;
+		::GetCursorPos(&ptCursor);
+		ScreenToClient(&ptCursor);
+		OnMouseMove(MK_LBUTTON, ptCursor);
+	}
 }

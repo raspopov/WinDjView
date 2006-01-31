@@ -262,6 +262,7 @@ protected:
 	void UpdatePageSizeFacing(int nPage);
 	void DeleteBitmaps();
 	int GetPageFromPoint(CPoint point);
+	int GetPageNearPoint(CPoint point);
 	void ReadZoomSettings(GP<DjVuANT> pAnt);
 	void ReadDisplayMode(GP<DjVuANT> pAnt);
 	bool IsValidPage(int nPage) const;
@@ -302,7 +303,8 @@ protected:
 	int m_nMode;
 	int m_nSelStartPos;
 	CPoint TranslateToDjVuCoord(int nPage, const CPoint& point);
-	int GetTextPosFromPoint(int nPage, const CPoint& point);
+	void UpdateTextSelection();
+	int GetTextPosFromPoint(int nPage, CPoint point);
 	void GetTextPosFromTop(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos);
 	void GetTextPosFromBottom(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos);
 	void FindSelectionZones(DjVuSelection& list, DjVuTXT* pText, int nStart, int nEnd);

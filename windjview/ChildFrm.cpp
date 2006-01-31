@@ -120,12 +120,12 @@ void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 	BOOL bMaximized = false;
 	CMDIChildWnd* pActive = GetMainFrame()->MDIGetActive(&bMaximized);
 
-	if (bMaximized)
+	if (!m_bActivating && bMaximized)
 		GetMainFrame()->LockWindowUpdate();
 
 	CMDIChildWnd::OnWindowPosChanged(lpwndpos);
 
-	if (bMaximized)
+	if (!m_bActivating && bMaximized)
 		GetMainFrame()->UnlockWindowUpdate();
 
 	if (pActive == this && IsWindowVisible() && !IsIconic())
@@ -142,9 +142,21 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 	m_bActivating = true;
 
 	if (CAppSettings::bChildMaximized)
+	{
 		nCmdShow = SW_SHOWMAXIMIZED;
+		GetMainFrame()->SetRedraw(false);
+		GetMainFrame()->LockWindowUpdate();
+	}
 
 	CMDIChildWnd::ActivateFrame(nCmdShow);
+
+	if (CAppSettings::bChildMaximized)
+	{
+		GetMainFrame()->UnlockWindowUpdate();
+		GetMainFrame()->SetRedraw(true);
+
+		GetMainFrame()->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME | RDW_ALLCHILDREN); 
+	}
 
 	m_bActivating = false;
 	GetDjVuView()->UpdateVisiblePages();
