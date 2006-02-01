@@ -370,7 +370,7 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 251, 122
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 251, 130
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Acerca do WinDjView"
 FONT 8, "MS Shell Dlg"
@@ -380,18 +380,20 @@ BEGIN
     LTEXT           "Copyright (C) 2004-2006 Andrew Zhezherun",IDC_STATIC,40,
                     17,149,8
     DEFPUSHBUTTON   "Fechar",IDOK,194,7,50,14,WS_GROUP
-    LTEXT           "Homepage do projecto:",IDC_STATIC,40,35,80,8
-    LTEXT           "Homepage do DjVuLibre:",IDC_STATIC,40,45,83,8
+    LTEXT           "Homepage do projecto:",IDC_STATIC,40,45,80,8
+    LTEXT           "Homepage do DjVuLibre:",IDC_STATIC,40,55,83,8
     LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,120,
-                    35,119,8
-    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,125,45,
+                    45,119,8
+    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,125,55,
                     115,8
     LTEXT           "Este programa é software gratuito; Pode redistribui-lo e/ou altera-lo de acordo com os termos da GNU General Public License tal como foi publicado pela Free Software Foundation.",
-                    IDC_STATIC,40,62,204,26
+                    IDC_STATIC,40,72,204,26
     LTEXT           "Poderá ajudar o futuro desenvolvimento deste programa doando através do PayPal",
-                    IDC_STATIC,39,94,137,17
+                    IDC_STATIC,39,104,137,17
     CONTROL         "Doar",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | 
-                    WS_TABSTOP,181,94,63,21
+                    WS_TABSTOP,181,102,63,21
+    LTEXT           "Tradução portuguesa por Julien Fabre [www.j2fs.com]",
+                    IDC_STATIC,40,28,176,8
 END
 
 IDD_PRINT DIALOG DISCARDABLE  0, 0, 444, 316
@@ -400,7 +402,7 @@ CAPTION "Imprimir"
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "&Nome:",IDC_STATIC,174,21,37,9
-    COMBOBOX        IDC_COMBO_PRINTER,215,19,158,82,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_COMBO_PRINTER,216,19,158,82,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Propriedades",IDC_PROPERTIES,380,18,50,14
     CONTROL         "Imprimir para &ficheiro",IDC_PRINT_TO_FILE,"Button",
@@ -452,12 +454,12 @@ BEGIN
     DEFPUSHBUTTON   "Imprimir",IDOK,332,295,50,14
     PUSHBUTTON      "Fechar",IDCANCEL,387,295,50,14
     GROUPBOX        "Impressora",IDC_STATIC,167,7,270,87
-    LTEXT           "Localização:",IDC_STATIC,174,55,37,9
+    LTEXT           "Localização:",IDC_STATIC,174,55,41,9
     LTEXT           "Tipo:",IDC_STATIC,174,40,37,9
-    LTEXT           "Comentário:",IDC_STATIC,174,70,37,9
-    LTEXT           "Tipo",IDC_STATIC_TYPE,216,40,138,9
-    LTEXT           "Localização",IDC_STATIC_LOCATION,216,55,138,9
-    LTEXT           "Comentário",IDC_STATIC_COMMENT,216,70,200,9
+    LTEXT           "Comentário:",IDC_STATIC,174,70,41,9
+    LTEXT           "Tipo",IDC_STATIC_TYPE,217,40,138,9
+    LTEXT           "Localização",IDC_STATIC_LOCATION,217,55,138,9
+    LTEXT           "Comentário",IDC_STATIC_COMMENT,217,70,200,9
     GROUPBOX        "Intervalo de impressão",IDC_STATIC,7,154,153,78
     GROUPBOX        "Cópias",IDC_STATIC,303,98,134,51
     CONTROL         "",IDC_PREVIEW_AREA,"Static",SS_BLACKFRAME | NOT 
@@ -542,7 +544,7 @@ BEGIN
                     92,18
 END
 
-IDD_FIND DIALOG DISCARDABLE  0, 0, 307, 65
+IDD_FIND DIALOG DISCARDABLE  0, 0, 305, 65
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Localizar"
 FONT 8, "MS Shell Dlg"
@@ -551,9 +553,9 @@ BEGIN
     EDITTEXT        IDC_FIND,47,7,173,12,ES_AUTOHSCROLL
     CONTROL         "&Maiúsculas/minúsculas",IDC_MATCH_CASE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,28,93,8
-    DEFPUSHBUTTON   "&Localizar Seguinte",IDOK,232,7,68,14
-    PUSHBUTTON      "Localizar &Todos",IDC_FIND_ALL,232,25,68,14
-    PUSHBUTTON      "Fechar",IDCANCEL,232,44,68,14
+    DEFPUSHBUTTON   "&Localizar Seguinte",IDOK,230,7,68,14
+    PUSHBUTTON      "Localizar &Todos",IDC_FIND_ALL,230,25,68,14
+    PUSHBUTTON      "Fechar",IDCANCEL,230,44,68,14
     LTEXT           "Procurando página 1 de 10...",IDC_SEARCH_STATUS,7,49,
                     214,9,NOT WS_VISIBLE
 END
@@ -611,12 +613,9 @@ BEGIN
             VALUE "FileVersion", "0.4\0"
             VALUE "InternalName", "WinDjViewPT.dll\0"
             VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun.  All rights reserved.\0"
-            VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "WinDjViewPT.dll\0"
-            VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "WinDjView\0"
             VALUE "ProductVersion", "0.4\0"
-            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -634,14 +633,14 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO MOVEABLE PURE 
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 244
         TOPMARGIN, 7
-        BOTTOMMARGIN, 115
+        BOTTOMMARGIN, 123
     END
 
     IDD_PRINT, DIALOG
@@ -679,7 +678,7 @@ BEGIN
     IDD_FIND, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 300
+        RIGHTMARGIN, 298
         TOPMARGIN, 7
         BOTTOMMARGIN, 58
     END
@@ -845,7 +844,7 @@ BEGIN
     ID_ZOOM_100             "Zoom de 100%\nZoom 100%"
     ID_ZOOM_200             "Zoom de 200%"
     ID_ZOOM_400             "Zoom de 400%"
-    ID_ZOOM_FITWIDTH        "Ajusta a página à largura da janela\nLargura da Página"
+    ID_ZOOM_FITWIDTH        "Ajusta a página à largura da janela\nLargura Total"
     ID_ZOOM_FITHEIGHT       "Ajusta a página à altura da janela"
 END
 
@@ -969,12 +968,12 @@ BEGIN
     IDS_PRINTING_PAGE       "Imprimindo página %d de %d, aguarde por favor..."
     IDS_SEARCHING           "Procurando"
     IDS_OF_PAGE_COUNT       "de %d"
-    IDS_FIT_WIDTH           "Largura da Página"
+    IDS_FIT_WIDTH           "Largura Total"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_FIT_HEIGHT          "Altura da Página"
+    IDS_FIT_HEIGHT          "Altura Total"
     IDS_FIT_PAGE            "Página Inteira"
     IDS_ACTUAL_SIZE         "Tamanho Real"
     IDS_STRETCH             "Esticar"
