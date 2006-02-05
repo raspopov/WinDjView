@@ -715,7 +715,7 @@ void ReportFatalError()
 		s_bFatalError = true;
 		if (AfxMessageBox(IDS_FATAL_ERROR, MB_ICONERROR | MB_OKCANCEL) == IDOK)
 		{
-			GetMainFrame()->PostMessage(WM_CLOSE);
+			ExitProcess(1);
 		}
 	}
 }

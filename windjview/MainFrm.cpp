@@ -1043,13 +1043,12 @@ void CMainFrame::OnLanguageChanged()
 {
 	if (CAppSettings::bLocalized)
 	{
-		CMenu* pDjVuMenu = new CMenu();
-		pDjVuMenu->LoadMenu(IDR_DjVuTYPE);
-		CMenu* pDefaultMenu = new CMenu();
-		pDefaultMenu->LoadMenu(IDR_MAINFRAME);
+		CMenu menuDjVu, menuDefault;
+		menuDjVu.LoadMenu(IDR_DjVuTYPE);
+		menuDefault.LoadMenu(IDR_MAINFRAME);
 
-		CAppSettings::hDjVuMenu = pDjVuMenu->m_hMenu;
-		CAppSettings::hDefaultMenu = pDefaultMenu->m_hMenu;
+		CAppSettings::hDjVuMenu = menuDjVu.Detach();
+		CAppSettings::hDefaultMenu = menuDefault.Detach();
 	}
 
 	OnUpdateFrameMenu(NULL);
