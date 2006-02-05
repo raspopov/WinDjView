@@ -120,18 +120,21 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	}
 	file.Close();
 
-	G_TRY
+	try
 	{
 		m_pDjVuDoc = DjVuDocument::create(MakeFilenameURL(pszName));
 		m_pDjVuDoc->wait_get_pages_num();
 	}
-	G_CATCH(ex)
+	catch (GException&)
 	{
-		ex;
 		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + pszName + LoadString(IDS_NOT_VALID_DOCUMENT));
 		return false;
 	}
-	G_ENDCATCH;
+	catch (...)
+	{
+		ReportFatalError();
+		return false;
+	}
 
 	m_nPageCount = m_pDjVuDoc->get_pages_num();
 	if (m_nPageCount == 0)
@@ -225,32 +228,35 @@ GP<DjVuImage> CDjVuDoc::GetPage(int nPage, bool bAddToCache)
 	data.nOrigThreadPriority = ::GetThreadPriority(data.hDecodingThread);
 
 	GP<DjVuFile> file;
-	G_TRY
+	try
 	{
 		file = m_pDjVuDoc->get_djvu_file(nPage);
 	}
-	G_CATCH(ex)
+	catch (GException&)
 	{
-		ex;
 	}
-	G_ENDCATCH;
+	catch (...)
+	{
+		ReportFatalError();
+		m_lock.Unlock();
+		return NULL;
+	}
 
 	m_lock.Unlock();
 
 	if (file)
 	{
-		G_TRY
+		try
 		{
 			pImage = DjVuImage::create(file);
 			file->resume_decode();
 			if (pImage && THREADMODEL != NOTHREADS)
 				pImage->wait_for_complete_decode();
 		}
-		G_CATCH(ex)
+		catch (...)
 		{
-			ex;
+			ReportFatalError();
 		}
-		G_ENDCATCH;
 	}
 
 	m_lock.Lock();
@@ -342,20 +348,24 @@ PageInfo CDjVuDoc::ReadPageInfo(int nPage)
 	GP<DjVuFile> file;
 
 	m_lock.Lock();
-	G_TRY
+	try
 	{
 		file = (m_pDjVuDoc->get_djvu_file(nPage));
 	}
-	G_CATCH(ex)
+	catch (GException&)
 	{
-		ex;
 		m_lock.Unlock();
 		return pageInfo;
 	}
-	G_ENDCATCH;
+	catch (...)
+	{
+		m_lock.Unlock();
+		ReportFatalError();
+		return pageInfo;
+	}
 	m_lock.Unlock();
 
-	G_TRY
+	try
 	{
 		// Get raw data from the document and decode only page info chunk
 		GP<DataPool> pool = file->get_init_data_pool();
@@ -426,11 +436,13 @@ PageInfo CDjVuDoc::ReadPageInfo(int nPage)
 			iff->seek_close_chunk();
 		}
 	}
-	G_CATCH(ex)
+	catch (GException&)
 	{
-		ex;
 	}
-	G_ENDCATCH;
+	catch (...)
+	{
+		ReportFatalError();
+	}
 
 	return pageInfo;
 }
@@ -470,15 +482,17 @@ void CDjVuDoc::OnSaveCopyAs()
 		return;
 	}
 
-	G_TRY
+	try
 	{
 		m_pDjVuDoc->wait_for_complete_init();
 		m_pDjVuDoc->save_as(MakeFilenameURL(strFileName), true);
 	}
-	G_CATCH(ex)
+	catch (GException&)
 	{
-		ex;
 		AfxMessageBox(IDS_SAVE_ERROR, MB_ICONERROR | MB_OK);
 	}
-	G_ENDCATCH;
+	catch (...)
+	{
+		ReportFatalError();
+	}
 }

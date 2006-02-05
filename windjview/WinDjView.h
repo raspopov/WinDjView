@@ -35,6 +35,8 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0
 
 class CDjVuDoc;
 
+void ReportFatalError();
+
 
 // CDjViewApp
 

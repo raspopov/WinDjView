@@ -174,7 +174,7 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const GRect& rect, int nDispla
 	GP<GBitmap> pGBitmap;
 	GP<GPixmap> pGPixmap;
 
-	G_TRY
+	try
 	{
 		switch (nDisplayMode)
 		{
@@ -199,11 +199,13 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const GRect& rect, int nDispla
 				pGBitmap = pImage->get_bitmap(rect, rect, 4);
 		}
 	}
-	G_CATCH(ex)
+	catch (GException&)
 	{
-		ex;
 	}
-	G_ENDCATCH
+	catch (...)
+	{
+		ReportFatalError();
+	}
 
 	CDIB* pBitmap = NULL;
 

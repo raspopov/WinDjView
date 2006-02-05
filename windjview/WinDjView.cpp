@@ -35,6 +35,7 @@
 #endif
 
 CString CURRENT_VERSION;
+BOOL s_bFatalError = false;
 
 
 const TCHAR* s_pszDisplaySettings = _T("Display");
@@ -159,6 +160,10 @@ BOOL CDjViewApp::InitInstance()
 	ParseCommandLine(cmdInfo);
 	if (cmdInfo.m_nShellCommand == CCommandLineInfo::FileNew)
 		cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
+
+	if (CAppSettings::bWindowMaximized && (m_nCmdShow == -1 || m_nCmdShow == SW_SHOWNORMAL))
+		m_nCmdShow = SW_SHOWMAXIMIZED;
+
 	// Dispatch commands specified on the command line.  Will return FALSE if
 	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
 	if (!ProcessShellCommand(cmdInfo))
@@ -701,4 +706,16 @@ BOOL CDjViewApp::OnOpenRecentFile(UINT nID)
 		AddToRecentFileList(pDoc->GetPathName());
 
 	return true;
+}
+
+void ReportFatalError()
+{
+	if (!s_bFatalError)
+	{
+		s_bFatalError = true;
+		if (AfxMessageBox(IDS_FATAL_ERROR, MB_ICONERROR | MB_OKCANCEL) == IDOK)
+		{
+			GetMainFrame()->PostMessage(WM_CLOSE);
+		}
+	}
 }

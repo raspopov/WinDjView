@@ -4147,7 +4147,7 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory
 	{
 		int nPage = -1;
 
-		G_TRY
+		try
 		{
 			char base = '\0';
 			const char *s = (const char*)url + 1;
@@ -4173,11 +4173,13 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory
 					return;
 			}
 		}
-		G_CATCH(ex)
+		catch (GException&)
 		{
-			ex;
 		}
-		G_ENDCATCH;
+		catch (...)
+		{
+			ReportFatalError();
+		}
 
 		if (nPage >= m_nPageCount)
 			nPage = m_nPageCount - 1;

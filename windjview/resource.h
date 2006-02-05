@@ -92,6 +92,7 @@
 #define IDS_VERSION_INFO                189
 #define IDS_VERSION_ABOUT               190
 #define IDS_CURRENT_VERSION             191
+#define IDS_FATAL_ERROR                 192
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002

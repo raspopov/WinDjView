@@ -902,6 +902,11 @@ BEGIN
     IDS_CURRENT_VERSION     "0.4.1"
 END
 
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your active document."
+END
+
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_VIEW_FIND            "Localiza texto no documento actual\nLocalizar"

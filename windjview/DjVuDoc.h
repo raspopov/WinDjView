@@ -42,16 +42,18 @@ struct PageInfo
 				nDPI = 100;
 			}
 
-			G_TRY
+			try
 			{
 				pTextStream = pImage->get_text();
 				pAnnoStream = pImage->get_anno();
 			}
-			G_CATCH(ex)
+			catch (GException&)
 			{
-				ex;
 			}
-			G_ENDCATCH;
+			catch (...)
+			{
+				ReportFatalError();
+			}
 		}
 	}
 

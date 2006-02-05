@@ -687,7 +687,7 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPag
 	GP<GPixmap> pm;
 	GP<GBitmap> bm;
 
-	G_TRY
+	try
 	{
 		switch (nMode)
 		{
@@ -712,11 +712,13 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPag
 				bm = pImage->get_bitmap(rect, rectAll, 4);
 		}
 	}
-	G_CATCH(ex)
+	catch (GException&)
 	{
-		ex;
 	}
-	G_ENDCATCH
+	catch (...)
+	{
+		ReportFatalError();
+	}
 
 	if (pm != NULL)
 	{
