@@ -8,6 +8,7 @@ LINK_FLAGS =
 !IFDEF UNICODE
 
 INTDIR = .\Release_Unicode
+LIBDJVU = libdjvuu.lib
 
 CPP_FLAGS = $(CPP_FLAGS) /D "_UNICODE" /D "UNICODE"
 LINK_FLAGS = $(LINK_FLAGS) /entry:"wWinMainCRTStartup"
@@ -15,6 +16,7 @@ LINK_FLAGS = $(LINK_FLAGS) /entry:"wWinMainCRTStartup"
 !ELSE
 
 INTDIR=.\Release
+LIBDJVU = libdjvu.lib
 
 !ENDIF
 
@@ -27,7 +29,7 @@ CPP_PCH_CREATE = /Yc"stdafx.h"
 CPP_FLAGS = $(CPP_FLAGS) /nologo /MT /W3 /GX /Ox /Ob2 /Ot /Oi /Og /G6 /GR- \
             /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Fp$(PCH) /Fo"$(INTDIR)/" /c
 
-LINK_FLAGS = $(LINK_FLAGS) "$(INTDIR)\libdjvu.lib" msimg32.lib version.lib \
+LINK_FLAGS = $(LINK_FLAGS) "libdjvu\$(LIBDJVU)" msimg32.lib version.lib \
              /nologo /subsystem:windows /incremental:no /machine:x86 \
              /nodefaultlib:"msvcrt.lib" /ltcg /out:$(OUT)
 

@@ -31,10 +31,10 @@ GENLIB = cl
 OUTOPT = /nologo /LD /Fe
 
 !IFDEF DEBUG
-OUT = ..\Debug\libdjvud.dll
+OUT = libdjvud.dll
 OUTOTHER = libcpmt.lib /link /def:libdjvud.def
 !ELSE
-OUT = ..\Release\libdjvu.dll
+OUT = libdjvu.dll
 OUTOTHER = libcpmt.lib /link /def:libdjvu.def
 !ENDIF
 
@@ -42,21 +42,21 @@ OUTOTHER = libcpmt.lib /link /def:libdjvu.def
 
 !IFDEF DEBUG
 
-!IFDEF UNICODE
-OUT = ..\Debug_Unicode\libdjvud.lib
-!ELSE
-OUT = ..\Debug\libdjvud.lib
-!ENDIF
 OUTOPT = /nologo /subsystem:windows /machine:x86 /nodefaultlib:"msvcrtd.lib" /out:
-
-!ELSE
-
 !IFDEF UNICODE
-OUT = ..\Release_Unicode\libdjvu.lib
+OUT = libdjvudu.lib
 !ELSE
-OUT = ..\Release\libdjvu.lib
+OUT = libdjvud.lib
 !ENDIF
+
+!ELSE
+
 OUTOPT = /nologo /subsystem:windows /machine:x86 /nodefaultlib:"msvcrt.lib" /out:
+!IFDEF UNICODE
+OUT = libdjvuu.lib
+!ELSE
+OUT = libdjvu.lib
+!ENDIF
 
 !ENDIF
 

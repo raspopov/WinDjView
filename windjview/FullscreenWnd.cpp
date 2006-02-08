@@ -22,7 +22,9 @@
 #include "WinDjView.h"
 #include "FullscreenWnd.h"
 #include "DjVuView.h"
+#include "ThumbnailsView.h"
 #include "MainFrm.h"
+#include "ChildFrm.h"
 
 
 // CFullscreenWnd
@@ -86,8 +88,12 @@ void CFullscreenWnd::OnDestroy()
 		GetMainFrame()->SetFullscreenWnd(NULL);
 		GetMainFrame()->SetFocus();
 
-		m_pOwner->RestartThread();
 		m_pOwner->GoToPage(nPage, -1, CDjVuView::DoNotAdd);
+
+		m_pOwner->RestartThread();
+		CThumbnailsView* pThumbnailsView = ((CChildFrame*)m_pOwner->GetParentFrame())->GetThumbnailsView();
+		if (pThumbnailsView != NULL)
+			pThumbnailsView->RestartThreads();
 	}
 
 	CWnd::OnDestroy();

@@ -94,6 +94,7 @@ END_MESSAGE_MAP()
 // CDjViewApp construction
 
 CDjViewApp::CDjViewApp()
+	: m_bInitialized(false)
 {
 }
 
@@ -143,6 +144,7 @@ BOOL CDjViewApp::InitInstance()
 	if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
 		return FALSE;
 	m_pMainWnd = pMainFrame;
+	pMainFrame->LockWindowUpdate();
 
 	// call DragAcceptFiles only if there's a suffix
 	//  In an MDI app, this should occur immediately after setting m_pMainWnd
@@ -171,9 +173,15 @@ BOOL CDjViewApp::InitInstance()
 
 	// The main window has been initialized, so show and update it
 	pMainFrame->ShowWindow(m_nCmdShow);
+	pMainFrame->SetStartupLanguage();
+
+	pMainFrame->UnlockWindowUpdate();
 	pMainFrame->UpdateWindow();
 
-	pMainFrame->SetStartupLanguage();
+	m_bInitialized = true;
+	CChildFrame* pChildFrame = (CChildFrame*)pMainFrame->MDIGetActive();
+	if (pChildFrame != NULL)
+		pChildFrame->GetDjVuView()->UpdateVisiblePages();
 
 	if (CAppSettings::strVersion != CURRENT_VERSION)
 		OnAppAbout();

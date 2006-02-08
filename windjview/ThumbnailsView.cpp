@@ -883,6 +883,22 @@ void CThumbnailsView::StopDecoding()
 	m_pIdleThread->Stop();
 }
 
+void CThumbnailsView::RestartThreads()
+{
+	if (m_pThread != NULL)
+		delete m_pThread;
+	if (m_pIdleThread != NULL)
+		delete m_pIdleThread;
+
+	m_pThread = new CThumbnailsThread(GetDocument(), this);
+	m_pThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
+
+	m_pIdleThread = new CThumbnailsThread(GetDocument(), this, true);
+	m_pIdleThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
+
+	UpdateView(TOP);
+}
+
 void CThumbnailsView::OnSettingsChanged()
 {
 	if (m_displaySetting != CAppSettings::displaySettings)

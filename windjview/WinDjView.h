@@ -56,6 +56,8 @@ public:
 
 	CDjVuDoc* OpenDocument(const CString& strPathName, const GUTF8String& strPage);
 
+	bool m_bInitialized;
+
 // Implementation
 protected:
 	void LoadSettings();

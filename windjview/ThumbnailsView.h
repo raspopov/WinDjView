@@ -52,6 +52,7 @@ public:
 	int GetRotate() const { return m_nRotate; }
 
 	void StopDecoding();
+	void RestartThreads();
 	void OnSettingsChanged();
 
 // Overrides

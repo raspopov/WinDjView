@@ -34,6 +34,7 @@
 #include "ChildFrm.h"
 #include "SearchResultsView.h"
 #include "FullscreenWnd.h"
+#include "ThumbnailsView.h"
 
 #include "RenderThread.h"
 
@@ -1037,11 +1038,12 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient, bool bUpdateIm
 	if (page.rcDisplay.top < nTop + 3*rcClient.Height() &&
 		page.rcDisplay.bottom > nTop - 2*rcClient.Height())
 	{
-		if (!page.bInfoLoaded)
-		{
-			m_pRenderThread->AddDecodeJob(nPage);
-		}
-		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
+		if (m_nLayout == Continuous)
+			UpdatePageSize(nPage);
+		else if (m_nLayout == ContinuousFacing)
+			UpdatePageSizeFacing(FixPageNumber(nPage));
+
+		if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
 		{
 			m_pRenderThread->AddJob(nPage, m_nRotate,
 				CRect(CPoint(0, 0), page.szDisplay), m_nDisplayMode);
@@ -1077,11 +1079,9 @@ void CDjVuView::UpdatePageCacheSingle(int nPage, bool bUpdateImages)
 	if (nPageSize < 3000000 && abs(nPage - m_nPage) <= 2 ||
 			abs(nPage - m_nPage) <= 1)
 	{
-		if (!page.bInfoLoaded)
-		{
-			m_pRenderThread->AddDecodeJob(nPage);
-		}
-		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
+		UpdatePageSize(nPage);
+
+		if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
 		{
 			m_pRenderThread->AddJob(nPage, m_nRotate,
 				CRect(CPoint(0, 0), page.szDisplay), m_nDisplayMode);
@@ -1116,11 +1116,9 @@ void CDjVuView::UpdatePageCacheFacing(int nPage, bool bUpdateImages)
 	if (nPageSize < 1500000 && nPage >= m_nPage - 4 && nPage <= m_nPage + 5 ||
 			nPage >= m_nPage - 2 && nPage <= m_nPage + 3)
 	{
-		if (!page.bInfoLoaded)
-		{
-			m_pRenderThread->AddDecodeJob(nPage);
-		}
-		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
+		UpdatePageSizeFacing(FixPageNumber(nPage));
+
+		if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
 		{
 			m_pRenderThread->AddJob(nPage, m_nRotate,
 				CRect(CPoint(0, 0), page.szDisplay), m_nDisplayMode);
@@ -1206,10 +1204,10 @@ void CDjVuView::UpdatePagesCacheContinuous(bool bUpdateImages)
 void CDjVuView::UpdateVisiblePages()
 {
 	CMDIChildWnd* pActive = GetMainFrame()->MDIGetActive();
-	if (!m_bInitialized || pActive == NULL)
+	if (!theApp.m_bInitialized || !m_bInitialized || pActive == NULL)
 		return;
 
-	bool bUpdateImages = (pActive->GetActiveView() == this);
+	bool bUpdateImages = (m_nMode == Fullscreen || pActive->GetActiveView() == this);
 
 	if (m_nLayout == SinglePage)
 		UpdatePagesCacheSingle(bUpdateImages);
@@ -4657,7 +4655,10 @@ void CDjVuView::OnViewFullscreen()
 		return;
 	}
 
-	m_pRenderThread->Stop();
+	StopDecoding();
+	CThumbnailsView* pThumbnailsView = ((CChildFrame*)GetParentFrame())->GetThumbnailsView();
+	if (pThumbnailsView != NULL)
+		pThumbnailsView->StopDecoding();
 
 	CFullscreenWnd* pWnd = new CFullscreenWnd(this);
 	pWnd->Create();
@@ -4682,6 +4683,8 @@ void CDjVuView::OnViewFullscreen()
 	pView->ShowWindow(SW_SHOW);
 	pWnd->SetForegroundWindow();
 	pView->SetFocus();
+
+	pView->UpdateVisiblePages();
 }
 
 void CDjVuView::RestartThread()
@@ -4724,6 +4727,19 @@ void CDjVuView::UpdatePageInfo(CDjVuView* pView)
 
 		if (page.bInfoLoaded && !rhsPage.bInfoLoaded)
 			rhsPage.Init(page.info);
+
+		if (page.pBitmap != NULL && rhsPage.pBitmap == NULL)
+		{
+			if (m_nMode != Fullscreen)
+			{
+				rhsPage.pBitmap = CDIB::CreateDIB(page.pBitmap);
+			}
+			else
+			{
+				rhsPage.pBitmap = page.pBitmap;
+				page.pBitmap = NULL;
+			}
+		}
 	}
 }
 

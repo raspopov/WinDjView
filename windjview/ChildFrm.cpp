@@ -120,12 +120,12 @@ void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 	BOOL bMaximized = false;
 	CMDIChildWnd* pActive = GetMainFrame()->MDIGetActive(&bMaximized);
 
-	if (!m_bActivating && bMaximized)
+	if (!m_bActivating && bMaximized && theApp.m_bInitialized)
 		GetMainFrame()->LockWindowUpdate();
 
 	CMDIChildWnd::OnWindowPosChanged(lpwndpos);
 
-	if (!m_bActivating && bMaximized)
+	if (!m_bActivating && bMaximized && theApp.m_bInitialized)
 		GetMainFrame()->UnlockWindowUpdate();
 
 	if (pActive == this && IsWindowVisible() && !IsIconic())
@@ -144,13 +144,17 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 	if (CAppSettings::bChildMaximized)
 	{
 		nCmdShow = SW_SHOWMAXIMIZED;
-		GetMainFrame()->SetRedraw(false);
-		GetMainFrame()->LockWindowUpdate();
+
+		if (theApp.m_bInitialized)
+		{
+			GetMainFrame()->SetRedraw(false);
+			GetMainFrame()->LockWindowUpdate();
+		}
 	}
 
 	CMDIChildWnd::ActivateFrame(nCmdShow);
 
-	if (CAppSettings::bChildMaximized)
+	if (CAppSettings::bChildMaximized && theApp.m_bInitialized)
 	{
 		GetMainFrame()->UnlockWindowUpdate();
 		GetMainFrame()->SetRedraw(true);
