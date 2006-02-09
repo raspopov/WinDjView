@@ -215,6 +215,10 @@ SOURCE=.\MyStatusBar.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MyTheme.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MyToolBar.cpp
 # End Source File
 # Begin Source File

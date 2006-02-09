@@ -1038,12 +1038,11 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient, bool bUpdateIm
 	if (page.rcDisplay.top < nTop + 3*rcClient.Height() &&
 		page.rcDisplay.bottom > nTop - 2*rcClient.Height())
 	{
-		if (m_nLayout == Continuous)
-			UpdatePageSize(nPage);
-		else if (m_nLayout == ContinuousFacing)
-			UpdatePageSizeFacing(FixPageNumber(nPage));
-
-		if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
+		if (!page.bInfoLoaded)
+		{
+			m_pRenderThread->AddDecodeJob(nPage);
+		}
+		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize())
 		{
 			m_pRenderThread->AddJob(nPage, m_nRotate,
 				CRect(CPoint(0, 0), page.szDisplay), m_nDisplayMode);
@@ -1079,9 +1078,11 @@ void CDjVuView::UpdatePageCacheSingle(int nPage, bool bUpdateImages)
 	if (nPageSize < 3000000 && abs(nPage - m_nPage) <= 2 ||
 			abs(nPage - m_nPage) <= 1)
 	{
-		UpdatePageSize(nPage);
-
-		if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
+		if (!page.bInfoLoaded)
+		{
+			m_pRenderThread->AddDecodeJob(nPage);
+		}
+		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
 		{
 			m_pRenderThread->AddJob(nPage, m_nRotate,
 				CRect(CPoint(0, 0), page.szDisplay), m_nDisplayMode);
@@ -1116,9 +1117,11 @@ void CDjVuView::UpdatePageCacheFacing(int nPage, bool bUpdateImages)
 	if (nPageSize < 1500000 && nPage >= m_nPage - 4 && nPage <= m_nPage + 5 ||
 			nPage >= m_nPage - 2 && nPage <= m_nPage + 3)
 	{
-		UpdatePageSizeFacing(FixPageNumber(nPage));
-
-		if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
+		if (!page.bInfoLoaded)
+		{
+			m_pRenderThread->AddDecodeJob(nPage);
+		}
+		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
 		{
 			m_pRenderThread->AddJob(nPage, m_nRotate,
 				CRect(CPoint(0, 0), page.szDisplay), m_nDisplayMode);
@@ -2974,9 +2977,9 @@ LRESULT CDjVuView::OnPageDecoded(WPARAM wParam, LPARAM lParam)
 	bool bHadInfo = page.bInfoLoaded;
 
 	page.Init(info);
-	if (!bHadInfo && (m_nLayout == Continuous || m_nLayout == ContinuousFacing))
+	if (!bHadInfo)
 	{
-		if (lParam || m_nTimerID == 0)
+		if ((lParam || m_nTimerID == 0) && (m_nLayout == Continuous || m_nLayout == ContinuousFacing))
 		{
 			UpdateLayout();
 			m_bNeedUpdate = false;
@@ -4684,7 +4687,7 @@ void CDjVuView::OnViewFullscreen()
 	pWnd->SetForegroundWindow();
 	pView->SetFocus();
 
-	pView->UpdateVisiblePages();
+	pView->UpdateLayout();
 }
 
 void CDjVuView::RestartThread()

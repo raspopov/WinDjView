@@ -20,6 +20,7 @@
 
 #include "stdafx.h"
 #include "MyToolBar.h"
+#include "MyTheme.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -115,8 +116,27 @@ void CMyToolBar::DrawBorders(CDC* pDC, CRect& rect)
 		rctBk.top = rect.top;
 		rctBk.bottom = rect.bottom;
 
-//-		pDC->FillSolidRect((LPRECT)rctBk, pDC->GetBkColor());
-		pDC->FillSolidRect((LPRECT)rctBk, ::GetSysColor(COLOR_BTNFACE));
+		HTHEME hTheme;
+		if (XPIsAppThemed() && XPIsThemeActive())
+			hTheme = XPOpenThemeData(m_hWnd, L"TOOLBAR");
+
+		if (hTheme != NULL)
+		{
+			if (GetStyle() & TBSTYLE_TRANSPARENT)
+			{
+				XPDrawThemeParentBackground(m_hWnd, pDC->m_hDC, rctBk);
+			}
+			else
+			{
+				if (XPIsThemeBackgroundPartiallyTransparent(hTheme, 0, 0))
+					XPDrawThemeParentBackground(m_hWnd, pDC->m_hDC, rctBk);
+				XPDrawThemeBackground(hTheme, pDC->m_hDC, 0, 0, rctBk, rctBk);
+			}
+		}
+		else
+		{
+			pDC->FillSolidRect((LPRECT)rctBk, ::GetSysColor(COLOR_BTNFACE));
+		}
 	}
 
 	// draw left and top
