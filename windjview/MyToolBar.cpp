@@ -79,6 +79,20 @@ void CMyToolBar::EraseNonClient()
 	DrawGripper(&dc, rectWindow);
 }
 
+void CMyToolBar::DoPaint(CDC* pDC)
+{
+	// Copied from MFC's CControlBar::DoPaint
+
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+
+	// paint inside client area
+	CRect rect;
+	GetClientRect(rect);
+	DrawBorders(pDC, rect);
+	DrawGripper(pDC, rect);
+}
+
 void CMyToolBar::DrawBorders(CDC* pDC, CRect& rect)
 {
 	// MFC fix (original code from CControlBar::DrawBorders)
@@ -132,6 +146,8 @@ void CMyToolBar::DrawBorders(CDC* pDC, CRect& rect)
 					XPDrawThemeParentBackground(m_hWnd, pDC->m_hDC, rctBk);
 				XPDrawThemeBackground(hTheme, pDC->m_hDC, 0, 0, rctBk, rctBk);
 			}
+
+			XPCloseThemeData(hTheme);
 		}
 		else
 		{

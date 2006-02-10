@@ -29,6 +29,8 @@
 #include "ThumbnailsView.h"
 #include "FullscreenWnd.h"
 
+#include "MyTheme.h"
+
 #include <dde.h>
 
 #ifdef _DEBUG
@@ -40,6 +42,23 @@ HHOOK CMainFrame::hHook;
 void CreateSystemDialogFont(CFont& font)
 {
 	LOGFONT lf;
+
+	if (XPIsAppThemed() && XPIsThemeActive())
+	{
+		LOGFONTW lfw;
+		HRESULT hr = XPGetThemeSysFont(NULL, TMT_MSGBOXFONT, &lfw);
+		if (SUCCEEDED(hr))
+		{
+#ifdef UNICODE
+			memcpy(&lf, &lfw, sizeof(LOGFONT));
+#else
+			memcpy(&lf, &lfw, (char*)&lfw.lfFaceName - (char*)&lfw);
+			_tcscpy(lf.lfFaceName, CString(lfw.lfFaceName));
+#endif
+			font.CreateFontIndirect(&lf);
+			return;
+		}
+	}
 
 	HGDIOBJ hFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
 	::GetObject(hFont, sizeof(LOGFONT), &lf);

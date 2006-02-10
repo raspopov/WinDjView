@@ -153,7 +153,7 @@ HRESULT XPGetThemeEnumValue(HTHEME hTheme, int iPartId,
 HRESULT XPGetThemePosition(HTHEME hTheme, int iPartId,
     int iStateId, int iPropId, OUT POINT* pPoint);
 HRESULT XPGetThemeFont(HTHEME hTheme, HDC hdc, int iPartId,
-    int iStateId, int iPropId, OUT LOGFONT* pFont);
+    int iStateId, int iPropId, OUT LOGFONTW* pFont);
 HRESULT XPGetThemeRect(HTHEME hTheme, int iPartId,
     int iStateId, int iPropId, OUT RECT* pRect);
 HRESULT XPGetThemeMargins(HTHEME hTheme, HDC hdc, int iPartId,
@@ -170,7 +170,7 @@ COLORREF XPGetThemeSysColor(HTHEME hTheme, int iColorId);
 HBRUSH XPGetThemeSysColorBrush(HTHEME hTheme, int iColorId);
 BOOL XPGetThemeSysBool(HTHEME hTheme, int iBoolId);
 int XPGetThemeSysSize(HTHEME hTheme, int iSizeId);
-HRESULT XPGetThemeSysFont(HTHEME hTheme, int iFontId, OUT LOGFONT* plf);
+HRESULT XPGetThemeSysFont(HTHEME hTheme, int iFontId, OUT LOGFONTW* plf);
 HRESULT XPGetThemeSysString(HTHEME hTheme, int iStringId,
     OUT LPWSTR pszStringBuff, int cchMaxStringChars);
 HRESULT XPGetThemeSysInt(HTHEME hTheme, int iIntId, int* piValue);

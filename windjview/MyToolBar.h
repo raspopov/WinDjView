@@ -34,9 +34,9 @@ public:
 	void SetSizes(SIZE sizeButton, SIZE sizeImage);
 	virtual void DrawBorders(CDC* pDC, CRect& rect);
 	void EraseNonClient();
+	virtual void DoPaint(CDC* pDC);
 
 protected:
 	afx_msg void OnNcPaint();
 	DECLARE_MESSAGE_MAP()
 };
-

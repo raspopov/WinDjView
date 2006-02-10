@@ -70,7 +70,7 @@ typedef HRESULT (__stdcall *pfGetThemeEnumValue)(HTHEME hTheme, int iPartId,
 typedef HRESULT (__stdcall *pfGetThemePosition)(HTHEME hTheme, int iPartId,
     int iStateId, int iPropId, OUT POINT* pPoint);
 typedef HRESULT (__stdcall *pfGetThemeFont)(HTHEME hTheme, HDC hdc, int iPartId,
-    int iStateId, int iPropId, OUT LOGFONT* pFont);
+    int iStateId, int iPropId, OUT LOGFONTW* pFont);
 typedef HRESULT (__stdcall *pfGetThemeRect)(HTHEME hTheme, int iPartId,
     int iStateId, int iPropId, OUT RECT* pRect);
 typedef HRESULT (__stdcall *pfGetThemeMargins)(HTHEME hTheme, HDC hdc, int iPartId,
@@ -87,7 +87,7 @@ typedef COLORREF (__stdcall *pfGetThemeSysColor)(HTHEME hTheme, int iColorId);
 typedef HBRUSH (__stdcall *pfGetThemeSysColorBrush)(HTHEME hTheme, int iColorId);
 typedef BOOL (__stdcall *pfGetThemeSysBool)(HTHEME hTheme, int iBoolId);
 typedef int (__stdcall *pfGetThemeSysSize)(HTHEME hTheme, int iSizeId);
-typedef HRESULT (__stdcall *pfGetThemeSysFont)(HTHEME hTheme, int iFontId, OUT LOGFONT* plf);
+typedef HRESULT (__stdcall *pfGetThemeSysFont)(HTHEME hTheme, int iFontId, OUT LOGFONTW* plf);
 typedef HRESULT (__stdcall *pfGetThemeSysString)(HTHEME hTheme, int iStringId,
     OUT LPWSTR pszStringBuff, int cchMaxStringChars);
 typedef HRESULT (__stdcall *pfGetThemeSysInt)(HTHEME hTheme, int iIntId, int* piValue);
@@ -175,10 +175,11 @@ void LoadThemeAPI()
 		pIsThemeActive = (pfIsThemeActive)::GetProcAddress(hThemesDLL, "IsThemeActive");
 		pIsAppThemed = (pfIsAppThemed)::GetProcAddress(hThemesDLL, "IsAppThemed");
 		pDrawThemeParentBackground = (pfDrawThemeParentBackground)::GetProcAddress(hThemesDLL, "DrawThemeParentBackground");
+		pGetThemeSysFont = (pfGetThemeSysFont)::GetProcAddress(hThemesDLL, "GetThemeSysFont");
+		pGetThemePartSize = (pfGetThemePartSize)::GetProcAddress(hThemesDLL, "GetThemePartSize");
 /*
 		pfGetThemeBackgroundContentRect pGetThemeBackgroundContentRect = NULL;
 		pfGetThemeBackgroundExtent pGetThemeBackgroundExtent = NULL;
-		pfGetThemePartSize pGetThemePartSize = NULL;
 		pfGetThemeTextExtent pGetThemeTextExtent = NULL;
 		pfGetThemeTextMetrics pGetThemeTextMetrics = NULL;
 		pfGetThemeBackgroundRegion pGetThemeBackgroundRegion = NULL;
@@ -203,7 +204,6 @@ void LoadThemeAPI()
 		pfGetThemeSysColorBrush pGetThemeSysColorBrush = NULL;
 		pfGetThemeSysBool pGetThemeSysBool = NULL;
 		pfGetThemeSysSize pGetThemeSysSize = NULL;
-		pfGetThemeSysFont pGetThemeSysFont = NULL;
 		pfGetThemeSysString pGetThemeSysString = NULL;
 		pfGetThemeSysInt pGetThemeSysInt = NULL;
 		pfGetWindowTheme pGetWindowTheme = NULL;
@@ -226,7 +226,9 @@ void LoadThemeAPI()
 		&& pSetWindowTheme != NULL
 		&& pIsThemeActive != NULL
 		&& pIsAppThemed != NULL
-		&& pDrawThemeParentBackground != NULL)
+		&& pDrawThemeParentBackground != NULL
+		&& pGetThemeSysFont != NULL
+		&& pGetThemePartSize != NULL)
 	{
 		bThemeAPILoaded = true;
 	}
@@ -321,6 +323,23 @@ HRESULT XPDrawThemeParentBackground(HWND hwnd, HDC hdc, RECT* prc)
 		return E_FAIL;
 
 	return pDrawThemeParentBackground(hwnd, hdc, prc);
+}
+
+HRESULT XPGetThemeSysFont(HTHEME hTheme, int iFontId, OUT LOGFONTW* plf)
+{
+	if (!bThemeAPILoaded)
+		return E_FAIL;
+
+	return pGetThemeSysFont(hTheme, iFontId, plf);
+}
+
+HRESULT XPGetThemePartSize(HTHEME hTheme, HDC hdc, int iPartId,
+    int iStateId, RECT* prc, THEMESIZE eSize, OUT SIZE* psz)
+{
+	if (!bThemeAPILoaded)
+		return E_FAIL;
+
+	return pGetThemePartSize(hTheme, hdc, iPartId, iStateId, prc, eSize, psz);
 }
 
 struct XPThemeAPI
