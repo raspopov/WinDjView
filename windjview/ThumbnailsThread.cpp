@@ -139,8 +139,7 @@ void CThumbnailsThread::Render(Job& job)
 				szDisplay.cy = szDisplay.cx * szPage.cy / szPage.cx;
 			}
 
-			GRect rect(0, 0, szDisplay.cx, szDisplay.cy);
-			pBitmap = CRenderThread::Render(pImage, rect);
+			pBitmap = CRenderThread::Render(pImage, szDisplay);
 		}
 	}
 

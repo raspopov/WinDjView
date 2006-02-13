@@ -149,9 +149,8 @@ void CRenderThread::Render(Job& job)
 	{
 		RotateImage(pImage, job.nRotate);
 
-		GRect rect(job.rect.left, job.rect.top, job.rect.Width(), job.rect.Height());
-		if (!rect.isempty())
-			pBitmap = Render(pImage, rect, job.nDisplayMode);
+		if (job.size.cx > 0 && job.size.cy > 0)
+			pBitmap = Render(pImage, job.size, job.nDisplayMode);
 	}
 
 	if (pBitmap == NULL || pBitmap->m_hObject == NULL)
@@ -161,13 +160,14 @@ void CRenderThread::Render(Job& job)
 	}
 
 	if (m_pOwner->m_nPendingPage == job.nPage)
-		m_pOwner->OnRenderFinished(job.nPage, reinterpret_cast<LPARAM>(pBitmap));
+		m_pOwner->SendMessage(WM_RENDER_FINISHED, job.nPage, reinterpret_cast<LPARAM>(pBitmap));
 	else
 		m_pOwner->PostMessage(WM_RENDER_FINISHED, job.nPage, reinterpret_cast<LPARAM>(pBitmap));
 }
 
-CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const GRect& rect, int nDisplayMode)
+CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size, int nDisplayMode)
 {
+	GRect rect(0, 0, size.cx, size.cy);
 	if (rect.isempty())
 		return NULL;
 
@@ -219,13 +219,13 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const GRect& rect, int nDispla
 	return pBitmap;
 }
 
-void CRenderThread::AddJob(int nPage, int nRotate, const CRect& rect, int nDisplayMode)
+void CRenderThread::AddJob(int nPage, int nRotate, const CSize& size, int nDisplayMode)
 {
 	Job job;
 	job.nPage = nPage;
 	job.nRotate = nRotate;
 	job.nDisplayMode = nDisplayMode;
-	job.rect = rect;
+	job.size = size;
 	job.type = RENDER;
 
 	AddJob(job);
@@ -264,7 +264,7 @@ void CRenderThread::AddJob(const Job& job)
 
 	if (m_currentJob.nPage == job.nPage && m_currentJob.type == RENDER &&
 		job.type == RENDER && job.nRotate == m_currentJob.nRotate && 
-		job.rect == m_currentJob.rect && job.nDisplayMode == m_currentJob.nDisplayMode)
+		job.size == m_currentJob.size && job.nDisplayMode == m_currentJob.nDisplayMode)
 	{
 		m_lock.Unlock();
 		return;

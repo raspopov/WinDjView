@@ -1044,8 +1044,7 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient, bool bUpdateIm
 		}
 		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize())
 		{
-			m_pRenderThread->AddJob(nPage, m_nRotate,
-				CRect(CPoint(0, 0), page.szDisplay), m_nDisplayMode);
+			m_pRenderThread->AddJob(nPage, m_nRotate, page.szDisplay, m_nDisplayMode);
 			InvalidatePage(nPage);
 		}
 	}
@@ -1084,8 +1083,7 @@ void CDjVuView::UpdatePageCacheSingle(int nPage, bool bUpdateImages)
 		}
 		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
 		{
-			m_pRenderThread->AddJob(nPage, m_nRotate,
-				CRect(CPoint(0, 0), page.szDisplay), m_nDisplayMode);
+			m_pRenderThread->AddJob(nPage, m_nRotate, page.szDisplay, m_nDisplayMode);
 			InvalidatePage(nPage);
 		}
 	}
@@ -1123,8 +1121,7 @@ void CDjVuView::UpdatePageCacheFacing(int nPage, bool bUpdateImages)
 		}
 		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
 		{
-			m_pRenderThread->AddJob(nPage, m_nRotate,
-				CRect(CPoint(0, 0), page.szDisplay), m_nDisplayMode);
+			m_pRenderThread->AddJob(nPage, m_nRotate, page.szDisplay, m_nDisplayMode);
 			InvalidatePage(nPage);
 		}
 	}
@@ -3486,8 +3483,8 @@ void CDjVuView::OnExportPage()
 
 	RotateImage(pImage, m_nRotate);
 
-	GRect rect(0, 0, pImage->get_width(), pImage->get_height());
-	CDIB* pBitmap = CRenderThread::Render(pImage, rect);
+	CSize size(pImage->get_width(), pImage->get_height());
+	CDIB* pBitmap = CRenderThread::Render(pImage, size);
 
 	if (pBitmap != NULL && pBitmap->m_hObject != NULL)
 	{
