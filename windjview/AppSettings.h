@@ -24,8 +24,15 @@
 
 struct CDisplaySettings
 {
+	enum ScaleMethod
+	{
+		Default,
+		PnmScaleFixed
+	};
+
 	CDisplaySettings() :
-			bAdjustDisplay(false), nBrightness(0), nContrast(0), fGamma(1.0) {}
+			bAdjustDisplay(false), nBrightness(0), nContrast(0),
+			fGamma(1.0), nScaleMethod(Default) {}
 
 	int GetBrightness() const { return bAdjustDisplay ? nBrightness : 0; }
 	int GetContrast() const { return bAdjustDisplay ? nContrast : 0; }
@@ -42,13 +49,15 @@ struct CDisplaySettings
 	bool operator==(const CDisplaySettings& rhs) const
 	{
 		return GetBrightness() == rhs.GetBrightness() && GetContrast() == rhs.GetContrast()
-				&& GetGamma() == rhs.GetGamma();
+				&& GetGamma() == rhs.GetGamma() && nScaleMethod == rhs.nScaleMethod;
 	}
 
 	bool bAdjustDisplay;
 	double fGamma;
 	int nBrightness;
 	int nContrast;
+
+	int nScaleMethod;
 };
 
 struct CAppSettings
@@ -76,6 +85,7 @@ struct CAppSettings
 	static bool bRestoreAssocs;
 	static bool bGenAllThumbnails;
 	static bool bFullscreenClicks;
+	static bool bWarnCloseMultiple;
 
 	static CString strLanguage;
 

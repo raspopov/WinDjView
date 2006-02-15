@@ -290,6 +290,7 @@ void CThumbnailsView::OnInitialUpdate()
 	m_pages.resize(m_nPageCount);
 
 	m_displaySetting = CAppSettings::displaySettings;
+	m_displaySetting.nScaleMethod = CDisplaySettings::Default;
 
 	m_pThread = new CThumbnailsThread(GetDocument(), this);
 	m_pThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
@@ -790,7 +791,7 @@ void CThumbnailsView::UpdatePage(int nPage, CThumbnailsThread* pThread)
 
 	if (page.pBitmap == NULL)
 	{
-		pThread->AddJob(nPage, m_nRotate);
+		pThread->AddJob(nPage, m_nRotate, m_displaySetting);
 		InvalidatePage(nPage);
 	}
 }
@@ -901,9 +902,12 @@ void CThumbnailsView::RestartThreads()
 
 void CThumbnailsView::OnSettingsChanged()
 {
-	if (m_displaySetting != CAppSettings::displaySettings)
+	CDisplaySettings appSettings = CAppSettings::displaySettings;
+	appSettings.nScaleMethod = CDisplaySettings::Default;
+
+	if (m_displaySetting != appSettings)
 	{
-		m_displaySetting = CAppSettings::displaySettings;
+		m_displaySetting = appSettings;
 
 		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 		{

@@ -25,6 +25,7 @@
 #include "Drawing.h"
 #include "DjVuDoc.h"
 #include "DjVuView.h"
+#include "Scaling.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -150,7 +151,7 @@ void CRenderThread::Render(Job& job)
 		RotateImage(pImage, job.nRotate);
 
 		if (job.size.cx > 0 && job.size.cy > 0)
-			pBitmap = Render(pImage, job.size, job.nDisplayMode);
+			pBitmap = Render(pImage, job.size, job.displaySettings, job.nDisplayMode);
 	}
 
 	if (pBitmap == NULL || pBitmap->m_hObject == NULL)
@@ -165,11 +166,19 @@ void CRenderThread::Render(Job& job)
 		m_pOwner->PostMessage(WM_RENDER_FINISHED, job.nPage, reinterpret_cast<LPARAM>(pBitmap));
 }
 
-CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size, int nDisplayMode)
+CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
+		const CDisplaySettings& displaySettings, int nDisplayMode)
 {
 	GRect rect(0, 0, size.cx, size.cy);
 	if (rect.isempty())
 		return NULL;
+
+	int nScaleMethod = displaySettings.nScaleMethod;
+	if (size.cx >= pImage->get_width() / 2 || size.cy >= pImage->get_height() / 2)
+		nScaleMethod = CDisplaySettings::Default;
+
+	if (nScaleMethod == CDisplaySettings::PnmScaleFixed)
+		rect = GRect(0, 0, pImage->get_width(), pImage->get_height());
 
 	GP<GBitmap> pGBitmap;
 	GP<GPixmap> pGPixmap;
@@ -210,21 +219,33 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size, int nDispla
 	CDIB* pBitmap = NULL;
 
 	if (pGPixmap != NULL)
-		pBitmap = RenderPixmap(*pGPixmap);
+	{
+		if (nScaleMethod == CDisplaySettings::PnmScaleFixed)
+			pGPixmap = RescalePnm(pGPixmap, size.cx, size.cy);
+
+		pBitmap = RenderPixmap(*pGPixmap, displaySettings);
+	}
 	else if (pGBitmap != NULL)
-		pBitmap = RenderBitmap(*pGBitmap);
+	{
+		if (nScaleMethod == CDisplaySettings::PnmScaleFixed)
+			pGBitmap = RescalePnm(pGBitmap, size.cx, size.cy);
+
+		pBitmap = RenderBitmap(*pGBitmap, displaySettings);
+	}
 	else
-		pBitmap = RenderEmpty(CSize(rect.width(), rect.height()));
+		pBitmap = RenderEmpty(CSize(rect.width(), rect.height()), displaySettings);
 
 	return pBitmap;
 }
 
-void CRenderThread::AddJob(int nPage, int nRotate, const CSize& size, int nDisplayMode)
+void CRenderThread::AddJob(int nPage, int nRotate, const CSize& size,
+		const CDisplaySettings& displaySettings, int nDisplayMode)
 {
 	Job job;
 	job.nPage = nPage;
 	job.nRotate = nRotate;
 	job.nDisplayMode = nDisplayMode;
+	job.displaySettings = displaySettings;
 	job.size = size;
 	job.type = RENDER;
 
@@ -264,7 +285,8 @@ void CRenderThread::AddJob(const Job& job)
 
 	if (m_currentJob.nPage == job.nPage && m_currentJob.type == RENDER &&
 		job.type == RENDER && job.nRotate == m_currentJob.nRotate && 
-		job.size == m_currentJob.size && job.nDisplayMode == m_currentJob.nDisplayMode)
+		job.size == m_currentJob.size && job.nDisplayMode == m_currentJob.nDisplayMode &&
+		job.displaySettings == m_currentJob.displaySettings)
 	{
 		m_lock.Unlock();
 		return;

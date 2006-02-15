@@ -21,6 +21,8 @@
 #pragma once
 
 
+struct CDisplaySettings;
+
 class CDIB : public CBitmap
 {
 public:
@@ -80,11 +82,11 @@ struct CPrintSettings
 	BOOL bIgnorePrinterMargins;
 };
 
-CDIB* RenderPixmap(GPixmap& pm);
-CDIB* RenderBitmap(GBitmap& bm);
-CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip);
-CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip);
-CDIB* RenderEmpty(const CSize& szBitmap);
+CDIB* RenderPixmap(GPixmap& pm, const CDisplaySettings& displaySettings);
+CDIB* RenderBitmap(GBitmap& bm, const CDisplaySettings& displaySettings);
+CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip, const CDisplaySettings& displaySettings);
+CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip, const CDisplaySettings& displaySettings);
+CDIB* RenderEmpty(const CSize& szBitmap, const CDisplaySettings& displaySettings);
 
 void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcPage,
 	double fPrinterMMx, double fPrinterMMy, CPrintSettings& settings, bool bPreview = false);

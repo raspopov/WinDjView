@@ -58,11 +58,13 @@ const TCHAR* s_pszAdjustDisplay = _T("adjust");
 const TCHAR* s_pszGamma = _T("gamma");
 const TCHAR* s_pszBrightness = _T("brightness");
 const TCHAR* s_pszContrast = _T("contrast");
+const TCHAR* s_pszScaleMethod = _T("scale-method");
 
 const TCHAR* s_pszGlobalSettings = _T("Settings");
 const TCHAR* s_pszRestoreAssocs = _T("assocs");
 const TCHAR* s_pszGenAllThumbnails = _T("gen-all-thumbs");
 const TCHAR* s_pszFullscreenClicks = _T("fullscreen-clicks");
+const TCHAR* s_pszWarnCloseMultiple = _T("warn-close-multiple");
 const TCHAR* s_pszVersion = _T("version");
 const TCHAR* s_pszLanguage = _T("language");
 
@@ -420,10 +422,12 @@ void CDjViewApp::LoadSettings()
 	CAppSettings::bRestoreAssocs = !!GetProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, 0);
 	CAppSettings::bGenAllThumbnails = !!GetProfileInt(s_pszGlobalSettings, s_pszGenAllThumbnails, 1);
 	CAppSettings::bFullscreenClicks = !!GetProfileInt(s_pszGlobalSettings, s_pszFullscreenClicks, 1);
+	CAppSettings::bWarnCloseMultiple = !!GetProfileInt(s_pszGlobalSettings, s_pszWarnCloseMultiple, 0);
 	CAppSettings::strVersion = GetProfileString(s_pszGlobalSettings, s_pszVersion, _T(""));
 	CAppSettings::strLanguage = GetProfileString(s_pszGlobalSettings, s_pszLanguage, _T(""));
 
 	CDisplaySettings& ds = CAppSettings::displaySettings;
+	ds.nScaleMethod = GetProfileInt(s_pszDisplaySettings, s_pszScaleMethod, CDisplaySettings::Default);
 	ds.bAdjustDisplay = !!GetProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, 0);
 	ds.fGamma = GetProfileDouble(s_pszDisplaySettings, s_pszGamma, 1.0);
 	ds.nBrightness = GetProfileInt(s_pszDisplaySettings, s_pszBrightness, 0);
@@ -463,10 +467,12 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, CAppSettings::bRestoreAssocs);
 	WriteProfileInt(s_pszGlobalSettings, s_pszGenAllThumbnails, CAppSettings::bGenAllThumbnails);
 	WriteProfileInt(s_pszGlobalSettings, s_pszFullscreenClicks, CAppSettings::bFullscreenClicks);
+	WriteProfileInt(s_pszGlobalSettings, s_pszWarnCloseMultiple, CAppSettings::bWarnCloseMultiple);
 	WriteProfileString(s_pszGlobalSettings, s_pszVersion, CURRENT_VERSION);
 	WriteProfileString(s_pszGlobalSettings, s_pszLanguage, CAppSettings::strLanguage);
 
 	CDisplaySettings& ds = CAppSettings::displaySettings;
+	WriteProfileInt(s_pszDisplaySettings, s_pszScaleMethod, ds.nScaleMethod);
 	WriteProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, ds.bAdjustDisplay);
 	WriteProfileDouble(s_pszDisplaySettings, s_pszGamma, ds.fGamma);
 	WriteProfileInt(s_pszDisplaySettings, s_pszBrightness, ds.nBrightness);

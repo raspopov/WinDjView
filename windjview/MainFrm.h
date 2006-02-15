@@ -53,6 +53,8 @@ public:
 	void AddToHistory(CDjVuView* pView, int nPage);
 	void SetFullscreenWnd(CFullscreenWnd* pWnd) { m_pFullscreenWnd = pWnd; }
 	void SetStartupLanguage();
+	
+	int GetDocumentCount();
 
 // Overrides
 protected:
@@ -138,6 +140,7 @@ protected:
 	afx_msg void OnUpdateLanguageList(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateLanguage(CCmdUI *pCmdUI);
 	afx_msg void OnLanguageChanged();
+	afx_msg void OnClose();
 	DECLARE_MESSAGE_MAP()
 };
 

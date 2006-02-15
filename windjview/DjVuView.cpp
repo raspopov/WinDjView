@@ -1044,7 +1044,7 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient, bool bUpdateIm
 		}
 		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize())
 		{
-			m_pRenderThread->AddJob(nPage, m_nRotate, page.szDisplay, m_nDisplayMode);
+			m_pRenderThread->AddJob(nPage, m_nRotate, page.szDisplay, m_displaySettings, m_nDisplayMode);
 			InvalidatePage(nPage);
 		}
 	}
@@ -1083,7 +1083,7 @@ void CDjVuView::UpdatePageCacheSingle(int nPage, bool bUpdateImages)
 		}
 		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
 		{
-			m_pRenderThread->AddJob(nPage, m_nRotate, page.szDisplay, m_nDisplayMode);
+			m_pRenderThread->AddJob(nPage, m_nRotate, page.szDisplay, m_displaySettings, m_nDisplayMode);
 			InvalidatePage(nPage);
 		}
 	}
@@ -1121,7 +1121,7 @@ void CDjVuView::UpdatePageCacheFacing(int nPage, bool bUpdateImages)
 		}
 		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
 		{
-			m_pRenderThread->AddJob(nPage, m_nRotate, page.szDisplay, m_nDisplayMode);
+			m_pRenderThread->AddJob(nPage, m_nRotate, page.szDisplay, m_displaySettings, m_nDisplayMode);
 			InvalidatePage(nPage);
 		}
 	}
@@ -2931,13 +2931,6 @@ LRESULT CDjVuView::OnRenderFinished(WPARAM wParam, LPARAM lParam)
 	Page& page = m_pages[nPage];
 	CDIB* pBitmap = reinterpret_cast<CDIB*>(lParam);
 
-	if (page.pBitmap != NULL && page.szDisplay == page.pBitmap->GetSize())
-	{
-		// Bitmap is too old, ignore it
-		delete pBitmap;
-		return 0;
-	}
-
 	page.DeleteBitmap();
 	page.pBitmap = pBitmap;
 	m_evtRendered.SetEvent();
@@ -3484,7 +3477,7 @@ void CDjVuView::OnExportPage()
 	RotateImage(pImage, m_nRotate);
 
 	CSize size(pImage->get_width(), pImage->get_height());
-	CDIB* pBitmap = CRenderThread::Render(pImage, size);
+	CDIB* pBitmap = CRenderThread::Render(pImage, size, m_displaySettings);
 
 	if (pBitmap != NULL && pBitmap->m_hObject != NULL)
 	{

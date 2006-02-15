@@ -109,6 +109,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_COMMAND_RANGE(ID_LANGUAGE_FIRST + 1, ID_LANGUAGE_LAST, OnSetLanguage)
 	ON_UPDATE_COMMAND_UI(ID_LANGUAGE_FIRST, OnUpdateLanguageList)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_LANGUAGE_FIRST + 1, ID_LANGUAGE_LAST, OnUpdateLanguage)
+	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -638,6 +639,26 @@ void CMainFrame::OnActivateWindow(UINT nID)
 			++nDoc;
 		}
 	}
+}
+
+int CMainFrame::GetDocumentCount()
+{
+	int nCount = 0;
+	POSITION pos = theApp.GetFirstDocTemplatePosition();
+	while (pos != NULL)
+	{
+		CDocTemplate* pTemplate = theApp.GetNextDocTemplate(pos);
+		ASSERT_KINDOF(CDocTemplate, pTemplate);
+
+		POSITION posDoc = pTemplate->GetFirstDocPosition();
+		while (posDoc != NULL)
+		{
+			pTemplate->GetNextDoc(posDoc);
+			++nCount;
+		}
+	}
+
+	return nCount;
 }
 
 void CMainFrame::GoToHistoryPos(const HistoryPos& pos)
@@ -1182,4 +1203,21 @@ void CMainFrame::SetStartupLanguage()
 			return;
 		}
 	}
+}
+
+void CMainFrame::OnClose()
+{
+	if (CAppSettings::bWarnCloseMultiple)
+	{
+		int nOpenDocuments = GetDocumentCount();
+		if (nOpenDocuments > 1)
+		{
+			CString strMessage;
+			strMessage.Format(IDS_WARN_CLOSE_MULTIPLE, nOpenDocuments);
+			if (AfxMessageBox(strMessage, MB_ICONEXCLAMATION | MB_YESNO) != IDYES)
+				return;
+		}
+	}
+
+	CMDIFrameWnd::OnClose();
 }

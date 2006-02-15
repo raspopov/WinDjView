@@ -64,12 +64,12 @@ void BuildGammaTable(double fGamma, BYTE* table)
 	}
 }
 
-CDIB* RenderPixmap(GPixmap& pm)
+CDIB* RenderPixmap(GPixmap& pm, const CDisplaySettings& displaySettings)
 {
-	return RenderPixmap(pm, CRect(0, 0, pm.columns(), pm.rows()));
+	return RenderPixmap(pm, CRect(0, 0, pm.columns(), pm.rows()), displaySettings);
 }
 
-CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip)
+CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip, const CDisplaySettings& displaySettings)
 {
 	ASSERT(0 <= rcClip.left && 0 <= rcClip.top);
 	ASSERT((int)pm.columns() >= rcClip.right && (int)pm.rows() >= rcClip.bottom);
@@ -95,9 +95,9 @@ CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip)
 	for (int y = rcClip.top; y < rcClip.bottom; ++y, pBits += nRowLength)
 		memcpy(pBits, pm[y] + rcClip.left, rcClip.Width()*3);
 
-	int nBrightness = CAppSettings::displaySettings.GetBrightness();
-	int nContrast = CAppSettings::displaySettings.GetContrast();
-	double fGamma = CAppSettings::displaySettings.GetGamma();
+	int nBrightness = displaySettings.GetBrightness();
+	int nContrast = displaySettings.GetContrast();
+	double fGamma = displaySettings.GetGamma();
 	if (fGamma != 1.0 || nBrightness != 0 || nContrast != 0)
 	{
 		// Adjust gamma
@@ -128,12 +128,12 @@ CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip)
 	return pBitmap;
 }
 
-CDIB* RenderBitmap(GBitmap& bm)
+CDIB* RenderBitmap(GBitmap& bm, const CDisplaySettings& displaySettings)
 {
-	return RenderBitmap(bm, CRect(0, 0, bm.columns(), bm.rows()));
+	return RenderBitmap(bm, CRect(0, 0, bm.columns(), bm.rows()), displaySettings);
 }
 
-CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip)
+CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip, const CDisplaySettings& displaySettings)
 {
 	ASSERT(0 <= rcClip.left && 0 <= rcClip.top);
 	ASSERT((int)bm.columns() >= rcClip.right && (int)bm.rows() >= rcClip.bottom);
@@ -165,9 +165,9 @@ CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip)
 		color -= decrement;
 	}
 
-	int nBrightness = CAppSettings::displaySettings.GetBrightness();
-	int nContrast = CAppSettings::displaySettings.GetContrast();
-	double fGamma = CAppSettings::displaySettings.GetGamma();
+	int nBrightness = displaySettings.GetBrightness();
+	int nContrast = displaySettings.GetContrast();
+	double fGamma = displaySettings.GetGamma();
 	if (fGamma != 1.0 || nBrightness != 0 || nContrast != 0)
 	{
 		// Adjust gamma
@@ -207,7 +207,7 @@ CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip)
 	return pBitmap;
 }
 
-CDIB* RenderEmpty(const CSize& szBitmap)
+CDIB* RenderEmpty(const CSize& szBitmap, const CDisplaySettings& displaySettings)
 {
 	LPBITMAPINFO pBMI = (LPBITMAPINFO)malloc(
 		sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD));
@@ -225,9 +225,9 @@ CDIB* RenderEmpty(const CSize& szBitmap)
 	pBMI->bmiColors[0].rgbGreen = 0xff;
 	pBMI->bmiColors[0].rgbRed = 0xff;
 
-	int nBrightness = CAppSettings::displaySettings.GetBrightness();
-	int nContrast = CAppSettings::displaySettings.GetContrast();
-	double fGamma = CAppSettings::displaySettings.GetGamma();
+	int nBrightness = displaySettings.GetBrightness();
+	int nContrast = displaySettings.GetContrast();
+	double fGamma = displaySettings.GetGamma();
 	if (fGamma != 1.0 || nBrightness != 0 || nContrast != 0)
 	{
 		// Adjust gamma
@@ -495,13 +495,13 @@ CRect FindContentRect(GP<DjVuImage> pImage)
 	if (pImage->is_legal_photo() || pImage->is_legal_compound())
 	{
 		GP<GPixmap> pm = pImage->get_pixmap(rect, rect);
-		pBmpPage = RenderPixmap(*pm);
+		pBmpPage = RenderPixmap(*pm, CDisplaySettings());
 		ASSERT(pBmpPage->GetBitsPerPixel() == 24);
 	}
 	else if (pImage->is_legal_bilevel())
 	{
 		GP<GBitmap> bm = pImage->get_bitmap(rect, rect, 4);
-		pBmpPage = RenderBitmap(*bm);
+		pBmpPage = RenderBitmap(*bm, CDisplaySettings());
 
 		nPixelSize = 1;
 
@@ -739,7 +739,7 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPag
 			pm = pmStretched;
 		}
 
-		pBmpPage = RenderPixmap(*pm);
+		pBmpPage = RenderPixmap(*pm, CAppSettings::displaySettings);
 	}
 	else if (bm != NULL)
 	{
@@ -760,7 +760,7 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPag
 			bm = bmStretched;
 		}
 
-		pBmpPage = RenderBitmap(*bm);
+		pBmpPage = RenderBitmap(*bm, CAppSettings::displaySettings);
 
 		if (!bPreview)
 		{

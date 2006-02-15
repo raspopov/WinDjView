@@ -507,13 +507,13 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 219, 195
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 219, 240
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Settings"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,106,174,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,162,174,50,14
+    DEFPUSHBUTTON   "OK",IDOK,107,219,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,162,219,50,14
     GROUPBOX        "File associations",IDC_STATIC,7,7,205,58
     LTEXT           "Press to associate WinDjView with .djvu and .djv files:",
                     IDC_STATIC,15,18,182,9
@@ -521,26 +521,33 @@ BEGIN
     CONTROL         "&Restore associations at program start",
                     IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     15,49,188,10
-    GROUPBOX        "Display",IDC_STATIC,7,69,205,98
+    GROUPBOX        "Display",IDC_STATIC,7,144,205,68
     CONTROL         "Generate &thumbnails for all pages in background",
                     IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,82,188,10
+                    WS_TABSTOP,15,81,188,10
     CONTROL         "&Mouse clicks switch pages in fullscreen mode",
                     IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,96,188,10
+                    WS_TABSTOP,15,95,188,10
     CONTROL         "A&djust settings:",IDC_ADJUST_DISPLAY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,111,97,9
-    LTEXT           "&Brightness: 0",IDC_BRIGHTNESS_TEXT,15,125,61,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,124,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,156,97,9
+    LTEXT           "&Brightness: 0",IDC_BRIGHTNESS_TEXT,15,170,61,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,170,
                     131,12
-    LTEXT           "&Contrast: 0",IDC_CONTRAST_TEXT,15,138,55,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,137,
+    LTEXT           "&Contrast: 0",IDC_CONTRAST_TEXT,15,183,55,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,183,
                     131,12
-    LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,15,151,45,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,150,131,
+    LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,15,196,45,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,195,131,
                     12
-    LTEXT           "WinDjView\nby Andrew Zhezherun",IDC_STATIC_ABOUT,7,174,
+    LTEXT           "WinDjView\nby Andrew Zhezherun",IDC_STATIC_ABOUT,7,219,
                     92,18
+    GROUPBOX        "General",IDC_STATIC,7,69,205,70
+    CONTROL         "&Warn when closing multiple documents",
+                    IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,109,188,10
+    CONTROL         "&Sharp scaling at low zoom levels (slower)",
+                    IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
+                    123,188,10
 END
 
 IDD_FIND DIALOG DISCARDABLE  0, 0, 287, 64
@@ -674,7 +681,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 212
         TOPMARGIN, 7
-        BOTTOMMARGIN, 188
+        BOTTOMMARGIN, 233
     END
 
     IDD_FIND, DIALOG
@@ -723,12 +730,21 @@ BEGIN
     IDS_DJVU_FILTER         "DjVu Documents (*.djvu)|*.djvu|All Files (*.*)|*.*||"
     IDS_CANNOT_SAVE_TO_ORIG "Cannot save the document to its original location"
     IDS_SAVE_ERROR          "An error occurred while saving the document"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
     IDS_ERROR_DECODING_PAGE "Error decoding page"
     IDS_BMP_FILTER          "Bitmap Files (*.bmp)|*.bmp|All Files (*.*)|*.*||"
     IDS_EXPORT_PAGE         "Export Page"
     IDS_CONNECT_ERROR       "An error occurred while connecting to the server. Please check your internet settings."
     IDS_NO_UPDATES_AVAILABLE 
                             "No updates are available at this time. Please check again later."
+    IDS_NEW_VERSION_AVAILABLE 
+                            "A new version %s is available. Do you want to go to program website now?"
+    IDS_VERSION_URL         "http://windjview.sourceforge.net/version.txt"
+    IDS_WEBSITE_URL         "http://windjview.sourceforge.net"
+    IDS_DJVULIBRE_URL       "http://djvu.sourceforge.net"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -883,9 +899,26 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    IDS_STRETCH             "Stretch"
+    IDS_TOOLTIP_BRIGHTNESS  "Brightness: %+d"
+    IDS_TOOLTIP_CONTRAST    "Contrast: %+d"
+    IDS_TOOLTIP_GAMMA       "Gamma: %1.1f"
+    IDS_STATUS_BLACKANDWHITE "  Black & White  "
+    IDS_STATUS_FOREGROUND   "  Foreground  "
+    IDS_STATUS_BACKGROUND   "  Background  "
+    IDS_PRINT_ALL_PAGES     "All Pages In Range"
+    IDS_PRINT_ODD_PAGES     "Odd Pages"
+    IDS_PRINT_EVEN_PAGES    "Even Pages"
+    IDS_PRINT_ONE_PAGE      "One Page Per Sheet"
+    IDS_PRINT_TWO_PAGES     "Two Pages Per Sheet"
+    IDS_PLEASE_WAIT         "Please wait..."
     IDS_PAGE_NO_TOOLTIP     "p# %d"
     IDS_BRIGHTNESS_TEXT_ZERO "&Brightness: %d"
     IDS_BRIGHTNESS_TEXT     "&Brightness: %+d"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
     IDS_CONTRAST_TEXT_ZERO  "&Contrast: %d"
     IDS_CONTRAST_TEXT       "&Contrast: %+d"
     IDS_GAMMA_TEXT          "&Gamma: %1.1f"
@@ -899,11 +932,8 @@ BEGIN
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
     IDS_CURRENT_VERSION     "0.4.1"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
     IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
+    IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure you want to continue?"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -959,11 +989,6 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_NEW_VERSION_AVAILABLE 
-                            "A new version %s is available. Do you want to go to program website now?"
-    IDS_VERSION_URL         "http://windjview.sourceforge.net/version.txt"
-    IDS_WEBSITE_URL         "http://windjview.sourceforge.net"
-    IDS_DJVULIBRE_URL       "http://djvu.sourceforge.net"
     IDS_DONATE_URL          "https://sourceforge.net/donate/index.php?group_id=114927"
     IDS_STRING_NOT_FOUND    "Search string not found"
     IDS_PRINTING            "Printing, please wait..."
@@ -976,26 +1001,9 @@ BEGIN
     IDS_SEARCHING           "Searching"
     IDS_OF_PAGE_COUNT       "of %d"
     IDS_FIT_WIDTH           "Fit Width"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
     IDS_FIT_HEIGHT          "Fit Height"
     IDS_FIT_PAGE            "Fit Page"
     IDS_ACTUAL_SIZE         "Actual Size"
-    IDS_STRETCH             "Stretch"
-    IDS_TOOLTIP_BRIGHTNESS  "Brightness: %+d"
-    IDS_TOOLTIP_CONTRAST    "Contrast: %+d"
-    IDS_TOOLTIP_GAMMA       "Gamma: %1.1f"
-    IDS_STATUS_BLACKANDWHITE "  Black & White  "
-    IDS_STATUS_FOREGROUND   "  Foreground  "
-    IDS_STATUS_BACKGROUND   "  Background  "
-    IDS_PRINT_ALL_PAGES     "All Pages In Range"
-    IDS_PRINT_ODD_PAGES     "Odd Pages"
-    IDS_PRINT_EVEN_PAGES    "Even Pages"
-    IDS_PRINT_ONE_PAGE      "One Page Per Sheet"
-    IDS_PRINT_TWO_PAGES     "Two Pages Per Sheet"
-    IDS_PLEASE_WAIT         "Please wait..."
 END
 
 STRINGTABLE DISCARDABLE 

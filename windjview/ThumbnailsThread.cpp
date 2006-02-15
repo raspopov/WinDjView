@@ -139,7 +139,7 @@ void CThumbnailsThread::Render(Job& job)
 				szDisplay.cy = szDisplay.cx * szPage.cy / szPage.cx;
 			}
 
-			pBitmap = CRenderThread::Render(pImage, szDisplay);
+			pBitmap = CRenderThread::Render(pImage, szDisplay, job.displaySettings);
 		}
 	}
 
@@ -158,14 +158,16 @@ void CThumbnailsThread::Render(Job& job)
 	m_lock.Unlock();
 }
 
-void CThumbnailsThread::AddJob(int nPage, int nRotate)
+void CThumbnailsThread::AddJob(int nPage, int nRotate, const CDisplaySettings& displaySettings)
 {
 	Job job;
 	job.nPage = nPage;
 	job.nRotate = nRotate;
+	job.displaySettings = displaySettings;
 
 	m_lock.Lock();
-	if (m_currentJob.nPage == job.nPage && m_currentJob.nRotate == nRotate)
+	if (m_currentJob.nPage == job.nPage && m_currentJob.nRotate == nRotate &&
+			m_currentJob.displaySettings == job.displaySettings)
 	{
 		m_lock.Unlock();
 		return;

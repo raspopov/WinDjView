@@ -239,6 +239,10 @@ SOURCE=.\RenderThread.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Scaling.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\SearchResultsView.cpp
 # End Source File
 # Begin Source File
@@ -361,6 +365,10 @@ SOURCE=.\RenderThread.h
 # Begin Source File
 
 SOURCE=.\resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Scaling.h
 # End Source File
 # Begin Source File
 

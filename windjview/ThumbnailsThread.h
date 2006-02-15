@@ -20,11 +20,13 @@
 
 #pragma once
 
+#include "AppSettings.h"
+
+
 #define WM_RENDER_THUMB_FINISHED (WM_APP + 3)
 
 class CDjVuDoc;
 class CThumbnailsView;
-class CDIB;
 
 
 class CThumbnailsThread
@@ -36,7 +38,7 @@ public:
 
 	void SetThumbnailSize(CSize szThumbnail) { m_szThumbnail = szThumbnail; }
 
-	void AddJob(int nPage, int nRotate);
+	void AddJob(int nPage, int nRotate, const CDisplaySettings& displaySettings);
 
 	void PauseJobs();
 	void ResumeJobs();
@@ -59,6 +61,7 @@ private:
 	{
 		int nPage;
 		int nRotate;
+		CDisplaySettings displaySettings;
 	};
 	list<Job> m_jobs;
 	Job m_currentJob;

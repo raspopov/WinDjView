@@ -39,8 +39,11 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent)
 	m_bGenAllThumbnails = CAppSettings::bGenAllThumbnails;
 	m_bFullscreenClicks = CAppSettings::bFullscreenClicks;
 
+	m_bWarnCloseMultiple = CAppSettings::bWarnCloseMultiple;
+
 	m_displaySettings = CAppSettings::displaySettings;
 	m_bAdjustDisplay = m_displaySettings.bAdjustDisplay;
+	m_bHQScaling = (m_displaySettings.nScaleMethod != CDisplaySettings::Default);
 }
 
 CSettingsDlg::~CSettingsDlg()
@@ -53,6 +56,8 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_RESTORE_ASSOCS, m_bRestoreAssocs);
 	DDX_Check(pDX, IDC_GEN_ALL_THUMBNAILS, m_bGenAllThumbnails);
 	DDX_Check(pDX, IDC_FULLSCREEN_CLICKS, m_bFullscreenClicks);
+	DDX_Check(pDX, IDC_WARN_CLOSE_MULTIPLE, m_bWarnCloseMultiple);
+	DDX_Check(pDX, IDC_HQ_SCALING, m_bHQScaling);
 
 	DDX_Check(pDX, IDC_ADJUST_DISPLAY, m_bAdjustDisplay);
 	DDX_Control(pDX, IDC_BRIGHTNESS, m_sliderBrightness);
@@ -108,8 +113,10 @@ void CSettingsDlg::OnOK()
 	CAppSettings::bRestoreAssocs = !!m_bRestoreAssocs;
 	CAppSettings::bGenAllThumbnails = !!m_bGenAllThumbnails;
 	CAppSettings::bFullscreenClicks = !!m_bFullscreenClicks;
+	CAppSettings::bWarnCloseMultiple = !!m_bWarnCloseMultiple;
 
 	m_displaySettings.bAdjustDisplay = !!m_bAdjustDisplay;
+	m_displaySettings.nScaleMethod = (m_bHQScaling ? CDisplaySettings::PnmScaleFixed : CDisplaySettings::Default);
 	CAppSettings::displaySettings = m_displaySettings;
 
 	CDialog::OnOK();

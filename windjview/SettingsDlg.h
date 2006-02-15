@@ -46,6 +46,8 @@ public:
 	CString m_strBrightnessValue;
 	CString m_strContrastValue;
 	CString m_strGammaValue;
+	BOOL m_bHQScaling;
+	BOOL m_bWarnCloseMultiple;
 
 protected:
 	CFont m_font;
