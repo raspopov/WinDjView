@@ -146,6 +146,18 @@ BOOL CDjViewApp::InitInstance()
 	m_pMainWnd = pMainFrame;
 	pMainFrame->LockWindowUpdate();
 
+	CControlBar* pBar = pMainFrame->GetControlBar(ID_VIEW_TOOLBAR);
+	if (pBar)
+		pMainFrame->ShowControlBar(pBar, CAppSettings::bToolbar, FALSE);
+
+	pBar = pMainFrame->GetControlBar(ID_VIEW_STATUS_BAR);
+	if (pBar)
+		pMainFrame->ShowControlBar(pBar, CAppSettings::bStatusBar, FALSE);
+
+	pMainFrame->SetWindowPos(NULL, CAppSettings::nWindowPosX, CAppSettings::nWindowPosY,
+				CAppSettings::nWindowWidth, CAppSettings::nWindowHeight,
+				SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+
 	// call DragAcceptFiles only if there's a suffix
 	//  In an MDI app, this should occur immediately after setting m_pMainWnd
 	// Enable drag/drop open
@@ -176,7 +188,7 @@ BOOL CDjViewApp::InitInstance()
 	pMainFrame->SetStartupLanguage();
 
 	pMainFrame->UnlockWindowUpdate();
-	pMainFrame->UpdateWindow();
+	pMainFrame->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 
 	m_bInitialized = true;
 	CChildFrame* pChildFrame = (CChildFrame*)pMainFrame->MDIGetActive();

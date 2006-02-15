@@ -78,7 +78,6 @@ protected:
 	static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 	static HHOOK hHook;
 
-	bool m_bFirstShow;
 	void UpdateSettings();
 
 	CFont m_font;

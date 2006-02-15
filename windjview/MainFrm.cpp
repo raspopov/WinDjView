@@ -84,7 +84,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_COMMAND(ID_VIEW_TOOLBAR, OnViewToolbar)
 	ON_COMMAND(ID_VIEW_STATUS_BAR, OnViewStatusBar)
 	ON_WM_WINDOWPOSCHANGED()
-	ON_WM_SHOWWINDOW()
 	ON_CBN_SELCHANGE(IDC_PAGENUM, OnChangePage)
 	ON_CONTROL(CBN_FINISHEDIT, IDC_PAGENUM, OnChangePageEdit)
 	ON_CONTROL(CBN_CANCELEDIT, IDC_PAGENUM, OnCancelChangePageZoom)
@@ -125,7 +124,7 @@ static UINT indicators[] =
 // CMainFrame construction/destruction
 
 CMainFrame::CMainFrame()
-	: m_pFindDlg(NULL), m_bFirstShow(true), m_historyPos(m_history.end()),
+	: m_pFindDlg(NULL), m_historyPos(m_history.end()),
 	  m_pFullscreenWnd(NULL), m_nLanguage(0)
 {
 }
@@ -300,36 +299,8 @@ void CMainFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 {
 	CMDIFrameWnd::OnWindowPosChanged(lpwndpos);
 
-	if (IsWindowVisible() && !IsIconic() && !m_bFirstShow)
+	if (IsWindowVisible() && !IsIconic() && theApp.m_bInitialized)
 		UpdateSettings();
-}
-
-void CMainFrame::OnShowWindow(BOOL bShow, UINT nStatus)
-{
-	if (bShow && m_bFirstShow)
-	{
-		CControlBar* pBar = GetControlBar(ID_VIEW_TOOLBAR);
-		if (pBar)
-			ShowControlBar(pBar, CAppSettings::bToolbar, FALSE);
-
-		pBar = GetControlBar(ID_VIEW_STATUS_BAR);
-		if (pBar)
-			ShowControlBar(pBar, CAppSettings::bStatusBar, FALSE);
-	}
-
-	CMDIFrameWnd::OnShowWindow(bShow, nStatus);
-
-	if (bShow && m_bFirstShow)
-	{
-		m_bFirstShow = false;
-
-		SetWindowPos(NULL, CAppSettings::nWindowPosX, CAppSettings::nWindowPosY,
-				CAppSettings::nWindowWidth, CAppSettings::nWindowHeight,
-				SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
-
-		if (CAppSettings::bWindowMaximized)
-			ShowWindow(SW_SHOWMAXIMIZED);
-	}
 }
 
 void CMainFrame::OnChangePage()
