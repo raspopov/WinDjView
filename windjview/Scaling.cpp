@@ -159,13 +159,8 @@ GP<GPixmap> RescalePnm(GP<GPixmap> pSrc, UINT nWidth, UINT nHeight)
 
 	UINT cols = pSrc->columns();
 	UINT rows = pSrc->rows();
-	GPixel* indata = (*pSrc)[0];
-	UINT in_rowsize = pSrc->rowsize();
-
 	UINT newcols = nWidth;
 	UINT newrows = nHeight;
-	GPixel* outbuf = (*pGPixmap)[0];
-	UINT out_rowsize = pGPixmap->rowsize();
 
 	// The number of rows we had to fill by stretching because of
 	// rounding error, which made us run out of input rows before we
@@ -211,7 +206,7 @@ GP<GPixmap> RescalePnm(GP<GPixmap> pSrc, UINT nWidth, UINT nHeight)
 		if (newrows == rows)
 		{
 			// shortcut vertical scaling if possible
-			xelrow = indata + rowsread*in_rowsize;
+			xelrow = (*pSrc)[rowsread];
 			++rowsread;
 		}
 		else
@@ -222,7 +217,7 @@ GP<GPixmap> RescalePnm(GP<GPixmap> pSrc, UINT nWidth, UINT nHeight)
 				{
 					if (rowsread < rows)
 					{
-						xelrow = indata + rowsread*in_rowsize;
+						xelrow = (*pSrc)[rowsread];
 						++rowsread;
 					}
 				}
@@ -248,7 +243,7 @@ GP<GPixmap> RescalePnm(GP<GPixmap> pSrc, UINT nWidth, UINT nHeight)
 			{
 				if (rowsread < rows)
 				{
-					xelrow = indata + rowsread*in_rowsize;
+					xelrow = (*pSrc)[rowsread];
 					++rowsread;
 					needtoreadrow = 0;
 				}
@@ -272,9 +267,9 @@ GP<GPixmap> RescalePnm(GP<GPixmap> pSrc, UINT nWidth, UINT nHeight)
 				UINT r = *prs + fracrowtofill * xP->r;
 				UINT g = *pgs + fracrowtofill * xP->g;
 				UINT b = *pbs + fracrowtofill * xP->b;
-				xP->r = (BYTE) (r >>= SCALESHIFT);
-				xP->g = (BYTE) (g >>= SCALESHIFT);
-				xP->b = (BYTE) (b >>= SCALESHIFT);
+				nxP->r = (BYTE) (r >> SCALESHIFT);
+				nxP->g = (BYTE) (g >> SCALESHIFT);
+				nxP->b = (BYTE) (b >> SCALESHIFT);
 				*prs++ = HALFSCALE;
 				*pgs++ = HALFSCALE;
 				*pbs++ = HALFSCALE;
@@ -293,11 +288,11 @@ GP<GPixmap> RescalePnm(GP<GPixmap> pSrc, UINT nWidth, UINT nHeight)
 		if (newcols == cols)
 		{
 			// shortcut X scaling if possible.
-			memcpy(outbuf + row*out_rowsize, xelrow, newcols*sizeof(GPixel));
+			memcpy((*pGPixmap)[row], xelrow, newcols*sizeof(GPixel));
 		}
 		else
 		{
-			horizontal_scale(tempxelrow, outbuf + row*out_rowsize, cols, newcols, sxscale);
+			horizontal_scale(tempxelrow, (*pGPixmap)[row], cols, newcols, sxscale);
 		}
 	}
 
@@ -316,13 +311,8 @@ GP<GBitmap> RescalePnm(GP<GBitmap> pSrc, UINT nWidth, UINT nHeight)
 
 	UINT cols = pSrc->columns();
 	UINT rows = pSrc->rows();
-	BYTE* indata = (*pSrc)[0];
-	UINT in_rowsize = pSrc->rowsize();
-
 	UINT newcols = nWidth;
 	UINT newrows = nHeight;
-	BYTE* outbuf = (*pGBitmap)[0];
-	UINT out_rowsize = pGBitmap->rowsize();
 
 	UINT nPaletteEntries = pSrc->get_grays();
 
@@ -367,7 +357,7 @@ GP<GBitmap> RescalePnm(GP<GBitmap> pSrc, UINT nWidth, UINT nHeight)
 		if (newrows == rows)
 		{
 			// shortcut vertical scaling if possible
-			xelrow = indata + rowsread*in_rowsize;
+			xelrow = (*pSrc)[rowsread];
 			++rowsread;
 		}
 		else
@@ -378,7 +368,7 @@ GP<GBitmap> RescalePnm(GP<GBitmap> pSrc, UINT nWidth, UINT nHeight)
 				{
 					if (rowsread < rows)
 					{
-						xelrow = indata + rowsread*in_rowsize;
+						xelrow = (*pSrc)[rowsread];
 						++rowsread;
 					}
 				}
@@ -400,7 +390,7 @@ GP<GBitmap> RescalePnm(GP<GBitmap> pSrc, UINT nWidth, UINT nHeight)
 			{
 				if (rowsread < rows)
 				{
-					xelrow = indata + rowsread*in_rowsize;
+					xelrow = (*pSrc)[rowsread];
 					++rowsread;
 					needtoreadrow = 0;
 				}
@@ -412,13 +402,11 @@ GP<GBitmap> RescalePnm(GP<GBitmap> pSrc, UINT nWidth, UINT nHeight)
 
 			UINT* prs = rs;
 			UINT col;
-			for (col = 0, xP = xelrow, nxP = tempxelrow; col < cols; ++col, ++xP, ++nxP)
+			for (col = 0, xP = xelrow, nxP = tempxelrow; col < cols; ++col, ++xP, ++nxP, ++prs)
 			{
 				UINT r = *prs + fracrowtofill * grays[*xP];
-				r >>= SCALESHIFT;
-				*nxP = (BYTE) r;
+				*nxP = (BYTE) (r >> SCALESHIFT);
 				*prs = HALFSCALE;
-				++prs;
 			}
 
 			fracrowleft -= fracrowtofill;
@@ -433,11 +421,11 @@ GP<GBitmap> RescalePnm(GP<GBitmap> pSrc, UINT nWidth, UINT nHeight)
 		if (newcols == cols)
 		{
 			// shortcut X scaling if possible
-			memcpy(outbuf + row*out_rowsize, xelrow, newcols*sizeof(BYTE));
+			memcpy((*pGBitmap)[row], xelrow, newcols*sizeof(BYTE));
 		}
 		else
 		{
-			horizontal_scale(tempxelrow, outbuf + row*out_rowsize, cols, newcols, sxscale);
+			horizontal_scale(tempxelrow, (*pGBitmap)[row], cols, newcols, sxscale);
 		}
 	}
 
