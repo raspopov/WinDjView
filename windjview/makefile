@@ -77,6 +77,7 @@ LINK_OBJS = \
 	"$(INTDIR)\PrintDlg.obj" \
 	"$(INTDIR)\ProgressDlg.obj" \
 	"$(INTDIR)\RenderThread.obj" \
+	"$(INTDIR)\Scaling.obj" \
 	"$(INTDIR)\SearchResultsView.obj" \
 	"$(INTDIR)\SettingsDlg.obj" \
 	"$(INTDIR)\stdafx.obj" \
@@ -112,6 +113,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\PrintDlg.obj" : PrintDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\ProgressDlg.obj"	: ProgressDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\RenderThread.obj" : RenderThread.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\Scaling.obj" : Scaling.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\SearchResultsView.obj" : SearchResultsView.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\SettingsDlg.obj" : SettingsDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\ThumbnailsThread.obj" : ThumbnailsThread.cpp "$(INTDIR)" $(PCH)
