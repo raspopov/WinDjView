@@ -25,6 +25,12 @@
 #include "stdafx.h"
 #include "Scaling.h"
 
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
 #define FULLSCALE  4096
 #define SCALESHIFT 12
 #define HALFSCALE  2048
