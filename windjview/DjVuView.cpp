@@ -97,7 +97,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_WM_MOUSEWHEEL()
 	ON_COMMAND(ID_FIND_STRING, OnFindString)
 	ON_COMMAND(ID_FIND_ALL, OnFindAll)
-	ON_NOTIFY(TTN_NEEDTEXT, 0, OnToolTipNeedText)
+	ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNeedText)
 	ON_COMMAND(ID_ZOOM_IN, OnViewZoomIn)
 	ON_COMMAND(ID_ZOOM_OUT, OnViewZoomOut)
 	ON_UPDATE_COMMAND_UI(ID_ZOOM_IN, OnUpdateViewZoomIn)
@@ -4109,7 +4109,7 @@ GP<GMapArea> CDjVuView::GetHyperlinkFromPoint(CPoint point, int* pnPage)
 	return NULL;
 }
 
-BOOL CDjVuView::OnToolTipNeedText(NMHDR* pNMHDR, LRESULT* pResult)
+BOOL CDjVuView::OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult)
 {
 	TOOLTIPTEXT* pTTT = (TOOLTIPTEXT*)pNMHDR;
 

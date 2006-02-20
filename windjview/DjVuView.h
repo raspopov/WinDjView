@@ -365,7 +365,7 @@ protected:
 	afx_msg void OnExportPage();
 	afx_msg void OnFindString();
 	afx_msg void OnFindAll();
-	afx_msg BOOL OnToolTipNeedText(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg BOOL OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnViewZoomIn();
 	afx_msg void OnViewZoomOut();
 	afx_msg void OnUpdateViewZoomIn(CCmdUI* pCmdUI);

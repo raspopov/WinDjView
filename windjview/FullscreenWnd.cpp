@@ -42,7 +42,7 @@ CFullscreenWnd::~CFullscreenWnd()
 BEGIN_MESSAGE_MAP(CFullscreenWnd, CWnd)
 	ON_WM_DESTROY()
 	ON_WM_SETFOCUS()
-	ON_NOTIFY(TTN_NEEDTEXT, 0, OnToolTipNeedText)
+	ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNeedText)
 END_MESSAGE_MAP()
 
 
@@ -131,10 +131,10 @@ void CFullscreenWnd::PostNcDestroy()
 	delete this;
 }
 
-BOOL CFullscreenWnd::OnToolTipNeedText(NMHDR* pNMHDR, LRESULT* pResult)
+BOOL CFullscreenWnd::OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult)
 {
 	if (m_pView == NULL)
 		return false;
 
-	return m_pView->SendMessage(WM_NOTIFY, 0, reinterpret_cast<LPARAM>(pNMHDR));
+	return m_pView->SendMessage(WM_NOTIFY, nID, reinterpret_cast<LPARAM>(pNMHDR));
 }

@@ -45,7 +45,7 @@ protected:
 
 	afx_msg void OnDestroy();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	afx_msg BOOL OnToolTipNeedText(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg BOOL OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()
