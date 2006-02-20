@@ -12,6 +12,8 @@ Changes in version 0.4.1 (2006-):
 + Added an option to warn when closing multiple documents.
 * Fixed saving and restoring maximized main window state.
 * Fixed displaying floating-point numbers in non-English locales.
+* Fixed text selection when a page has nonzero original rotation.
+* Fixed displaying tooltips for annotations in fullscreen mode.
 
 Changes in version 0.4 (2006-01-18):
 ! Unicode build for Windows 2k/XP.

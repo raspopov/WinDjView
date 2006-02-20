@@ -83,7 +83,6 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_LASTPAGE, OnUpdateViewNextpage)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIRSTPAGE, OnUpdateViewPreviouspage)
 	ON_WM_SETFOCUS()
-	ON_WM_KILLFOCUS()
 	ON_WM_SETCURSOR()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
@@ -98,7 +97,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_WM_MOUSEWHEEL()
 	ON_COMMAND(ID_FIND_STRING, OnFindString)
 	ON_COMMAND(ID_FIND_ALL, OnFindAll)
-	ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNeedText)
+	ON_NOTIFY(TTN_NEEDTEXT, 0, OnToolTipNeedText)
 	ON_COMMAND(ID_ZOOM_IN, OnViewZoomIn)
 	ON_COMMAND(ID_ZOOM_OUT, OnViewZoomOut)
 	ON_UPDATE_COMMAND_UI(ID_ZOOM_IN, OnUpdateViewZoomIn)
@@ -253,7 +252,7 @@ void CDjVuView::OnDraw(CDC* pDC)
 		for (GPosition pos = page.selection; pos; ++pos)
 		{
 			GRect rect = page.selection[pos]->rect;
-			CRect rcText = TranslatePageRect(nPage, rect);
+			CRect rcText = TranslatePageRect(nPage, rect, true);
 
 			rcText.OffsetRect(-ptScrollPos);
 			dcOffscreen.InvertRect(rcText);
@@ -483,8 +482,16 @@ void CDjVuView::OnInitialUpdate()
 	m_nTimerID = SetTimer(1, 100, NULL);
 	ShowCursor();
 
-	if (m_toolTip.Create(this, TTS_ALWAYSTIP) && m_toolTip.AddTool(this))
+	if (m_toolTip.Create(this, TTS_ALWAYSTIP | TTS_NOPREFIX) && m_toolTip.AddTool(this))
 	{
+		TOOLINFO info;
+		info.cbSize = sizeof(TOOLINFO);
+		info.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+		info.hwnd = m_hWnd;
+		info.uId = (UINT)m_hWnd;
+		info.lpszText = LPSTR_TEXTCALLBACK;
+		m_toolTip.SetToolInfo(&info);
+
 		m_toolTip.SendMessage(TTM_SETMAXTIPWIDTH, 0, SHRT_MAX);
 		m_toolTip.Activate(false);
 	}
@@ -618,7 +625,7 @@ void CDjVuView::RenderPage(int nPage, int nTimeout)
 	{
 		UpdatePageSizes(page.ptOffset.y);
 
-		int nUpdatedPos = page.ptOffset.y - 1 - min(c_nMargin, c_nPageGap);
+		int nUpdatedPos = page.ptOffset.y - 1 - (nPage == 0 ? c_nMargin : min(c_nMargin, c_nPageGap));
 		ScrollToPositionNoRepaint(CPoint(GetScrollPos(SB_HORZ), nUpdatedPos));
 	}
 
@@ -738,7 +745,7 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 
 			int nPage = GetCurrentPage();
 			while (nPage < m_nPageCount - 1 &&
-				ptBottom.y > m_pages[nPage].rcDisplay.bottom)
+					ptBottom.y >= m_pages[nPage].ptOffset.y + m_pages[nPage].szDisplay.cy)
 				++nPage;
 
 			nAnchorPage = nPage;
@@ -758,10 +765,10 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 				Page& page = m_pages[nPage];
 				page.ptOffset.Offset(c_nMargin, nTop);
 				page.rcDisplay.OffsetRect(0, nTop);
-				page.rcDisplay.InflateRect(0, 0, c_nMargin + c_nShadowMargin,
-						(nPage < m_nPageCount - 1 ? c_nPageGap : c_nShadowMargin));
+				page.rcDisplay.InflateRect(0, nPage == 0 ? c_nMargin : c_nPageGap,
+					c_nMargin + c_nShadowMargin, nPage == m_nPageCount - 1 ? c_nShadowMargin : 0);
 
-				nTop = page.rcDisplay.bottom;
+				nTop = page.rcDisplay.bottom + c_nPageGap;
 
 				if (page.rcDisplay.Width() > m_szDisplay.cx)
 					m_szDisplay.cx = page.rcDisplay.Width();
@@ -869,15 +876,15 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 
 				page.ptOffset.Offset(c_nMargin, nTop);
 				page.rcDisplay.OffsetRect(0, nTop);
-				page.rcDisplay.InflateRect(0, 0, c_nMargin,
-						GetNextPage(nPage) < m_nPageCount ? c_nPageGap : c_nShadowMargin);
+				page.rcDisplay.InflateRect(0, nPage == 0 ? c_nMargin : c_nPageGap,
+					c_nMargin, GetNextPage(nPage) >= m_nPageCount ? c_nShadowMargin : 0);
 
 				if (pNextPage != NULL)
 				{
 					pNextPage->ptOffset.Offset(c_nMargin, nTop);
 					pNextPage->rcDisplay.OffsetRect(c_nMargin, nTop);
-					pNextPage->rcDisplay.InflateRect(0, 0, c_nShadowMargin,
-						(GetNextPage(nPage) < m_nPageCount ? c_nPageGap : c_nShadowMargin));
+					pNextPage->rcDisplay.InflateRect(0, nPage == 0 ? c_nMargin : c_nPageGap,
+						c_nShadowMargin, GetNextPage(nPage) >= m_nPageCount ? c_nShadowMargin : 0);
 
 					// Align pages horizontally
 					if (page.szDisplay.cx < pNextPage->szDisplay.cx)
@@ -903,7 +910,7 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 						m_szDisplay.cx = page.rcDisplay.Width();
 				}
 
-				nTop = page.rcDisplay.bottom;
+				nTop = page.rcDisplay.bottom + c_nPageGap;
 
 				if (page.bInfoLoaded)
 					page.bHasSize = true;
@@ -2019,29 +2026,18 @@ void CDjVuView::OnSetFocus(CWnd* pOldWnd)
 {
 	CMyScrollView::OnSetFocus(pOldWnd);
 
-	GetMainFrame()->UpdatePageCombo(this);
-	GetMainFrame()->UpdateZoomCombo(m_nZoomType, m_fZoom);
+	if (m_nMode != Fullscreen)
+	{
+		GetMainFrame()->UpdatePageCombo(this);
+		GetMainFrame()->UpdateZoomCombo(m_nZoomType, m_fZoom);
+	}
 
 	m_nClickCount = 0;
 
 	if (m_nMode == Fullscreen)
 	{
-		GetParent()->SetWindowPos(&wndTopMost, 0, 0, 0, 0,
-				SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-	}
-}
-
-void CDjVuView::OnKillFocus(CWnd* pNewWnd)
-{
-	CMyScrollView::OnKillFocus(pNewWnd);
-
-	if (m_nMode == Fullscreen && (!::IsWindow(pNewWnd->GetSafeHwnd())
-			|| !GetMainFrame()->IsChild(pNewWnd)))
-	{
-		GetParent()->SetWindowPos(&wndNoTopMost, 0, 0, 0, 0,
-			SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 		GetParent()->SetWindowPos(&wndTop, 0, 0, 0, 0,
-			SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+				SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
 	}
 }
 
@@ -2204,7 +2200,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 	CMyScrollView::OnLButtonDown(nFlags, point);
 }
 
-CPoint CDjVuView::TranslateToDjVuCoord(int nPage, const CPoint& point)
+CPoint CDjVuView::TranslateTextCoordToDjVu(int nPage, const CPoint& point)
 {
 	const Page& page = m_pages[nPage];
 	CSize szPage = page.GetSize(m_nRotate);
@@ -2215,18 +2211,22 @@ CPoint CDjVuView::TranslateToDjVuCoord(int nPage, const CPoint& point)
 	CPoint ptResult(static_cast<int>(point.x * fRatioX),
 			static_cast<int>(szPage.cy - point.y * fRatioY));
 
-	if (m_nRotate != 0)
+	int nRotate = m_nRotate + page.info.nInitialRotate;
+	if (nRotate != 0)
 	{
 		GRect rect(ptResult.x, ptResult.y);
 
 		GRect input(0, 0, szPage.cx, szPage.cy);
 		GRect output(0, 0, page.info.szPage.cx, page.info.szPage.cy);
 
+		if ((page.info.nInitialRotate & 1) != 0)
+			swap(output.xmax, output.ymax);
+
 		GRectMapper mapper;
 		mapper.clear();
 		mapper.set_input(input);
 		mapper.set_output(output);               
-		mapper.rotate(4 - m_nRotate);
+		mapper.rotate(4 - nRotate);
 		mapper.map(rect);
 
 		ptResult = CPoint(rect.xmin, rect.ymin);
@@ -2293,7 +2293,7 @@ int CDjVuView::GetTextPosFromPoint(int nPage, CPoint point)
 	point.x = max(0, min(page.szDisplay.cx - 1, point.x));
 	point.y = max(0, min(page.szDisplay.cy - 1, point.y));
 
-	CPoint pt = TranslateToDjVuCoord(nPage, point);
+	CPoint pt = TranslateTextCoordToDjVu(nPage, point);
 
 	int nPos = -1;
 	GetTextPosFromTop(page.pText->page_zone, pt, nPos);
@@ -2704,7 +2704,7 @@ void CDjVuView::OnPageInformation()
 		return;
 	}
 
-	CString strDescr = pImage->get_long_description();
+	CString strDescr = MakeCString(pImage->get_long_description());
 	CString strInfo, strLine;
 
 	int nLine = 0;
@@ -3504,18 +3504,28 @@ void CDjVuView::OnExportPage()
 
 GUTF8String MakeUTF8String(const CString& strText)
 {
+	int nSize;
+
 #ifdef _UNICODE
-	int nSize = ::WideCharToMultiByte(CP_UTF8, 0, strText, -1, NULL, 0, NULL, NULL);
+	LPCWSTR pszUnicodeText = strText;
+#else
+	nSize = ::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)strText, -1, NULL, 0);
+	LPWSTR pszUnicodeText = new WCHAR[nSize];
+	::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)strText, -1, pszUnicodeText, nSize);
+#endif
+
+	nSize = ::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, NULL, 0, NULL, NULL);
 	LPSTR pszTextUTF8 = new CHAR[nSize];
-	::WideCharToMultiByte(CP_UTF8, 0, strText, -1, pszTextUTF8, nSize, NULL, NULL);
+	::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, pszTextUTF8, nSize, NULL, NULL);
 
 	GUTF8String utf8String(pszTextUTF8);
 	delete[] pszTextUTF8;
 
-	return utf8String;
-#else
-	return GNativeString(strText).NativeToUTF8();
+#ifndef _UNICODE
+	delete[] pszUnicodeText;
 #endif
+
+	return utf8String;
 }
 
 void CDjVuView::OnFindString()
@@ -3945,21 +3955,25 @@ void CDjVuView::EnsureSelectionVisible(int nPage, const DjVuSelection& selection
 	}
 }
 
-CRect CDjVuView::TranslatePageRect(int nPage, GRect rect) const
+CRect CDjVuView::TranslatePageRect(int nPage, GRect rect, bool bText) const
 {
 	const Page& page = m_pages[nPage];
 	CSize szPage = page.GetSize(m_nRotate);
 
-	if (m_nRotate != 0)
+	int nRotate = m_nRotate + (bText ? page.info.nInitialRotate : 0);
+	if (nRotate != 0)
 	{
 		GRect input(0, 0, szPage.cx, szPage.cy);
 		GRect output(0, 0, page.info.szPage.cx, page.info.szPage.cy);
 
+		if (bText && (page.info.nInitialRotate & 1) != 0)
+			swap(output.xmax, output.ymax);
+
 		GRectMapper mapper;
 		mapper.clear();
 		mapper.set_input(input);
-		mapper.set_output(output);               
-		mapper.rotate(4 - m_nRotate);
+		mapper.set_output(output);
+		mapper.rotate(4 - nRotate);
 		mapper.unmap(rect);
 	}
 
@@ -4037,6 +4051,7 @@ void CDjVuView::UpdateActiveHyperlink(CPoint point)
 			rcArea.InflateRect(0, 0, 1, 1);
 			rcArea.OffsetRect(-GetScrollPosition());
 			InvalidateRect(rcArea);
+			GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
 		}
 
 		m_pActiveLink = pHyperlink;
@@ -4049,6 +4064,9 @@ void CDjVuView::UpdateActiveHyperlink(CPoint point)
 			rcArea.InflateRect(0, 0, 1, 1);
 			rcArea.OffsetRect(-GetScrollPosition());
 			InvalidateRect(rcArea);
+
+			if (m_nMode != Fullscreen)
+				GetMainFrame()->SetMessageText(MakeCString(m_pActiveLink->url));
 		}
 	}
 }
@@ -4091,10 +4109,9 @@ GP<GMapArea> CDjVuView::GetHyperlinkFromPoint(CPoint point, int* pnPage)
 	return NULL;
 }
 
-BOOL CDjVuView::OnToolTipNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
+BOOL CDjVuView::OnToolTipNeedText(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	TOOLTIPTEXT* pTTT = (TOOLTIPTEXT*)pNMHDR;
-	BOOL bHandledNotify = FALSE;
 
 	CPoint ptCursor;
 	::GetCursorPos(&ptCursor);
@@ -4103,22 +4120,26 @@ BOOL CDjVuView::OnToolTipNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
 	CRect rcClient;
 	GetClientRect(rcClient);
 
-	// Make certain that the cursor is in the client rect, because the
-	// mainframe also wants these messages to provide tooltips for the toolbar.
+	// Ensure that the cursor is in the client rect, because main frame
+	// also wants these messages to provide tooltips for the toolbar
 	if (!rcClient.PtInRect(ptCursor))
-		return FALSE;
+		return false;
 
 	if (m_pActiveLink != NULL)
 	{
-		CString strTip = m_pActiveLink->url;
+		m_strToolTip = MakeCString(m_pActiveLink->comment);
+		pTTT->lpszText = m_strToolTip.GetBuffer(0);
 
-		ASSERT(strTip.GetLength() < sizeof(pTTT->szText));
-		_tcscpy(pTTT->szText, strTip);
+		m_toolTip.SetWindowPos(&wndTopMost, 0, 0, 0, 0,
+				SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER);
 	}
 	else
+	{
+		pTTT->lpszText = pTTT->szText;
 		pTTT->szText[0] = '\0';
+	}
 
-	return TRUE;
+	return true;
 }
 
 BOOL CDjVuView::PreTranslateMessage(MSG* pMsg)
@@ -4467,20 +4488,35 @@ CString MakeCString(const GUTF8String& text)
 	CString strResult;
 
 	// Prepare Unicode text
-	int nSize = ::MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)text, -1, NULL, 0);
-	LPWSTR pszUnicodeText = new WCHAR[nSize];
-	::MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)text, -1, pszUnicodeText, nSize);
+	LPWSTR pszUnicodeText = NULL;
+	int nResult = 0;
 
+	// Bookmarks may not be encoded in UTF-8 (when file was created by old software)
+	// Treat input string as non-UTF8 if it is not well-formed
+	int nSize = ::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, (LPCSTR)text, -1, NULL, 0);
+	if (nSize != 0)
+	{
+		pszUnicodeText = new WCHAR[nSize];
+		nResult = ::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, (LPCSTR)text, -1, pszUnicodeText, nSize);
+	}
+
+	if (nResult != 0)
+	{
 #ifdef _UNICODE
-	strResult = pszUnicodeText;
+		strResult = pszUnicodeText;
 #else
-	// Prepare ANSI text
-	nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-		pszUnicodeText, -1, NULL, 0, NULL, NULL);
-	::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-		pszUnicodeText, -1, strResult.GetBuffer(nSize), nSize, NULL, NULL);
-	strResult.ReleaseBuffer();
+		// Prepare ANSI text
+		nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+			pszUnicodeText, -1, NULL, 0, NULL, NULL);
+		::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+			pszUnicodeText, -1, strResult.GetBuffer(nSize), nSize, NULL, NULL);
+		strResult.ReleaseBuffer();
 #endif
+	}
+	else
+	{
+		strResult = (LPCSTR)text;
+	}
 
 	delete[] pszUnicodeText;
 

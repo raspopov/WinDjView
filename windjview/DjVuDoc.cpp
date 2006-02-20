@@ -395,7 +395,11 @@ PageInfo CDjVuDoc::ReadPageInfo(int nPage)
 				// Check data for consistency
 				pageInfo.szPage.cx = max(pInfo->width, 0);
 				pageInfo.szPage.cy = max(pInfo->height, 0);
+				pageInfo.nInitialRotate = pInfo->orientation;
 				pageInfo.nDPI = max(pInfo->dpi, 0);
+
+				if ((pInfo->orientation & 1) != 0)
+					swap(pageInfo.szPage.cx, pageInfo.szPage.cy);
 			}
 			else if (chkid == "PM44" || chkid == "BM44")
 			{

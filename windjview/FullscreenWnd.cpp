@@ -42,6 +42,7 @@ CFullscreenWnd::~CFullscreenWnd()
 BEGIN_MESSAGE_MAP(CFullscreenWnd, CWnd)
 	ON_WM_DESTROY()
 	ON_WM_SETFOCUS()
+	ON_NOTIFY(TTN_NEEDTEXT, 0, OnToolTipNeedText)
 END_MESSAGE_MAP()
 
 
@@ -128,4 +129,12 @@ void CFullscreenWnd::PostNcDestroy()
 {
 	// Should be created on heap
 	delete this;
+}
+
+BOOL CFullscreenWnd::OnToolTipNeedText(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	if (m_pView == NULL)
+		return false;
+
+	return m_pView->SendMessage(WM_NOTIFY, 0, reinterpret_cast<LPARAM>(pNMHDR));
 }

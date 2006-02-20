@@ -27,12 +27,13 @@ class CDjVuView;
 
 struct PageInfo
 {
-	PageInfo() : szPage(0, 0), nDPI(0) {}
-	PageInfo(GP<DjVuImage> pImage) : szPage(0, 0), nDPI(0)
+	PageInfo() : szPage(0, 0), nDPI(0), nInitialRotate(0) {}
+	PageInfo(GP<DjVuImage> pImage) : szPage(0, 0), nDPI(0), nInitialRotate(0)
 	{
 		if (pImage != NULL)
 		{
 			RotateImage(pImage, 0);
+			nInitialRotate = pImage->get_rotate();
 			szPage = CSize(pImage->get_width(), pImage->get_height());
 			nDPI = pImage->get_dpi();
 			if (szPage.cx <= 0 || szPage.cy <= 0)
@@ -58,6 +59,7 @@ struct PageInfo
 	}
 
 	CSize szPage;
+	int nInitialRotate;
 	int nDPI;
 	GP<ByteStream> pTextStream;
 	GP<ByteStream> pAnnoStream;

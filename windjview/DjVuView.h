@@ -144,6 +144,7 @@ public:
 
 protected:
 	CToolTipCtrl m_toolTip;
+	CString m_strToolTip;
 	CRenderThread* m_pRenderThread;
 	CEvent m_evtRendered;
 	bool m_bShiftDown;
@@ -292,7 +293,7 @@ protected:
 	bool IsSelectionVisible(int nPage, const DjVuSelection& selection);
 	void EnsureSelectionVisible(int nPage, const DjVuSelection& selection);
 	CRect GetSelectionRect(int nPage, const DjVuSelection& selection) const;
-	CRect TranslatePageRect(int nPage, GRect rect) const;
+	CRect TranslatePageRect(int nPage, GRect rect, bool bText = false) const;
 	bool m_bInsideUpdateLayout;
 
 	GP<GMapArea> m_pActiveLink;
@@ -302,7 +303,7 @@ protected:
 
 	int m_nMode;
 	int m_nSelStartPos;
-	CPoint TranslateToDjVuCoord(int nPage, const CPoint& point);
+	CPoint TranslateTextCoordToDjVu(int nPage, const CPoint& point);
 	void UpdateTextSelection();
 	int GetTextPosFromPoint(int nPage, CPoint point);
 	void GetTextPosFromTop(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos);
@@ -350,7 +351,6 @@ protected:
 	afx_msg void OnViewFirstpage();
 	afx_msg void OnViewLastpage();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	afx_msg void OnKillFocus(CWnd* pNewWnd);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
@@ -365,7 +365,7 @@ protected:
 	afx_msg void OnExportPage();
 	afx_msg void OnFindString();
 	afx_msg void OnFindAll();
-	afx_msg BOOL OnToolTipNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg BOOL OnToolTipNeedText(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnViewZoomIn();
 	afx_msg void OnViewZoomOut();
 	afx_msg void OnUpdateViewZoomIn(CCmdUI* pCmdUI);
