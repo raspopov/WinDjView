@@ -13,6 +13,7 @@ Changes in version 0.4.1 (2006-):
 * Fixed saving and restoring maximized main window state.
 * Fixed displaying floating-point numbers in non-English locales.
 * Fixed text selection when a page has nonzero original rotation.
+* Fixed page caching (caused high CPU and memory usage in some situations).
 * Fixed displaying tooltips for annotations in fullscreen mode.
 
 Changes in version 0.4 (2006-01-18):

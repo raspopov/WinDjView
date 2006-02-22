@@ -20,8 +20,6 @@
 
 #pragma once
 
-#define WM_RENDER_FINISHED (WM_APP + 2)
-
 #include "DjVuView.h"
 
 class CDjVuDoc;
@@ -39,6 +37,7 @@ public:
 	void AddDecodeJob(int nPage);
 	void AddReadInfoJob(int nPage);
 	void AddCleanupJob(int nPage);
+	void RemoveJobs(int nPage);
 
 	static CDIB* Render(GP<DjVuImage> pImage, const CSize& size,
 		const CDisplaySettings& displaySettings, int nDisplayMode = CDjVuView::Color);

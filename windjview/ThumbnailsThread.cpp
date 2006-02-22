@@ -59,6 +59,8 @@ void CThumbnailsThread::Stop()
 
 DWORD WINAPI CThumbnailsThread::RenderThreadProc(LPVOID pvData)
 {
+	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+
 	CThumbnailsThread* pData = reinterpret_cast<CThumbnailsThread*>(pvData);
 
 	HANDLE hEvents[] = { pData->m_jobReady.m_hObject, pData->m_stop.m_hObject };
@@ -79,37 +81,43 @@ DWORD WINAPI CThumbnailsThread::RenderThreadProc(LPVOID pvData)
 		pData->m_bRejectCurrentJob = false;
 		pData->m_lock.Unlock();
 
-		pData->Render(job);
+		CDIB* pBitmap = pData->Render(job);
 
 		pData->m_lock.Lock();
+		bool bNotify = (!pData->m_bRejectCurrentJob && ::IsWindow(pData->m_pOwner->m_hWnd));
 		pData->m_currentJob.nPage = -1;
 		if (bHasMoreJobs && !pData->m_bPaused)
 			pData->m_jobReady.SetEvent();
 		pData->m_lock.Unlock();
+
+		if (bNotify)
+			pData->m_pOwner->ThumbnailRendered(job.nPage, pBitmap);
 
 		if (::WaitForSingleObject(pData->m_stop.m_hObject, 0) == WAIT_OBJECT_0)
 			break;
 	}
 
 	pData->m_finished.SetEvent();
+	::CoUninitialize();
 	return 0;
 }
 
 void CThumbnailsThread::PauseJobs()
 {
+	m_lock.Lock();
 	m_bPaused = true;
+	m_lock.Unlock();
 }
 
 void CThumbnailsThread::ResumeJobs()
 {
-	m_bPaused = false;
-
 	m_lock.Lock();
-	bool bHasJobs = !m_jobs.empty();
-	m_lock.Unlock();
 
-	if (bHasJobs)
+	m_bPaused = false;
+	if (!m_jobs.empty())
 		m_jobReady.SetEvent();
+
+	m_lock.Unlock();
 }
 
 void CThumbnailsThread::ClearQueue()
@@ -119,7 +127,7 @@ void CThumbnailsThread::ClearQueue()
 	m_lock.Unlock();
 }
 
-void CThumbnailsThread::Render(Job& job)
+CDIB* CThumbnailsThread::Render(Job& job)
 {
 	CDIB* pBitmap = NULL;
 
@@ -149,13 +157,7 @@ void CThumbnailsThread::Render(Job& job)
 		pBitmap = NULL;
 	}
 
-	m_lock.Lock();
-	if (!m_bRejectCurrentJob && ::IsWindow(m_pOwner->m_hWnd))
-	{
-		m_pOwner->PostMessage(WM_RENDER_THUMB_FINISHED,
-			job.nPage, reinterpret_cast<LPARAM>(pBitmap));
-	}
-	m_lock.Unlock();
+	return pBitmap;
 }
 
 void CThumbnailsThread::AddJob(int nPage, int nRotate, const CDisplaySettings& displaySettings)
@@ -175,10 +177,10 @@ void CThumbnailsThread::AddJob(int nPage, int nRotate, const CDisplaySettings& d
 
 	m_jobs.push_front(job);
 
-	m_lock.Unlock();
-
 	if (!m_bPaused)
 		m_jobReady.SetEvent();
+
+	m_lock.Unlock();
 }
 
 void CThumbnailsThread::RejectCurrentJob()

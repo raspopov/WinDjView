@@ -40,6 +40,9 @@ CString MakeCString(const GUTF8String& text);
 CString MakePreviewString(const GUTF8String& text, int nStart, int nEnd);
 
 
+#define WM_PAGE_DECODED (WM_APP + 1)
+#define WM_PAGE_RENDERED (WM_APP + 2)
+
 class CDjVuView : public CMyScrollView
 {
 protected: // create from serialization only
@@ -83,6 +86,9 @@ public:
 	void OnSettingsChanged();
 	void UpdateShiftKey(bool bShiftDown);
 	void UpdateVisiblePages();
+
+	void PageRendered(int nPage, CDIB* pDIB);
+	void PageDecoded(int nPage);
 
 	enum ZoomType
 	{
@@ -155,7 +161,11 @@ protected:
 	CBitmap* m_pOffscreenBitmap;
 	CSize m_szOffscreen;
 
+	CCriticalSection m_dataLock;
+	list<CDIB*> m_bitmaps;
+
 	int m_nPage, m_nPageCount;
+	int m_nPendingPage;
 	CSize m_szDisplay;
 	int CalcTopPage() const;
 	void RenderPage(int nPage, int nTimeout = -1);
@@ -328,12 +338,8 @@ protected:
 	static HCURSOR hCursorLink;
 	static HCURSOR hCursorText;
 
-public:
-	int m_nPendingPage;
-	afx_msg LRESULT OnRenderFinished(WPARAM wParam, LPARAM lParam);
-
-	// Generated message map functions
 protected:
+	// Generated message map functions
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	afx_msg void OnPageInformation();
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
@@ -360,6 +366,7 @@ protected:
 	afx_msg void OnViewLayout(UINT nID);
 	afx_msg void OnUpdateViewLayout(CCmdUI* pCmdUI);
 	afx_msg LRESULT OnPageDecoded(WPARAM wParam, LPARAM lParam = 0);
+	afx_msg LRESULT OnPageRendered(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnDestroy();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnExportPage();

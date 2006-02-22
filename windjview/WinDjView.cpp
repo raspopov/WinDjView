@@ -111,6 +111,8 @@ BOOL CDjViewApp::InitInstance()
 {
 	_tsetlocale(LC_ALL, _T(""));
 
+	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+
 	// InitCommonControls() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
 	// visual styles.  Otherwise, any window creation will fail.
@@ -493,6 +495,8 @@ void CDjViewApp::SaveSettings()
 int CDjViewApp::ExitInstance()
 {
 	SaveSettings();
+
+	::CoUninitialize();
 
 	return CWinApp::ExitInstance();
 }

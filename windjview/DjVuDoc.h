@@ -20,10 +20,8 @@
 
 #pragma once
 
-#define WM_PAGE_DECODED (WM_APP + 1)
 
 class CDjVuView;
-
 
 struct PageInfo
 {

@@ -27,6 +27,8 @@ class CDjVuDoc;
 class CThumbnailsThread;
 
 
+#define WM_THUMBNAIL_RENDERED (WM_APP + 3)
+
 // CThumbnailsView
 
 class CThumbnailsView : public CMyScrollView
@@ -55,6 +57,8 @@ public:
 	void RestartThreads();
 	void OnSettingsChanged();
 
+	void ThumbnailRendered(int nPage, CDIB* pDIB);
+
 // Overrides
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
@@ -79,6 +83,9 @@ protected:
 	bool m_bVisible;
 	int m_nRotate;
 	int m_nPagesInRow;
+
+	CCriticalSection m_dataLock;
+	list<CDIB*> m_bitmaps;
 
 	CDisplaySettings m_displaySetting;
 
@@ -124,7 +131,7 @@ protected:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
 	afx_msg void OnDestroy();
-	afx_msg LRESULT OnRenderFinished(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnThumbnailRendered(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	DECLARE_MESSAGE_MAP()
 };

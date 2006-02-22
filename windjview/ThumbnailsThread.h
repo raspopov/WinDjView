@@ -22,9 +22,6 @@
 
 #include "AppSettings.h"
 
-
-#define WM_RENDER_THUMB_FINISHED (WM_APP + 3)
-
 class CDjVuDoc;
 class CThumbnailsView;
 
@@ -68,5 +65,5 @@ private:
 	bool m_bRejectCurrentJob;
 
 	static DWORD WINAPI RenderThreadProc(LPVOID pvData);
-	void Render(Job& job);
+	CDIB* Render(Job& job);
 };

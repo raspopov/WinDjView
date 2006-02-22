@@ -62,7 +62,7 @@ BEGIN_MESSAGE_MAP(CThumbnailsView, CMyScrollView)
 	ON_WM_DESTROY()
 	ON_WM_MOUSEWHEEL()
 	ON_WM_MOUSEACTIVATE()
-	ON_MESSAGE(WM_RENDER_THUMB_FINISHED, OnRenderFinished)
+	ON_MESSAGE(WM_THUMBNAIL_RENDERED, OnThumbnailRendered)
 	ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
@@ -88,6 +88,14 @@ CThumbnailsView::~CThumbnailsView()
 {
 	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 		m_pages[nPage].DeleteBitmap();
+
+	m_dataLock.Lock();
+
+	for (list<CDIB*>::iterator it = m_bitmaps.begin(); it != m_bitmaps.end(); ++it)
+		delete *it;
+	m_bitmaps.clear();
+
+	m_dataLock.Unlock();
 }
 
 // CThumbnailsView drawing
@@ -796,12 +804,19 @@ void CThumbnailsView::UpdatePage(int nPage, CThumbnailsThread* pThread)
 	}
 }
 
-LRESULT CThumbnailsView::OnRenderFinished(WPARAM wParam, LPARAM lParam)
+LRESULT CThumbnailsView::OnThumbnailRendered(WPARAM wParam, LPARAM lParam)
 {
 	int nPage = (int)wParam;
 
 	Page& page = m_pages[nPage];
-	CDIB* pBitmap = reinterpret_cast<CDIB*>(lParam);
+
+	m_dataLock.Lock();
+	list<CDIB*>::iterator it;
+	memcpy(&it, &lParam, sizeof(LPARAM));
+
+	CDIB* pBitmap = *it;
+	m_bitmaps.erase(it);
+	m_dataLock.Unlock();
 
 	page.DeleteBitmap();
 	page.pBitmap = pBitmap;
@@ -812,6 +827,22 @@ LRESULT CThumbnailsView::OnRenderFinished(WPARAM wParam, LPARAM lParam)
 		UpdateWindow();
 
 	return 0;
+}
+
+void CThumbnailsView::ThumbnailRendered(int nPage, CDIB* pDIB)
+{
+	m_dataLock.Lock();
+
+	m_bitmaps.push_front(pDIB);
+	list<CDIB*>::iterator it = m_bitmaps.begin();
+
+	LPARAM lParam;
+	VERIFY(sizeof(it) == sizeof(LPARAM));
+	memcpy(&lParam, &it, sizeof(LPARAM));
+
+	m_dataLock.Unlock();
+
+	PostMessage(WM_THUMBNAIL_RENDERED, nPage, lParam);
 }
 
 void CThumbnailsView::RecalcPageRects(int nPage)

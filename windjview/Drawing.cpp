@@ -791,6 +791,8 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPag
 
 DWORD WINAPI PrintThreadProc(LPVOID pvData)
 {
+	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+
 	IProgressInfo* pProgress = reinterpret_cast<IProgressInfo*>(pvData);
 	CPrintDlg& dlg = *reinterpret_cast<CPrintDlg*>(pProgress->GetUserData());
 
@@ -915,6 +917,8 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 	print_dc.EndDoc();
 
 	pProgress->StopProgress(0);
+
+	::CoUninitialize();
 	return 0;
 }
 

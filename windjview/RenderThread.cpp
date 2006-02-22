@@ -59,6 +59,8 @@ void CRenderThread::Stop()
 
 DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 {
+	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+
 	CRenderThread* pData = reinterpret_cast<CRenderThread*>(pvData);
 
 	HANDLE hEvents[] = { pData->m_jobReady.m_hObject, pData->m_stop.m_hObject };
@@ -76,8 +78,6 @@ DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 		pData->m_currentJob = job;
 		pData->m_jobs.pop_front();
 		pData->m_pages[job.nPage] = pData->m_jobs.end();
-
-		bool bHasMoreJobs = !pData->m_jobs.empty();
 		pData->m_lock.Unlock();
 
 		switch (job.type)
@@ -88,12 +88,12 @@ DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 
 		case DECODE:
 			pData->m_pDoc->GetPage(job.nPage);
-			pData->m_pOwner->PostMessage(WM_PAGE_DECODED, job.nPage);
+			pData->m_pOwner->PageDecoded(job.nPage);
 			break;
 
 		case READINFO:
 			pData->m_pDoc->GetPageInfo(job.nPage);
-			pData->m_pOwner->PostMessage(WM_PAGE_DECODED, job.nPage);
+			pData->m_pOwner->PageDecoded(job.nPage);
 			break;
 
 		case CLEANUP:
@@ -101,33 +101,38 @@ DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 			break;
 		}
 
+		pData->m_lock.Lock();
 		pData->m_currentJob.nPage = -1;
-		if (bHasMoreJobs && !pData->m_bPaused)
+		if (!pData->m_jobs.empty() && !pData->m_bPaused)
 			pData->m_jobReady.SetEvent();
+		pData->m_lock.Unlock();
 
 		if (::WaitForSingleObject(pData->m_stop.m_hObject, 0) == WAIT_OBJECT_0)
 			break;
 	}
 
 	pData->m_finished.SetEvent();
+
+	::CoUninitialize();
 	return 0;
 }
 
 void CRenderThread::PauseJobs()
 {
+	m_lock.Lock();
 	m_bPaused = true;
+	m_lock.Unlock();
 }
 
 void CRenderThread::ResumeJobs()
 {
-	m_bPaused = false;
-
 	m_lock.Lock();
-	bool bHasJobs = !m_jobs.empty();
-	m_lock.Unlock();
 
-	if (bHasJobs)
+	m_bPaused = false;
+	if (!m_jobs.empty())
 		m_jobReady.SetEvent();
+
+	m_lock.Unlock();
 }
 
 void CRenderThread::RemoveFromQueue(int nPage)
@@ -160,10 +165,7 @@ void CRenderThread::Render(Job& job)
 		pBitmap = NULL;
 	}
 
-	if (m_pOwner->m_nPendingPage == job.nPage)
-		m_pOwner->SendMessage(WM_RENDER_FINISHED, job.nPage, reinterpret_cast<LPARAM>(pBitmap));
-	else
-		m_pOwner->PostMessage(WM_RENDER_FINISHED, job.nPage, reinterpret_cast<LPARAM>(pBitmap));
+	m_pOwner->PageRendered(job.nPage, pBitmap);
 }
 
 CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
@@ -297,8 +299,15 @@ void CRenderThread::AddJob(const Job& job)
 	m_jobs.push_front(job);
 	m_pages[job.nPage] = m_jobs.begin();
 
-	m_lock.Unlock();
-
 	if (!m_bPaused)
 		m_jobReady.SetEvent();
+
+	m_lock.Unlock();
+}
+
+void CRenderThread::RemoveJobs(int nPage)
+{
+	m_lock.Lock();
+	RemoveFromQueue(nPage);
+	m_lock.Unlock();
 }

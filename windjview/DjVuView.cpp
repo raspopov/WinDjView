@@ -91,7 +91,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_WM_CONTEXTMENU()
 	ON_COMMAND_RANGE(ID_LAYOUT_SINGLEPAGE, ID_LAYOUT_CONTINUOUS_FACING, OnViewLayout)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_LAYOUT_SINGLEPAGE, ID_LAYOUT_CONTINUOUS_FACING, OnUpdateViewLayout)
-	ON_MESSAGE(WM_RENDER_FINISHED, OnRenderFinished)
+	ON_MESSAGE(WM_PAGE_RENDERED, OnPageRendered)
 	ON_MESSAGE(WM_PAGE_DECODED, OnPageDecoded)
 	ON_WM_DESTROY()
 	ON_WM_MOUSEWHEEL()
@@ -139,6 +139,14 @@ CDjVuView::~CDjVuView()
 {
 	delete m_pOffscreenBitmap;
 	DeleteBitmaps();
+
+	m_dataLock.Lock();
+
+	for (list<CDIB*>::iterator it = m_bitmaps.begin(); it != m_bitmaps.end(); ++it)
+		delete *it;
+	m_bitmaps.clear();
+
+	m_dataLock.Unlock();
 }
 
 BOOL CDjVuView::PreCreateWindow(CREATESTRUCT& cs)
@@ -1047,7 +1055,7 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient, bool bUpdateIm
 	{
 		if (!page.bInfoLoaded)
 		{
-			m_pRenderThread->AddDecodeJob(nPage);
+			m_pRenderThread->AddReadInfoJob(nPage);
 		}
 		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize())
 		{
@@ -1059,18 +1067,22 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient, bool bUpdateIm
 	{
 		page.DeleteBitmap();
 
-		if (page.rcDisplay.top < nTop + 11*rcClient.Height() &&
+		if (!page.bInfoLoaded)
+		{
+			m_pRenderThread->AddReadInfoJob(nPage);
+		}
+		else if (page.rcDisplay.top < nTop + 11*rcClient.Height() &&
 			page.rcDisplay.bottom > nTop - 10*rcClient.Height() || nPage == 0 || nPage == m_nPageCount - 1)
 		{
 			m_pRenderThread->AddDecodeJob(nPage);
 		}
-		else if (!page.bInfoLoaded)
-		{
-			m_pRenderThread->AddReadInfoJob(nPage);
-		}
 		else if (GetDocument()->IsPageCached(nPage))
 		{
 			m_pRenderThread->AddCleanupJob(nPage);
+		}
+		else
+		{
+			m_pRenderThread->RemoveJobs(nPage);
 		}
 	}
 }
@@ -1086,7 +1098,7 @@ void CDjVuView::UpdatePageCacheSingle(int nPage, bool bUpdateImages)
 	{
 		if (!page.bInfoLoaded)
 		{
-			m_pRenderThread->AddDecodeJob(nPage);
+			m_pRenderThread->AddReadInfoJob(nPage);
 		}
 		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
 		{
@@ -1098,17 +1110,21 @@ void CDjVuView::UpdatePageCacheSingle(int nPage, bool bUpdateImages)
 	{
 		page.DeleteBitmap();
 
-		if (abs(nPage - m_nPage) <= 10 || nPage == 0 || nPage == m_nPageCount - 1)
-		{
-			m_pRenderThread->AddDecodeJob(nPage);
-		}
-		else if (!page.bInfoLoaded)
+		if (!page.bInfoLoaded)
 		{
 			m_pRenderThread->AddReadInfoJob(nPage);
 		}
-		else
+		else if (abs(nPage - m_nPage) <= 10 || nPage == 0 || nPage == m_nPageCount - 1)
+		{
+			m_pRenderThread->AddDecodeJob(nPage);
+		}
+		else if (GetDocument()->IsPageCached(nPage))
 		{
 			m_pRenderThread->AddCleanupJob(nPage);
+		}
+		else
+		{
+			m_pRenderThread->RemoveJobs(nPage);
 		}
 	}
 }
@@ -1124,7 +1140,7 @@ void CDjVuView::UpdatePageCacheFacing(int nPage, bool bUpdateImages)
 	{
 		if (!page.bInfoLoaded)
 		{
-			m_pRenderThread->AddDecodeJob(nPage);
+			m_pRenderThread->AddReadInfoJob(nPage);
 		}
 		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
 		{
@@ -1136,17 +1152,21 @@ void CDjVuView::UpdatePageCacheFacing(int nPage, bool bUpdateImages)
 	{
 		page.DeleteBitmap();
 
-		if (abs(nPage - m_nPage) <= 10 || nPage == 0 || nPage == m_nPageCount - 1)
-		{
-			m_pRenderThread->AddDecodeJob(nPage);
-		}
-		else if (!page.bInfoLoaded)
+		if (!page.bInfoLoaded)
 		{
 			m_pRenderThread->AddReadInfoJob(nPage);
 		}
-		else
+		else if (abs(nPage - m_nPage) <= 10 || nPage == 0 || nPage == m_nPageCount - 1)
+		{
+			m_pRenderThread->AddDecodeJob(nPage);
+		}
+		else if (GetDocument()->IsPageCached(nPage))
 		{
 			m_pRenderThread->AddCleanupJob(nPage);
+		}
+		else
+		{
+			m_pRenderThread->RemoveJobs(nPage);
 		}
 	}
 }
@@ -2923,13 +2943,20 @@ void CDjVuView::OnPageInformation()
 	AfxMessageBox(strInfo, MB_ICONINFORMATION | MB_OK);
 }
 
-LRESULT CDjVuView::OnRenderFinished(WPARAM wParam, LPARAM lParam)
+LRESULT CDjVuView::OnPageRendered(WPARAM wParam, LPARAM lParam)
 {
 	int nPage = (int)wParam;
 	OnPageDecoded(nPage, true);
 
 	Page& page = m_pages[nPage];
-	CDIB* pBitmap = reinterpret_cast<CDIB*>(lParam);
+
+	m_dataLock.Lock();
+	list<CDIB*>::iterator it;
+	memcpy(&it, &lParam, sizeof(LPARAM));
+
+	CDIB* pBitmap = *it;
+	m_bitmaps.erase(it);
+	m_dataLock.Unlock();
 
 	page.DeleteBitmap();
 	page.pBitmap = pBitmap;
@@ -2939,6 +2966,30 @@ LRESULT CDjVuView::OnRenderFinished(WPARAM wParam, LPARAM lParam)
 		UpdateWindow();
 
 	return 0;
+}
+
+void CDjVuView::PageDecoded(int nPage)
+{
+	PostMessage(WM_PAGE_DECODED, nPage);
+}
+
+void CDjVuView::PageRendered(int nPage, CDIB* pDIB)
+{
+	m_dataLock.Lock();
+
+	m_bitmaps.push_front(pDIB);
+	list<CDIB*>::iterator it = m_bitmaps.begin();
+
+	LPARAM lParam;
+	VERIFY(sizeof(it) == sizeof(LPARAM));
+	memcpy(&lParam, &it, sizeof(LPARAM));
+
+	m_dataLock.Unlock();
+
+	if (m_nPendingPage == nPage)
+		SendMessage(WM_PAGE_RENDERED, nPage, lParam);
+	else
+		PostMessage(WM_PAGE_RENDERED, nPage, lParam);
 }
 
 void CDjVuView::OnDestroy()
@@ -3449,7 +3500,7 @@ bool CDjVuView::InvalidatePage(int nPage)
 void CDjVuView::OnExportPage()
 {
 	CString strFileName;
-	strFileName.Format(_T("p%04d.bmp"), m_nClickedPage);
+	strFileName.Format(_T("p%04d.bmp"), m_nClickedPage + 1);
 
 	CFileDialog dlg(false, _T("bmp"), strFileName, OFN_OVERWRITEPROMPT |
 		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
