@@ -1009,8 +1009,6 @@ void CDjVuView::UpdatePagesCacheSingle(bool bUpdateImages)
 {
 	ASSERT(m_nLayout == SinglePage);
 
-	m_pRenderThread->PauseJobs();
-
 	for (int nDiff = m_nPageCount; nDiff >= 0; --nDiff)
 	{
 		if (m_nPage - nDiff >= 0)
@@ -1018,15 +1016,11 @@ void CDjVuView::UpdatePagesCacheSingle(bool bUpdateImages)
 		if (m_nPage + nDiff < m_nPageCount && nDiff != 0)
 			UpdatePageCacheSingle(m_nPage + nDiff, bUpdateImages);
 	}
-
-	m_pRenderThread->ResumeJobs();
 }
 
 void CDjVuView::UpdatePagesCacheFacing(bool bUpdateImages)
 {
 	ASSERT(m_nLayout == Facing);
-
-	m_pRenderThread->PauseJobs();
 
 	for (int nDiff = m_nPageCount; nDiff >= 0; --nDiff)
 	{
@@ -1035,8 +1029,6 @@ void CDjVuView::UpdatePagesCacheFacing(bool bUpdateImages)
 		if (m_nPage + nDiff < m_nPageCount && nDiff != 0)
 			UpdatePageCacheFacing(m_nPage + nDiff, bUpdateImages);
 	}
-
-	m_pRenderThread->ResumeJobs();
 }
 
 void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient, bool bUpdateImages)
@@ -1050,14 +1042,14 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient, bool bUpdateIm
 	int nTop = GetScrollPos(SB_VERT);
 	Page& page = m_pages[nPage];
 
-	if (page.rcDisplay.top < nTop + 3*rcClient.Height() &&
-		page.rcDisplay.bottom > nTop - 2*rcClient.Height())
+	if (!page.bInfoLoaded)
 	{
-		if (!page.bInfoLoaded)
-		{
-			m_pRenderThread->AddReadInfoJob(nPage);
-		}
-		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize())
+		m_pRenderThread->AddReadInfoJob(nPage);
+	}
+	else if (page.rcDisplay.top < nTop + 3*rcClient.Height() &&
+			 page.rcDisplay.bottom > nTop - 2*rcClient.Height())
+	{
+		if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize())
 		{
 			m_pRenderThread->AddJob(nPage, m_nRotate, page.szDisplay, m_displaySettings, m_nDisplayMode);
 			InvalidatePage(nPage);
@@ -1067,11 +1059,7 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient, bool bUpdateIm
 	{
 		page.DeleteBitmap();
 
-		if (!page.bInfoLoaded)
-		{
-			m_pRenderThread->AddReadInfoJob(nPage);
-		}
-		else if (page.rcDisplay.top < nTop + 11*rcClient.Height() &&
+		if (page.rcDisplay.top < nTop + 11*rcClient.Height() &&
 			page.rcDisplay.bottom > nTop - 10*rcClient.Height() || nPage == 0 || nPage == m_nPageCount - 1)
 		{
 			m_pRenderThread->AddDecodeJob(nPage);
@@ -1079,10 +1067,6 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient, bool bUpdateIm
 		else if (GetDocument()->IsPageCached(nPage))
 		{
 			m_pRenderThread->AddCleanupJob(nPage);
-		}
-		else
-		{
-			m_pRenderThread->RemoveJobs(nPage);
 		}
 	}
 }
@@ -1093,14 +1077,14 @@ void CDjVuView::UpdatePageCacheSingle(int nPage, bool bUpdateImages)
 	Page& page = m_pages[nPage];
 	long nPageSize = page.szDisplay.cx * page.szDisplay.cy;
 
-	if (nPageSize < 3000000 && abs(nPage - m_nPage) <= 2 ||
-			abs(nPage - m_nPage) <= 1)
+	if (!page.bInfoLoaded)
 	{
-		if (!page.bInfoLoaded)
-		{
-			m_pRenderThread->AddReadInfoJob(nPage);
-		}
-		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
+		m_pRenderThread->AddReadInfoJob(nPage);
+	}
+	else if (nPageSize < 3000000 && abs(nPage - m_nPage) <= 2 ||
+			 abs(nPage - m_nPage) <= 1)
+	{
+		if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
 		{
 			m_pRenderThread->AddJob(nPage, m_nRotate, page.szDisplay, m_displaySettings, m_nDisplayMode);
 			InvalidatePage(nPage);
@@ -1110,21 +1094,13 @@ void CDjVuView::UpdatePageCacheSingle(int nPage, bool bUpdateImages)
 	{
 		page.DeleteBitmap();
 
-		if (!page.bInfoLoaded)
-		{
-			m_pRenderThread->AddReadInfoJob(nPage);
-		}
-		else if (abs(nPage - m_nPage) <= 10 || nPage == 0 || nPage == m_nPageCount - 1)
+		if (abs(nPage - m_nPage) <= 10 || nPage == 0 || nPage == m_nPageCount - 1)
 		{
 			m_pRenderThread->AddDecodeJob(nPage);
 		}
 		else if (GetDocument()->IsPageCached(nPage))
 		{
 			m_pRenderThread->AddCleanupJob(nPage);
-		}
-		else
-		{
-			m_pRenderThread->RemoveJobs(nPage);
 		}
 	}
 }
@@ -1135,14 +1111,14 @@ void CDjVuView::UpdatePageCacheFacing(int nPage, bool bUpdateImages)
 	Page& page = m_pages[nPage];
 	long nPageSize = page.szDisplay.cx * page.szDisplay.cy;
 
-	if (nPageSize < 1500000 && nPage >= m_nPage - 4 && nPage <= m_nPage + 5 ||
-			nPage >= m_nPage - 2 && nPage <= m_nPage + 3)
+	if (!page.bInfoLoaded)
 	{
-		if (!page.bInfoLoaded)
-		{
-			m_pRenderThread->AddReadInfoJob(nPage);
-		}
-		else if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
+		m_pRenderThread->AddReadInfoJob(nPage);
+	}
+	else if (nPageSize < 1500000 && nPage >= m_nPage - 4 && nPage <= m_nPage + 5 ||
+			 nPage >= m_nPage - 2 && nPage <= m_nPage + 3)
+	{
+		if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
 		{
 			m_pRenderThread->AddJob(nPage, m_nRotate, page.szDisplay, m_displaySettings, m_nDisplayMode);
 			InvalidatePage(nPage);
@@ -1152,21 +1128,13 @@ void CDjVuView::UpdatePageCacheFacing(int nPage, bool bUpdateImages)
 	{
 		page.DeleteBitmap();
 
-		if (!page.bInfoLoaded)
-		{
-			m_pRenderThread->AddReadInfoJob(nPage);
-		}
-		else if (abs(nPage - m_nPage) <= 10 || nPage == 0 || nPage == m_nPageCount - 1)
+		if (abs(nPage - m_nPage) <= 10 || nPage == 0 || nPage == m_nPageCount - 1)
 		{
 			m_pRenderThread->AddDecodeJob(nPage);
 		}
 		else if (GetDocument()->IsPageCached(nPage))
 		{
 			m_pRenderThread->AddCleanupJob(nPage);
-		}
-		else
-		{
-			m_pRenderThread->RemoveJobs(nPage);
 		}
 	}
 }
@@ -1180,8 +1148,6 @@ void CDjVuView::UpdatePagesCacheContinuous(bool bUpdateImages)
 	int nTop = GetScrollPos(SB_VERT);
 
 	int nTopPage = CalcTopPage();
-
-	m_pRenderThread->PauseJobs();
 
 	int nBottomPage = GetNextPage(nTopPage);
 	while (nBottomPage < m_nPageCount &&
@@ -1224,8 +1190,6 @@ void CDjVuView::UpdatePagesCacheContinuous(bool bUpdateImages)
 			UpdatePageCache(nLastPage + 1, rcClient, bUpdateImages);
 	}
 	UpdatePageCache(nLastPage, rcClient, bUpdateImages);
-
-	m_pRenderThread->ResumeJobs();
 }
 
 void CDjVuView::UpdateVisiblePages()
@@ -1236,12 +1200,17 @@ void CDjVuView::UpdateVisiblePages()
 
 	bool bUpdateImages = (m_nMode == Fullscreen || pActive->GetActiveView() == this);
 
+	m_pRenderThread->PauseJobs();
+	m_pRenderThread->RemoveAllJobs();
+
 	if (m_nLayout == SinglePage)
 		UpdatePagesCacheSingle(bUpdateImages);
 	else if (m_nLayout == Facing)
 		UpdatePagesCacheFacing(bUpdateImages);
 	else if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 		UpdatePagesCacheContinuous(bUpdateImages);
+
+	m_pRenderThread->ResumeJobs();
 }
 
 CSize CDjVuView::CalcPageSize(const CSize& szPage, int nDPI)

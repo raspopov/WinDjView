@@ -305,9 +305,12 @@ void CRenderThread::AddJob(const Job& job)
 	m_lock.Unlock();
 }
 
-void CRenderThread::RemoveJobs(int nPage)
+void CRenderThread::RemoveAllJobs()
 {
 	m_lock.Lock();
-	RemoveFromQueue(nPage);
+
+	m_jobs.clear();
+	m_pages.assign(m_pOwner->GetPageCount(), m_jobs.end());
+
 	m_lock.Unlock();
 }

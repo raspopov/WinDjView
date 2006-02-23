@@ -37,7 +37,7 @@ public:
 	void AddDecodeJob(int nPage);
 	void AddReadInfoJob(int nPage);
 	void AddCleanupJob(int nPage);
-	void RemoveJobs(int nPage);
+	void RemoveAllJobs();
 
 	static CDIB* Render(GP<DjVuImage> pImage, const CSize& size,
 		const CDisplaySettings& displaySettings, int nDisplayMode = CDjVuView::Color);
