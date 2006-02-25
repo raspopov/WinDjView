@@ -65,6 +65,17 @@
 
 #include "JPEGDecoder.h"
 
+//< Changed for WinDjView project
+#ifdef WIN32_JPEG
+
+#include <olectl.h>
+#include <tchar.h>
+#include <vector>
+using std::vector;
+
+#else
+//>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -77,6 +88,10 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+//< Changed for WinDjView project
+#endif
+//>
 
 #include "ByteStream.h"
 #include "GPixmap.h"
@@ -94,6 +109,140 @@ namespace DJVU {
 #endif
 #endif
 
+
+//< Changed for WinDjView project
+#ifdef WIN32_JPEG
+
+JPEGImage::~JPEGImage()
+{
+	HGLOBAL hGlobal = reinterpret_cast<HGLOBAL>(bytes);
+	::GlobalFree(hGlobal);
+}
+
+GP<JPEGImage>
+JPEGImage::create(ByteStream& bs)
+{
+	int block = 1048576;
+	vector<char> buffer;
+	int size = 0;
+
+	int read;
+	do
+	{
+		buffer.resize(buffer.size() + block);
+		read = bs.readall(&buffer[size], block);
+		size += read;
+	} while (read == block);
+
+	HGLOBAL hGlobal = ::GlobalAlloc(GMEM_MOVEABLE | GMEM_NODISCARD, size);
+	if (!hGlobal)
+	{
+		return NULL;
+	}
+
+	char* pBuf = reinterpret_cast<char*>(::GlobalLock(hGlobal));
+	if (!pBuf)
+	{
+		::GlobalFree(hGlobal);
+		return NULL;
+	}
+
+	memcpy(pBuf, &buffer[0], size);
+	::GlobalUnlock(hGlobal);
+
+	JPEGImage* pImage = new JPEGImage();
+	pImage->bytes = reinterpret_cast<void*>(hGlobal);
+	return pImage;
+}
+
+GP<GPixmap>
+JPEGImage::get_pixmap()
+{
+	HGLOBAL hGlobal = reinterpret_cast<HGLOBAL>(bytes);
+
+	// Use standard COM functions to decode JPEG
+	IStream* pStream = NULL;
+	if (::CreateStreamOnHGlobal(hGlobal, FALSE, &pStream) != S_OK)
+	{
+		return NULL;
+	}
+
+	IPicture* pIPicture = NULL;
+	HRESULT hResult = ::OleLoadPicture(pStream, 0, FALSE, IID_IPicture, (void**)&pIPicture);
+	if (hResult != S_OK || pIPicture == NULL)
+	{
+		return NULL;
+	}
+
+	SIZE szHimetric; // HIMETRIC units
+	pIPicture->get_Width(&szHimetric.cx);
+	pIPicture->get_Height(&szHimetric.cy);
+
+	// Get image size in pixels
+	SIZE sz = szHimetric;
+
+	HDC hdcScreen = ::CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+	int cxPerInch = ::GetDeviceCaps(hdcScreen, LOGPIXELSX);
+	int cyPerInch = ::GetDeviceCaps(hdcScreen, LOGPIXELSY);
+
+	const int HIMETRIC_INCH = 2540;
+	sz.cx = MulDiv(sz.cx, cxPerInch, HIMETRIC_INCH);
+	sz.cy = MulDiv(sz.cy, cyPerInch, HIMETRIC_INCH);
+	::DPtoLP(hdcScreen, (POINT*)&sz, 1);
+
+	::DeleteDC(hdcScreen);
+
+	// Create GPixmap from IPicture
+	BITMAPINFOHEADER bmih;
+
+	bmih.biSize = sizeof(BITMAPINFOHEADER);
+	bmih.biWidth = sz.cx;
+	bmih.biHeight = sz.cy;
+	bmih.biBitCount = 24;
+	bmih.biCompression = BI_RGB;
+	bmih.biClrUsed = 0;
+	bmih.biPlanes = 1;
+	bmih.biSizeImage = 0;
+	bmih.biXPelsPerMeter = 0;
+	bmih.biYPelsPerMeter = 0;
+	bmih.biClrImportant = 0;
+
+	LPBYTE pBits;
+	HBITMAP hBitmap = ::CreateDIBSection(NULL, (BITMAPINFO*)&bmih,
+			DIB_RGB_COLORS, (VOID**)&pBits, NULL, 0);
+
+	if (hBitmap == NULL)
+	{
+		pIPicture->Release();
+		return NULL;
+	}
+
+	HDC hdc = ::CreateCompatibleDC(NULL);
+	HGDIOBJ hOldBitmap = ::SelectObject(hdc, hBitmap);
+	pIPicture->Render(hdc, 0, 0, sz.cx, sz.cy, 0,
+			szHimetric.cy, szHimetric.cx, -szHimetric.cy, NULL);
+	::GdiFlush();
+	::SelectObject(hdc, hOldBitmap);
+	::DeleteDC(hdc);
+
+	// Copy DIB into Pixmap
+	GP<GPixmap> pm = GPixmap::create(sz.cy, sz.cx);
+
+	int nRowLength = sz.cx*3;
+	while (nRowLength % 4 != 0)
+		++nRowLength;
+
+	for (int y = 0; y < sz.cy; ++y, pBits += nRowLength)
+		memcpy((*pm)[y], pBits, sz.cx*3);
+
+	::DeleteObject(hBitmap);
+	pIPicture->Release();
+
+	return pm;
+}
+
+#else
+//>
 
 class JPEGDecoder::Impl : public JPEGDecoder
 {
@@ -401,6 +550,9 @@ JPEGDecoder::jpeg_start_decompress(j_decompress_ptr x)
 
 #endif // LIBJPEGNAME
 
+//< Changed for WinDjView project
+#endif // WIN32_JPEG
+//>
 
 #ifdef HAVE_NAMESPACES
 }

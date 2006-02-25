@@ -88,8 +88,10 @@ using namespace std;
 
 #define HAS_WCTYPE 1
 #define THREADMODEL 0
-#define WIN32_MONITOR
 #define DO_CHANGELOCALE 0
+#define WIN32_MONITOR
+#define NEED_JPEG_DECODER
+#define WIN32_JPEG
 
 #include "libdjvu/DjVuDocument.h"
 #include "libdjvu/DjVuImage.h"

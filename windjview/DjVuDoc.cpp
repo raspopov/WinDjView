@@ -275,7 +275,6 @@ GP<DjVuImage> CDjVuDoc::GetPage(int nPage, bool bAddToCache)
 	if (pImage != NULL && bAddToCache)
 	{
 		data.pImage = pImage;
-		TRACE(_T("Cached: %d\n"), nPage);
 
 		if (!data.bFullInfo)
 		{
@@ -328,7 +327,6 @@ void CDjVuDoc::RemoveFromCache(int nPage)
 
 	// This will cause the destructor to be called
 	pImage = NULL;
-	TRACE(_T("Removed: %d\n"), nPage);
 }
 
 int CDjVuDoc::GetPageFromId(const GUTF8String& strPageId) const

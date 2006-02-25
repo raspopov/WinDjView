@@ -2805,6 +2805,12 @@ void CDjVuView::OnPageInformation()
 			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tIW44 foreground colors (%dx%d, %d dpi)."),
 				fSize, szName, nWidth, nHeight, nDPI);
 		}
+		else if (strLine.Find(_T("DjVuFile.JPEG_bg1_w")) == 0)
+		{
+			strLine = strLine.Mid(19);
+			_stscanf(strLine, _T("%lf%s"), &fSize, szName);
+			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tJPEG background."), fSize, szName);
+		}
 		else if (strLine.Find(_T("DjVuFile.JPEG_bg1")) == 0)
 		{
 			strLine = strLine.Mid(17);
@@ -2818,6 +2824,12 @@ void CDjVuView::OnPageInformation()
 			_stscanf(strLine, _T("%lf%s"), &fSize, szName);
 			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tJPEG background (unimplemented)."),
 				fSize, szName);
+		}
+		else if (strLine.Find(_T("DjVuFile.JPEG_fg1_w")) == 0)
+		{
+			strLine = strLine.Mid(19);
+			_stscanf(strLine, _T("%lf%s"), &fSize, szName);
+			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tJPEG foreground colors."), fSize, szName);
 		}
 		else if (strLine.Find(_T("DjVuFile.JPEG_fg1")) == 0)
 		{

@@ -488,7 +488,15 @@ GPixmap::init(ByteStream &bs)
   {
 #ifdef NEED_JPEG_DECODER
     bs.seek(0L);
+//< Changed for WinDjView project
+#ifdef WIN32_JPEG
+    init(*(JPEGImage::create(bs)->get_pixmap()));
+#else
+//>
     JPEGDecoder::decode(bs,*this);
+//< Changed for WinDjView project
+#endif
+//>
     return;
 #else // NEED_JPEG_DECODER
   

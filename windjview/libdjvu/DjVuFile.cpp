@@ -1027,10 +1027,19 @@ DjVuFile::decode_chunk( const GUTF8String &id, const GP<ByteStream> &gbs,
       G_THROW( ERR_MSG("DjVuFile.dupl_backgrnd") );
     set_can_compress(true);
 #ifdef NEED_JPEG_DECODER
+//< Changed for WinDjView project
+#ifdef WIN32_JPEG
+	this->bg_jpeg = JPEGImage::create(bs);
+	desc = ERR_MSG("DjVuFile.JPEG_bg1_w");
+#else
+//>
     this->bgpm = JPEGDecoder::decode(bs);
     desc.format( ERR_MSG("DjVuFile.JPEG_bg1") "\t%d\t%d\t%d",
       bgpm->columns(), bgpm->rows(),
       get_dpi(bgpm->columns(), bgpm->rows()));
+//< Changed for WinDjView project
+#endif
+//>
 #else
     desc.format( ERR_MSG("DjVuFile.JPEG_bg2") );
 #endif
@@ -1042,10 +1051,19 @@ DjVuFile::decode_chunk( const GUTF8String &id, const GP<ByteStream> &gbs,
     if (fgpm || fgbc)
       G_THROW( ERR_MSG("DjVuFile.dupl_foregrnd") );
 #ifdef NEED_JPEG_DECODER
+//< Changed for WinDjView project
+#ifdef WIN32_JPEG
+	this->fg_jpeg = JPEGImage::create(bs);
+	desc = ERR_MSG("DjVuFile.JPEG_fg1_w");
+#else
+//>
     this->fgpm = JPEGDecoder::decode(bs);
     desc.format( ERR_MSG("DjVuFile.JPEG_fg1") "\t%d\t%d\t%d",
       fgpm->columns(), fgpm->rows(),
       get_dpi(fgpm->columns(), fgpm->rows()));
+//< Changed for WinDjView project
+#endif
+//>
 #else
     desc.format( ERR_MSG("DjVuFile.JPEG_fg2") );
 #endif

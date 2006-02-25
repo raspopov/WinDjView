@@ -68,6 +68,12 @@
 #include "DjVuPalette.h"
 #include "DjVuPort.h"
 
+//< Changed for WinDjView project
+#if defined(NEED_JPEG_DECODER) && defined(WIN32_JPEG)
+#include "JPEGDecoder.h"
+#endif
+//>
+
 #ifdef HAVE_NAMESPACES
 namespace DJVU {
 # ifdef NOT_DEFINED // Just to fool emacs c++ mode
@@ -238,6 +244,12 @@ public:
       /// Size of the file.
    int			file_size;
       //@}
+
+//< Changed for WinDjView project
+#if defined(NEED_JPEG_DECODER) && defined(WIN32_JPEG)
+   GP<JPEGImage> bg_jpeg, fg_jpeg;
+#endif
+//>
 
 protected:
       /** Default constructor.  Must follow with an init() */
