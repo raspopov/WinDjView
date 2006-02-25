@@ -726,12 +726,21 @@ BEGIN
     IDS_DJVU_FILTER         "Documentos DjVu (*.djvu)|*.djvu|Todos os Ficheiros (*.*)|*.*||"
     IDS_CANNOT_SAVE_TO_ORIG "Não é possível guardar o documento na sua localização original"
     IDS_SAVE_ERROR          "Ocorreu um erro durante a gravação do documento"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
     IDS_ERROR_DECODING_PAGE "Erro ao descodificar a página"
     IDS_BMP_FILTER          "Ficheiros Bitmap (*.bmp)|*.bmp|Todos os ficheiros (*.*)|*.*||"
     IDS_EXPORT_PAGE         "Exportar Página"
     IDS_CONNECT_ERROR       "Ocorreu um erro durante a conecção com o servidor. Verifique por favor as suas configurações de internet."
     IDS_NO_UPDATES_AVAILABLE 
                             "Não estão disponíveis actualizações de momento. Por favor verifique mais tarde."
+    IDS_NEW_VERSION_AVAILABLE 
+                            "Uma nova versão %s está disponível. Quer ir até ao website do programa agora?"
+    IDS_VERSION_URL         "http://windjview.sourceforge.net/version.txt"
+    IDS_WEBSITE_URL         "http://windjview.sourceforge.net"
+    IDS_DJVULIBRE_URL       "http://djvu.sourceforge.net"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -886,9 +895,26 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    IDS_STRETCH             "Esticar"
+    IDS_TOOLTIP_BRIGHTNESS  "Luminosidade: %+d"
+    IDS_TOOLTIP_CONTRAST    "Contraste: %+d"
+    IDS_TOOLTIP_GAMMA       "Gama: %1.1f"
+    IDS_STATUS_BLACKANDWHITE "  Preto & Branco  "
+    IDS_STATUS_FOREGROUND   "  Primeiro Plano  "
+    IDS_STATUS_BACKGROUND   "  Fundo  "
+    IDS_PRINT_ALL_PAGES     "Todas As Páginas No Intervalo"
+    IDS_PRINT_ODD_PAGES     "Páginas Ímpares"
+    IDS_PRINT_EVEN_PAGES    "Páginas Pares"
+    IDS_PRINT_ONE_PAGE      "Uma Página Por Folha"
+    IDS_PRINT_TWO_PAGES     "Duas Páginas Por Folha"
+    IDS_PLEASE_WAIT         "Aguarde por favor..."
     IDS_PAGE_NO_TOOLTIP     "p# %d"
     IDS_BRIGHTNESS_TEXT_ZERO "&Luminosidade: %d"
     IDS_BRIGHTNESS_TEXT     "&Luminosidade: %+d"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
     IDS_CONTRAST_TEXT_ZERO  "&Contraste: %d"
     IDS_CONTRAST_TEXT       "&Contraste: %+d"
     IDS_GAMMA_TEXT          "&Gama: %1.1f"
@@ -902,11 +928,8 @@ BEGIN
     IDS_VERSION_INFO        "WinDjView %s\npor Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
     IDS_CURRENT_VERSION     "0.4.1"
-END
-
-STRINGTABLE DISCARDABLE
-BEGIN
     IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your active document."
+    IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure you want to continue?"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -962,11 +985,6 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_NEW_VERSION_AVAILABLE 
-                            "Uma nova versão %s está disponível. Quer ir até ao website do programa agora?"
-    IDS_VERSION_URL         "http://windjview.sourceforge.net/version.txt"
-    IDS_WEBSITE_URL         "http://windjview.sourceforge.net"
-    IDS_DJVULIBRE_URL       "http://djvu.sourceforge.net"
     IDS_DONATE_URL          "https://sourceforge.net/donate/index.php?group_id=114927"
     IDS_STRING_NOT_FOUND    "Texto de procura não encontrado"
     IDS_PRINTING            "Imprimindo, aguarde por favor..."
@@ -979,26 +997,9 @@ BEGIN
     IDS_SEARCHING           "Procurando"
     IDS_OF_PAGE_COUNT       "de %d"
     IDS_FIT_WIDTH           "Largura Total"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
     IDS_FIT_HEIGHT          "Altura Total"
     IDS_FIT_PAGE            "Página Inteira"
     IDS_ACTUAL_SIZE         "Tamanho Real"
-    IDS_STRETCH             "Esticar"
-    IDS_TOOLTIP_BRIGHTNESS  "Luminosidade: %+d"
-    IDS_TOOLTIP_CONTRAST    "Contraste: %+d"
-    IDS_TOOLTIP_GAMMA       "Gama: %1.1f"
-    IDS_STATUS_BLACKANDWHITE "  Preto & Branco  "
-    IDS_STATUS_FOREGROUND   "  Primeiro Plano  "
-    IDS_STATUS_BACKGROUND   "  Fundo  "
-    IDS_PRINT_ALL_PAGES     "Todas As Páginas No Intervalo"
-    IDS_PRINT_ODD_PAGES     "Páginas Ímpares"
-    IDS_PRINT_EVEN_PAGES    "Páginas Pares"
-    IDS_PRINT_ONE_PAGE      "Uma Página Por Folha"
-    IDS_PRINT_TWO_PAGES     "Duas Páginas Por Folha"
-    IDS_PLEASE_WAIT         "Aguarde por favor..."
 END
 
 STRINGTABLE DISCARDABLE 
