@@ -1049,7 +1049,7 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient, bool bUpdateIm
 	else if (page.rcDisplay.top < nTop + 3*rcClient.Height() &&
 			 page.rcDisplay.bottom > nTop - 2*rcClient.Height())
 	{
-		if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize())
+		if (page.pBitmap == NULL || page.szDisplay != page.pBitmap->GetSize() && bUpdateImages)
 		{
 			m_pRenderThread->AddJob(nPage, m_nRotate, page.szDisplay, m_displaySettings, m_nDisplayMode);
 			InvalidatePage(nPage);
