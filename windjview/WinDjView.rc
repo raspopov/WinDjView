@@ -429,12 +429,16 @@ BEGIN
     EDITTEXT        IDC_POSITION_TOP,198,184,38,12,ES_AUTOHSCROLL
     CONTROL         "Center i&mage",IDC_CENTER_IMAGE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,198,202,57,9
+    CONTROL         "Clip content",IDC_CLIP_CONTENT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,198,216,55,9
     LTEXT           "&Scale:",IDC_STATIC,304,168,21,9
     EDITTEXT        IDC_SCALE,331,166,38,12,ES_AUTOHSCROLL
     CONTROL         "Scale to fit media",IDC_SCALE_TO_FIT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,331,188,73,9
     CONTROL         "S&hrink oversized pages",IDC_SHRINK_OVERSIZED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,331,202,89,9
+    CONTROL         "Ignore printer margins",IDC_IGNORE_MARGINS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,331,216,85,9
     LTEXT           "&Left:",IDC_STATIC,14,251,21,9
     EDITTEXT        IDC_MARGIN_LEFT,38,249,38,12,ES_AUTOHSCROLL
     LTEXT           "&Top:",IDC_STATIC,14,269,21,9
@@ -452,6 +456,8 @@ BEGIN
     LTEXT           "Print",IDC_STATIC,304,269,17,9
     COMBOBOX        IDC_COMBO_PAGESPERSHEET,326,267,91,84,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Reverse order",IDC_REVERSE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,12,297,66,9
     DEFPUSHBUTTON   "Print",IDOK,319,295,50,14
     PUSHBUTTON      "Close",IDCANCEL,374,295,50,14
     GROUPBOX        "Printer",IDC_STATIC,167,7,257,87
@@ -477,12 +483,6 @@ BEGIN
     LTEXT           "mm",IDC_STATIC,242,168,21,9
     LTEXT           "mm",IDC_STATIC,242,186,21,9
     CTEXT           "Paper size",IDC_STATIC_PAPER,14,138,138,8
-    CONTROL         "Reverse order",IDC_REVERSE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,297,66,9
-    CONTROL         "Clip content",IDC_CLIP_CONTENT,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,198,216,55,9
-    CONTROL         "Ignore printer margins",IDC_IGNORE_MARGINS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,331,216,85,9
 END
 
 IDD_PROGRESS DIALOGEX 0, 0, 171, 61
@@ -514,20 +514,24 @@ FONT 8, "MS Shell Dlg"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,107,219,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,162,219,50,14
-    GROUPBOX        "File associations",IDC_STATIC,7,7,205,58
     LTEXT           "Press to associate WinDjView with .djvu and .djv files:",
                     IDC_STATIC,15,18,182,9
     PUSHBUTTON      "&Associate",IDC_ASSOCIATE,15,30,50,14
     CONTROL         "&Restore associations at program start",
                     IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     15,49,188,10
-    GROUPBOX        "Display",IDC_STATIC,7,144,205,68
     CONTROL         "Generate &thumbnails for all pages in background",
                     IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,81,188,10
     CONTROL         "&Mouse clicks switch pages in fullscreen mode",
                     IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,95,188,10
+    CONTROL         "&Warn when closing multiple documents",
+                    IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,109,188,10
+    CONTROL         "&Sharp scaling at low zoom levels (slower)",
+                    IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
+                    123,188,10
     CONTROL         "A&djust settings:",IDC_ADJUST_DISPLAY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,156,97,9
     LTEXT           "&Brightness: 0",IDC_BRIGHTNESS_TEXT,15,170,61,9
@@ -539,15 +543,11 @@ BEGIN
     LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,15,196,45,9
     CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,195,131,
                     12
+    GROUPBOX        "File associations",IDC_STATIC,7,7,205,58
+    GROUPBOX        "General",IDC_STATIC,7,69,205,70
+    GROUPBOX        "Display",IDC_STATIC,7,144,205,68
     LTEXT           "WinDjView\nby Andrew Zhezherun",IDC_STATIC_ABOUT,7,219,
                     92,18
-    GROUPBOX        "General",IDC_STATIC,7,69,205,70
-    CONTROL         "&Warn when closing multiple documents",
-                    IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,109,188,10
-    CONTROL         "&Sharp scaling at low zoom levels (slower)",
-                    IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
-                    123,188,10
 END
 
 IDD_FIND DIALOG DISCARDABLE  0, 0, 287, 64
@@ -926,7 +926,7 @@ BEGIN
     IDS_TOOLBAR_TITLE       "Toolbar"
     IDS_TOOLTIP_HIDE        "Hide"
     IDS_NOT_VALID_DOCUMENT  "\nThis is not a valid DjVu document."
-    IDS_PRINTING_FAILED     "Failed to print the document. There could be a problem\n with the printer or with the printer driver."
+    IDS_PRINTING_FAILED     "Failed to print the document. There could be a problem\nwith the printer or with the printer driver."
     IDS_PAPER_SIZE_MM       "%s x %s mm"
     IDS_CENTIMETER          "cm"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"

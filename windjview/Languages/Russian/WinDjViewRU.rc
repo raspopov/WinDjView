@@ -418,12 +418,16 @@ BEGIN
     EDITTEXT        IDC_POSITION_TOP,206,184,38,12,ES_AUTOHSCROLL
     CONTROL         "Расположить по &центру",IDC_CENTER_IMAGE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,206,202,95,9
+    CONTROL         "Обрезать кра&я",IDC_CLIP_CONTENT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,206,216,67,9
     LTEXT           "&Масштаб:",IDC_STATIC,319,168,36,9
     EDITTEXT        IDC_SCALE,357,166,38,12,ES_AUTOHSCROLL
     CONTROL         "Растянуть на вс&ю страницу",IDC_SCALE_TO_FIT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,319,188,113,9
     CONTROL         "&Уменьшить слишком большие",IDC_SHRINK_OVERSIZED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,319,202,120,9
+    CONTROL         "Не учит&ывать поля принтера",IDC_IGNORE_MARGINS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,319,216,124,9
     LTEXT           "С&лева:",IDC_STATIC,14,251,27,9
     EDITTEXT        IDC_MARGIN_LEFT,43,249,36,12,ES_AUTOHSCROLL
     LTEXT           "Св&ерху:",IDC_STATIC,14,269,26,9
@@ -441,6 +445,8 @@ BEGIN
     LTEXT           "На листе:",IDC_STATIC,319,269,34,9
     COMBOBOX        IDC_COMBO_PAGESPERSHEET,356,267,86,84,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Обратны&й порядок страниц",IDC_REVERSE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,297,114,9
     DEFPUSHBUTTON   "Печать",IDOK,343,295,50,14
     PUSHBUTTON      "Закрыть",IDCANCEL,399,295,50,14
     GROUPBOX        "Принтер",IDC_STATIC,167,7,282,87
@@ -466,12 +472,6 @@ BEGIN
     LTEXT           "мм",IDC_STATIC,247,168,21,9
     LTEXT           "мм",IDC_STATIC,247,186,21,9
     CTEXT           "Размер бумаги",IDC_STATIC_PAPER,14,138,138,8
-    CONTROL         "Обратны&й порядок страниц",IDC_REVERSE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,297,114,9
-    CONTROL         "Обрезать кра&я",IDC_CLIP_CONTENT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,206,216,67,9
-    CONTROL         "Не учит&ывать поля принтера",IDC_IGNORE_MARGINS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,319,216,124,9
 END
 
 IDD_PROGRESS DIALOG DISCARDABLE  0, 0, 171, 61
@@ -502,20 +502,24 @@ FONT 8, "MS Shell Dlg"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,137,219,50,14
     PUSHBUTTON      "Отмена",IDCANCEL,192,219,50,14
-    GROUPBOX        "Типы файлов",IDC_STATIC,7,7,235,58
     LTEXT           "Связать файлы .djvu и .djv с программой WinDjView:",
                     IDC_STATIC,15,18,182,9
     PUSHBUTTON      "&Связать",IDC_ASSOCIATE,15,30,50,14
     CONTROL         "&Восстанавливать связь при запуске программы",
                     IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     15,49,188,10
-    GROUPBOX        "Отображение",IDC_STATIC,7,144,235,68
     CONTROL         "Создавать &иконки для всех страниц в фоновом режиме",
                     IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,81,212,10
     CONTROL         "&Листать страницы щелчком мыши в полноэкранном режиме",
                     IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,95,224,10
+    CONTROL         "Предупреждать при закрытии &несеольких документов",
+                    IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,109,219,10
+    CONTROL         "Масштабировать с высокой &резкостью (но медленнее)",
+                    IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
+                    123,224,10
     CONTROL         "&Применить коррекцию изображения",IDC_ADJUST_DISPLAY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,156,153,9
     LTEXT           "&Яркость: 0",IDC_BRIGHTNESS_TEXT,15,170,61,9
@@ -527,15 +531,11 @@ BEGIN
     LTEXT           "&Гамма: 1.0",IDC_GAMMA_TEXT,15,196,45,9
     CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,195,158,
                     12
+    GROUPBOX        "Типы файлов",IDC_STATIC,7,7,235,58
+    GROUPBOX        "Разное",IDC_STATIC,7,69,235,70
+    GROUPBOX        "Отображение",IDC_STATIC,7,144,235,68
     LTEXT           "WinDjView\n(C) Андрей Жежерун",IDC_STATIC_ABOUT,7,219,
                     92,18
-    GROUPBOX        "Разное",IDC_STATIC,7,69,235,70
-    CONTROL         "Предупреждать при закрытии &несеольких документов",
-                    IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,109,219,10
-    CONTROL         "Масштабировать с высокой &резкостью (но медленнее)",
-                    IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
-                    123,224,10
 END
 
 IDD_FIND DIALOG DISCARDABLE  0, 0, 287, 64

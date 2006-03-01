@@ -414,6 +414,7 @@ BEGIN
                     WS_GROUP,174,112,53,11
     CONTROL         "&Horizontal",IDC_LANDSCAPE,"Button",BS_AUTORADIOBUTTON,
                     174,128,53,11
+    LTEXT           "Número de &cópias:",IDC_STATIC,311,111,62,11
     EDITTEXT        IDC_EDIT_COPIES,380,109,38,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN_COPIES,"msctls_updown32",UDS_ALIGNRIGHT | 
                     UDS_AUTOBUDDY | UDS_ARROWKEYS,406,111,11,14
@@ -432,12 +433,16 @@ BEGIN
     EDITTEXT        IDC_POSITION_TOP,209,184,38,12,ES_AUTOHSCROLL
     CONTROL         "Cent&rar imagem",IDC_CENTER_IMAGE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,209,202,69,9
+    CONTROL         "Recortar conteudo",IDC_CLIP_CONTENT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,209,216,75,9
     LTEXT           "E&scala:",IDC_STATIC,311,168,21,9
     EDITTEXT        IDC_SCALE,339,166,38,12,ES_AUTOHSCROLL
     CONTROL         "Ajustar ao tamanho do papel",IDC_SCALE_TO_FIT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,311,188,113,9
     CONTROL         "Enco&lher páginas grandes",IDC_SHRINK_OVERSIZED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,311,202,111,9
+    CONTROL         "Ignorar margens da impressora",IDC_IGNORE_MARGINS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,311,216,111,9
     LTEXT           "&Esquerda:",IDC_STATIC,14,251,34,9
     EDITTEXT        IDC_MARGIN_LEFT,48,249,38,12,ES_AUTOHSCROLL
     LTEXT           "C&ima:",IDC_STATIC,14,269,21,9
@@ -453,6 +458,8 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_COMBO_PAGESPERSHEET,311,267,119,84,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Inverter ordem",IDC_REVERSE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,12,297,66,9
     DEFPUSHBUTTON   "Imprimir",IDOK,332,295,50,14
     PUSHBUTTON      "Fechar",IDCANCEL,387,295,50,14
     GROUPBOX        "Impressora",IDC_STATIC,167,7,270,87
@@ -479,13 +486,6 @@ BEGIN
     LTEXT           "mm",IDC_STATIC,253,168,21,9
     LTEXT           "mm",IDC_STATIC,253,186,21,9
     CTEXT           "Tamanho do papel",IDC_STATIC_PAPER,14,138,138,8
-    CONTROL         "Inverter ordem",IDC_REVERSE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,297,66,9
-    CONTROL         "Recortar conteudo",IDC_CLIP_CONTENT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,209,216,75,9
-    CONTROL         "Ignorar margens da impressora",IDC_IGNORE_MARGINS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,311,216,111,9
-    LTEXT           "Número de &cópias:",IDC_STATIC,311,111,62,11
 END
 
 IDD_PROGRESS DIALOGEX 0, 0, 171, 61
@@ -517,14 +517,12 @@ FONT 8, "MS Shell Dlg"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,106,189,50,14
     PUSHBUTTON      "Cancelar",IDCANCEL,162,189,50,14
-    GROUPBOX        "Associação de ficheiros",IDC_STATIC,7,7,205,68
     LTEXT           "Pressione para associar o WinDjView com ficheiros .djvu e .djv:",
                     IDC_STATIC,15,18,188,18
     PUSHBUTTON      "&Associar",IDC_ASSOCIATE,15,37,50,14
     CONTROL         "&Restaurar associações no arranque do programa",
                     IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     15,56,188,10
-    GROUPBOX        "Ambiente",IDC_STATIC,7,80,205,98
     CONTROL         "Gerar &miniaturas para todas as páginas em fundo",
                     IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,93,188,10
@@ -542,6 +540,8 @@ BEGIN
     LTEXT           "&Gama: 1.0",IDC_GAMMA_TEXT,15,162,45,9
     CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,161,131,
                     12
+    GROUPBOX        "Associação de ficheiros",IDC_STATIC,7,7,205,68
+    GROUPBOX        "Ambiente",IDC_STATIC,7,80,205,98
     LTEXT           "WinDjView\npor Andrew Zhezherun",IDC_STATIC_ABOUT,7,187,
                     92,18
 END
