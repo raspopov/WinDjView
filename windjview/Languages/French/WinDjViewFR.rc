@@ -418,28 +418,29 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 269, 122
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 269, 130
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "A propos de WinDjView"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
+    ICON            IDR_MAINFRAME,IDC_STATIC,9,9,21,20
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2004-2006 Andrew Zhezherun",IDC_STATIC,40,
                     17,149,8
     DEFPUSHBUTTON   "&Fermer",IDOK,212,7,50,14,WS_GROUP
-    LTEXT           "Page Web du projet :",IDC_STATIC,40,35,69,8
-    LTEXT           "Page web de DjVuLibre :",IDC_STATIC,40,45,81,8
-    LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,126,
-                    35,109,8
-    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,126,45,
+    LTEXT           "Page web du projet:",IDC_STATIC,40,45,67,8
+    LTEXT           "Page web de DjVuLibre:",IDC_STATIC,40,55,79,8
+    LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,110,
+                    45,109,8
+    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,123,55,
                     106,8
     LTEXT           "Ce programme est un logiciel libre, vous pouvez le redistribuer et/ou le modifier selon les termes de la licence GNU (General Public License) telle que publiée par la Free Software Foundation.",
-                    IDC_STATIC,40,62,215,26
+                    IDC_STATIC,40,72,215,26
     LTEXT           "Vous pouvez aider au développement de ce programme en faisaint un don via PayPal",
-                    IDC_STATIC,40,94,152,17
+                    IDC_STATIC,40,104,152,17
     CONTROL         "Donner",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | 
-                    WS_TABSTOP,199,94,63,21
+                    WS_TABSTOP,199,102,63,21
+    LTEXT           "Traduction: int24h",IDC_STATIC,40,28,91,8
 END
 
 IDD_PRINT DIALOG DISCARDABLE  0, 0, 436, 316
@@ -554,45 +555,45 @@ BEGIN
     PUSHBUTTON      "&Annuler",IDCANCEL,89,26,50,14
 END
 
-IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 219, 240
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 222, 240
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Paramètres"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "&OK",IDOK,107,219,50,14
-    PUSHBUTTON      "&Annuler",IDCANCEL,162,219,50,14
+    DEFPUSHBUTTON   "&OK",IDOK,110,219,50,14
+    PUSHBUTTON      "&Annuler",IDCANCEL,165,219,50,14
     LTEXT           "Cliquez pour associer les fichiers .djvu et .djv à WinDjView:",
                     IDC_STATIC,15,18,189,9
     PUSHBUTTON      "A&ssocier",IDC_ASSOCIATE,15,30,50,14
-    CONTROL         "Restaurer les associations au démarrage du programme",
+    CONTROL         "&Restaurer les associations au démarrage du programme",
                     IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     15,49,188,10
-    CONTROL         "Créer les vignettes de toutes les pages en arrière-plan",
+    CONTROL         "Créer les &vignettes de toutes les pages en arrière-plan",
                     IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,82,188,10
-    CONTROL         "Les clics de souris basculent en mode pleine page",
+                    WS_TABSTOP,15,81,188,10
+    CONTROL         "Les clics de souris changent les &pages (mode plein écran)",
                     IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,96,188,10
-    CONTROL         "&Avertir lors de la fermeture de documents multiples",
+                    WS_TABSTOP,15,95,198,10
+    CONTROL         "Avertir lors de la &fermeture de documents multiples",
                     IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,109,188,10
     CONTROL         "&Mise au point précise pour les faibles niveaux de zoom",
                     IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
                     123,188,10
-    CONTROL         "Ajustements:",IDC_ADJUST_DISPLAY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,158,97,9
-    LTEXT           "Luminosité: 0",IDC_BRIGHTNESS_TEXT,15,172,61,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,171,
-                    131,12
-    LTEXT           "Contraste: 0",IDC_CONTRAST_TEXT,15,185,55,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,184,
-                    131,12
-    LTEXT           "Gamma: 1.0",IDC_GAMMA_TEXT,15,198,45,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,197,131,
+    CONTROL         "Aj&ustements:",IDC_ADJUST_DISPLAY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,156,97,9
+    LTEXT           "&Luminosité: 0",IDC_BRIGHTNESS_TEXT,15,170,61,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,169,
+                    134,12
+    LTEXT           "&Contraste: 0",IDC_CONTRAST_TEXT,15,183,55,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,182,
+                    134,12
+    LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,15,196,45,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,195,134,
                     12
-    GROUPBOX        "Associations de fichier",IDC_STATIC,7,7,205,58
-    GROUPBOX        "Général",IDC_STATIC,7,69,205,70
-    GROUPBOX        "Affichage",IDC_STATIC,7,144,205,69
+    GROUPBOX        "Associations de fichier",IDC_STATIC,7,7,208,58
+    GROUPBOX        "Général",IDC_STATIC,7,69,208,70
+    GROUPBOX        "Affichage",IDC_STATIC,7,144,208,68
     LTEXT           "WinDjView\nde Andrew Zhezherun",IDC_STATIC_ABOUT,7,219,
                     92,18
 END
@@ -650,7 +651,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 262
         TOPMARGIN, 7
-        BOTTOMMARGIN, 115
+        BOTTOMMARGIN, 123
     END
 
     IDD_PRINT, DIALOG
@@ -680,7 +681,7 @@ BEGIN
     IDD_SETTINGS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 212
+        RIGHTMARGIN, 215
         TOPMARGIN, 7
         BOTTOMMARGIN, 233
     END

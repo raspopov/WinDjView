@@ -381,7 +381,7 @@ BEGIN
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2004-2006 Andrew Zhezherun",IDC_STATIC,40,
                     17,149,8
-    DEFPUSHBUTTON   "Fechar",IDOK,194,7,50,14,WS_GROUP
+    DEFPUSHBUTTON   "&Fechar",IDOK,194,7,50,14,WS_GROUP
     LTEXT           "Homepage do projecto:",IDC_STATIC,40,45,80,8
     LTEXT           "Homepage do DjVuLibre:",IDC_STATIC,40,55,83,8
     LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,120,
