@@ -91,7 +91,7 @@ LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 
 IDR_MAINFRAME MENU DISCARDABLE 
 BEGIN
-    POPUP "&File"
+    POPUP "&Fichier"
     BEGIN
         MENUITEM "&Ouvrir...\tCtrl+O",          ID_FILE_OPEN
         MENUITEM "&Paramètres...",              ID_FILE_SETTINGS
@@ -119,9 +119,9 @@ END
 
 IDR_DjVuTYPE MENU DISCARDABLE 
 BEGIN
-    POPUP "&File"
+    POPUP "&Fichier"
     BEGIN
-        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Ouvrir...\tCtrl+O",          ID_FILE_OPEN
         MENUITEM "Enregistrer la copie &sous...\tCtrl+S", 
                                                 ID_FILE_SAVE_COPY_AS
         MENUITEM "&Fermer\tCtrl+W",             ID_FILE_CLOSE
@@ -434,7 +434,7 @@ BEGIN
                     35,109,8
     LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,126,45,
                     106,8
-    LTEXT           "Ce programme est un logiciel libre; vous pouvez le redistribuer et/ou le modifier selon les termes de la licence GNU (General Public License) telle que publiée par la Free Software Foundation.",
+    LTEXT           "Ce programme est un logiciel libre, vous pouvez le redistribuer et/ou le modifier selon les termes de la licence GNU (General Public License) telle que publiée par la Free Software Foundation.",
                     IDC_STATIC,40,62,215,26
     LTEXT           "Vous pouvez aider au développement de ce programme en faisaint un don via PayPal",
                     IDC_STATIC,40,94,152,17
@@ -442,18 +442,18 @@ BEGIN
                     WS_TABSTOP,199,94,63,21
 END
 
-IDD_PRINT DIALOG DISCARDABLE  0, 0, 445, 316
+IDD_PRINT DIALOG DISCARDABLE  0, 0, 436, 316
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Imprimer"
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "Nom:",IDC_STATIC,174,21,37,9
-    COMBOBOX        IDC_COMBO_PRINTER,224,19,151,82,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_COMBO_PRINTER,224,19,142,82,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "&Propriétés",IDC_PROPERTIES,380,18,50,14
+    PUSHBUTTON      "&Propriétés",IDC_PROPERTIES,371,18,50,14
     CONTROL         "Imprimer dans un fichier",IDC_PRINT_TO_FILE,"Button",
                     BS_AUTOCHECKBOX | BS_CENTER | BS_VCENTER | BS_MULTILINE | 
-                    NOT WS_VISIBLE | WS_TABSTOP,391,56,42,30
+                    NOT WS_VISIBLE | WS_TABSTOP,379,59,42,30
     CONTROL         "Portrait",IDC_PORTRAIT,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,174,112,53,11
     CONTROL         "Paysage",IDC_LANDSCAPE,"Button",BS_AUTORADIOBUTTON,174,
@@ -463,7 +463,7 @@ BEGIN
     CONTROL         "",IDC_SPIN_COPIES,"msctls_updown32",UDS_ALIGNRIGHT | 
                     UDS_AUTOBUDDY | UDS_ARROWKEYS,395,111,11,14
     CONTROL         "Copies assemblées",IDC_COLLATE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,304,131,81,11
+                    WS_TABSTOP,304,128,81,11
     CONTROL         "Tous",IDC_RANGE_ALL,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,14,166,37,11
     CONTROL         "Page en cours",IDC_RANGE_CURRENT,"Button",
@@ -487,7 +487,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,304,202,105,9
     CONTROL         "Ignorer les marges de l'imprimante",IDC_IGNORE_MARGINS,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,304,
-                    216,125,9
+                    216,123,9
     LTEXT           "Gauche:",IDC_STATIC,14,251,27,9
     EDITTEXT        IDC_MARGIN_LEFT,46,249,38,12,ES_AUTOHSCROLL
     LTEXT           "Haut:",IDC_STATIC,14,269,21,9
@@ -499,25 +499,23 @@ BEGIN
     LTEXT           "Taille:",IDC_STATIC,174,251,20,9
     COMBOBOX        IDC_COMBO_PAPER,174,262,108,81,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Imprimer",IDC_STATIC,304,251,26,9
-    COMBOBOX        IDC_COMBO_PAGESINRANGE,335,249,95,81,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_COMBO_PAGESINRANGE,304,249,118,81,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Imprimer",IDC_STATIC,304,269,27,9
-    COMBOBOX        IDC_COMBO_PAGESPERSHEET,335,267,95,84,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_COMBO_PAGESPERSHEET,304,267,118,84,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Ordre inverse",IDC_REVERSE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,12,297,66,9
-    DEFPUSHBUTTON   "&Imprimer",IDOK,333,295,50,14
-    PUSHBUTTON      "&Fermer",IDCANCEL,388,295,50,14
-    GROUPBOX        "Imprimante",IDC_STATIC,167,7,271,87
+    DEFPUSHBUTTON   "&Imprimer",IDOK,324,295,50,14
+    PUSHBUTTON      "&Fermer",IDCANCEL,379,295,50,14
+    GROUPBOX        "Imprimante",IDC_STATIC,167,7,262,87
     LTEXT           "Emplacement:",IDC_STATIC,174,55,45,9
     LTEXT           "Type:",IDC_STATIC,174,40,37,9
     LTEXT           "Commentaire:",IDC_STATIC,174,70,43,9
     LTEXT           "Type",IDC_STATIC_TYPE,224,40,162,9
     LTEXT           "Location",IDC_STATIC_LOCATION,224,55,159,9
-    LTEXT           "Comment",IDC_STATIC_COMMENT,224,70,154,9
+    LTEXT           "Comment",IDC_STATIC_COMMENT,224,70,151,9
     GROUPBOX        "Plusieurs pages",IDC_STATIC,7,154,153,78
-    GROUPBOX        "Copies",IDC_STATIC,296,98,142,51
+    GROUPBOX        "Copies",IDC_STATIC,296,98,133,51
     CONTROL         "",IDC_PREVIEW_AREA,"Static",SS_BLACKFRAME | NOT 
                     WS_VISIBLE,14,20,138,115
     GROUPBOX        "Orientation",IDC_STATIC,167,98,122,51
@@ -526,9 +524,9 @@ BEGIN
     GROUPBOX        "Papier",IDC_STATIC,167,237,122,49
     LTEXT           "Tapez le n° des pages et/ou les groupes de pages à imprimer, séparés par des virgules. Exemple: 1,3,5-9",
                     IDC_STATIC,16,200,137,28
-    GROUPBOX        "Options d'impression",IDC_STATIC,296,237,142,49
+    GROUPBOX        "Options d'impression",IDC_STATIC,296,237,133,49
     GROUPBOX        "Position",IDC_STATIC,167,154,122,78
-    GROUPBOX        "Ajustement",IDC_STATIC,296,154,142,78
+    GROUPBOX        "Ajustement",IDC_STATIC,296,154,133,78
     LTEXT           "mm",IDC_STATIC,252,168,21,9
     LTEXT           "mm",IDC_STATIC,252,186,21,9
     CTEXT           "Taille du papier",IDC_STATIC_PAPER,14,138,138,8
@@ -658,7 +656,7 @@ BEGIN
     IDD_PRINT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 438
+        RIGHTMARGIN, 429
         TOPMARGIN, 7
         BOTTOMMARGIN, 309
     END
@@ -908,7 +906,7 @@ BEGIN
     IDS_STATUS_BLACKANDWHITE "  Noir et blanc  "
     IDS_STATUS_FOREGROUND   "  Premier plan  "
     IDS_STATUS_BACKGROUND   "  Arrière plan  "
-    IDS_PRINT_ALL_PAGES     "Tous les pages de l'étendue"
+    IDS_PRINT_ALL_PAGES     "Toutes les pages de l'étendue"
     IDS_PRINT_ODD_PAGES     "Pages impaires"
     IDS_PRINT_EVEN_PAGES    "Pages paires"
     IDS_PRINT_ONE_PAGE      "Une page par feuille"
@@ -1002,9 +1000,9 @@ BEGIN
     IDS_PRINTING_PAGE       "Impression de la page %d sur %d, patientez s.v.p..."
     IDS_SEARCHING           "Recherche en cours"
     IDS_OF_PAGE_COUNT       "sur %d"
-    IDS_FIT_WIDTH           "Ajuster en largeur"
-    IDS_FIT_HEIGHT          "Ajuster en hauteur"
-    IDS_FIT_PAGE            "Ajuster à la page"
+    IDS_FIT_WIDTH           "En largeur"
+    IDS_FIT_HEIGHT          "En hauteur"
+    IDS_FIT_PAGE            "A la page"
     IDS_ACTUAL_SIZE         "Taille actuelle"
 END
 

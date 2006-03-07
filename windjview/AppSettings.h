@@ -52,6 +52,11 @@ struct CDisplaySettings
 				&& GetGamma() == rhs.GetGamma() && nScaleMethod == rhs.nScaleMethod;
 	}
 
+	bool IsAdjusted() const
+	{
+		return bAdjustDisplay && (nBrightness != 0 || nContrast != 0 || fGamma != 1.0);
+	}
+
 	bool bAdjustDisplay;
 	double fGamma;
 	int nBrightness;

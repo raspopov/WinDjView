@@ -419,7 +419,7 @@ BEGIN
     CONTROL         "",IDC_SPIN_COPIES,"msctls_updown32",UDS_ALIGNRIGHT | 
                     UDS_AUTOBUDDY | UDS_ARROWKEYS,406,111,11,14
     CONTROL         "Colar",IDC_COLLATE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,380,131,37,11
+                    WS_TABSTOP,380,128,37,11
     CONTROL         "&Tudo",IDC_RANGE_ALL,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,14,166,37,11
     CONTROL         "Página act&ual",IDC_RANGE_CURRENT,"Button",
