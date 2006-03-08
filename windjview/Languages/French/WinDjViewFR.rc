@@ -465,7 +465,7 @@ BEGIN
                     UDS_AUTOBUDDY | UDS_ARROWKEYS,395,111,11,14
     CONTROL         "Copies assemblées",IDC_COLLATE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,304,128,81,11
-    CONTROL         "Tous",IDC_RANGE_ALL,"Button",BS_AUTORADIOBUTTON | 
+    CONTROL         "Toutes",IDC_RANGE_ALL,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,14,166,37,11
     CONTROL         "Page en cours",IDC_RANGE_CURRENT,"Button",
                     BS_AUTORADIOBUTTON,56,166,59,11
