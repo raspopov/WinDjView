@@ -395,9 +395,9 @@ BEGIN
             VALUE "FileDescription", "WinDjView Localized Resources\0"
             VALUE "FileVersion", "0.4.1\0"
             VALUE "InternalName", "WinDjViewFR.dll\0"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun.  All rights reserved.\0"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun. All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "WinDjView.exe\0"
+            VALUE "OriginalFilename", "WinDjViewFR.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "WinDjView\0"
             VALUE "ProductVersion", "0.4.1\0"
@@ -436,7 +436,7 @@ BEGIN
                     106,8
     LTEXT           "Ce programme est un logiciel libre, vous pouvez le redistribuer et/ou le modifier selon les termes de la licence GNU (General Public License) telle que publiée par la Free Software Foundation.",
                     IDC_STATIC,40,72,215,26
-    LTEXT           "Vous pouvez aider au développement de ce programme en faisaint un don via PayPal",
+    LTEXT           "Vous pouvez aider au développement de ce programme en faisant un don via PayPal",
                     IDC_STATIC,40,104,152,17
     CONTROL         "Donner",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | 
                     WS_TABSTOP,199,102,63,21
@@ -740,7 +740,7 @@ BEGIN
     IDS_EXPORT_PAGE         "Exporter la page"
     IDS_CONNECT_ERROR       "Une erreur s'est produite lors de la connexion au serveur. Vérifiez vos paramètres Internet."
     IDS_NO_UPDATES_AVAILABLE 
-                            "Aucune mise à jour n'est disponible en ce moement. Vérifier plus tard."
+                            "Aucune mise à jour n'est disponible pour le moment. Veuillez vérifier plus tard."
     IDS_NEW_VERSION_AVAILABLE 
                             "Une nouvelle version %s est disponible. Voulez-vous allez sur le site web maintenant?"
     IDS_VERSION_URL         "http://windjview.sourceforge.net/version.txt"

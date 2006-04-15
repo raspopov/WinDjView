@@ -514,7 +514,7 @@ BEGIN
     CONTROL         "&Листать страницы щелчком мыши в полноэкранном режиме",
                     IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,95,224,10
-    CONTROL         "Предупреждать при закрытии &несеольких документов",
+    CONTROL         "Предупреждать при закрытии &нескольких документов",
                     IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,109,219,10
     CONTROL         "Масштабировать с высокой &резкостью (но медленнее)",
@@ -606,7 +606,7 @@ BEGIN
             VALUE "FileDescription", "WinDjView Localized Resources\0"
             VALUE "FileVersion", "0.4.1\0"
             VALUE "InternalName", "WinDjViewRU.dll\0"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun.  All rights reserved.\0"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun. All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "WinDjViewRU.dll\0"
             VALUE "PrivateBuild", "\0"

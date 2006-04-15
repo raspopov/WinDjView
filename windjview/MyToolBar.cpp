@@ -130,7 +130,7 @@ void CMyToolBar::DrawBorders(CDC* pDC, CRect& rect)
 		rctBk.top = rect.top;
 		rctBk.bottom = rect.bottom;
 
-		HTHEME hTheme;
+		HTHEME hTheme = NULL;
 		if (XPIsAppThemed() && XPIsThemeActive())
 			hTheme = XPOpenThemeData(m_hWnd, L"TOOLBAR");
 

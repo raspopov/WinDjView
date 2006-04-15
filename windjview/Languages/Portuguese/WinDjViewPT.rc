@@ -510,39 +510,46 @@ BEGIN
     PUSHBUTTON      "Cancelar",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 219, 210
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 238, 240
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Configurações"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,106,189,50,14
-    PUSHBUTTON      "Cancelar",IDCANCEL,162,189,50,14
+    DEFPUSHBUTTON   "OK",IDOK,126,219,50,14
+    PUSHBUTTON      "Cancelar",IDCANCEL,181,219,50,14
     LTEXT           "Pressione para associar o WinDjView com ficheiros .djvu e .djv:",
-                    IDC_STATIC,15,18,188,18
-    PUSHBUTTON      "&Associar",IDC_ASSOCIATE,15,37,50,14
+                    IDC_STATIC,15,18,182,9
+    PUSHBUTTON      "&Associar",IDC_ASSOCIATE,15,30,50,14
     CONTROL         "&Restaurar associações no arranque do programa",
                     IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    15,56,188,10
+                    15,49,188,10
     CONTROL         "Gerar &miniaturas para todas as páginas em fundo",
                     IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,93,188,10
+                    WS_TABSTOP,15,81,188,10
     CONTROL         "&Clicks do rato mudam as páginas em modo ecrã inteiro",
                     IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,107,188,10
+                    WS_TABSTOP,15,95,188,10
+    CONTROL         "A&visar ao fechar vários documentos",
+                    IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,109,188,10
+    CONTROL         "&Escaloneamento exacto em níveis baixos de zoom (mais lento)",
+                    IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
+                    123,214,10
     CONTROL         "A&justar configurações:",IDC_ADJUST_DISPLAY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,122,97,9
-    LTEXT           "&Luminosidade: 0",IDC_BRIGHTNESS_TEXT,15,136,65,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,135,
-                    131,12
-    LTEXT           "&Contraste: 0",IDC_CONTRAST_TEXT,15,149,55,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,148,
-                    131,12
-    LTEXT           "&Gama: 1.0",IDC_GAMMA_TEXT,15,162,45,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,161,131,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,156,97,9
+    LTEXT           "&Luminosidade: 0",IDC_BRIGHTNESS_TEXT,15,170,61,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,169,
+                    149,12
+    LTEXT           "&Contraste: 0",IDC_CONTRAST_TEXT,15,183,55,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,182,
+                    149,12
+    LTEXT           "&Gama: 1.0",IDC_GAMMA_TEXT,15,196,45,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,195,149,
                     12
-    GROUPBOX        "Associação de ficheiros",IDC_STATIC,7,7,205,68
-    GROUPBOX        "Ambiente",IDC_STATIC,7,80,205,98
-    LTEXT           "WinDjView\npor Andrew Zhezherun",IDC_STATIC_ABOUT,7,187,
+    GROUPBOX        "Associação de ficheiros",IDC_STATIC,7,7,224,58
+    GROUPBOX        "Geral",IDC_STATIC,7,69,224,70
+    GROUPBOX        "Visualização",IDC_STATIC,7,144,224,68
+    LTEXT           "WinDjView\npor Andrew Zhezherun",IDC_STATIC_ABOUT,7,219,
                     92,18
 END
 
@@ -614,7 +621,7 @@ BEGIN
             VALUE "FileDescription", "WinDjView Localized Resources\0"
             VALUE "FileVersion", "0.4.1\0"
             VALUE "InternalName", "WinDjViewPT.dll\0"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun.  All rights reserved.\0"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun. All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "WinDjViewPT.dll\0"
             VALUE "PrivateBuild", "\0"
@@ -675,9 +682,9 @@ BEGIN
     IDD_SETTINGS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 212
+        RIGHTMARGIN, 231
         TOPMARGIN, 7
-        BOTTOMMARGIN, 203
+        BOTTOMMARGIN, 233
     END
 
     IDD_FIND, DIALOG
@@ -928,8 +935,8 @@ BEGIN
     IDS_VERSION_INFO        "WinDjView %s\npor Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
     IDS_CURRENT_VERSION     "0.4.1"
-    IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your active document."
-    IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure you want to continue?"
+    IDS_FATAL_ERROR         "Ocorreu um erro fatal.\n\nPode ter sido causado por um documento djvu defeituoso. A aplicação poderá não funcionar correctamente depois deste erro. É fortemente recomendado que volte a iniciar esta aplicação.\n\nPressione OK para fechar a aplicação, ou pressione Cancelar para voltar ao seu documento activo."
+    IDS_WARN_CLOSE_MULTIPLE "Está prestes a fechar %d documentos abertos. Tem a certeza que pretende continuar?"
 END
 
 STRINGTABLE DISCARDABLE 

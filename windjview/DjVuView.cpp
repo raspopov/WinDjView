@@ -4244,7 +4244,7 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory
 		strURL = strURL.substr(0, nPos);
 	}
 
-	CString strPathName = (const char*)strURL;
+	CString strPathName = MakeCString(strURL);
 	TCHAR szDrive[_MAX_DRIVE + 1] = {0};
 	TCHAR szDir[_MAX_DIR + 1] = {0};
 	TCHAR szExt[_MAX_EXT + 1] = {0};

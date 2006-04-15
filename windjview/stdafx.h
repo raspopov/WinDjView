@@ -118,5 +118,5 @@ inline CString LoadString(UINT nID)
 inline void RotateImage(GP<DjVuImage> pImage, int nRotate)
 {
 	GP<DjVuInfo> info = pImage->get_info();
-	pImage->set_rotate((nRotate + info->orientation) % 4);
+	pImage->set_rotate((nRotate + (info != NULL ? info->orientation : 0)) % 4);
 }
