@@ -389,22 +389,22 @@ CAPTION "Друк"
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "&Ім'я:",IDC_STATIC,174,21,37,9
-    COMBOBOX        IDC_COMBO_PRINTER,223,19,161,82,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_COMBO_PRINTER,223,19,162,82,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Властивості",IDC_PROPERTIES,391,18,50,14
     CONTROL         "Друк до &файлу",IDC_PRINT_TO_FILE,"Button",
-                    BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,378,78,63,
+                    BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,378,77,63,
                     9
     CONTROL         "&Книжкова",IDC_PORTRAIT,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,174,112,53,11
     CONTROL         "&Альбомна",IDC_LANDSCAPE,"Button",BS_AUTORADIOBUTTON,
-                    174,129,53,11
+                    174,128,53,11
     LTEXT           "Кількість к&опій:",IDC_STATIC,319,112,68,11
     EDITTEXT        IDC_EDIT_COPIES,389,110,38,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN_COPIES,"msctls_updown32",UDS_ALIGNRIGHT | 
                     UDS_AUTOBUDDY | UDS_ARROWKEYS,415,112,11,14
     CONTROL         "&Розібрати по копіях",IDC_COLLATE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,319,129,94,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,319,128,94,11
     CONTROL         "&Усе",IDC_RANGE_ALL,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,14,166,37,11
     CONTROL         "&Поточна сторінка",IDC_RANGE_CURRENT,"Button",
@@ -439,14 +439,14 @@ BEGIN
     LTEXT           "Ро&змір:",IDC_STATIC,174,251,31,9
     COMBOBOX        IDC_COMBO_PAPER,206,249,91,81,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Друкувати:",IDC_STATIC,319,251,34,9
-    COMBOBOX        IDC_COMBO_PAGESINRANGE,356,249,86,81,CBS_DROPDOWNLIST | 
+    LTEXT           "Друкувати:",IDC_STATIC,318,251,38,9
+    COMBOBOX        IDC_COMBO_PAGESINRANGE,359,249,83,81,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "На листі:",IDC_STATIC,319,269,34,9
-    COMBOBOX        IDC_COMBO_PAGESPERSHEET,356,267,86,84,CBS_DROPDOWNLIST | 
+    LTEXT           "На листі:",IDC_STATIC,318,269,34,9
+    COMBOBOX        IDC_COMBO_PAGESPERSHEET,359,267,83,84,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Зворотний порядок сторінок",IDC_REVERSE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,297,114,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,297,114,9
     DEFPUSHBUTTON   "Друк",IDOK,344,295,50,14
     PUSHBUTTON      "Закрити",IDCANCEL,399,295,50,14
     GROUPBOX        "Друкарка",IDC_STATIC,167,7,282,87
@@ -465,7 +465,7 @@ BEGIN
     GROUPBOX        "Поля (у міліметрах)",IDC_STATIC,7,237,153,49
     GROUPBOX        "Папір",IDC_STATIC,167,237,137,49
     LTEXT           "Введіть номери і/або діапазони сторінок через кому. Приклад: 1,3,5-9",
-                    IDC_STATIC,15,210,141,17
+                    IDC_STATIC,16,210,140,17
     GROUPBOX        "Додаткові налаштування",IDC_STATIC,311,237,138,49
     GROUPBOX        "Розташування",IDC_STATIC,167,154,137,78
     GROUPBOX        "Масштаб",IDC_STATIC,311,154,138,78
@@ -495,7 +495,7 @@ BEGIN
     PUSHBUTTON      "Відміна",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 249, 240
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 260, 240
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Настройки"
 FONT 8, "MS Shell Dlg"
@@ -513,7 +513,7 @@ BEGIN
                     WS_TABSTOP,15,81,212,10
     CONTROL         "&Перегортати сторінки клацанням миші у повноекранному режимі",
                     IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,95,224,10
+                    WS_TABSTOP,15,95,234,10
     CONTROL         "Попереджати при закритті декількох документів",
                     IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,109,219,10
@@ -524,16 +524,16 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,156,153,9
     LTEXT           "&Яскравість: 0",IDC_BRIGHTNESS_TEXT,15,170,61,9
     CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,169,
-                    157,12
+                    172,12
     LTEXT           "&Контраст: 0",IDC_CONTRAST_TEXT,15,183,55,9
     CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,182,
-                    158,12
+                    172,12
     LTEXT           "&Ґамма: 1.0",IDC_GAMMA_TEXT,15,196,45,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,195,158,
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,195,172,
                     12
-    GROUPBOX        "Типи файлів",IDC_STATIC,7,7,235,58
-    GROUPBOX        "Різне",IDC_STATIC,7,69,235,70
-    GROUPBOX        "Відображення",IDC_STATIC,7,144,235,68
+    GROUPBOX        "Типи файлів",IDC_STATIC,7,7,246,58
+    GROUPBOX        "Різне",IDC_STATIC,7,69,246,70
+    GROUPBOX        "Відображення",IDC_STATIC,7,144,246,68
     LTEXT           "WinDjView\n(C) Андрій Жежерун",IDC_STATIC_ABOUT,7,219,
                     92,18
 END
@@ -544,7 +544,7 @@ CAPTION "Пошук"
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "&Текст:",IDC_STATIC,7,7,33,12,SS_CENTERIMAGE
-    EDITTEXT        IDC_FIND,46,7,174,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FIND,47,7,173,12,ES_AUTOHSCROLL
     CONTROL         "&Враховувати реґістр",IDC_MATCH_CASE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,28,84,8
     DEFPUSHBUTTON   "&Знайти",IDOK,230,7,50,14
@@ -563,18 +563,18 @@ BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,21,20
 END
 
-IDD_GOTO_PAGE DIALOG DISCARDABLE  0, 0, 127, 48
+IDD_GOTO_PAGE DIALOG DISCARDABLE  0, 0, 123, 48
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Перехід на сторінку"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    LTEXT           "&Сторінка:",IDC_STATIC,7,7,38,12,SS_CENTERIMAGE
-    EDITTEXT        IDC_PAGE,47,7,42,12,ES_AUTOHSCROLL
+    LTEXT           "&Сторінка:",IDC_STATIC,7,7,33,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_PAGE,43,7,42,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN_PAGE,"msctls_updown32",UDS_ALIGNRIGHT | 
                     UDS_AUTOBUDDY | UDS_ARROWKEYS,77,8,11,14
-    LTEXT           "з 9999",IDC_PAGE_COUNT,93,7,27,12,SS_CENTERIMAGE
-    DEFPUSHBUTTON   "Гаразд",IDOK,11,27,50,14
-    PUSHBUTTON      "Відміна",IDCANCEL,66,27,50,14
+    LTEXT           "зі 9999",IDC_PAGE_COUNT,89,7,27,12,SS_CENTERIMAGE
+    DEFPUSHBUTTON   "Гаразд",IDOK,9,27,50,14
+    PUSHBUTTON      "Відміна",IDCANCEL,64,27,50,14
 END
 
 
@@ -667,7 +667,7 @@ BEGIN
     IDD_SETTINGS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 242
+        RIGHTMARGIN, 253
         TOPMARGIN, 7
         BOTTOMMARGIN, 233
     END
@@ -691,7 +691,7 @@ BEGIN
     IDD_GOTO_PAGE, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 120
+        RIGHTMARGIN, 116
         TOPMARGIN, 7
         BOTTOMMARGIN, 41
     END
