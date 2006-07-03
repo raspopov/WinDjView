@@ -67,6 +67,8 @@ LINK_OBJS = \
 	"$(INTDIR)\MainFrm.obj" \
 	"$(INTDIR)\MyBitmapButton.obj" \
 	"$(INTDIR)\MyComboBox.obj" \
+	"$(INTDIR)\MyDocManager.obj" \
+	"$(INTDIR)\MyDocTemplate.obj" \
 	"$(INTDIR)\MyEdit.obj" \
 	"$(INTDIR)\MyScrollView.obj" \
 	"$(INTDIR)\MySplitterWnd.obj" \
@@ -103,6 +105,8 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\MainFrm.obj"	: MainFrm.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyBitmapButton.obj" : MyBitmapButton.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyComboBox.obj" : MyComboBox.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MyDocManager.obj" : MyDocManager.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MyDocTemplate.obj" : MyDocTemplate.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyEdit.obj" : MyEdit.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyScrollView.obj" : MyScrollView.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MySplitterWnd.obj" : MySplitterWnd.cpp "$(INTDIR)" $(PCH)

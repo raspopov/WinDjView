@@ -741,7 +741,7 @@ void CMainFrame::OnUpdateStatusAdjust(CCmdUI* pCmdUI)
 	static CString strMessage, strTooltip;
 	CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
 
-	if (CAppSettings::displaySettings.IsAdjusted() || MDIGetActive() == NULL)
+	if (!CAppSettings::displaySettings.IsAdjusted() || MDIGetActive() == NULL)
 	{
 		m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_ADJUST, SBPS_DISABLED | SBPS_NOBORDERS, 0);
 		pCmdUI->Enable(false);

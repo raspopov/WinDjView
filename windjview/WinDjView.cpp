@@ -25,6 +25,8 @@
 #include "ChildFrm.h"
 #include "DjVuDoc.h"
 #include "DjVuView.h"
+#include "MyDocManager.h"
+#include "MyDocTemplate.h"
 #include "AppSettings.h"
 #include "SettingsDlg.h"
 #include "UpdateDlg.h"
@@ -121,9 +123,7 @@ BOOL CDjViewApp::InitInstance()
 	CWinApp::InitInstance();
 
 	// Standard initialization
-	// If you are not using these features and wish to reduce the size
-	// of your final executable, you should remove from the following
-	// the specific initialization routines you do not need
+
 	// Change the registry key under which our settings are stored
 	SetRegistryKey(_T("Andrew Zhezherun"));
 
@@ -131,19 +131,20 @@ BOOL CDjViewApp::InitInstance()
 	LoadStdProfileSettings(10);  // Load standard INI file options (including MRU)
 	LoadSettings();
 
-	// Register the application's document templates.  Document templates
-	//  serve as the connection between documents, frame windows and views
+	m_pDocManager = new CMyDocManager();
+
+	// Register the application's document template
 	CMultiDocTemplate* pDocTemplate;
 
-	pDocTemplate = new CMultiDocTemplate(IDR_DjVuTYPE,
+	pDocTemplate = new CMyDocTemplate(IDR_DjVuTYPE,
 		RUNTIME_CLASS(CDjVuDoc),
-		RUNTIME_CLASS(CChildFrame), // custom MDI child frame
+		RUNTIME_CLASS(CChildFrame),
 		RUNTIME_CLASS(CDjVuView));
 	if (!pDocTemplate)
 		return FALSE;
 	AddDocTemplate(pDocTemplate);
 
-	// create main MDI Frame window
+	// Create main MDI Frame window
 	CMainFrame* pMainFrame = new CMainFrame;
 	if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
 		return FALSE;
@@ -162,8 +163,6 @@ BOOL CDjViewApp::InitInstance()
 				CAppSettings::nWindowWidth, CAppSettings::nWindowHeight,
 				SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
 
-	// call DragAcceptFiles only if there's a suffix
-	//  In an MDI app, this should occur immediately after setting m_pMainWnd
 	// Enable drag/drop open
 	m_pMainWnd->DragAcceptFiles();
 

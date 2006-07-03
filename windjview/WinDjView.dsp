@@ -199,6 +199,14 @@ SOURCE=.\MyComboBox.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MyDocManager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MyDocTemplate.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MyEdit.cpp
 # End Source File
 # Begin Source File
@@ -325,6 +333,14 @@ SOURCE=.\MyBitmapButton.h
 # Begin Source File
 
 SOURCE=.\MyComboBox.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MyDocManager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MyDocTemplate.h
 # End Source File
 # Begin Source File
 
