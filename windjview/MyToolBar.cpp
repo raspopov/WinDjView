@@ -20,7 +20,6 @@
 
 #include "stdafx.h"
 #include "MyToolBar.h"
-#include "MyTheme.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -31,6 +30,7 @@
 
 IMPLEMENT_DYNAMIC(CMyToolBar, CToolBar)
 CMyToolBar::CMyToolBar()
+	: m_hTheme(NULL)
 {
 }
 
@@ -40,11 +40,35 @@ CMyToolBar::~CMyToolBar()
 
 
 BEGIN_MESSAGE_MAP(CMyToolBar, CToolBar)
+	ON_WM_CREATE()
 	ON_WM_NCPAINT()
+	ON_MESSAGE(WM_THEMECHANGED, OnThemeChanged)
 END_MESSAGE_MAP()
 
 
 // CMyToolBar message handlers
+
+int CMyToolBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CToolBar::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	if (XPIsAppThemed() && XPIsThemeActive())
+		m_hTheme = XPOpenThemeData(m_hWnd, L"TOOLBAR");
+
+	return 0;
+}
+
+void CMyToolBar::OnDestroy()
+{
+	if (m_hTheme != NULL)
+	{
+		XPCloseThemeData(m_hTheme);
+		m_hTheme = NULL;
+	}
+
+	CToolBar::OnDestroy();
+}
 
 void CMyToolBar::SetSizes(SIZE sizeButton, SIZE sizeImage)
 {
@@ -130,11 +154,7 @@ void CMyToolBar::DrawBorders(CDC* pDC, CRect& rect)
 		rctBk.top = rect.top;
 		rctBk.bottom = rect.bottom;
 
-		HTHEME hTheme = NULL;
-		if (XPIsAppThemed() && XPIsThemeActive())
-			hTheme = XPOpenThemeData(m_hWnd, L"TOOLBAR");
-
-		if (hTheme != NULL)
+		if (m_hTheme != NULL)
 		{
 			if (GetStyle() & TBSTYLE_TRANSPARENT)
 			{
@@ -142,12 +162,10 @@ void CMyToolBar::DrawBorders(CDC* pDC, CRect& rect)
 			}
 			else
 			{
-				if (XPIsThemeBackgroundPartiallyTransparent(hTheme, 0, 0))
+				if (XPIsThemeBackgroundPartiallyTransparent(m_hTheme, 0, 0))
 					XPDrawThemeParentBackground(m_hWnd, pDC->m_hDC, rctBk);
-				XPDrawThemeBackground(hTheme, pDC->m_hDC, 0, 0, rctBk, rctBk);
+				XPDrawThemeBackground(m_hTheme, pDC->m_hDC, 0, 0, rctBk, rctBk);
 			}
-
-			XPCloseThemeData(hTheme);
 		}
 		else
 		{
@@ -198,4 +216,17 @@ void CMyToolBar::DrawBorders(CDC* pDC, CRect& rect)
 void CMyToolBar::OnNcPaint()
 {
 	EraseNonClient();
+}
+
+LRESULT CMyToolBar::OnThemeChanged(WPARAM wParam, LPARAM lParam)
+{
+	if (m_hTheme != NULL)
+		XPCloseThemeData(m_hTheme);
+
+	m_hTheme = NULL;
+
+	if (XPIsAppThemed() && XPIsThemeActive())
+		m_hTheme = XPOpenThemeData(m_hWnd, L"TOOLBAR");
+
+	return 0;
 }

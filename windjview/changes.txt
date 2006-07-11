@@ -11,8 +11,7 @@ Changes in version 0.4.2 (2006-):
 * Fixed print dialog: collate option is now always available.
 * Fixed printing order for custom page ranges.
 * Fixed a problem with XP themes.
-* Fixed a few minor issues.
-* Merged patch from KViewShell DjVu plugin - should prevent crashes.
+* Several crash fixes, including a patch from KViewShell DjVu plugin.
 
 Changes in version 0.4.1 (2006-02-25):
 + Added an option to select different scaling algorithm

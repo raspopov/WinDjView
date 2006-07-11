@@ -104,6 +104,10 @@ struct TMSCHEMAINFO
 
 #pragma pack(pop)
 
+#ifndef WM_THEMECHANGED
+#define WM_THEMECHANGED     0x031A
+#endif
+
 HTHEME XPOpenThemeData(HWND hwnd, LPCWSTR pszClassList);
 HRESULT XPCloseThemeData(HTHEME hTheme);
 HRESULT XPDrawThemeBackground(HTHEME hTheme, HDC hdc,

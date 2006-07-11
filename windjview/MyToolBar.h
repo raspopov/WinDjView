@@ -21,6 +21,8 @@
 #pragma once
 
 
+#include "MyTheme.h"
+
 // CMyToolBar
 
 class CMyToolBar : public CToolBar
@@ -37,6 +39,10 @@ public:
 	virtual void DoPaint(CDC* pDC);
 
 protected:
+	HTHEME m_hTheme;
 	afx_msg void OnNcPaint();
+	afx_msg void OnDestroy();
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	LRESULT OnThemeChanged(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };
