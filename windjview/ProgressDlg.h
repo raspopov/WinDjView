@@ -32,12 +32,15 @@ struct IProgressInfo
 	virtual DWORD_PTR GetUserData() = 0;
 };
 
+
+typedef unsigned int (__stdcall *ThreadProcEx)(void*);
+
 class CProgressDlg : public CDialog, public IProgressInfo
 {
 	DECLARE_DYNAMIC(CProgressDlg)
 
 public:
-	CProgressDlg(LPTHREAD_START_ROUTINE pfnThreadProc, CWnd* pParent = NULL);   // standard constructor
+	CProgressDlg(ThreadProcEx pfnThreadProc, CWnd* pParent = NULL);   // standard constructor
 	virtual ~CProgressDlg();
 
 // Dialog Data
@@ -69,10 +72,11 @@ protected:
 
 // Implementation
 protected:
-	LPTHREAD_START_ROUTINE m_pfnThreadProc;
+	ThreadProcEx m_pfnThreadProc;
 	LONG m_nCancelled;
 	LONG m_nCode;
 	DWORD_PTR m_dwUserData;
+	HANDLE m_hThread;
 
 // Generated message map functions
 	afx_msg LRESULT OnEndDialog(WPARAM wParam, LPARAM lParam);

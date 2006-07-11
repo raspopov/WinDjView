@@ -7,6 +7,7 @@ Changes in version 0.4.2 (2006-):
 + Added option to hide scrollbars in fullscreen mode.
 + Added option to invert direction of Ctrl+Mouse Wheel zooming.
 + Added keyboard shortcuts to rotate pages, change layouts and open settings.
+* Fixed print dialog: collate option is now always available.
 * Fixed Open File dialog (.djv files were not displayed).
 * Fixed a problem with XP themes.
 * Fixed printing order for custom page ranges.

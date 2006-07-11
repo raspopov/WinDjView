@@ -36,7 +36,7 @@ public:
 
 protected:
 	HANDLE m_hThread;
-	static DWORD WINAPI UpdateThreadProc(LPVOID pvData);
+	static unsigned int __stdcall UpdateThreadProc(void* pvData);
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual void OnOK();

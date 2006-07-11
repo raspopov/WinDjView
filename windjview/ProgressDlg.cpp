@@ -31,14 +31,16 @@
 
 IMPLEMENT_DYNAMIC(CProgressDlg, CDialog)
 
-CProgressDlg::CProgressDlg(LPTHREAD_START_ROUTINE pfnThreadProc, CWnd* pParent)
+CProgressDlg::CProgressDlg(ThreadProcEx pfnThreadProc, CWnd* pParent)
 	: CDialog(CProgressDlg::IDD, pParent),
-	  m_pfnThreadProc(pfnThreadProc), m_dwUserData(0)
+	  m_pfnThreadProc(pfnThreadProc), m_dwUserData(0), m_hThread(NULL)
 {
 }
 
 CProgressDlg::~CProgressDlg()
 {
+	if (m_hThread != NULL)
+		::CloseHandle(m_hThread);
 }
 
 void CProgressDlg::DoDataExchange(CDataExchange* pDX)
@@ -104,10 +106,10 @@ BOOL CProgressDlg::OnInitDialog()
 	m_progress.SetPos(0);
 	m_status.SetWindowText(LoadString(IDS_PLEASE_WAIT));
 
-	DWORD dwThreadID;
-	HANDLE hThread = ::CreateThread(NULL, 0, m_pfnThreadProc,
-		static_cast<IProgressInfo*>(this), 0, &dwThreadID);
-	::SetThreadPriority(hThread, THREAD_PRIORITY_BELOW_NORMAL);
+	UINT nThreadID;
+	m_hThread = (HANDLE)_beginthreadex(NULL, 0, m_pfnThreadProc,
+		static_cast<IProgressInfo*>(this), 0, &nThreadID);
+	::SetThreadPriority(m_hThread, THREAD_PRIORITY_BELOW_NORMAL);
 
 	return true;
 }

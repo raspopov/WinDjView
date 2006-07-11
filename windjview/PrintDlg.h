@@ -95,7 +95,7 @@ protected:
 
 // Implementation
 protected:
-	bool m_bCanCollate;
+	bool m_bPrinterCanCollate;
 	DWORD m_nMaxCopies;
 
 	vector<BYTE> m_printerData;
@@ -121,6 +121,8 @@ protected:
 	void SaveSettings();
 	void UpdateDevMode();
 	void PreviewTwoPages(CDC* pDC, const CRect& rcPage, const CSize& szPaper, double fScreenMM);
+
+	friend unsigned int __stdcall PrintThreadProc(void* pvData);
 
 // Generated message map functions
 	virtual BOOL OnInitDialog();

@@ -91,6 +91,6 @@ CDIB* RenderEmpty(const CSize& szBitmap, const CDisplaySettings& displaySettings
 void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcPage,
 	double fPrinterMMx, double fPrinterMMy, CPrintSettings& settings, bool bPreview = false);
 
-DWORD WINAPI PrintThreadProc(LPVOID pvData);
+unsigned int __stdcall PrintThreadProc(void* pvData);
 
 void FrameRect(CDC* pDC, const CRect& rect, COLORREF color);

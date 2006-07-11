@@ -76,12 +76,12 @@ void CUpdateDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 
 	if (bShow)
 	{
-		DWORD dwThreadId;
-		m_hThread = ::CreateThread(NULL, 0, UpdateThreadProc, this, 0, &dwThreadId);
+		UINT nThreadId;
+		m_hThread = (HANDLE)_beginthreadex(NULL, 0, UpdateThreadProc, this, 0, &nThreadId);
 	}
 }
 
-DWORD WINAPI CUpdateDlg::UpdateThreadProc(LPVOID pvData)
+unsigned int __stdcall CUpdateDlg::UpdateThreadProc(void* pvData)
 {
 	CUpdateDlg* pDlg = reinterpret_cast<CUpdateDlg*>(pvData);
 

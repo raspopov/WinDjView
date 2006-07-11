@@ -155,9 +155,6 @@ void CNavPaneWnd::OnPaint()
 
 	if (rcClient.Width() > 50)
 	{
-		static HBITMAP hBmpClose = ::LoadBitmap(AfxGetInstanceHandle(),
-				MAKEINTRESOURCE(IDB_CLOSE));
-
 		// Close button
 		CRect rcButton(CPoint(rcClient.right - 21, rcClient.top + 2), CSize(19, 18));
 		if (m_bClosePressed)
@@ -170,12 +167,7 @@ void CNavPaneWnd::OnPaint()
 		if (m_bClosePressed)
 			ptOffset.Offset(1, 1);
 
-		CDC dcSrc;
-		dcSrc.CreateCompatibleDC(&dc);
-		HGDIOBJ hOldBmpSrc = dcSrc.SelectObject(hBmpClose);
-		::TransparentBlt(dc.m_hDC, ptOffset.x, ptOffset.y, 10, 10, dcSrc.m_hDC,
-			0, 0, 10, 10, RGB(192, 192, 192));
-		dcSrc.SelectObject(hOldBmpSrc);
+		m_imgClose.Draw(&dc, 0, ptOffset, ILD_NORMAL);
 	}
 }
 
@@ -448,6 +440,8 @@ int CNavPaneWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_toolTip.Create(this);
 	m_toolTip.AddTool(this, LoadString(IDS_TOOLTIP_HIDE));
+
+	m_imgClose.Create(IDB_CLOSE, 10, 0, RGB(192, 192, 192));
 
 	return 0;
 }

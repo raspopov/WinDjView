@@ -3376,7 +3376,7 @@ int CDjVuView::GetCurrentPage() const
 UINT GetMouseScrollLines()
 {
 	static UINT uCachedScrollLines;
-	static bool bGotScrollLines;
+	static bool bGotScrollLines = false;
 
 	// If we've already got it and we're not refreshing,
 	// return what we've already got
@@ -3408,8 +3408,7 @@ UINT GetMouseScrollLines()
 			hwMouseWheel = FindWindow(MSH_WHEELMODULE_CLASS, MSH_WHEELMODULE_TITLE);
 			if (hwMouseWheel && msgGetScrollLines)
 			{
-				uCachedScrollLines = (UINT)
-					::SendMessage(hwMouseWheel, msgGetScrollLines, 0, 0);
+				uCachedScrollLines = (UINT)::SendMessage(hwMouseWheel, msgGetScrollLines, 0, 0);
 			}
 		}
 	}

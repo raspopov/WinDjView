@@ -70,6 +70,7 @@ protected:
 	void UpdateTabContents();
 	bool PtInTab(int nTab, CPoint point);
 	CToolTipCtrl m_toolTip;
+	CImageList m_imgClose;
 
 	CBitmap* m_pBitmapTabs;
 	CSize m_szBitmap;

@@ -88,7 +88,7 @@ CPrintDlg::CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, int nMode, CWnd* pP
 	  m_strComment(_T("")), m_bLandscape(FALSE), m_nRangeType(0),
 	  m_pPrinter(NULL), m_hPrinter(NULL), m_pPaper(NULL), m_bReverse(false),
 	  m_pDoc(pDoc), m_nCurPage(nPage), m_nRotate(nRotate), m_nMode(nMode),
-	  m_bTwoPages(false)
+	  m_bTwoPages(false), m_bPrinterCanCollate(false)
 {
 }
 
@@ -596,10 +596,8 @@ void CPrintDlg::OnChangePrinter()
 	else
 		m_nCopies = min(m_nCopies, m_nMaxCopies);
 
-	m_bCanCollate = ::DeviceCapabilities(m_pPrinter->pPrinterName, m_pPrinter->pPortName,
+	m_bPrinterCanCollate = ::DeviceCapabilities(m_pPrinter->pPrinterName, m_pPrinter->pPortName,
 		DC_COLLATE, NULL, m_pPrinter->pDevMode) > 0;
-	if (!m_bCanCollate)
-		m_bCollate = false;
 
 	UpdateData(false);
 	UpdateDevMode();
@@ -709,7 +707,9 @@ void CPrintDlg::OnProperties()
 
 	m_bLandscape = (m_pPrinter->pDevMode->dmOrientation == DMORIENT_LANDSCAPE);
 	m_nCopies = m_pPrinter->pDevMode->dmCopies;
-	m_bCollate = (m_pPrinter->pDevMode->dmCollate == DMCOLLATE_TRUE);
+
+	if (m_bPrinterCanCollate)
+		m_bCollate = (m_pPrinter->pDevMode->dmCollate == DMCOLLATE_TRUE);
 
 	UpdateData(false);
 
@@ -729,7 +729,7 @@ void CPrintDlg::OnKickIdle()
 	GetDlgItem(IDC_EDIT_COPIES)->EnableWindow(bOk && (m_pPrinter->pDevMode->dmFields & DM_COPIES));
 	GetDlgItem(IDC_SPIN_COPIES)->EnableWindow(bOk && (m_pPrinter->pDevMode->dmFields & DM_COPIES));
 
-	GetDlgItem(IDC_COLLATE)->EnableWindow(bOk && m_nCopies >= 2 && m_bCanCollate);
+	GetDlgItem(IDC_COLLATE)->EnableWindow(bOk && m_nCopies >= 2);
 
 	GetDlgItem(IDC_RANGE_ALL)->EnableWindow(bOk);
 	GetDlgItem(IDC_RANGE_CURRENT)->EnableWindow(bOk);
@@ -784,7 +784,8 @@ void CPrintDlg::UpdateDevMode()
 
 	m_pPrinter->pDevMode->dmPaperSize = m_nPaperCode;
 	m_pPrinter->pDevMode->dmOrientation = (m_bLandscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT);
-	m_pPrinter->pDevMode->dmCollate = (m_bCollate ? DMCOLLATE_TRUE : DMCOLLATE_FALSE);
+
+	m_pPrinter->pDevMode->dmCollate = (m_bCollate && m_bPrinterCanCollate ? DMCOLLATE_TRUE : DMCOLLATE_FALSE);
 	m_pPrinter->pDevMode->dmCopies = (WORD)m_nCopies;
 
 	UpdateDevModeCache(m_pPrinter->pPrinterName, m_pPrinter->pDevMode);

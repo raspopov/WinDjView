@@ -122,7 +122,6 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 	::CoUninitialize();
 	pData->m_finished.SetEvent();
 
-	_endthreadex(0);
 	return 0;
 }
 

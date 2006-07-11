@@ -789,7 +789,7 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPag
 	delete pBmpPage;
 }
 
-DWORD WINAPI PrintThreadProc(LPVOID pvData)
+unsigned int __stdcall PrintThreadProc(void* pvData)
 {
 	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 
@@ -799,6 +799,13 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 	CDjVuDoc* pDoc = dlg.GetDocument();
 
 	int nPages = dlg.m_arrPages.size();
+	if (dlg.m_nCopies > 1 && dlg.m_bCollate && !dlg.m_bPrinterCanCollate)
+	{
+		// We will do collation ourselves
+		nPages *= dlg.m_nCopies;
+		dlg.m_pPrinter->pDevMode->dmCopies = 1;
+	}
+
 	pProgress->SetRange(0, nPages);
 	pProgress->SetStatus(LoadString(IDS_PRINTING));
 
@@ -809,6 +816,7 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 	if (print_dc.m_hDC == NULL)
 	{
 		pProgress->StopProgress(1);
+		::CoUninitialize();
 		return 1;
 	}
 
@@ -863,10 +871,11 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 	if (print_dc.StartDoc(&di) <= 0)
 	{
 		pProgress->StopProgress(2);
+		::CoUninitialize();
 		return 2;
 	}
 
-	for (size_t i = 0; i < dlg.m_arrPages.size(); ++i)
+	for (size_t i = 0; i < nPages; ++i)
 	{
 		CString strText;
 		strText.Format(IDS_PRINTING_PAGE, i + 1, nPages);
@@ -874,10 +883,16 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 		pProgress->SetPos(i);
 
 		if (pProgress->IsCancelled())
-			break;
+		{
+			print_dc.AbortDoc();
 
-		int nPage = dlg.m_arrPages[i].first - 1;
-		int nSecondPage = dlg.m_arrPages[i].second - 1;
+			pProgress->StopProgress(0);
+			::CoUninitialize();
+			return 0;
+		}
+
+		int nPage = dlg.m_arrPages[i % dlg.m_pages.size()].first - 1;
+		int nSecondPage = dlg.m_arrPages[i % dlg.m_pages.size()].second - 1;
 
 		if ((nPage < 0 || nPage >= pDoc->GetPageCount()) &&
 			(!dlg.m_bTwoPages || nSecondPage < 0 || nSecondPage >= pDoc->GetPageCount()))
@@ -886,6 +901,7 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 		if (print_dc.StartPage() <= 0)
 		{
 			pProgress->StopProgress(3);
+			::CoUninitialize();
 			return 3;
 		}
 
@@ -910,6 +926,7 @@ DWORD WINAPI PrintThreadProc(LPVOID pvData)
 		if (print_dc.EndPage() <= 0)
 		{
 			pProgress->StopProgress(4);
+			::CoUninitialize();
 			return 4;
 		}
 	}

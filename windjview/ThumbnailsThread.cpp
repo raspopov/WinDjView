@@ -108,7 +108,6 @@ unsigned int __stdcall CThumbnailsThread::RenderThreadProc(void* pvData)
 	::CoUninitialize();
 	pData->m_finished.SetEvent();
 
-	_endthreadex(0);
 	return 0;
 }
 
