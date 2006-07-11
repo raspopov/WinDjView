@@ -170,6 +170,8 @@ void LoadThemeAPI()
 		pCloseThemeData = (pfCloseThemeData)::GetProcAddress(hThemesDLL, "CloseThemeData");
 		pDrawThemeBackground = (pfDrawThemeBackground)::GetProcAddress(hThemesDLL, "DrawThemeBackground");
 		pDrawThemeText = (pfDrawThemeText)::GetProcAddress(hThemesDLL, "DrawThemeText");
+		pGetThemeTextExtent = (pfGetThemeTextExtent)::GetProcAddress(hThemesDLL, "GetThemeTextExtent");
+		pGetThemeTextMetrics = (pfGetThemeTextMetrics)::GetProcAddress(hThemesDLL, "GetThemeTextMetrics");
 		pIsThemeBackgroundPartiallyTransparent = (pfIsThemeBackgroundPartiallyTransparent)::GetProcAddress(hThemesDLL, "IsThemeBackgroundPartiallyTransparent");
 		pSetWindowTheme = (pfSetWindowTheme)::GetProcAddress(hThemesDLL, "SetWindowTheme");
 		pIsThemeActive = (pfIsThemeActive)::GetProcAddress(hThemesDLL, "IsThemeActive");
@@ -177,17 +179,15 @@ void LoadThemeAPI()
 		pDrawThemeParentBackground = (pfDrawThemeParentBackground)::GetProcAddress(hThemesDLL, "DrawThemeParentBackground");
 		pGetThemeSysFont = (pfGetThemeSysFont)::GetProcAddress(hThemesDLL, "GetThemeSysFont");
 		pGetThemePartSize = (pfGetThemePartSize)::GetProcAddress(hThemesDLL, "GetThemePartSize");
+		pGetThemeColor = (pfGetThemeColor)::GetProcAddress(hThemesDLL, "GetThemeColor");
 /*
 		pfGetThemeBackgroundContentRect pGetThemeBackgroundContentRect = NULL;
 		pfGetThemeBackgroundExtent pGetThemeBackgroundExtent = NULL;
-		pfGetThemeTextExtent pGetThemeTextExtent = NULL;
-		pfGetThemeTextMetrics pGetThemeTextMetrics = NULL;
 		pfGetThemeBackgroundRegion pGetThemeBackgroundRegion = NULL;
 		pfHitTestThemeBackground pHitTestThemeBackground = NULL;
 		pfDrawThemeEdge pDrawThemeEdge = NULL;
 		pfDrawThemeIcon pDrawThemeIcon = NULL;
 		pfIsThemePartDefined pIsThemePartDefined = NULL;
-		pfGetThemeColor pGetThemeColor = NULL;
 		pfGetThemeMetric pGetThemeMetric = NULL;
 		pfGetThemeString pGetThemeString = NULL;
 		pfGetThemeBool pGetThemeBool = NULL;
@@ -222,13 +222,16 @@ void LoadThemeAPI()
 		&& pCloseThemeData != NULL
 		&& pDrawThemeBackground != NULL
 		&& pDrawThemeText != NULL
+		&& pGetThemeTextExtent != NULL
+		&& pGetThemeTextMetrics != NULL
 		&& pIsThemeBackgroundPartiallyTransparent != NULL
 		&& pSetWindowTheme != NULL
 		&& pIsThemeActive != NULL
 		&& pIsAppThemed != NULL
 		&& pDrawThemeParentBackground != NULL
 		&& pGetThemeSysFont != NULL
-		&& pGetThemePartSize != NULL)
+		&& pGetThemePartSize != NULL
+		&& pGetThemeColor != NULL)
 	{
 		bThemeAPILoaded = true;
 	}
@@ -267,7 +270,7 @@ HRESULT XPCloseThemeData(HTHEME hTheme)
 }
 
 HRESULT XPDrawThemeBackground(HTHEME hTheme, HDC hdc,
-    int iPartId, int iStateId, const RECT* pRect, const RECT* pClipRect)
+	int iPartId, int iStateId, const RECT* pRect, const RECT* pClipRect)
 {
 	if (!bThemeAPILoaded)
 		return E_FAIL;
@@ -276,13 +279,32 @@ HRESULT XPDrawThemeBackground(HTHEME hTheme, HDC hdc,
 }
 
 HRESULT XPDrawThemeText(HTHEME hTheme, HDC hdc, int iPartId,
-    int iStateId, LPCWSTR pszText, int iCharCount, DWORD dwTextFlags,
-    DWORD dwTextFlags2, const RECT* pRect)
+	int iStateId, LPCWSTR pszText, int iCharCount, DWORD dwTextFlags,
+	DWORD dwTextFlags2, const RECT* pRect)
 {
 	if (!bThemeAPILoaded)
 		return E_FAIL;
 
 	return pDrawThemeText(hTheme, hdc, iPartId, iStateId, pszText, iCharCount, dwTextFlags, dwTextFlags2, pRect);
+}
+
+HRESULT XPGetThemeTextExtent(HTHEME hTheme, HDC hdc, int iPartId,
+	int iStateId, LPCWSTR pszText, int iCharCount, DWORD dwTextFlags,
+	const RECT* pBoundingRect, RECT* pExtentRect)
+{
+	if (!bThemeAPILoaded)
+		return E_FAIL;
+
+	return pGetThemeTextExtent(hTheme, hdc, iPartId, iStateId, pszText, iCharCount, dwTextFlags, pBoundingRect, pExtentRect);
+}
+
+HRESULT XPGetThemeTextMetrics(HTHEME hTheme, HDC hdc,
+    int iPartId, int iStateId, OUT TEXTMETRIC* ptm)
+{
+	if (!bThemeAPILoaded)
+		return E_FAIL;
+
+	return pGetThemeTextMetrics(hTheme, hdc, iPartId, iStateId, ptm);
 }
 
 BOOL XPIsThemeBackgroundPartiallyTransparent(HTHEME hTheme, int iPartId, int iStateId)
@@ -334,12 +356,21 @@ HRESULT XPGetThemeSysFont(HTHEME hTheme, int iFontId, OUT LOGFONTW* plf)
 }
 
 HRESULT XPGetThemePartSize(HTHEME hTheme, HDC hdc, int iPartId,
-    int iStateId, RECT* prc, THEMESIZE eSize, OUT SIZE* psz)
+	int iStateId, RECT* prc, THEMESIZE eSize, OUT SIZE* psz)
 {
 	if (!bThemeAPILoaded)
 		return E_FAIL;
 
 	return pGetThemePartSize(hTheme, hdc, iPartId, iStateId, prc, eSize, psz);
+}
+
+HRESULT XPGetThemeColor(HTHEME hTheme, int iPartId,
+	int iStateId, int iPropId, OUT COLORREF* pColor)
+{
+	if (!bThemeAPILoaded)
+		return E_FAIL;
+
+	return pGetThemeColor(hTheme, iPartId, iStateId, iPropId, pColor);
 }
 
 struct XPThemeAPI
