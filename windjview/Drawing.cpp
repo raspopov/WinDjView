@@ -798,7 +798,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 
 	CDjVuDoc* pDoc = dlg.GetDocument();
 
-	int nPages = dlg.m_arrPages.size();
+	size_t nPages = dlg.m_arrPages.size();
 	if (dlg.m_nCopies > 1 && dlg.m_bCollate && !dlg.m_bPrinterCanCollate)
 	{
 		// We will do collation ourselves

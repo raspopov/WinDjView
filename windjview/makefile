@@ -65,6 +65,7 @@ LINK_OBJS = \
 	"$(INTDIR)\FullscreenWnd.obj" \
 	"$(INTDIR)\GotoPageDlg.obj" \
 	"$(INTDIR)\MainFrm.obj" \
+	"$(INTDIR)\MagnifyWnd.obj" \
 	"$(INTDIR)\MyBitmapButton.obj" \
 	"$(INTDIR)\MyComboBox.obj" \
 	"$(INTDIR)\MyDocManager.obj" \
@@ -103,6 +104,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\FullscreenWnd.obj" : FullscreenWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\GotoPageDlg.obj"	: GotoPageDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MainFrm.obj"	: MainFrm.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MagnifyWnd.obj"	: MagnifyWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyBitmapButton.obj" : MyBitmapButton.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyComboBox.obj" : MyComboBox.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDocManager.obj" : MyDocManager.cpp "$(INTDIR)" $(PCH)

@@ -5215,8 +5215,8 @@ void CDjVuView::StartMagnify()
 	pView->m_nRotate = m_nRotate;
 	pView->m_nPage = FixPageNumber(nPage);
 
-	int fZoom = GetZoom();
-	int fZoomActualSize = GetZoom(ZoomActualSize);
+	double fZoom = GetZoom();
+	double fZoomActualSize = GetZoom(ZoomActualSize);
 	if (m_nZoomType == ZoomActualSize || fZoom < fZoomActualSize)
 	{
 		pView->m_nZoomType = ZoomActualSize;

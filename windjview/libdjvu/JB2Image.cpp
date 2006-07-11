@@ -470,7 +470,7 @@ JB2Dict::JB2Codec::CodeNum(int low, int high, NumContext *pctx, int v)
   bool negative=false;
   int cutoff;
   // Check
-//< Changed for WinDjView project
+//< Changed for WinDjView project (source: KViewShell DjVu plugin)
 //  if (pctx && ((int)*pctx >= cur_ncell))
   if (!pctx || ((int)*pctx >= cur_ncell))
 //>
