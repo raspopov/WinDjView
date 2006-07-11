@@ -78,13 +78,15 @@ public:
 	GUTF8String GetFullText();
 	void StopDecoding();
 	void RestartThread();
-	void UpdatePageInfo(CDjVuView* pView);
+	bool UpdatePageInfoFrom(CDjVuView* pSource);
+	void CopyBitmapsFrom(CDjVuView* pSource, bool bMove = false);
+	void CopyBitmapFrom(CDjVuView* pSource, int nPage);
 
 	CSize GetPageSize(int nPage) const { return m_pages[nPage].GetSize(m_nRotate); }
 	int GetPageDPI(int nPage) const { return m_pages[nPage].info.nDPI; }
 
 	void OnSettingsChanged();
-	void UpdateShiftKey(bool bShiftDown);
+	void UpdateKeyboard(UINT nKey, bool bDown);
 	void UpdateVisiblePages();
 
 	void PageRendered(int nPage, CDIB* pDIB);
@@ -124,10 +126,20 @@ public:
 	{
 		Drag = 0,
 		Select = 1,
-		Fullscreen = 2
+		MagnifyingGlass = 2,
+		NextPrev = 3
 	};
 
 	int GetMode() const { return m_nMode; }
+
+	enum Type
+	{
+		Normal = 0,
+		Fullscreen = 1,
+		Magnify = 2
+	};
+
+	int GetType() const { return m_nType; }
 
 // Overrides
 public:
@@ -136,6 +148,7 @@ public:
 	virtual BOOL OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll = TRUE);
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	virtual CScrollBar* GetScrollBarCtrl(int nBar) const;
 
 protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
@@ -153,7 +166,7 @@ protected:
 	CString m_strToolTip;
 	CRenderThread* m_pRenderThread;
 	CEvent m_evtRendered;
-	bool m_bShiftDown;
+	bool m_bShiftDown, m_bControlDown;
 	bool m_bNeedUpdate;
 	UINT m_nTimerID;
 	bool m_bInitialized;
@@ -311,10 +324,10 @@ protected:
 	GP<GMapArea> GetHyperlinkFromPoint(CPoint point, int* pnPage = NULL);
 	void UpdateActiveHyperlink(CPoint point);
 
-	int m_nMode;
+	int m_nMode, m_nType;
 	int m_nSelStartPos;
 	CPoint TranslateTextCoordToDjVu(int nPage, const CPoint& point);
-	void UpdateTextSelection();
+	void UpdateDragAction();
 	int GetTextPosFromPoint(int nPage, CPoint point);
 	void GetTextPosFromTop(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos);
 	void GetTextPosFromBottom(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos);
@@ -325,6 +338,7 @@ protected:
 
 	int m_nClickedPage;
 	bool m_bDragging, m_bDraggingPage, m_bDraggingText;
+	void StopDragging();
 	CPoint m_ptStart, m_ptStartPos;
 	int m_nStartPage, m_nPrevPage;
 	bool m_bClick;
@@ -337,6 +351,20 @@ protected:
 	static HCURSOR hCursorDrag;
 	static HCURSOR hCursorLink;
 	static HCURSOR hCursorText;
+	static HCURSOR hCursorMagnify;
+
+	// Dummy invisible scrollbars
+	CScrollBar* m_pHScrollBar;
+	CScrollBar* m_pVScrollBar;
+	void CreateScrollbars();
+
+	bool m_bDraggingMagnify;
+	void StartMagnify();
+	void UpdateMagnifyWnd();
+
+	int m_nMargin, m_nShadowMargin;
+	int m_nPageGap, m_nFacingGap;
+	int m_nPageBorder, m_nPageShadow;
 
 protected:
 	// Generated message map functions
@@ -357,6 +385,7 @@ protected:
 	afx_msg void OnViewFirstpage();
 	afx_msg void OnViewLastpage();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	afx_msg void OnKillFocus(CWnd* pNewWnd);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);

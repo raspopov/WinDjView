@@ -738,11 +738,17 @@ void CThumbnailsView::UpdateView(UpdateType updateType)
 
 void CThumbnailsView::OnDestroy()
 {
-	delete m_pThread;
-	m_pThread = NULL;
+	if (m_pThread != NULL)
+	{
+		m_pThread->Delete();
+		m_pThread = NULL;
+	}
 
-	delete m_pIdleThread;
-	m_pIdleThread = NULL;
+	if (m_pIdleThread != NULL)
+	{
+		m_pIdleThread->Delete();
+		m_pIdleThread = NULL;
+	}
 
 	CMyScrollView::OnDestroy();
 }
@@ -918,9 +924,9 @@ void CThumbnailsView::StopDecoding()
 void CThumbnailsView::RestartThreads()
 {
 	if (m_pThread != NULL)
-		delete m_pThread;
+		m_pThread->Delete();
 	if (m_pIdleThread != NULL)
-		delete m_pIdleThread;
+		m_pIdleThread->Delete();
 
 	m_pThread = new CThumbnailsThread(GetDocument(), this);
 	m_pThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));

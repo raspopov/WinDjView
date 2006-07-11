@@ -40,16 +40,24 @@ CRenderThread::CRenderThread(CDjVuDoc* pDoc, CDjVuView* pOwner)
 	m_currentJob.nPage = -1;
 	m_pages.resize(m_pOwner->GetPageCount(), m_jobs.end());
 
-	DWORD dwThreadId;
-	m_hThread = ::CreateThread(NULL, 0, RenderThreadProc, this, 0, &dwThreadId);
+	UINT dwThreadId;
+	m_hThread = (HANDLE)_beginthreadex(NULL, 0, RenderThreadProc, this, 0, &dwThreadId);
 	::SetThreadPriority(m_hThread, THREAD_PRIORITY_BELOW_NORMAL);
 }
 
 CRenderThread::~CRenderThread()
 {
-	m_stop.SetEvent();
-	::WaitForSingleObject(m_finished.m_hObject, INFINITE);
+	ASSERT(m_hThread == NULL);
+}
+
+void CRenderThread::Delete()
+{
+	Stop();
+	::WaitForSingleObject(m_finished, INFINITE);
 	::CloseHandle(m_hThread);
+
+	m_hThread = NULL;
+	delete this;
 }
 
 void CRenderThread::Stop()
@@ -57,7 +65,7 @@ void CRenderThread::Stop()
 	m_stop.SetEvent();
 }
 
-DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
+unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 {
 	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 
@@ -111,9 +119,10 @@ DWORD WINAPI CRenderThread::RenderThreadProc(LPVOID pvData)
 			break;
 	}
 
+	::CoUninitialize();
 	pData->m_finished.SetEvent();
 
-	::CoUninitialize();
+	_endthreadex(0);
 	return 0;
 }
 

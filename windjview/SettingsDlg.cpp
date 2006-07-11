@@ -38,8 +38,10 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent)
 	m_bRestoreAssocs = CAppSettings::bRestoreAssocs;
 	m_bGenAllThumbnails = CAppSettings::bGenAllThumbnails;
 	m_bFullscreenClicks = CAppSettings::bFullscreenClicks;
+	m_bFullscreenHideScroll = CAppSettings::bFullscreenHideScroll;
 
 	m_bWarnCloseMultiple = CAppSettings::bWarnCloseMultiple;
+	m_bInvertWheelZoom = CAppSettings::bInvertWheelZoom;
 
 	m_displaySettings = CAppSettings::displaySettings;
 	m_bAdjustDisplay = m_displaySettings.bAdjustDisplay;
@@ -56,7 +58,9 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_RESTORE_ASSOCS, m_bRestoreAssocs);
 	DDX_Check(pDX, IDC_GEN_ALL_THUMBNAILS, m_bGenAllThumbnails);
 	DDX_Check(pDX, IDC_FULLSCREEN_CLICKS, m_bFullscreenClicks);
+	DDX_Check(pDX, IDC_FULLSCREEN_HIDESCROLL, m_bFullscreenHideScroll);
 	DDX_Check(pDX, IDC_WARN_CLOSE_MULTIPLE, m_bWarnCloseMultiple);
+	DDX_Check(pDX, IDC_INVERT_WHEEL_ZOOM, m_bInvertWheelZoom);
 	DDX_Check(pDX, IDC_HQ_SCALING, m_bHQScaling);
 
 	DDX_Check(pDX, IDC_ADJUST_DISPLAY, m_bAdjustDisplay);
@@ -113,7 +117,9 @@ void CSettingsDlg::OnOK()
 	CAppSettings::bRestoreAssocs = !!m_bRestoreAssocs;
 	CAppSettings::bGenAllThumbnails = !!m_bGenAllThumbnails;
 	CAppSettings::bFullscreenClicks = !!m_bFullscreenClicks;
+	CAppSettings::bFullscreenHideScroll = !!m_bFullscreenHideScroll;
 	CAppSettings::bWarnCloseMultiple = !!m_bWarnCloseMultiple;
+	CAppSettings::bInvertWheelZoom = !!m_bInvertWheelZoom;
 
 	m_displaySettings.bAdjustDisplay = !!m_bAdjustDisplay;
 	m_displaySettings.nScaleMethod = (m_bHQScaling ? CDisplaySettings::PnmScaleFixed : CDisplaySettings::Default);

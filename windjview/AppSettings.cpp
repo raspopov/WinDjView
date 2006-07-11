@@ -51,7 +51,9 @@ int CAppSettings::nNavPaneWidth = 200;
 bool CAppSettings::bRestoreAssocs = false;
 bool CAppSettings::bGenAllThumbnails = true;
 bool CAppSettings::bFullscreenClicks = true;
+bool CAppSettings::bFullscreenHideScroll = true;
 bool CAppSettings::bWarnCloseMultiple = false;
+bool CAppSettings::bInvertWheelZoom = false;
 
 CString CAppSettings::strLanguage;
 

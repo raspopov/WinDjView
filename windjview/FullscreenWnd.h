@@ -30,11 +30,14 @@ class CFullscreenWnd : public CWnd
 	DECLARE_DYNAMIC(CFullscreenWnd)
 
 public:
-	CFullscreenWnd(CDjVuView* pOwner);
+	CFullscreenWnd();
 	virtual ~CFullscreenWnd();
 
 	BOOL Create();
-	void SetView(CDjVuView* pView);
+
+	void Show(CDjVuView* pOwner, CDjVuView* pContents);
+	void Hide();
+
 	CDjVuView* GetView() const { return m_pView; }
 	CDjVuView* GetOwner() const { return m_pOwner; }
 
@@ -43,8 +46,8 @@ protected:
 	CDjVuView* m_pOwner;
 	int m_nWidth, m_nHeight;
 
-	afx_msg void OnDestroy();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg BOOL OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual void PostNcDestroy();

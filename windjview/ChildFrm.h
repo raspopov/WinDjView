@@ -78,5 +78,6 @@ protected:
 	afx_msg void OnClose();
 	afx_msg void OnLanguageChanged();
 	afx_msg void OnNcPaint();
+	afx_msg void OnKillFocus(CWnd* pNewWnd);
 	DECLARE_MESSAGE_MAP()
 };

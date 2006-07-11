@@ -94,6 +94,7 @@
 #define IDS_CURRENT_VERSION             204
 #define IDS_FATAL_ERROR                 205
 #define IDS_WARN_CLOSE_MULTIPLE         206
+#define IDC_CURSOR_MAGNIFY              254
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -134,10 +135,12 @@
 #define IDC_STATIC_LINK                 1039
 #define IDC_WARN_CLOSE_MULTIPLE         1040
 #define IDC_STATIC_LIB_LINK             1041
+#define IDC_FULLSCREEN_HIDESCROLL       1041
 #define IDC_ASSOCIATE                   1042
 #define IDC_FULLSCREEN_CLICKS           1043
 #define IDC_STATIC_ABOUT                1044
 #define IDC_FIND                        1045
+#define IDC_INVERT_WHEEL_ZOOM           1045
 #define IDC_HQ_SCALING                  1046
 #define IDC_ADJUST_DISPLAY              1047
 #define IDC_BRIGHTNESS                  1048
@@ -147,9 +150,9 @@
 #define IDC_CONTRAST_TEXT               1052
 #define IDC_GAMMA_TEXT                  1053
 #define IDC_SEARCH_STATUS               1054
+#define IDC_MERGE_FACING                1054
 #define IDC_PAGE                        1055
 #define IDC_PAGE_COUNT                  1056
-#define IDC_BUTTON1                     1057
 #define IDC_DONATE                      1058
 #define IDC_STATIC_VERSION              1059
 #define IDC_SPIN_PAGE                   1060
@@ -178,7 +181,6 @@
 #define ID_VIEW_LAYOUT                  32810
 #define ID_FILE_SETTINGS                32813
 #define ID_EXPORT_PAGE                  32815
-#define ID_VIEW_FIND                    32816
 #define ID_VIEW_BACK                    32819
 #define ID_VIEW_FORWARD                 32820
 #define ID_WINDOW_ACTIVATE_FIRST        32826
@@ -201,6 +203,7 @@
 #define ID_ZOOM_OUT                     32843
 #define ID_MODE_DRAG                    32844
 #define ID_MODE_SELECT                  32845
+#define ID_MODE_MAGNIFY                 32846
 #define ID_FILE_EXPORT_TEXT             32850
 #define ID_CHECK_FOR_UPDATE             32852
 #define ID_DISPLAY_COLOR                32854
@@ -222,7 +225,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        207
-#define _APS_NEXT_COMMAND_VALUE         33121
+#define _APS_NEXT_COMMAND_VALUE         33123
 #define _APS_NEXT_CONTROL_VALUE         1061
 #define _APS_NEXT_SYMED_VALUE           109
 #endif

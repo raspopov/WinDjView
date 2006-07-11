@@ -311,14 +311,15 @@ void CPrintDlg::OnOK()
 	ASSERT(m_hPrinter != NULL && m_pPrinter != NULL && m_pPaper != NULL);
 
 	// Parse page range
+	m_pages.clear();
 	if (m_nRangeType == 0)
 	{
 		for (int i = 1; i <= m_pDoc->GetPageCount(); ++i)
-			m_pages.insert(i);
+			m_pages.push_back(i);
 	}
 	else if (m_nRangeType == 1)
 	{
-		m_pages.insert(m_nCurPage + 1);
+		m_pages.push_back(m_nCurPage + 1);
 	}
 	else
 	{
@@ -331,9 +332,9 @@ void CPrintDlg::OnOK()
 	bool bEvenPages = (m_cboPagesInRange.GetCurSel() == 2);
 	int i = 1;
 
-	for (set<int>::iterator it = m_pages.begin(); it != m_pages.end(); ++it, ++i)
+	for (size_t j = 0; j < m_pages.size(); ++j, ++i)
 	{
-		int nFirst = *it;
+		int nFirst = m_pages[j];
 		if (!m_bTwoPages)
 		{
 			if (bAllPages || bOddPages && (nFirst % 2) == 1 || bEvenPages && (nFirst % 2) == 0)
@@ -341,7 +342,7 @@ void CPrintDlg::OnOK()
 		}
 		else
 		{
-			if (++it == m_pages.end())
+			if (j + 1 == m_pages.size())
 			{
 				if (bAllPages || bOddPages && (i % 2) == 1 || bEvenPages && (i % 2) == 0)
 					m_arrPages.push_back(make_pair(nFirst, 0));
@@ -350,7 +351,7 @@ void CPrintDlg::OnOK()
 			else
 			{
 				if (bAllPages || bOddPages && (i % 2) == 1 || bEvenPages && (i % 2) == 0)
-					m_arrPages.push_back(make_pair(nFirst, *it));
+					m_arrPages.push_back(make_pair(nFirst, m_pages[++j]));
 			}
 		}
 	}
@@ -866,8 +867,11 @@ bool CPrintDlg::ParseRange()
 				return false;
 		}
 
+		if (num > num2)
+			return false;
+
 		for (int j = num; j <= num2; ++j)
-			m_pages.insert(j);
+			m_pages.push_back(j);
 	}
 
 	return true;

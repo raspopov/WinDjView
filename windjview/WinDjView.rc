@@ -92,6 +92,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 IDC_CURSOR_DRAG         CURSOR  DISCARDABLE     "res\\drag.cur"
 IDC_CURSOR_LINK         CURSOR  DISCARDABLE     "res\\link.cur"
 IDC_CURSOR_HAND         CURSOR  DISCARDABLE     "res\\hand.cur"
+IDC_CURSOR_MAGNIFY      CURSOR  DISCARDABLE     "res\\magnify.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -130,11 +131,12 @@ BEGIN
     BUTTON      ID_FILE_OPEN
     SEPARATOR
     BUTTON      ID_FILE_PRINT
-    BUTTON      ID_VIEW_FIND
+    BUTTON      ID_EDIT_FIND
     BUTTON      ID_APP_ABOUT
     SEPARATOR
     BUTTON      ID_MODE_DRAG
     BUTTON      ID_MODE_SELECT
+    BUTTON      ID_MODE_MAGNIFY
     SEPARATOR
     BUTTON      ID_VIEW_FIRSTPAGE
     BUTTON      ID_VIEW_PREVIOUSPAGE
@@ -172,7 +174,7 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
-        MENUITEM "&Settings...",                ID_FILE_SETTINGS
+        MENUITEM "&Settings...\tCtrl+,",        ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -203,13 +205,19 @@ BEGIN
         MENUITEM "Save Copy &As...\tCtrl+S",    ID_FILE_SAVE_COPY_AS
         MENUITEM "&Close\tCtrl+W",              ID_FILE_CLOSE
         MENUITEM SEPARATOR
-        MENUITEM "&Settings...",                ID_FILE_SETTINGS
+        MENUITEM "&Settings...\tCtrl+,",        ID_FILE_SETTINGS
         MENUITEM "&Export Text...",             ID_FILE_EXPORT_TEXT
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "E&xit\tCtrl+Q",               ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Copy Text\tCtrl+C",          ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
     END
     POPUP "&View"
     BEGIN
@@ -249,16 +257,17 @@ BEGIN
         END
         POPUP "&Rotate"
         BEGIN
-            MENUITEM "&Left",                       ID_ROTATE_LEFT
-            MENUITEM "&Right",                      ID_ROTATE_RIGHT
-            MENUITEM "&180°",                       ID_ROTATE_180
+            MENUITEM "&Left\tCtrl+Shift+Left Arrow", ID_ROTATE_LEFT
+            MENUITEM "&Right\tCtrl+Shift+Right Arrow", ID_ROTATE_RIGHT
+            MENUITEM "&180°\tCtrl+Shift+Down Arrow", ID_ROTATE_180
         END
         POPUP "La&yout"
         BEGIN
-            MENUITEM "&Single Page",                ID_LAYOUT_SINGLEPAGE
-            MENUITEM "&Continuous",                 ID_LAYOUT_CONTINUOUS
-            MENUITEM "&Facing",                     ID_LAYOUT_FACING
-            MENUITEM "C&ontinuous - Facing",        ID_LAYOUT_CONTINUOUS_FACING
+            MENUITEM "&Single Page\tCtrl+Atl+1",    ID_LAYOUT_SINGLEPAGE
+            MENUITEM "&Continuous\tCtrl+Alt+2",     ID_LAYOUT_CONTINUOUS
+            MENUITEM "&Facing\tCtrl+Alt+3",         ID_LAYOUT_FACING
+            MENUITEM "C&ontinuous - Facing\tCtrl+Alt+4", 
+                                                    ID_LAYOUT_CONTINUOUS_FACING
 
             MENUITEM SEPARATOR
             MENUITEM "First page &alone",           ID_LAYOUT_FIRSTPAGE_ALONE
@@ -272,13 +281,16 @@ BEGIN
             MENUITEM "&Foreground\tCtrl+Shift+4",   ID_DISPLAY_FOREGROUND
         END
         MENUITEM SEPARATOR
-        MENUITEM "&Find...\tCtrl+F",            ID_VIEW_FIND
-        MENUITEM "&Copy Text\tCtrl+C",          ID_EDIT_COPY
-        MENUITEM SEPARATOR
         POPUP "&Language"
         BEGIN
             MENUITEM "&English",                    ID_LANGUAGE_FIRST
         END
+    END
+    POPUP "&Tools"
+    BEGIN
+        MENUITEM "&Hand Tool",                  ID_MODE_DRAG
+        MENUITEM "&Select Tool",                ID_MODE_SELECT
+        MENUITEM "&Magnifying Glass",           ID_MODE_MAGNIFY
     END
     POPUP "&Window"
     BEGIN
@@ -317,23 +329,32 @@ IDR_MAINFRAME ACCELERATORS MOVEABLE PURE
 BEGIN
     "0",            ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
     "1",            ID_ZOOM_100,            VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_LAYOUT_SINGLEPAGE,   VIRTKEY, CONTROL, ALT, NOINVERT
     "1",            ID_DISPLAY_COLOR,       VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     187,            ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
-    187,            ID_ZOOM_IN,             VIRTKEY, SHIFT, CONTROL, 
+    187,            ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
+    188,            ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
     189,            ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    189,            ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_LAYOUT_CONTINUOUS,   VIRTKEY, CONTROL, ALT, NOINVERT
     "2",            ID_DISPLAY_BW,          VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_LAYOUT_FACING,       VIRTKEY, CONTROL, ALT, NOINVERT
     "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     "4",            ID_ZOOM_ACTUALSIZE,     VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_LAYOUT_CONTINUOUS_FACING, VIRTKEY, CONTROL, ALT, 
+                                                    NOINVERT
     "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-    "F",            ID_VIEW_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, NOINVERT
     "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
     "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
     "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
@@ -345,6 +366,10 @@ BEGIN
     "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
     VK_ADD,         ID_ZOOM_IN,             VIRTKEY, NOINVERT
     VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    VK_DOWN,        ID_ROTATE_180,          VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, NOINVERT
     VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, CONTROL, NOINVERT
     VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
@@ -354,13 +379,19 @@ BEGIN
     VK_HOME,        ID_VIEW_FIRSTPAGE,      VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_LEFT,        ID_VIEW_BACK,           VIRTKEY, ALT, NOINVERT
+    VK_LEFT,        ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, NOINVERT
     VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
     VK_NEXT,        ID_VIEW_NEXTPAGE,       VIRTKEY, CONTROL, NOINVERT
     VK_PRIOR,       ID_VIEW_PREVIOUSPAGE,   VIRTKEY, CONTROL, NOINVERT
     VK_RIGHT,       ID_VIEW_FORWARD,        VIRTKEY, ALT, NOINVERT
+    VK_RIGHT,       ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
 END
 
@@ -507,13 +538,13 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 219, 240
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 219, 281
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Settings"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,107,219,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,162,219,50,14
+    DEFPUSHBUTTON   "OK",IDOK,107,260,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,162,260,50,14
     LTEXT           "Press to associate WinDjView with .djvu and .djv files:",
                     IDC_STATIC,15,18,182,9
     PUSHBUTTON      "&Associate",IDC_ASSOCIATE,15,30,50,14
@@ -522,32 +553,41 @@ BEGIN
                     15,49,188,10
     CONTROL         "Generate &thumbnails for all pages in background",
                     IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,81,188,10
+                    WS_TABSTOP,15,95,188,10
     CONTROL         "&Mouse clicks switch pages in fullscreen mode",
                     IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,95,188,10
+                    WS_TABSTOP,15,109,188,10
     CONTROL         "&Warn when closing multiple documents",
                     IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,109,188,10
+                    WS_TABSTOP,15,81,188,10
     CONTROL         "&Sharp scaling at low zoom levels (slower)",
                     IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
-                    123,188,10
+                    169,188,10
     CONTROL         "A&djust settings:",IDC_ADJUST_DISPLAY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,156,97,9
-    LTEXT           "&Brightness: 0",IDC_BRIGHTNESS_TEXT,15,170,61,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,169,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,197,97,9
+    LTEXT           "&Brightness: 0",IDC_BRIGHTNESS_TEXT,15,211,61,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,210,
                     131,12
-    LTEXT           "&Contrast: 0",IDC_CONTRAST_TEXT,15,183,55,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,182,
+    LTEXT           "&Contrast: 0",IDC_CONTRAST_TEXT,15,224,55,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,223,
                     131,12
-    LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,15,196,45,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,195,131,
+    LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,15,237,45,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,236,131,
                     12
     GROUPBOX        "File associations",IDC_STATIC,7,7,205,58
-    GROUPBOX        "General",IDC_STATIC,7,69,205,70
-    GROUPBOX        "Display",IDC_STATIC,7,144,205,68
-    LTEXT           "WinDjView\nby Andrew Zhezherun",IDC_STATIC_ABOUT,7,219,
+    GROUPBOX        "General",IDC_STATIC,7,69,205,84
+    GROUPBOX        "Display",IDC_STATIC,7,157,205,96
+    LTEXT           "WinDjView\nby Andrew Zhezherun",IDC_STATIC_ABOUT,7,260,
                     92,18
+    CONTROL         "&Always hide scrollbars in fullscreen mode",
+                    IDC_FULLSCREEN_HIDESCROLL,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,123,188,10
+    CONTROL         "&Invert Ctrl+Mouse Wheel zooming direction",
+                    IDC_INVERT_WHEEL_ZOOM,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,137,188,10
+    CONTROL         "&Display facing pages without a gap between them",
+                    IDC_MERGE_FACING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    15,183,188,10
 END
 
 IDD_FIND DIALOG DISCARDABLE  0, 0, 287, 64
@@ -597,8 +637,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,4,1,0
- PRODUCTVERSION 0,4,1,0
+ FILEVERSION 0,4,2,0
+ PRODUCTVERSION 0,4,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -616,14 +656,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "Andrew Zhezherun\0"
             VALUE "FileDescription", "WinDjView\0"
-            VALUE "FileVersion", "0.4.1\0"
+            VALUE "FileVersion", "0.4.2\0"
             VALUE "InternalName", "WinDjView.exe\0"
             VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun.  All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "WinDjView.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "WinDjView\0"
-            VALUE "ProductVersion", "0.4.1\0"
+            VALUE "ProductVersion", "0.4.2\0"
             VALUE "SpecialBuild", "\0"
         END
     END
@@ -681,7 +721,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 212
         TOPMARGIN, 7
-        BOTTOMMARGIN, 233
+        BOTTOMMARGIN, 274
     END
 
     IDD_FIND, DIALOG
@@ -815,7 +855,7 @@ BEGIN
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
     ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
     ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
-    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_FIND            "Find text in current document\nFind"
     ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
     ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
     ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
@@ -931,14 +971,13 @@ BEGIN
     IDS_CENTIMETER          "cm"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "0.4.1"
+    IDS_CURRENT_VERSION     "0.4.2"
     IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
     IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure you want to continue?"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_VIEW_FIND            "Find text in current document\nFind"
     ID_VIEW_BACK            "Go to previous view\nPrevious View"
     ID_VIEW_FORWARD         "Go to next view\nNext View"
     ID_WINDOW_ACTIVATE_FIRST "Activate this window"
@@ -963,8 +1002,9 @@ BEGIN
     ID_WINDOW_ACTIVATE_LAST "Activate this window"
     ID_ZOOM_IN              "Zoom In\nZoom In"
     ID_ZOOM_OUT             "Zoom Out\nZoom Out"
-    ID_MODE_DRAG            "Hand Tool\nHand Tool"
-    ID_MODE_SELECT          "Select Tool\nSelect Tool"
+    ID_MODE_DRAG            "Activate hand tool\nHand Tool"
+    ID_MODE_SELECT          "Activate select tool\nSelect Tool"
+    ID_MODE_MAGNIFY         "Activate magnifying glass\nMagnifying Glass"
 END
 
 STRINGTABLE DISCARDABLE 

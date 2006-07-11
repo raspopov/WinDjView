@@ -72,6 +72,7 @@
 #include <winspool.h>
 #include <afxmt.h>
 
+#include <process.h>
 #include <locale.h>
 #include <vector>
 #include <set>

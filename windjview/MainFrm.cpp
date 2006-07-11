@@ -28,6 +28,7 @@
 #include "AppSettings.h"
 #include "ThumbnailsView.h"
 #include "FullscreenWnd.h"
+#include "MagnifyWnd.h"
 
 #include "MyTheme.h"
 
@@ -91,8 +92,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_CONTROL(CBN_FINISHEDIT, IDC_ZOOM, OnChangeZoomEdit)
 	ON_CONTROL(CBN_CANCELEDIT, IDC_ZOOM, OnCancelChangePageZoom)
 	ON_MESSAGE(WM_DDE_EXECUTE, OnDDEExecute)
-	ON_COMMAND(ID_VIEW_FIND, OnViewFind)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_FIND, OnUpdateViewFind)
+	ON_COMMAND(ID_EDIT_FIND, OnEditFind)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND, OnUpdateEditFind)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ACTIVATE_FIRST, OnUpdateWindowList)
 	ON_COMMAND_RANGE(ID_WINDOW_ACTIVATE_FIRST, ID_WINDOW_ACTIVATE_LAST, OnActivateWindow)
 	ON_COMMAND(ID_VIEW_BACK, OnViewBack)
@@ -105,7 +106,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_SIZE, OnUpdateStatusSize)
 	ON_WM_SETFOCUS()
 	ON_WM_DESTROY()
-	ON_MESSAGE(WM_SHOWALLLINKS, OnShowAllLinks)
+	ON_MESSAGE(WM_UPDATE_KEYBOARD, OnUpdateKeyboard)
 	ON_COMMAND_RANGE(ID_LANGUAGE_FIRST + 1, ID_LANGUAGE_LAST, OnSetLanguage)
 	ON_UPDATE_COMMAND_UI(ID_LANGUAGE_FIRST, OnUpdateLanguageList)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_LANGUAGE_FIRST + 1, ID_LANGUAGE_LAST, OnUpdateLanguage)
@@ -126,7 +127,7 @@ static UINT indicators[] =
 
 CMainFrame::CMainFrame()
 	: m_pFindDlg(NULL), m_historyPos(m_history.end()),
-	  m_pFullscreenWnd(NULL), m_nLanguage(0)
+	  m_pFullscreenWnd(NULL), m_pMagnifyWnd(NULL), m_nLanguage(0)
 {
 }
 
@@ -350,8 +351,16 @@ void CMainFrame::OnCancelChangePageZoom()
 	pView->SetFocus();
 }
 
-void CMainFrame::UpdateZoomCombo(int nZoomType, double fZoom)
+void CMainFrame::UpdateZoomCombo()
 {
+	CMDIChildWnd* pActive = MDIGetActive();
+	if (pActive == NULL)
+		return;
+
+	CDjVuView* pView = (CDjVuView*)pActive->GetActiveView();
+	int nZoomType = pView->GetZoomType();
+	double fZoom = pView->GetZoom();
+
 	if (m_cboZoom.GetCount() == 0)
 	{
 		m_cboZoom.AddString(_T("50%"));
@@ -380,10 +389,13 @@ void CMainFrame::UpdateZoomCombo(int nZoomType, double fZoom)
 		m_cboZoom.SetWindowText(FormatDouble(fZoom) + _T("%"));
 }
 
-void CMainFrame::UpdatePageCombo(CDjVuView* pView)
+void CMainFrame::UpdatePageCombo()
 {
-	if (pView->GetMode() == CDjVuView::Fullscreen)
+	CMDIChildWnd* pActive = MDIGetActive();
+	if (pActive == NULL)
 		return;
+
+	CDjVuView* pView = (CDjVuView*)pActive->GetActiveView();
 
 	if (pView->GetPageCount() != m_cboPage.GetCount())
 	{
@@ -523,7 +535,7 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 	return 0L;
 }
 
-void CMainFrame::OnViewFind()
+void CMainFrame::OnEditFind()
 {
 	if (m_pFindDlg == NULL)
 	{
@@ -537,7 +549,7 @@ void CMainFrame::OnViewFind()
 	m_pFindDlg->GotoDlgCtrl(m_pFindDlg->GetDlgItem(IDC_FIND));
 }
 
-void CMainFrame::OnUpdateViewFind(CCmdUI* pCmdUI)
+void CMainFrame::OnUpdateEditFind(CCmdUI* pCmdUI)
 {
 	CMDIChildWnd* pFrame = MDIGetActive();
 	if (pFrame == NULL)
@@ -685,7 +697,7 @@ void CMainFrame::OnViewBack()
 
 void CMainFrame::OnUpdateViewBack(CCmdUI* pCmdUI)
 {
-	pCmdUI->Enable(m_pFullscreenWnd == NULL && !m_history.empty()
+	pCmdUI->Enable(!IsFullscreenMode() && !m_history.empty()
 		&& m_historyPos != m_history.begin());
 }
 
@@ -704,7 +716,7 @@ void CMainFrame::OnViewForward()
 
 void CMainFrame::OnUpdateViewForward(CCmdUI* pCmdUI)
 {
-	if (m_pFullscreenWnd != NULL || m_history.empty())
+	if (IsFullscreenMode() || m_history.empty())
 	{
 		pCmdUI->Enable(false);
 	}
@@ -921,7 +933,7 @@ void CMainFrame::OnUpdateStatusSize(CCmdUI* pCmdUI)
 
 BOOL CMainFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-	if (m_pFullscreenWnd != NULL)
+	if (IsFullscreenMode())
 		return m_pFullscreenWnd->GetView()->SendMessage(WM_COMMAND, wParam, lParam);
 
 	return CMDIFrameWnd::OnCommand(wParam, lParam);
@@ -929,7 +941,7 @@ BOOL CMainFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 
 BOOL CMainFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
 {
-	if (m_pFullscreenWnd != NULL)
+	if (IsFullscreenMode())
 		return m_pFullscreenWnd->GetView()->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 
 	return CMDIFrameWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
@@ -937,7 +949,7 @@ BOOL CMainFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO*
 
 void CMainFrame::OnSetFocus(CWnd* pOldWnd)
 {
-	if (m_pFullscreenWnd != NULL)
+	if (IsFullscreenMode())
 	{
 		m_pFullscreenWnd->SetForegroundWindow();
 		m_pFullscreenWnd->SetFocus();
@@ -957,7 +969,18 @@ LRESULT CALLBACK CMainFrame::KeyboardProc(int nCode, WPARAM wParam, LPARAM lPara
 		if (bPressed != bWasPressed)
 		{
 			bWasPressed = bPressed;
-			GetMainFrame()->PostMessage(WM_SHOWALLLINKS, bPressed);
+			GetMainFrame()->PostMessage(WM_UPDATE_KEYBOARD, VK_SHIFT, bPressed);
+		}
+	}
+	else if (nCode == HC_ACTION && wParam == VK_CONTROL)
+	{
+		static bool bWasPressed = false;
+		bool bPressed = (lParam & 0x80000000) == 0;
+
+		if (bPressed != bWasPressed)
+		{
+			bWasPressed = bPressed;
+			GetMainFrame()->PostMessage(WM_UPDATE_KEYBOARD, VK_CONTROL, bPressed);
 		}
 	}
 
@@ -971,7 +994,7 @@ void CMainFrame::OnDestroy()
 	CMDIFrameWnd::OnDestroy();
 }
 
-LRESULT CMainFrame::OnShowAllLinks(WPARAM wParam, LPARAM lParam)
+LRESULT CMainFrame::OnUpdateKeyboard(WPARAM wParam, LPARAM lParam)
 {
 	POSITION pos = theApp.GetFirstDocTemplatePosition();
 	while (pos != NULL)
@@ -984,12 +1007,12 @@ LRESULT CMainFrame::OnShowAllLinks(WPARAM wParam, LPARAM lParam)
 		{
 			CDocument* pDoc = pTemplate->GetNextDoc(posDoc);
 			CDjVuView* pView = ((CDjVuDoc*)pDoc)->GetDjVuView();
-			pView->UpdateShiftKey(wParam != 0);
+			pView->UpdateKeyboard(wParam, lParam != 0);
 		}
 	}
 
-	if (m_pFullscreenWnd != NULL)
-		m_pFullscreenWnd->GetView()->UpdateShiftKey(wParam != 0);
+	if (IsFullscreenMode())
+		m_pFullscreenWnd->GetView()->UpdateKeyboard(wParam, lParam != 0);
 
 	return 0;
 }
@@ -1219,5 +1242,46 @@ void CMainFrame::OnClose()
 		}
 	}
 
+	if (m_pFullscreenWnd != NULL)
+	{
+		m_pFullscreenWnd->Hide();
+		m_pFullscreenWnd->DestroyWindow();
+		m_pFullscreenWnd = NULL;
+	}
+
+	if (m_pMagnifyWnd != NULL)
+	{
+		m_pMagnifyWnd->Hide();
+		m_pMagnifyWnd->DestroyWindow();
+		m_pMagnifyWnd = NULL;
+	}
+
 	CMDIFrameWnd::OnClose();
+}
+
+CFullscreenWnd* CMainFrame::GetFullscreenWnd()
+{
+	if (m_pFullscreenWnd == NULL)
+	{
+		m_pFullscreenWnd = new CFullscreenWnd();
+		m_pFullscreenWnd->Create();
+	}
+
+	return m_pFullscreenWnd;
+}
+
+bool CMainFrame::IsFullscreenMode()
+{
+	return m_pFullscreenWnd != NULL && m_pFullscreenWnd->IsWindowVisible();
+}
+
+CMagnifyWnd* CMainFrame::GetMagnifyWnd()
+{
+	if (m_pMagnifyWnd == NULL)
+	{
+		m_pMagnifyWnd = new CMagnifyWnd();
+		m_pMagnifyWnd->Create();
+	}
+
+	return m_pMagnifyWnd;
 }

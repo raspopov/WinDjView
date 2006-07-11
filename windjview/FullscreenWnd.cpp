@@ -30,18 +30,19 @@
 // CFullscreenWnd
 
 IMPLEMENT_DYNAMIC(CFullscreenWnd, CWnd)
-CFullscreenWnd::CFullscreenWnd(CDjVuView* pOwner)
-	: m_pOwner(pOwner), m_pView(NULL)
+CFullscreenWnd::CFullscreenWnd()
+	: m_pOwner(NULL), m_pView(NULL)
 {
 }
 
 CFullscreenWnd::~CFullscreenWnd()
 {
+	ASSERT(m_pOwner == NULL);
 }
 
 BEGIN_MESSAGE_MAP(CFullscreenWnd, CWnd)
-	ON_WM_DESTROY()
 	ON_WM_SETFOCUS()
+	ON_WM_ERASEBKGND()
 	ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNeedText)
 END_MESSAGE_MAP()
 
@@ -68,26 +69,37 @@ BOOL CFullscreenWnd::Create()
 	}
 
 	return CreateEx(WS_EX_LEFT | WS_EX_TOOLWINDOW, strWndClass, NULL,
-		WS_VISIBLE | WS_POPUP, CRect(0, 0, m_nWidth, m_nHeight), pParent, 0);
+		WS_POPUP, CRect(0, 0, m_nWidth, m_nHeight), pParent, 0);
 }
 
-void CFullscreenWnd::SetView(CDjVuView* pView)
+void CFullscreenWnd::Show(CDjVuView* pOwner, CDjVuView* pContents)
 {
-	m_pView = pView;
-	pView->MoveWindow(0, 0, m_nWidth, m_nHeight);
+	ASSERT(m_pOwner == NULL);
+
+	m_pOwner = pOwner;
+	m_pView = pContents;
+
+	CDC dcScreen;
+	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+
+	m_nWidth = dcScreen.GetDeviceCaps(HORZRES);
+	m_nHeight = dcScreen.GetDeviceCaps(VERTRES);
+
+	MoveWindow(0, 0, m_nWidth, m_nHeight);
+	m_pView->MoveWindow(0, 0, m_nWidth, m_nHeight);
+
+	ShowWindow(SW_SHOW);
 }
 
-void CFullscreenWnd::OnDestroy()
+void CFullscreenWnd::Hide()
 {
-	// Detach view from the document
+	ShowWindow(SW_HIDE);
+
 	if (m_pView != NULL)
 	{
 		int nPage = m_pView->GetCurrentPage();
-		m_pView->UpdatePageInfo(m_pOwner);
-
-		m_pView->SetDocument(NULL);
-		GetMainFrame()->SetFullscreenWnd(NULL);
-		GetMainFrame()->SetFocus();
+		m_pOwner->UpdatePageInfoFrom(m_pView);
+		m_pOwner->CopyBitmapsFrom(m_pView, true);
 
 		m_pOwner->GoToPage(nPage, -1, CDjVuView::DoNotAdd);
 
@@ -95,19 +107,24 @@ void CFullscreenWnd::OnDestroy()
 		CThumbnailsView* pThumbnailsView = ((CChildFrame*)m_pOwner->GetParentFrame())->GetThumbnailsView();
 		if (pThumbnailsView != NULL)
 			pThumbnailsView->RestartThreads();
+
+		// Detach view from the document before destroying
+		m_pView->SetDocument(NULL);
+		m_pView->DestroyWindow();
 	}
 
-	CWnd::OnDestroy();
+	if (m_pOwner != NULL)
+		m_pOwner->SetFocus();
+
+	m_pView = NULL;
+	m_pOwner = NULL;
 }
 
 BOOL CFullscreenWnd::PreTranslateMessage(MSG* pMsg)
 {
 	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
 	{
-		CDjVuView* pOwner = m_pOwner;
-		DestroyWindow();
-		pOwner->SetFocus();
-
+		Hide();
 		return true;
 	}
 
@@ -137,4 +154,9 @@ BOOL CFullscreenWnd::OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult
 		return false;
 
 	return m_pView->SendMessage(WM_NOTIFY, nID, reinterpret_cast<LPARAM>(pNMHDR));
+}
+
+BOOL CFullscreenWnd::OnEraseBkgnd(CDC* pDC)
+{
+	return true;
 }

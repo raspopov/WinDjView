@@ -30,8 +30,8 @@ class CThumbnailsThread
 {
 public:
 	CThumbnailsThread(CDjVuDoc* pDoc, CThumbnailsView* pOwner, bool bIdle = false);
-	~CThumbnailsThread();
 	void Stop();
+	void Delete();
 
 	void SetThumbnailSize(CSize szThumbnail) { m_szThumbnail = szThumbnail; }
 
@@ -44,7 +44,7 @@ public:
 	void RejectCurrentJob();
 
 private:
-	HANDLE m_hThread;
+	HANDLE m_hThread, m_hStopThread;
 	CCriticalSection m_lock;
 	CEvent m_stop;
 	CEvent m_finished;
@@ -64,6 +64,7 @@ private:
 	Job m_currentJob;
 	bool m_bRejectCurrentJob;
 
-	static DWORD WINAPI RenderThreadProc(LPVOID pvData);
+	static unsigned int __stdcall RenderThreadProc(void* pvData);
 	CDIB* Render(Job& job);
+	~CThumbnailsThread();
 };

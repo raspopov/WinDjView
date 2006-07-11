@@ -80,6 +80,7 @@ END
 IDC_CURSOR_DRAG         CURSOR  DISCARDABLE     "..\\..\\res\\drag.cur"
 IDC_CURSOR_LINK         CURSOR  DISCARDABLE     "..\\..\\res\\link.cur"
 IDC_CURSOR_HAND         CURSOR  DISCARDABLE     "..\\..\\res\\hand.cur"
+IDC_CURSOR_MAGNIFY      CURSOR  DISCARDABLE     "..\\..\\res\\magnify.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -118,11 +119,12 @@ BEGIN
     BUTTON      ID_FILE_OPEN
     SEPARATOR
     BUTTON      ID_FILE_PRINT
-    BUTTON      ID_VIEW_FIND
+    BUTTON      ID_EDIT_FIND
     BUTTON      ID_APP_ABOUT
     SEPARATOR
     BUTTON      ID_MODE_DRAG
     BUTTON      ID_MODE_SELECT
+    BUTTON      ID_MODE_MAGNIFY
     SEPARATOR
     BUTTON      ID_VIEW_FIRSTPAGE
     BUTTON      ID_VIEW_PREVIOUSPAGE
@@ -160,7 +162,7 @@ BEGIN
     POPUP "&Файл"
     BEGIN
         MENUITEM "&Открыть...\tCtrl+O",         ID_FILE_OPEN
-        MENUITEM "&Настройки...",               ID_FILE_SETTINGS
+        MENUITEM "&Настройки...\tCtrl+,",       ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "История",                     ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -176,7 +178,7 @@ BEGIN
             MENUITEM "&English",                    ID_LANGUAGE_FIRST
         END
     END
-    POPUP "&Справка"
+    POPUP "По&мощь"
     BEGIN
         MENUITEM "&Проверить обновления...",    ID_CHECK_FOR_UPDATE
         MENUITEM "&О программе WinDjView...",   ID_APP_ABOUT
@@ -191,13 +193,19 @@ BEGIN
         MENUITEM "&Сохранить копию как...\tCtrl+S", ID_FILE_SAVE_COPY_AS
         MENUITEM "&Закрыть\tCtrl+W",            ID_FILE_CLOSE
         MENUITEM SEPARATOR
-        MENUITEM "&Настройки...",               ID_FILE_SETTINGS
+        MENUITEM "&Настройки...\tCtrl+,",       ID_FILE_SETTINGS
         MENUITEM "&Экспортировать текст...",    ID_FILE_EXPORT_TEXT
         MENUITEM "&Печать...\tCtrl+P",          ID_FILE_PRINT
         MENUITEM SEPARATOR
         MENUITEM "История",                     ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "&Выход\tCtrl+Q",              ID_APP_EXIT
+    END
+    POPUP "&Правка"
+    BEGIN
+        MENUITEM "С&копировать текст\tCtrl+C",  ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "&Поиск...\tCtrl+F",           ID_EDIT_FIND
     END
     POPUP "&Вид"
     BEGIN
@@ -233,21 +241,22 @@ BEGIN
             MENUITEM "На п&оследнюю страницу\tCtrl+End", ID_VIEW_LASTPAGE
             MENUITEM "&Выбрать страницу...\tCtrl+G", ID_VIEW_GOTO_PAGE
             MENUITEM SEPARATOR
-            MENUITEM "Наза&д\tAlt+Left Arrow",      ID_VIEW_BACK
-            MENUITEM "Впе&рёд\tAlt+Right Arrow",    ID_VIEW_FORWARD
+            MENUITEM "Наза&д\tAlt+Стрелка влево",   ID_VIEW_BACK
+            MENUITEM "Впе&рёд\tAlt+Стрелка вправо", ID_VIEW_FORWARD
         END
         POPUP "П&оворот"
         BEGIN
-            MENUITEM "В&лево",                      ID_ROTATE_LEFT
-            MENUITEM "В&право",                     ID_ROTATE_RIGHT
-            MENUITEM "&180°",                       ID_ROTATE_180
+            MENUITEM "В&лево\tCtrl+Shift+Стрелка влево", ID_ROTATE_LEFT
+            MENUITEM "В&право\tCtrl+Shift+Стрелка вправо", ID_ROTATE_RIGHT
+            MENUITEM "&180°\tCtrl+Shift+Стрелка вниз", ID_ROTATE_180
         END
         POPUP "Р&асположение"
         BEGIN
-            MENUITEM "&Одна страница",              ID_LAYOUT_SINGLEPAGE
-            MENUITEM "&Подряд",                     ID_LAYOUT_CONTINUOUS
-            MENUITEM "&Соседние",                   ID_LAYOUT_FACING
-            MENUITEM "По&дряд - соседние",          ID_LAYOUT_CONTINUOUS_FACING
+            MENUITEM "&Одна страница\tCtrl+Alt+1",  ID_LAYOUT_SINGLEPAGE
+            MENUITEM "&Подряд\tCtrl+Alt+2",         ID_LAYOUT_CONTINUOUS
+            MENUITEM "&Соседние\tCtrl+Alt+3",       ID_LAYOUT_FACING
+            MENUITEM "По&дряд - соседние\tCtrl+Alt+4", 
+                                                    ID_LAYOUT_CONTINUOUS_FACING
 
             MENUITEM SEPARATOR
             MENUITEM "П&ервая страница отдельно",   ID_LAYOUT_FIRSTPAGE_ALONE
@@ -261,13 +270,16 @@ BEGIN
             MENUITEM "&Передний план\tCtrl+Shift+4", ID_DISPLAY_FOREGROUND
         END
         MENUITEM SEPARATOR
-        MENUITEM "&Поиск...\tCtrl+F",           ID_VIEW_FIND
-        MENUITEM "С&копировать текст\tCtrl+C",  ID_EDIT_COPY
-        MENUITEM SEPARATOR
         POPUP "&Language"
         BEGIN
             MENUITEM "&English",                    ID_LANGUAGE_FIRST
         END
+    END
+    POPUP "&Инструменты"
+    BEGIN
+        MENUITEM "Режим &перетаскивания",       ID_MODE_DRAG
+        MENUITEM "Режим &выделения",            ID_MODE_SELECT
+        MENUITEM "Режим &увеличения",           ID_MODE_MAGNIFY
     END
     POPUP "&Окно"
     BEGIN
@@ -278,7 +290,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Переключиться на это окно",   ID_WINDOW_ACTIVATE_FIRST
     END
-    POPUP "&Справка"
+    POPUP "По&мощь"
     BEGIN
         MENUITEM "&Проверить обновления...",    ID_CHECK_FOR_UPDATE
         MENUITEM "&О программе WinDjView...",   ID_APP_ABOUT
@@ -306,23 +318,32 @@ IDR_MAINFRAME ACCELERATORS MOVEABLE PURE
 BEGIN
     "0",            ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
     "1",            ID_ZOOM_100,            VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_LAYOUT_SINGLEPAGE,   VIRTKEY, CONTROL, ALT, NOINVERT
     "1",            ID_DISPLAY_COLOR,       VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     187,            ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
-    187,            ID_ZOOM_IN,             VIRTKEY, SHIFT, CONTROL, 
+    187,            ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
+    188,            ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
     189,            ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    189,            ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_LAYOUT_CONTINUOUS,   VIRTKEY, CONTROL, ALT, NOINVERT
     "2",            ID_DISPLAY_BW,          VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_LAYOUT_FACING,       VIRTKEY, CONTROL, ALT, NOINVERT
     "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     "4",            ID_ZOOM_ACTUALSIZE,     VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_LAYOUT_CONTINUOUS_FACING, VIRTKEY, CONTROL, ALT, 
+                                                    NOINVERT
     "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-    "F",            ID_VIEW_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, NOINVERT
     "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
     "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
     "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
@@ -334,6 +355,10 @@ BEGIN
     "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
     VK_ADD,         ID_ZOOM_IN,             VIRTKEY, NOINVERT
     VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    VK_DOWN,        ID_ROTATE_180,          VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, NOINVERT
     VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, CONTROL, NOINVERT
     VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
@@ -343,13 +368,19 @@ BEGIN
     VK_HOME,        ID_VIEW_FIRSTPAGE,      VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_LEFT,        ID_VIEW_BACK,           VIRTKEY, ALT, NOINVERT
+    VK_LEFT,        ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, NOINVERT
     VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
     VK_NEXT,        ID_VIEW_NEXTPAGE,       VIRTKEY, CONTROL, NOINVERT
     VK_PRIOR,       ID_VIEW_PREVIOUSPAGE,   VIRTKEY, CONTROL, NOINVERT
     VK_RIGHT,       ID_VIEW_FORWARD,        VIRTKEY, ALT, NOINVERT
+    VK_RIGHT,       ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
 END
 
@@ -495,13 +526,13 @@ BEGIN
     PUSHBUTTON      "Отмена",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 249, 240
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 249, 281
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Настройки"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,137,219,50,14
-    PUSHBUTTON      "Отмена",IDCANCEL,192,219,50,14
+    DEFPUSHBUTTON   "OK",IDOK,137,260,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,192,260,50,14
     LTEXT           "Связать файлы .djvu и .djv с программой WinDjView:",
                     IDC_STATIC,15,18,182,9
     PUSHBUTTON      "&Связать",IDC_ASSOCIATE,15,30,50,14
@@ -510,32 +541,41 @@ BEGIN
                     15,49,188,10
     CONTROL         "Создавать &иконки для всех страниц в фоновом режиме",
                     IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,81,212,10
+                    WS_TABSTOP,15,95,212,10
     CONTROL         "&Листать страницы щелчком мыши в полноэкранном режиме",
                     IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,95,224,10
+                    WS_TABSTOP,15,109,224,10
     CONTROL         "Предупреждать при закрытии &нескольких документов",
                     IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,109,219,10
-    CONTROL         "Масштабировать с высокой &резкостью (но медленнее)",
+                    WS_TABSTOP,15,81,219,10
+    CONTROL         "Масштабировать с увеличенной &резкостью (но медленнее)",
                     IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
-                    123,224,10
+                    169,224,10
     CONTROL         "&Применить коррекцию изображения",IDC_ADJUST_DISPLAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,156,153,9
-    LTEXT           "&Яркость: 0",IDC_BRIGHTNESS_TEXT,15,170,61,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,169,
-                    157,12
-    LTEXT           "&Контраст: 0",IDC_CONTRAST_TEXT,15,183,55,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,182,
-                    158,12
-    LTEXT           "&Гамма: 1.0",IDC_GAMMA_TEXT,15,196,45,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,195,158,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,197,153,9
+    LTEXT           "&Яркость: 0",IDC_BRIGHTNESS_TEXT,15,211,61,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,210,
+                    160,12
+    LTEXT           "&Контраст: 0",IDC_CONTRAST_TEXT,15,224,55,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,223,
+                    160,12
+    LTEXT           "&Гамма: 1.0",IDC_GAMMA_TEXT,15,237,45,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,236,160,
                     12
     GROUPBOX        "Типы файлов",IDC_STATIC,7,7,235,58
-    GROUPBOX        "Разное",IDC_STATIC,7,69,235,70
-    GROUPBOX        "Отображение",IDC_STATIC,7,144,235,68
-    LTEXT           "WinDjView\n(C) Андрей Жежерун",IDC_STATIC_ABOUT,7,219,
+    GROUPBOX        "Разное",IDC_STATIC,7,69,235,84
+    GROUPBOX        "Отображение",IDC_STATIC,7,157,235,96
+    LTEXT           "WinDjView\n(C) Андрей Жежерун",IDC_STATIC_ABOUT,7,260,
                     92,18
+    CONTROL         "Скл&еивать соседние страницы при отображении",
+                    IDC_MERGE_FACING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    15,183,195,9
+    CONTROL         "Всегда прятать полосы прокр&утки в полноэкранном режиме",
+                    IDC_FULLSCREEN_HIDESCROLL,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,123,219,10
+    CONTROL         "&Масштаб по Ctrl+колесу мыши в противоположную сторону",
+                    IDC_INVERT_WHEEL_ZOOM,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,137,219,10
 END
 
 IDD_FIND DIALOG DISCARDABLE  0, 0, 287, 64
@@ -585,8 +625,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,4,1,0
- PRODUCTVERSION 0,4,1,0
+ FILEVERSION 0,4,2,0
+ PRODUCTVERSION 0,4,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -604,14 +644,14 @@ BEGIN
             VALUE "Comments", "Русский\0"
             VALUE "CompanyName", "Andrew Zhezherun\0"
             VALUE "FileDescription", "WinDjView Localized Resources\0"
-            VALUE "FileVersion", "0.4.1\0"
+            VALUE "FileVersion", "0.4.2\0"
             VALUE "InternalName", "WinDjViewRU.dll\0"
             VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun. All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "WinDjViewRU.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "WinDjView\0"
-            VALUE "ProductVersion", "0.4.1\0"
+            VALUE "ProductVersion", "0.4.2\0"
             VALUE "SpecialBuild", "\0"
         END
     END
@@ -669,7 +709,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 242
         TOPMARGIN, 7
-        BOTTOMMARGIN, 233
+        BOTTOMMARGIN, 274
     END
 
     IDD_FIND, DIALOG
@@ -803,7 +843,7 @@ BEGIN
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
     ID_EDIT_COPY            "Скопировать выделенный текст в буфер обмена\nСкопировать текст"
     ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
-    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_FIND            "Поиск текста в текущем документе\nПоиск"
     ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
     ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
     ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
@@ -887,7 +927,6 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_VIEW_FIND            "Поиск текста в текущем документе\nПоиск"
     ID_VIEW_BACK            "Перейти назад\nНазад"
     ID_VIEW_FORWARD         "Перейти вперёд\nВперёд"
     ID_WINDOW_ACTIVATE_FIRST "Переключиться на это окно"
@@ -914,6 +953,7 @@ BEGIN
     ID_ZOOM_OUT             "Уменьшить\nУменьшить"
     ID_MODE_DRAG            "Включить режим перетаскивания документа\nРежим перетаскивания"
     ID_MODE_SELECT          "Включить режим выделения текста\nРежим выделения"
+    ID_MODE_MAGNIFY         "Включить режим увеличения изображения\nРежим увеличения"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -989,7 +1029,7 @@ BEGIN
     IDS_CENTIMETER          "см"
     IDS_VERSION_INFO        "WinDjView %s\n(C) Андрей Жежерун"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "0.4.1"
+    IDS_CURRENT_VERSION     "0.4.2"
     IDS_FATAL_ERROR         "Произошла серьёзная ошибка.\n\nОна могла быть вызвана повреждённым документом. После этой ошибки программа может работать некорректно. Вам настоятельно рекомендуется перезапустить программу.\n\nНажмите OK, чтобы выйти из программы, или Cancel, чтобы вернуться к открытым документам."
     IDS_WARN_CLOSE_MULTIPLE "Выход из программы приведёт к закрытию %d документов. Продолжить?"
 END

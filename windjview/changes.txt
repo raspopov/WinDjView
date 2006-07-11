@@ -3,8 +3,13 @@ Copyright (C) 2004-2006 Andrew Zhezherun
 ----------------------------------------
 
 Changes in version 0.4.2 (2006-):
++ Added magnifying glass tool.
++ Added option to hide scrollbars in fullscreen mode.
++ Added option to invert direction of Ctrl+Mouse Wheel zooming.
++ Added keyboard shortcuts to rotate pages, change layouts and open settings.
 * Fixed Open File dialog (.djv files were not displayed).
-* Fixed a problem with XP when themes are turned off.
+* Fixed a problem with XP themes.
+* Fixed printing order for custom page ranges.
 * Fixed a few minor issues.
 
 Changes in version 0.4.1 (2006-02-25):

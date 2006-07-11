@@ -90,7 +90,9 @@ struct CAppSettings
 	static bool bRestoreAssocs;
 	static bool bGenAllThumbnails;
 	static bool bFullscreenClicks;
+	static bool bFullscreenHideScroll;
 	static bool bWarnCloseMultiple;
+	static bool bInvertWheelZoom;
 
 	static CString strLanguage;
 

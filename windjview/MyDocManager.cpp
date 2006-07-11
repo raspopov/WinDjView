@@ -26,7 +26,7 @@
 #endif
 
 
-// CMyDocTemplate
+// CMyDocManager
 
 IMPLEMENT_DYNAMIC(CMyDocManager, CDocManager)
 

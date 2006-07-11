@@ -110,7 +110,7 @@ protected:
 	int m_nCurPage;
 	int m_nRotate;
 	int m_nMode;
-	set<int> m_pages;
+	vector<int> m_pages;
 
 	static map<CString, vector<byte> > s_devModes;
 	static LPDEVMODE GetCachedDevMode(const CString& strPrinter);

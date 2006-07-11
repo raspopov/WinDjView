@@ -39,17 +39,25 @@ CThumbnailsThread::CThumbnailsThread(CDjVuDoc* pDoc, CThumbnailsView* pOwner, bo
 {
 	m_currentJob.nPage = -1;
 
-	DWORD dwThreadId;
-	m_hThread = ::CreateThread(NULL, 0, RenderThreadProc, this, 0, &dwThreadId);
+	UINT dwThreadId;
+	m_hThread = (HANDLE)_beginthreadex(NULL, 0, RenderThreadProc, this, 0, &dwThreadId);
 	::SetThreadPriority(m_hThread,
 			bIdle ? THREAD_PRIORITY_IDLE : THREAD_PRIORITY_BELOW_NORMAL);
 }
 
 CThumbnailsThread::~CThumbnailsThread()
 {
-	m_stop.SetEvent();
-	::WaitForSingleObject(m_finished.m_hObject, INFINITE);
+	ASSERT(m_hThread == NULL);
+}
+
+void CThumbnailsThread::Delete()
+{
+	Stop();
+	::WaitForSingleObject(m_finished, INFINITE);
 	::CloseHandle(m_hThread);
+
+	m_hThread = NULL;
+	delete this;
 }
 
 void CThumbnailsThread::Stop()
@@ -57,7 +65,7 @@ void CThumbnailsThread::Stop()
 	m_stop.SetEvent();
 }
 
-DWORD WINAPI CThumbnailsThread::RenderThreadProc(LPVOID pvData)
+unsigned int __stdcall CThumbnailsThread::RenderThreadProc(void* pvData)
 {
 	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 
@@ -97,8 +105,10 @@ DWORD WINAPI CThumbnailsThread::RenderThreadProc(LPVOID pvData)
 			break;
 	}
 
-	pData->m_finished.SetEvent();
 	::CoUninitialize();
+	pData->m_finished.SetEvent();
+
+	_endthreadex(0);
 	return 0;
 }
 

@@ -29,8 +29,8 @@ class CRenderThread
 {
 public:
 	CRenderThread(CDjVuDoc* pDoc, CDjVuView* pOwner);
-	~CRenderThread();
 	void Stop();
+	void Delete();
 
 	void AddJob(int nPage, int nRotate, const CSize& size, const CDisplaySettings& displaySettings,
 		int nDisplayMode = CDjVuView::Color);
@@ -46,7 +46,7 @@ public:
 	void ResumeJobs();
 
 private:
-	HANDLE m_hThread;
+	HANDLE m_hThread, m_hStopThread;
 	CCriticalSection m_lock;
 	CEvent m_stop;
 	CEvent m_finished;
@@ -70,8 +70,9 @@ private:
 	vector<list<Job>::iterator> m_pages;
 	Job m_currentJob;
 
-	static DWORD WINAPI RenderThreadProc(LPVOID pvData);
+	static unsigned int __stdcall RenderThreadProc(void* pvData);
 	void Render(Job& job);
 	void AddJob(const Job& job);
 	void RemoveFromQueue(int nPage);
+	~CRenderThread();
 };

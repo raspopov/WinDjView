@@ -470,7 +470,10 @@ JB2Dict::JB2Codec::CodeNum(int low, int high, NumContext *pctx, int v)
   bool negative=false;
   int cutoff;
   // Check
-  if (pctx && ((int)*pctx >= cur_ncell))
+//< Changed for WinDjView project
+//  if (pctx && ((int)*pctx >= cur_ncell))
+  if (!pctx || ((int)*pctx >= cur_ncell))
+//>
     G_THROW( ERR_MSG("JB2Image.bad_numcontext") );
   // Start all phases
   cutoff = 0;

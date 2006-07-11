@@ -38,6 +38,7 @@ public:
 	BOOL m_bRestoreAssocs;
 	BOOL m_bGenAllThumbnails;
 	BOOL m_bFullscreenClicks;
+	BOOL m_bFullscreenHideScroll;
 	CStatic m_ctlAbout;
 	BOOL m_bAdjustDisplay;
 	CSliderCtrl m_sliderBrightness;
@@ -48,6 +49,7 @@ public:
 	CString m_strGammaValue;
 	BOOL m_bHQScaling;
 	BOOL m_bWarnCloseMultiple;
+	BOOL m_bInvertWheelZoom;
 
 protected:
 	CFont m_font;

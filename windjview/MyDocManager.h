@@ -32,7 +32,6 @@ public:
 	virtual ~CMyDocManager();
 
 // Overrides
-//	virtual void RegisterShellFileTypes(BOOL bCompat);
 	virtual BOOL DoPromptFileName(CString& fileName, UINT nIDSTitle,
 			DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate);
 };

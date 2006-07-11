@@ -27,8 +27,9 @@
 #include "FindDlg.h"
 class CDjVuView;
 class CFullscreenWnd;
+class CMagnifyWnd;
 
-#define WM_SHOWALLLINKS (WM_APP + 4)
+#define WM_UPDATE_KEYBOARD (WM_APP + 4)
 #define WM_LANGUAGE_CHANGED (WM_APP + 5)
 
 
@@ -42,16 +43,18 @@ public:
 public:
 	CMyComboBox m_cboPage, m_cboZoom;
 	CFindDlg* m_pFindDlg;
-	CFullscreenWnd* m_pFullscreenWnd;
 
 // Operations
 public:
 	void HilightStatusMessage(LPCTSTR pszMessage);
-	void UpdatePageCombo(CDjVuView* pView);
-	void UpdateZoomCombo(int nZoomType, double fZoom);
+	void UpdatePageCombo();
+	void UpdateZoomCombo();
 
 	void AddToHistory(CDjVuView* pView, int nPage);
-	void SetFullscreenWnd(CFullscreenWnd* pWnd) { m_pFullscreenWnd = pWnd; }
+	CFullscreenWnd* GetFullscreenWnd();
+	bool IsFullscreenMode();
+	CMagnifyWnd* GetMagnifyWnd();
+
 	void SetStartupLanguage();
 	
 	int GetDocumentCount();
@@ -76,6 +79,9 @@ protected:
 	// control bar embedded members
 	CMyStatusBar m_wndStatusBar;
 	CMyToolBar m_wndToolBar;
+
+	CFullscreenWnd* m_pFullscreenWnd;
+	CMagnifyWnd* m_pMagnifyWnd;
 
 	static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 	static HHOOK hHook;
@@ -121,8 +127,8 @@ protected:
 	afx_msg void OnChangeZoomEdit();
 	afx_msg void OnCancelChangePageZoom();
 	afx_msg LRESULT OnDDEExecute(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnViewFind();
-	afx_msg void OnUpdateViewFind(CCmdUI *pCmdUI);
+	afx_msg void OnEditFind();
+	afx_msg void OnUpdateEditFind(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateWindowList(CCmdUI *pCmdUI);
 	afx_msg void OnActivateWindow(UINT nID);
 	afx_msg void OnViewBack();
@@ -135,7 +141,7 @@ protected:
 	afx_msg void OnUpdateStatusSize(CCmdUI* pCmdUI);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnDestroy();
-	afx_msg LRESULT OnShowAllLinks(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnUpdateKeyboard(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnSetLanguage(UINT nID);
 	afx_msg void OnUpdateLanguageList(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateLanguage(CCmdUI *pCmdUI);

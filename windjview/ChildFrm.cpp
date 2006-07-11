@@ -86,9 +86,6 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 {
 	CMDIChildWnd::OnMDIActivate(bActivate, pActivateWnd, pDeactivateWnd);
 
-	CComboBox& cboPage = GetMainFrame()->m_cboPage;
-	CComboBox& cboZoom = GetMainFrame()->m_cboZoom;
-
 	if (bActivate)
 	{
 		CDjVuView* pView = GetDjVuView();
@@ -96,23 +93,20 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 		if (!m_bActivating)
 			pView->UpdateVisiblePages();
 
-		cboPage.EnableWindow(true);
-		int nPage = pView->GetCurrentPage();
-		GetMainFrame()->UpdatePageCombo(pView);
-
-		cboZoom.EnableWindow(true);
-		int nZoomType = pView->GetZoomType();
-		double fZoom = pView->GetZoom();
-		GetMainFrame()->UpdateZoomCombo(nZoomType, fZoom);
+		GetMainFrame()->m_cboPage.EnableWindow(true);
+		GetMainFrame()->m_cboZoom.EnableWindow(true);
 	}
 	else if (pActivateWnd == NULL)
 	{
-		cboPage.ResetContent();
-		cboPage.EnableWindow(false);
+		GetMainFrame()->m_cboPage.ResetContent();
+		GetMainFrame()->m_cboPage.EnableWindow(false);
 
-		cboZoom.SetWindowText(_T("100%"));
-		cboZoom.EnableWindow(false);
+		GetMainFrame()->m_cboZoom.SetWindowText(_T("100%"));
+		GetMainFrame()->m_cboZoom.EnableWindow(false);
 	}
+
+	GetMainFrame()->UpdatePageCombo();
+	GetMainFrame()->UpdateZoomCombo();
 }
 
 void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
@@ -318,7 +312,7 @@ BOOL CChildFrame::OnEraseBkgnd(CDC* pDC)
 
 void CChildFrame::OnClose()
 {
-	if (GetMainFrame()->m_pFullscreenWnd != NULL)
+	if (GetMainFrame()->IsFullscreenMode())
 		return;
 
 	// Begin process of stopping all threads simultaneously for faster closing

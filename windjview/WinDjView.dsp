@@ -187,6 +187,10 @@ SOURCE=.\GotoPageDlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MagnifyWnd.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MainFrm.cpp
 # End Source File
 # Begin Source File
@@ -324,6 +328,10 @@ SOURCE=.\GotoPageDlg.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\MagnifyWnd.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\MainFrm.h
 # End Source File
 # Begin Source File
@@ -445,6 +453,10 @@ SOURCE=.\res\hand.cur
 # Begin Source File
 
 SOURCE=.\res\link.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\magnify.cur
 # End Source File
 # Begin Source File
 

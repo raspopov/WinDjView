@@ -196,7 +196,7 @@ BEGIN
             MENUITEM "&Premier plan\tCrtl+Shift+4", ID_DISPLAY_FOREGROUND
         END
         MENUITEM SEPARATOR
-        MENUITEM "Rec&hercher...\tCtrl+F",      ID_VIEW_FIND
+        MENUITEM "Rec&hercher...\tCtrl+F",      ID_EDIT_FIND
         MENUITEM "&Copier le texte\tCtrl+C",    ID_EDIT_COPY
         MENUITEM SEPARATOR
         POPUP "&Language"
@@ -240,6 +240,7 @@ END
 IDC_CURSOR_DRAG         CURSOR  DISCARDABLE     "..\\..\\res\\drag.cur"
 IDC_CURSOR_LINK         CURSOR  DISCARDABLE     "..\\..\\res\\link.cur"
 IDC_CURSOR_HAND         CURSOR  DISCARDABLE     "..\\..\\res\\hand.cur"
+IDC_CURSOR_MAGNIFY      CURSOR  DISCARDABLE     "..\\..\\res\\magnify.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -278,11 +279,12 @@ BEGIN
     BUTTON      ID_FILE_OPEN
     SEPARATOR
     BUTTON      ID_FILE_PRINT
-    BUTTON      ID_VIEW_FIND
+    BUTTON      ID_EDIT_FIND
     BUTTON      ID_APP_ABOUT
     SEPARATOR
     BUTTON      ID_MODE_DRAG
     BUTTON      ID_MODE_SELECT
+    BUTTON      ID_MODE_MAGNIFY
     SEPARATOR
     BUTTON      ID_VIEW_FIRSTPAGE
     BUTTON      ID_VIEW_PREVIOUSPAGE
@@ -319,23 +321,32 @@ IDR_MAINFRAME ACCELERATORS MOVEABLE PURE
 BEGIN
     "0",            ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
     "1",            ID_ZOOM_100,            VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_LAYOUT_SINGLEPAGE,   VIRTKEY, CONTROL, ALT, NOINVERT
     "1",            ID_DISPLAY_COLOR,       VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     187,            ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
-    187,            ID_ZOOM_IN,             VIRTKEY, SHIFT, CONTROL, 
+    187,            ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
+    188,            ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
     189,            ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    189,            ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_LAYOUT_CONTINUOUS,   VIRTKEY, CONTROL, ALT, NOINVERT
     "2",            ID_DISPLAY_BW,          VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_LAYOUT_FACING,       VIRTKEY, CONTROL, ALT, NOINVERT
     "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     "4",            ID_ZOOM_ACTUALSIZE,     VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_LAYOUT_CONTINUOUS_FACING, VIRTKEY, CONTROL, ALT, 
+                                                    NOINVERT
     "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-    "F",            ID_VIEW_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, NOINVERT
     "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
     "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
     "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
@@ -347,6 +358,10 @@ BEGIN
     "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
     VK_ADD,         ID_ZOOM_IN,             VIRTKEY, NOINVERT
     VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    VK_DOWN,        ID_ROTATE_180,          VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, NOINVERT
     VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, CONTROL, NOINVERT
     VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
@@ -356,13 +371,19 @@ BEGIN
     VK_HOME,        ID_VIEW_FIRSTPAGE,      VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_LEFT,        ID_VIEW_BACK,           VIRTKEY, ALT, NOINVERT
+    VK_LEFT,        ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, NOINVERT
     VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
     VK_NEXT,        ID_VIEW_NEXTPAGE,       VIRTKEY, CONTROL, NOINVERT
     VK_PRIOR,       ID_VIEW_PREVIOUSPAGE,   VIRTKEY, CONTROL, NOINVERT
     VK_RIGHT,       ID_VIEW_FORWARD,        VIRTKEY, ALT, NOINVERT
+    VK_RIGHT,       ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
 END
 
@@ -374,8 +395,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,4,1,0
- PRODUCTVERSION 0,4,1,0
+ FILEVERSION 0,4,2,0
+ PRODUCTVERSION 0,4,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -393,14 +414,14 @@ BEGIN
             VALUE "Comments", "Français\0"
             VALUE "CompanyName", "Andrew Zhezherun\0"
             VALUE "FileDescription", "WinDjView Localized Resources\0"
-            VALUE "FileVersion", "0.4.1\0"
+            VALUE "FileVersion", "0.4.2\0"
             VALUE "InternalName", "WinDjViewFR.dll\0"
             VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun. All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "WinDjViewFR.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "WinDjView\0"
-            VALUE "ProductVersion", "0.4.1\0"
+            VALUE "ProductVersion", "0.4.2\0"
             VALUE "SpecialBuild", "\0"
         END
     END
@@ -816,7 +837,7 @@ BEGIN
     ID_EDIT_CLEAR_ALL       "Tout effacer\ntout effacer"
     ID_EDIT_COPY            "Copier la sélection et la mettre dans le Presse-papiers\nCopier"
     ID_EDIT_CUT             "Couper la sélection et la mettre dans le Presse-papiers\nCouper"
-    ID_EDIT_FIND            "Rechercher le texte spécifier\nRechercher"
+    ID_EDIT_FIND            "Rechercher du texte dans le document actif\nRechercher"
     ID_EDIT_PASTE           "Insérer le contenu du Presse-papiers\nColler"
     ID_EDIT_REPEAT          "Répéter la dernière action\nRépéter"
     ID_EDIT_REPLACE         "Remplacer le texte spécifique avec un texte différent\nRemplacer"
@@ -932,14 +953,13 @@ BEGIN
     IDS_CENTIMETER          "cm"
     IDS_VERSION_INFO        "WinDjView %s\nde Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "0.4.1"
+    IDS_CURRENT_VERSION     "0.4.2"
     IDS_FATAL_ERROR         "Une erreur fatale s'est produite.\n\nElle a pû être causée par un document djvu malformé. L'application peut ne pas fonctionner correctement après cette erreur. Il est recommandé de redémarrer l'application.\n\nAppuyez sur Ok pour fermer l'application ou sur Annuler pour ouvrir retourner à vos documents ouverts."
     IDS_WARN_CLOSE_MULTIPLE "Vous êtes sur le point de  fermer %d documents ouverts. Etes-vous sûr de vouloir continuer?"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_VIEW_FIND            "Rechercher du texte dans le document actif\nRechercher"
     ID_VIEW_BACK            "Aller à l'affichage précédent\nAffichage précédent"
     ID_VIEW_FORWARD         "Aller à l'affichage suivant\nAffichage suivant"
     ID_WINDOW_ACTIVATE_FIRST "Activer cette fenêtre"
@@ -966,6 +986,7 @@ BEGIN
     ID_ZOOM_OUT             "Zoom arrière\nZoom arrière"
     ID_MODE_DRAG            "Outil main\nOutil main"
     ID_MODE_SELECT          "Outil de sélection\nOutil de sélection"
+    ID_MODE_MAGNIFY         "Activate magnifying glass\nMagnifying Glass"
 END
 
 STRINGTABLE DISCARDABLE 
