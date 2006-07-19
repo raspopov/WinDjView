@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Developer Studio generated include file.
-// Used by WinDjViewRU.rc
+// Used by WinDjViewZH_CN.rc
 //
 #define IDR_MANIFEST                    1
 #define IDC_PROPERTIES                  3

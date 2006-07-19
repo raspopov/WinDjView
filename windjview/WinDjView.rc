@@ -890,6 +890,14 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    ID_LAYOUT_FIRSTPAGE_ALONE 
+                            "Display first page alone in facing and continuous-facing layouts"
+    IDS_OPENFILE            "Open"
+    IDS_ALLFILTER           "All Files (*.*)"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
 END
 
@@ -1044,12 +1052,6 @@ BEGIN
     IDS_FIT_HEIGHT          "Fit Height"
     IDS_FIT_PAGE            "Fit Page"
     IDS_ACTUAL_SIZE         "Actual Size"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_LAYOUT_FIRSTPAGE_ALONE 
-                            "Display first page alone in facing and continuous-facing layouts"
 END
 
 #endif    // English (U.S.) resources

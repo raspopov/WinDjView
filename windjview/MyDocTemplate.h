@@ -32,6 +32,8 @@ public:
 			CRuntimeClass* pFrameClass, CRuntimeClass* pViewClass);
 	virtual ~CMyDocTemplate();
 
+	void UpdateTemplate();
+
 // Overrides
 public:
     virtual Confidence MatchDocType(LPCTSTR lpszPathName, CDocument*& rpDocMatch);

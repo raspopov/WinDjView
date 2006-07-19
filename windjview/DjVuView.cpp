@@ -2382,17 +2382,20 @@ void CDjVuView::OnLButtonUp(UINT nFlags, CPoint point)
 
 void CDjVuView::StopDragging()
 {
-	m_bDragging = false;
-	m_bDraggingPage = false;
-	m_bDraggingText = false;
-
-	if (m_bDraggingMagnify)
+	if (m_bDragging)
 	{
-		GetMainFrame()->GetMagnifyWnd()->Hide();
-		m_bDraggingMagnify = false;
-	}
+		m_bDragging = false;
+		m_bDraggingPage = false;
+		m_bDraggingText = false;
 
-	ReleaseCapture();
+		if (m_bDraggingMagnify)
+		{
+			GetMainFrame()->GetMagnifyWnd()->Hide();
+			m_bDraggingMagnify = false;
+		}
+
+		ReleaseCapture();
+	}
 }
 
 void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)

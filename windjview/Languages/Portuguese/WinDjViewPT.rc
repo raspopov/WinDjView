@@ -1034,6 +1034,8 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_LAYOUT_FIRSTPAGE_ALONE 
                             "Mostra a primeira página sozinha nos esquemas dupla página e contínuo-dupla página"
+    IDS_OPENFILE            "Abrir"
+    IDS_ALLFILTER           "Todos os Ficheiros (*.*)"
 END
 
 #endif    // Portuguese (Portugal) resources

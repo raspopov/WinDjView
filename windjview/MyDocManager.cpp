@@ -19,6 +19,7 @@
 // $Id$
 
 #include "stdafx.h"
+#include "WinDjView.h"
 #include "MyDocManager.h"
 
 #ifdef _DEBUG
@@ -97,7 +98,7 @@ BOOL CMyDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle,
 	CFileDialog dlgFile(bOpenFileDialog);
 
 	CString title;
-	VERIFY(title.LoadString(nIDSTitle));
+	VERIFY(title.LoadString(nIDSTitle == AFX_IDS_OPENFILE ? IDS_OPENFILE : nIDSTitle));
 
 	dlgFile.m_ofn.Flags |= lFlags;
 
@@ -124,7 +125,7 @@ BOOL CMyDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle,
 
 	// append the "*.*" all files filter
 	CString allFilter;
-	VERIFY(allFilter.LoadString(AFX_IDS_ALLFILTER));
+	VERIFY(allFilter.LoadString(IDS_ALLFILTER));
 	strFilter += allFilter;
 	strFilter += (TCHAR)'\0';   // next string please
 	strFilter += _T("*.*");

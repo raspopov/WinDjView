@@ -83,3 +83,11 @@ CDocTemplate::Confidence CMyDocTemplate::MatchDocType(
 	// otherwise we will guess it may work
 	return yesAttemptForeign;
 }
+
+void CMyDocTemplate::UpdateTemplate()
+{
+	if (!m_strDocStrings.LoadString(m_nIDResource) || m_strDocStrings.IsEmpty())
+	{
+		TRACE1("Warning: no document names in string for template #%d.\n", m_nIDResource);
+	}
+}

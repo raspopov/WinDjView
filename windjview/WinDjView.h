@@ -34,6 +34,7 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, double& value, double def =
 void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0, LPCTSTR pszSuffix = NULL);
 
 class CDjVuDoc;
+class CMyDocTemplate;
 
 void ReportFatalError();
 
@@ -57,6 +58,7 @@ public:
 	CDjVuDoc* OpenDocument(const CString& strPathName, const GUTF8String& strPage);
 
 	bool m_bInitialized;
+	CMyDocTemplate* m_pDjVuTemplate;
 
 // Implementation
 protected:

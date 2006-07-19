@@ -763,7 +763,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_ERROR_DECODING_PAGE "Невозможно прочитать страницу"
-    IDS_BMP_FILTER          "Картинки (*.bmp)|*.bmp|All Files (*.*)|*.*||"
+    IDS_BMP_FILTER          "Картинки (*.bmp)|*.bmp|Все файлы (*.*)|*.*||"
     IDS_EXPORT_PAGE         "Сохранить страницу как"
     IDS_CONNECT_ERROR       "Во время обращения к серверу произошла ошибка.\nПроверьте, что Вы имеете доступ в интернет."
     IDS_NO_UPDATES_AVAILABLE 
@@ -878,6 +878,8 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    IDS_OPENFILE            "Открыть"
+    IDS_ALLFILTER           "Все файлы (*.*)"
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
 END
 

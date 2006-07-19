@@ -29,6 +29,7 @@
 #include "ThumbnailsView.h"
 #include "FullscreenWnd.h"
 #include "MagnifyWnd.h"
+#include "MyDocTemplate.h"
 
 #include "MyTheme.h"
 
@@ -1075,6 +1076,14 @@ void CMainFrame::SetLanguage(UINT nLanguage)
 
 void CMainFrame::OnLanguageChanged()
 {
+	if (CAppSettings::hDjVuMenu != NULL)
+	{
+		::DestroyMenu(CAppSettings::hDjVuMenu);
+		::DestroyMenu(CAppSettings::hDefaultMenu);
+		CAppSettings::hDjVuMenu = NULL;
+		CAppSettings::hDefaultMenu = NULL;
+	}
+
 	if (CAppSettings::bLocalized)
 	{
 		CMenu menuDjVu, menuDefault;
@@ -1085,6 +1094,7 @@ void CMainFrame::OnLanguageChanged()
 		CAppSettings::hDefaultMenu = menuDefault.Detach();
 	}
 
+	theApp.m_pDjVuTemplate->UpdateTemplate();
 	OnUpdateFrameMenu(NULL);
 	DrawMenuBar();
 

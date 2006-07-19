@@ -1032,6 +1032,8 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_LAYOUT_FIRSTPAGE_ALONE 
                             "Afficher la première page seule dans les dispositions par deux pages"
+    IDS_OPENFILE            "Ouvrir"
+    IDS_ALLFILTER           "Tous les fichiers (*.*)"
 END
 
 #endif    // French (France) resources

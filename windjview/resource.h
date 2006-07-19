@@ -219,6 +219,8 @@
 #define ID_LAYOUT_FACING                33118
 #define ID_LAYOUT_CONTINUOUS_FACING     33119
 #define ID_LAYOUT_FIRSTPAGE_ALONE       33120
+#define IDS_OPENFILE                    33121
+#define IDS_ALLFILTER                   33122
 
 // Next default values for new objects
 // 

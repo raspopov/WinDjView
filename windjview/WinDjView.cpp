@@ -100,7 +100,7 @@ END_MESSAGE_MAP()
 // CDjViewApp construction
 
 CDjViewApp::CDjViewApp()
-	: m_bInitialized(false)
+	: m_bInitialized(false), m_pDjVuTemplate(NULL)
 {
 }
 
@@ -136,15 +136,13 @@ BOOL CDjViewApp::InitInstance()
 	m_pDocManager = new CMyDocManager();
 
 	// Register the application's document template
-	CMultiDocTemplate* pDocTemplate;
-
-	pDocTemplate = new CMyDocTemplate(IDR_DjVuTYPE,
+	m_pDjVuTemplate = new CMyDocTemplate(IDR_DjVuTYPE,
 		RUNTIME_CLASS(CDjVuDoc),
 		RUNTIME_CLASS(CChildFrame),
 		RUNTIME_CLASS(CDjVuView));
-	if (!pDocTemplate)
+	if (!m_pDjVuTemplate)
 		return FALSE;
-	AddDocTemplate(pDocTemplate);
+	AddDocTemplate(m_pDjVuTemplate);
 
 	// Create main MDI Frame window
 	CMainFrame* pMainFrame = new CMainFrame;

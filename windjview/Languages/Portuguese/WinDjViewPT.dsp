@@ -102,6 +102,10 @@ SOURCE=..\..\res\link.cur
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\res\magnify.cur
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\res\Toolbar.bmp
 # End Source File
 # Begin Source File
