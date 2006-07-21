@@ -93,6 +93,8 @@ struct CAppSettings
 	static bool bFullscreenHideScroll;
 	static bool bWarnCloseMultiple;
 	static bool bInvertWheelZoom;
+	static bool bCloseOnEsc;
+	static bool bWrapLongBookmarks;
 
 	static CString strLanguage;
 

@@ -46,6 +46,7 @@ public:
 	void CreateNavPanes();
 
 	CThumbnailsView* GetThumbnailsView() { return m_pThumbnailsView; }
+	CBookmarksView* GetBookmarksView() { return m_pBookmarksView; }
 	CSearchResultsView* GetResultsView();
 
 protected:

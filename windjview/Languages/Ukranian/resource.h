@@ -152,7 +152,9 @@
 #define IDC_SEARCH_STATUS               1054
 #define IDC_MERGE_FACING                1054
 #define IDC_PAGE                        1055
+#define IDC_CLOSE_ON_ESC                1055
 #define IDC_PAGE_COUNT                  1056
+#define IDC_WRAP_BOOKMARKS              1056
 #define IDC_DONATE                      1058
 #define IDC_STATIC_VERSION              1059
 #define IDC_SPIN_PAGE                   1060

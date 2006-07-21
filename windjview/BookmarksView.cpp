@@ -25,7 +25,7 @@
 #include "ChildFrm.h"
 #include "DjVuView.h"
 #include "MainFrm.h"
-
+#include "AppSettings.h"
 
 // CBookmarksView
 
@@ -34,7 +34,6 @@ IMPLEMENT_DYNAMIC(CBookmarksView, CMyTreeCtrl)
 BEGIN_MESSAGE_MAP(CBookmarksView, CMyTreeCtrl)
 	ON_NOTIFY_REFLECT(TVN_SELCHANGED, OnSelChanged)
 	ON_NOTIFY_REFLECT(TVN_KEYDOWN, OnKeyDown)
-//	ON_WM_MOUSEACTIVATE()
 	ON_WM_MOUSEWHEEL()
 	ON_WM_CREATE()
 END_MESSAGE_MAP()
@@ -63,7 +62,7 @@ int CBookmarksView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	SetImageList(&m_imageList, TVSIL_NORMAL);
 
 	SetItemHeight(20);
-	SetWrapLabels(true);
+	SetWrapLabels(CAppSettings::bWrapLongBookmarks);
 
 	return 0;
 }
@@ -151,4 +150,9 @@ void CBookmarksView::PostNcDestroy()
 {
 	// Should be created on heap
 	delete this;
+}
+
+void CBookmarksView::OnSettingsChanged()
+{
+	SetWrapLabels(CAppSettings::bWrapLongBookmarks);
 }

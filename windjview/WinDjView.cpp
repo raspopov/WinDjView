@@ -31,6 +31,7 @@
 #include "SettingsDlg.h"
 #include "UpdateDlg.h"
 #include "ThumbnailsView.h"
+#include "BookmarksView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -69,6 +70,8 @@ const TCHAR* s_pszFullscreenClicks = _T("fullscreen-clicks");
 const TCHAR* s_pszFullscreenHideScroll = _T("fullscreen-hide-scroll");
 const TCHAR* s_pszWarnCloseMultiple = _T("warn-close-multiple");
 const TCHAR* s_pszInvertWheelZoom = _T("invert-wheel-zoom");
+const TCHAR* s_pszCloseOnEsc = _T("close-on-esc");
+const TCHAR* s_pszWrapLongBookmarks = _T("wrap-long-bookmarks");
 const TCHAR* s_pszVersion = _T("version");
 const TCHAR* s_pszLanguage = _T("language");
 
@@ -426,6 +429,8 @@ void CDjViewApp::LoadSettings()
 	CAppSettings::bFullscreenHideScroll = !!GetProfileInt(s_pszGlobalSettings, s_pszFullscreenHideScroll, 1);
 	CAppSettings::bWarnCloseMultiple = !!GetProfileInt(s_pszGlobalSettings, s_pszWarnCloseMultiple, 0);
 	CAppSettings::bInvertWheelZoom = !!GetProfileInt(s_pszGlobalSettings, s_pszInvertWheelZoom, 0);
+	CAppSettings::bCloseOnEsc = !!GetProfileInt(s_pszGlobalSettings, s_pszCloseOnEsc, 0);
+	CAppSettings::bWrapLongBookmarks = !!GetProfileInt(s_pszGlobalSettings, s_pszWrapLongBookmarks, 1);
 	CAppSettings::strVersion = GetProfileString(s_pszGlobalSettings, s_pszVersion, _T(""));
 	CAppSettings::strLanguage = GetProfileString(s_pszGlobalSettings, s_pszLanguage, _T(""));
 
@@ -473,6 +478,8 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszGlobalSettings, s_pszFullscreenHideScroll, CAppSettings::bFullscreenHideScroll);
 	WriteProfileInt(s_pszGlobalSettings, s_pszWarnCloseMultiple, CAppSettings::bWarnCloseMultiple);
 	WriteProfileInt(s_pszGlobalSettings, s_pszInvertWheelZoom, CAppSettings::bInvertWheelZoom);
+	WriteProfileInt(s_pszGlobalSettings, s_pszCloseOnEsc, CAppSettings::bCloseOnEsc);
+	WriteProfileInt(s_pszGlobalSettings, s_pszWrapLongBookmarks, CAppSettings::bWrapLongBookmarks);
 	WriteProfileString(s_pszGlobalSettings, s_pszVersion, CURRENT_VERSION);
 	WriteProfileString(s_pszGlobalSettings, s_pszLanguage, CAppSettings::strLanguage);
 
@@ -650,6 +657,9 @@ void CDjViewApp::OnFileSettings()
 
 				pFrame->GetDjVuView()->OnSettingsChanged();
 				pFrame->GetThumbnailsView()->OnSettingsChanged();
+
+				if (pFrame->GetBookmarksView() != NULL)
+					pFrame->GetBookmarksView()->OnSettingsChanged();
 			}
 		}
 	}

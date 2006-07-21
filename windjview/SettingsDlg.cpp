@@ -42,6 +42,8 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent)
 
 	m_bWarnCloseMultiple = CAppSettings::bWarnCloseMultiple;
 	m_bInvertWheelZoom = CAppSettings::bInvertWheelZoom;
+	m_bCloseOnEsc = CAppSettings::bCloseOnEsc;
+	m_bWrapLongBookmarks = CAppSettings::bWrapLongBookmarks;
 
 	m_displaySettings = CAppSettings::displaySettings;
 	m_bAdjustDisplay = m_displaySettings.bAdjustDisplay;
@@ -61,6 +63,8 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_FULLSCREEN_HIDESCROLL, m_bFullscreenHideScroll);
 	DDX_Check(pDX, IDC_WARN_CLOSE_MULTIPLE, m_bWarnCloseMultiple);
 	DDX_Check(pDX, IDC_INVERT_WHEEL_ZOOM, m_bInvertWheelZoom);
+	DDX_Check(pDX, IDC_CLOSE_ON_ESC, m_bCloseOnEsc);
+	DDX_Check(pDX, IDC_WRAP_BOOKMARKS, m_bWrapLongBookmarks);
 	DDX_Check(pDX, IDC_HQ_SCALING, m_bHQScaling);
 
 	DDX_Check(pDX, IDC_ADJUST_DISPLAY, m_bAdjustDisplay);
@@ -120,6 +124,8 @@ void CSettingsDlg::OnOK()
 	CAppSettings::bFullscreenHideScroll = !!m_bFullscreenHideScroll;
 	CAppSettings::bWarnCloseMultiple = !!m_bWarnCloseMultiple;
 	CAppSettings::bInvertWheelZoom = !!m_bInvertWheelZoom;
+	CAppSettings::bCloseOnEsc = !!m_bCloseOnEsc;
+	CAppSettings::bWrapLongBookmarks = !!m_bWrapLongBookmarks;
 
 	m_displaySettings.bAdjustDisplay = !!m_bAdjustDisplay;
 	m_displaySettings.nScaleMethod = (m_bHQScaling ? CDisplaySettings::PnmScaleFixed : CDisplaySettings::Default);

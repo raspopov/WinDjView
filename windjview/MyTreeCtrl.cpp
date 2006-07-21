@@ -21,6 +21,7 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "MyTreeCtrl.h"
+#include "Drawing.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -30,6 +31,8 @@
 int s_nOffsetLeft = 3;
 int s_nTextOffset = 5;
 int s_nOffsetRight = 2;
+
+static HCURSOR hCursorLink = NULL;
 
 
 // CMyTreeCtrl control
@@ -90,6 +93,8 @@ BEGIN_MESSAGE_MAP(CMyTreeCtrl, CWnd)
 	ON_WM_VSCROLL()
 	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
 	ON_WM_KEYDOWN()
+	ON_WM_MOUSEWHEEL()
+	ON_WM_SYSCOLORCHANGE()
 END_MESSAGE_MAP()
 
 
@@ -112,7 +117,7 @@ BOOL CMyTreeCtrl::PreCreateWindow(CREATESTRUCT& cs)
 void CMyTreeCtrl::OnPaint()
 {
 	CPaintDC dcPaint(this);
-	CPoint ptOffset(GetScrollPos(SB_HORZ), GetScrollPos(SB_VERT));
+	CPoint ptOffset = GetScrollPosition();
 
 	CRect rcClient;
 	GetClientRect(rcClient);
@@ -137,14 +142,15 @@ void CMyTreeCtrl::OnPaint()
 	dc.IntersectClipRect(rcClip);
 
 	CFont* pOldFont = dc.SelectObject(&m_font);
-	dc.SetBkColor(RGB(255, 255, 255));
+	COLORREF crBackground = ::GetSysColor(COLOR_WINDOW);
+	dc.SetBkColor(crBackground);
 
-	int nBottom = PaintNode(&dc, m_pRoot);
+	int nBottom = PaintNode(&dc, m_pRoot, rcClip);
 
 	if (nBottom < m_szDisplay.cy)
 	{
 		CRect rcBottom(0, nBottom, m_szDisplay.cx, m_szDisplay.cy);
-		dc.FillSolidRect(rcBottom - ptOffset, RGB(255, 255, 255));
+		dc.FillSolidRect(rcBottom - ptOffset, crBackground);
 	}
 
 	dc.SelectObject(pOldFont);
@@ -154,18 +160,20 @@ void CMyTreeCtrl::OnPaint()
 	dc.SelectObject(pOldBitmap);
 }
 
-int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode)
+int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 {
-	CPoint ptOffset(GetScrollPos(SB_HORZ), GetScrollPos(SB_VERT));
+	CPoint ptOffset = GetScrollPosition();
 
 	int nBottom = pNode->rcNode.bottom;
 
-	if (pNode != m_pRoot)
+	CRect rcIntersect;
+	if (pNode != m_pRoot && rcIntersect.IntersectRect(rcClip, pNode->rcNode - ptOffset))
 	{
 		CRect rcLine(pNode->rcNode);
 		rcLine.right = m_szDisplay.cx;
 
-		pDC->FillSolidRect(rcLine - ptOffset, RGB(255, 255, 255));
+		COLORREF crBackground = ::GetSysColor(COLOR_WINDOW);
+		pDC->FillSolidRect(rcLine - ptOffset, crBackground);
 
 		CFont* pOldFont = NULL;
 		if (pNode == m_pHoverNode)
@@ -338,6 +346,19 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode)
 			}
 			else
 			{
+				pDC->FillSolidRect(pNode->rcGlyph - ptOffset, crBackground);
+				FrameRect(pDC, pNode->rcGlyph - ptOffset, ::GetSysColor(COLOR_BTNSHADOW));
+
+				CRect rcHorz(pNode->rcGlyph.left + 2, pNode->rcGlyph.CenterPoint().y,
+					pNode->rcGlyph.right - 2, pNode->rcGlyph.CenterPoint().y + 1);
+				pDC->FillSolidRect(rcHorz - ptOffset, RGB(0, 0, 0));
+
+				if (pNode->bCollapsed)
+				{
+					CRect rcVert(pNode->rcGlyph.CenterPoint().x, pNode->rcGlyph.top + 2,
+						pNode->rcGlyph.CenterPoint().x + 1, pNode->rcGlyph.bottom - 2);
+					pDC->FillSolidRect(rcVert - ptOffset, RGB(0, 0, 0));
+				}
 			}
 		}
 	}
@@ -345,7 +366,7 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode)
 	if (pNode->HasChildren() && !pNode->bCollapsed)
 	{
 		for (TreeNode* pChild = pNode->pChild; pChild != NULL; pChild = pChild->pNext)
-			nBottom = PaintNode(pDC, pChild);
+			nBottom = PaintNode(pDC, pChild, rcClip);
 	}
 
 	return nBottom;
@@ -370,6 +391,11 @@ void CMyTreeCtrl::SetWrapLabels(bool bWrapLabels)
 		m_bWrapLabels = bWrapLabels;
 		RecalcLayout();
 	}
+}
+
+CPoint CMyTreeCtrl::GetScrollPosition()
+{
+	return CPoint(GetScrollPos(SB_HORZ), GetScrollPos(SB_VERT));
 }
 
 HTREEITEM CMyTreeCtrl::InsertItem(LPCTSTR pszItem, HTREEITEM hParent, HTREEITEM hInsertAfter)
@@ -595,6 +621,13 @@ void CMyTreeCtrl::RecalcLayout()
 		SetScrollPos(SB_VERT, 0, false);
 	}
 
+	SetHoverNode(NULL);
+
+	CPoint ptCursor;
+	::GetCursorPos(&ptCursor);
+	ScreenToClient(&ptCursor);
+	OnMouseMove(0, ptCursor);
+
 	Invalidate();
 }
 
@@ -658,7 +691,14 @@ LRESULT CMyTreeCtrl::OnThemeChanged(WPARAM wParam, LPARAM lParam)
 	if (XPIsAppThemed() && XPIsThemeActive())
 		m_hTheme = XPOpenThemeData(m_hWnd, L"TREEVIEW");
 
+	Invalidate();
+
 	return 0;
+}
+
+void CMyTreeCtrl::OnSysColorChange()
+{
+	Invalidate();
 }
 
 void CMyTreeCtrl::OnLButtonDown(UINT nFlags, CPoint point)
@@ -697,7 +737,7 @@ CMyTreeCtrl::TreeNode* CMyTreeCtrl::HitTest(CPoint point, int* pnArea)
 
 CMyTreeCtrl::TreeNode* CMyTreeCtrl::HitTest(TreeNode* pNode, CPoint point, int* pnArea)
 {
-	CPoint ptOffset(GetScrollPos(SB_HORZ), GetScrollPos(SB_VERT));
+	CPoint ptOffset = GetScrollPosition();
 
 	if (pNode != m_pRoot && pNode->rcNode.PtInRect(point + ptOffset))
 	{
@@ -728,7 +768,7 @@ CMyTreeCtrl::TreeNode* CMyTreeCtrl::HitTest(TreeNode* pNode, CPoint point, int* 
 
 void CMyTreeCtrl::InvalidateNode(TreeNode* pNode)
 {
-	CPoint ptOffset(GetScrollPos(SB_HORZ), GetScrollPos(SB_VERT));
+	CPoint ptOffset = GetScrollPosition();
 	InvalidateRect(pNode->rcNode + (-ptOffset));
 }
 
@@ -748,7 +788,7 @@ BOOL CMyTreeCtrl::OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult)
 	if (!rcClient.PtInRect(ptCursor))
 		return false;
 
-	CPoint ptOffset(GetScrollPos(SB_HORZ), GetScrollPos(SB_VERT));
+	CPoint ptOffset = GetScrollPosition();
 
 	if (m_pHoverNode != NULL)
 	{
@@ -841,7 +881,7 @@ void CMyTreeCtrl::SetHoverNode(TreeNode* pNode)
 		{
 			InvalidateNode(pNode);
 
-			CPoint ptOffset(GetScrollPos(SB_HORZ), GetScrollPos(SB_VERT));
+			CPoint ptOffset = GetScrollPosition();
 			CRect rcLabel = pNode->rcLabel - ptOffset;
 
 			CRect rcClient, rcIntersect;
@@ -855,7 +895,7 @@ void CMyTreeCtrl::SetHoverNode(TreeNode* pNode)
 				ClientToScreen(&ptTooltip);
 				m_toolTip.SendMessage(TTM_TRACKPOSITION, 0, MAKELPARAM(ptTooltip.x, ptTooltip.y));
 
-				m_toolTip.SetMaxTipWidth(pNode->rcLabel.Width() - s_nOffsetRight - s_nTextOffset);
+				m_toolTip.SetMaxTipWidth(pNode->rcLabel.Width() - s_nTextOffset);
 				m_toolTip.SetMargin(CRect(0, 1, 0, max(0, pNode->rcNode.bottom - pNode->rcText.bottom - 2)));
 
 				m_bMouseInTooltip = true;
@@ -897,7 +937,6 @@ void CMyTreeCtrl::OnKillFocus(CWnd* pNewWnd)
 
 BOOL CMyTreeCtrl::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 {
-	static HCURSOR hCursorLink = NULL;
 	if (hCursorLink == NULL)
 		hCursorLink = ::LoadCursor(0, IDC_HAND);
 	if (hCursorLink == NULL)
@@ -936,7 +975,7 @@ void CMyTreeCtrl::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	OnScroll(MAKEWORD(-1, nSBCode), nPos);
 }
 
-BOOL CMyTreeCtrl::OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll)
+bool CMyTreeCtrl::OnScroll(UINT nScrollCode, UINT nPos)
 {
 	// calc new x position
 	int x = GetScrollPos(SB_HORZ);
@@ -974,22 +1013,6 @@ BOOL CMyTreeCtrl::OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll)
 			x = si.nTrackPos;
 		}
 		break;
-	}
-
-	DWORD dwStyle = GetStyle();
-
-	CScrollBar* pBar = GetScrollBarCtrl(SB_HORZ);
-	if ((pBar != NULL && !pBar->IsWindowEnabled()) ||
-		(pBar == NULL && !(dwStyle & WS_HSCROLL)))
-	{
-		// horizontal scroll bar not enabled
-		x = xOrig;
-	}
-	else
-	{
-		// adjust current x position
-		int xMax = GetScrollLimit(SB_HORZ);
-		x = min(xMax, max(0, x));
 	}
 
 	// calc new y position
@@ -1030,6 +1053,32 @@ BOOL CMyTreeCtrl::OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll)
 		break;
 	}
 
+	return OnScrollBy(CSize(x - xOrig, y - yOrig));
+}
+
+bool CMyTreeCtrl::OnScrollBy(CSize sz)
+{
+	DWORD dwStyle = GetStyle();
+
+	int xOrig = GetScrollPos(SB_HORZ);
+	int yOrig = GetScrollPos(SB_VERT);
+	int x = xOrig + sz.cx;
+	int y = yOrig + sz.cy;
+
+	CScrollBar* pBar = GetScrollBarCtrl(SB_HORZ);
+	if ((pBar != NULL && !pBar->IsWindowEnabled()) ||
+		(pBar == NULL && !(dwStyle & WS_HSCROLL)))
+	{
+		// horizontal scroll bar not enabled
+		x = xOrig;
+	}
+	else
+	{
+		// adjust current x position
+		int xMax = GetScrollLimit(SB_HORZ);
+		x = min(xMax, max(0, x));
+	}
+
 	pBar = GetScrollBarCtrl(SB_VERT);
 	if ((pBar != NULL && !pBar->IsWindowEnabled()) ||
 		(pBar == NULL && !(dwStyle & WS_VSCROLL)))
@@ -1051,6 +1100,13 @@ BOOL CMyTreeCtrl::OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll)
 			SetScrollPos(SB_HORZ, x);
 		if (y != yOrig)
 			SetScrollPos(SB_VERT, y);
+
+		SetHoverNode(NULL);
+
+		CPoint ptCursor;
+		::GetCursorPos(&ptCursor);
+		ScreenToClient(&ptCursor);
+		OnMouseMove(0, ptCursor);
 
 		UpdateWindow();
 		return true;
@@ -1148,6 +1204,9 @@ void CMyTreeCtrl::SelectNode(TreeNode* pNode, UINT nAction)
 			InvalidateNode(pNode);
 
 		m_pSelection = pNode;
+
+		if (pNode != NULL)
+			EnsureVisible(pNode);
 
 		// Notify parent
 		NMTREEVIEW nmtv;
@@ -1255,6 +1314,83 @@ HTREEITEM CMyTreeCtrl::GetSelectedItem()
 	return (HTREEITEM) m_pSelection;
 }
 
+BOOL CMyTreeCtrl::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
+{
+	bool bHasHorzBar, bHasVertBar;
+	CheckScrollBars(bHasHorzBar, bHasVertBar);
+
+	if (!bHasVertBar && !bHasHorzBar)
+		return false;
+
+	UINT uWheelScrollLines = GetMouseScrollLines();
+	int nToScroll = ::MulDiv(-zDelta, uWheelScrollLines, WHEEL_DELTA);
+	int nDisplacement;
+
+	if (bHasVertBar && (!bHasHorzBar || (nFlags & MK_SHIFT) == 0))
+	{
+		if (uWheelScrollLines == WHEEL_PAGESCROLL)
+		{
+			nDisplacement = m_szPage.cy;
+			if (zDelta > 0)
+				nDisplacement = -nDisplacement;
+		}
+		else
+		{
+			nDisplacement = nToScroll * m_szLine.cy;
+			nDisplacement = min(nDisplacement, m_szPage.cy);
+		}
+
+		OnScrollBy(CSize(0, nDisplacement));
+	}
+	else if (bHasHorzBar)
+	{
+		if (uWheelScrollLines == WHEEL_PAGESCROLL)
+		{
+			nDisplacement = m_szPage.cx;
+			if (zDelta > 0)
+				nDisplacement = -nDisplacement;
+		}
+		else
+		{
+			nDisplacement = nToScroll * m_szLine.cx;
+			nDisplacement = min(nDisplacement, m_szPage.cx);
+		}
+
+		OnScrollBy(CSize(nDisplacement, 0));
+	}
+
+	return true;
+}
+
+void CMyTreeCtrl::CheckScrollBars(bool& bHasHorzBar, bool& bHasVertBar) const
+{
+	DWORD dwStyle = GetStyle();
+	CScrollBar* pBar = GetScrollBarCtrl(SB_VERT);
+	bHasVertBar = (pBar != NULL && pBar->IsWindowEnabled())
+			|| (dwStyle & WS_VSCROLL) != 0;
+
+	pBar = GetScrollBarCtrl(SB_HORZ);
+	bHasHorzBar = (pBar != NULL && pBar->IsWindowEnabled())
+			|| (dwStyle & WS_HSCROLL) != 0;
+}
+
+void CMyTreeCtrl::EnsureVisible(TreeNode* pNode)
+{
+	CPoint ptOffset = GetScrollPosition();
+	CRect rcNode = pNode->rcNode - ptOffset;
+
+	CRect rcClient;
+	GetClientRect(rcClient);
+
+	int nScroll = 0;
+	if (rcNode.bottom > rcClient.bottom)
+		nScroll = rcNode.bottom - rcClient.bottom;
+	if (rcNode.top - nScroll < rcClient.top)
+		nScroll = rcNode.top - rcClient.top;
+
+	OnScrollBy(CSize(0, nScroll));
+}
+
 BOOL CMyTreeCtrl::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 {
 	if (message == WM_MOUSEMOVE)
@@ -1287,7 +1423,7 @@ BOOL CMyTreeCtrl::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lPa
 		if (nMsg == WM_LBUTTONDOWN)
 			m_pTree->SelectNode(m_pTree->m_pHoverNode, TVC_BYMOUSE);
 
-		return TRUE;
+		return true;
 	}
 	else if (message == WM_MOUSELEAVE)
 	{
@@ -1301,6 +1437,26 @@ BOOL CMyTreeCtrl::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lPa
 
 			m_pTree->OnMouseMove(0, ptCursor);
 		}
+	}
+	else if (message == WM_SETCURSOR)
+	{
+		if (hCursorLink == NULL)
+			hCursorLink = ::LoadCursor(0, IDC_HAND);
+		if (hCursorLink == NULL)
+			hCursorLink = AfxGetApp()->LoadCursor(IDC_CURSOR_LINK);
+
+		SetCursor(hCursorLink);
+
+		if (pResult != NULL)
+			*pResult = true;
+		return true;
+	}
+	else if (message == WM_MOUSEWHEEL)
+	{
+		LRESULT lResult = m_pTree->SendMessage(WM_MOUSEWHEEL, wParam, lParam);
+		if (pResult != NULL)
+			*pResult = lResult;
+		return true;
 	}
 
 	return CToolTipCtrl::OnWndMsg(message, wParam, lParam, pResult);

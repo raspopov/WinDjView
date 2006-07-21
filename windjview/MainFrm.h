@@ -66,6 +66,7 @@ protected:
 	virtual void OnUpdateFrameMenu(HMENU hMenuAlt);
 	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 // Implementation
 public:

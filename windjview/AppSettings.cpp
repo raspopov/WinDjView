@@ -54,6 +54,8 @@ bool CAppSettings::bFullscreenClicks = true;
 bool CAppSettings::bFullscreenHideScroll = true;
 bool CAppSettings::bWarnCloseMultiple = false;
 bool CAppSettings::bInvertWheelZoom = false;
+bool CAppSettings::bCloseOnEsc = false;
+bool CAppSettings::bWrapLongBookmarks = true;
 
 CString CAppSettings::strLanguage;
 

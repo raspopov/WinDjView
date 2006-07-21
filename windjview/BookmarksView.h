@@ -35,6 +35,7 @@ public:
 	virtual ~CBookmarksView();
 
 	void InitBookmarks(CDjVuDoc* pDoc);
+	void OnSettingsChanged();
 
 // Implementation
 protected:

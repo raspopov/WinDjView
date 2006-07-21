@@ -526,13 +526,13 @@ BEGIN
     PUSHBUTTON      "Отмена",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 249, 281
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 249, 309
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Настройки"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,137,260,50,14
-    PUSHBUTTON      "Отмена",IDCANCEL,192,260,50,14
+    DEFPUSHBUTTON   "OK",IDOK,137,288,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,192,288,50,14
     LTEXT           "Связать файлы .djvu и .djv с программой WinDjView:",
                     IDC_STATIC,15,18,182,9
     PUSHBUTTON      "&Связать",IDC_ASSOCIATE,15,30,50,14
@@ -550,32 +550,38 @@ BEGIN
                     WS_TABSTOP,15,81,219,10
     CONTROL         "Масштабировать с увеличенной &резкостью (но медленнее)",
                     IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
-                    169,224,10
+                    197,224,10
     CONTROL         "&Применить коррекцию изображения",IDC_ADJUST_DISPLAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,197,153,9
-    LTEXT           "&Яркость: 0",IDC_BRIGHTNESS_TEXT,15,211,61,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,210,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,225,153,9
+    LTEXT           "&Яркость: 0",IDC_BRIGHTNESS_TEXT,15,239,61,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,238,
                     160,12
-    LTEXT           "&Контраст: 0",IDC_CONTRAST_TEXT,15,224,55,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,223,
+    LTEXT           "&Контраст: 0",IDC_CONTRAST_TEXT,15,252,55,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,251,
                     160,12
-    LTEXT           "&Гамма: 1.0",IDC_GAMMA_TEXT,15,237,45,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,236,160,
+    LTEXT           "&Гамма: 1.0",IDC_GAMMA_TEXT,15,265,45,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,264,160,
                     12
     GROUPBOX        "Типы файлов",IDC_STATIC,7,7,235,58
-    GROUPBOX        "Разное",IDC_STATIC,7,69,235,84
-    GROUPBOX        "Отображение",IDC_STATIC,7,157,235,96
-    LTEXT           "WinDjView\n(C) Андрей Жежерун",IDC_STATIC_ABOUT,7,260,
+    GROUPBOX        "Разное",IDC_STATIC,7,69,235,112
+    GROUPBOX        "Отображение",IDC_STATIC,7,185,235,96
+    LTEXT           "WinDjView\n(C) Андрей Жежерун",IDC_STATIC_ABOUT,7,288,
                     92,18
     CONTROL         "Скл&еивать соседние страницы при отображении",
                     IDC_MERGE_FACING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    15,183,195,9
+                    15,211,195,9
     CONTROL         "Всегда прятать полосы прокр&утки в полноэкранном режиме",
                     IDC_FULLSCREEN_HIDESCROLL,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,123,219,10
     CONTROL         "&Масштаб по Ctrl+колесу мыши в противоположную сторону",
                     IDC_INVERT_WHEEL_ZOOM,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,137,219,10
+    CONTROL         "&Закрывать программу при нажатии Escape",
+                    IDC_CLOSE_ON_ESC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    15,151,219,10
+    CONTROL         "Переносить закла&дки, не помещающиеся в одну строку",
+                    IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    15,165,219,10
 END
 
 IDD_FIND DIALOG DISCARDABLE  0, 0, 287, 64
@@ -709,7 +715,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 242
         TOPMARGIN, 7
-        BOTTOMMARGIN, 274
+        BOTTOMMARGIN, 302
     END
 
     IDD_FIND, DIALOG
@@ -878,8 +884,14 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    ID_LAYOUT_FIRSTPAGE_ALONE 
+                            "При группировке соседних страниц отображать первую страницу отдельно"
     IDS_OPENFILE            "Открыть"
     IDS_ALLFILTER           "Все файлы (*.*)"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
 END
 
@@ -1034,12 +1046,6 @@ BEGIN
     IDS_CURRENT_VERSION     "0.4.2"
     IDS_FATAL_ERROR         "Произошла серьёзная ошибка.\n\nОна могла быть вызвана повреждённым документом. После этой ошибки программа может работать некорректно. Вам настоятельно рекомендуется перезапустить программу.\n\nНажмите OK, чтобы выйти из программы, или Cancel, чтобы вернуться к открытым документам."
     IDS_WARN_CLOSE_MULTIPLE "Выход из программы приведёт к закрытию %d документов. Продолжить?"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_LAYOUT_FIRSTPAGE_ALONE 
-                            "При группировке соседних страниц отображать первую страницу отдельно"
 END
 
 #endif    // Russian resources

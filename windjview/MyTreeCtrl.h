@@ -45,8 +45,6 @@ public:
 	DWORD_PTR GetItemData(HTREEITEM hItem);
 	HTREEITEM GetSelectedItem();
 
-	virtual BOOL OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll = TRUE);
-
 // Overrides
 protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
@@ -123,10 +121,16 @@ protected:
 	TreeNode* FindNextNode(TreeNode* pNode);
 	TreeNode* FindPrevNode(TreeNode* pNode);
 
-	int PaintNode(CDC* pDC, TreeNode* pNode);
+	int PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip);
 	TreeNode* HitTest(CPoint point, int* pnArea);
 	TreeNode* HitTest(TreeNode* pNode, CPoint point, int* pnArea);
 	void InvalidateNode(TreeNode* pNode);
+	void EnsureVisible(TreeNode* pNode);
+
+	CPoint GetScrollPosition();
+	bool OnScroll(UINT nScrollCode, UINT nPos);
+	bool OnScrollBy(CSize sz);
+	void CheckScrollBars(bool& bHasHorzBar, bool& bHasVertBar) const;
 
 	// Generated message map functions
 	afx_msg void OnPaint();
@@ -146,5 +150,7 @@ protected:
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnMouseLeave();
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint point);
+	afx_msg void OnSysColorChange();
 	DECLARE_MESSAGE_MAP()
 };

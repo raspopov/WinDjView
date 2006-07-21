@@ -50,6 +50,8 @@ public:
 	BOOL m_bHQScaling;
 	BOOL m_bWarnCloseMultiple;
 	BOOL m_bInvertWheelZoom;
+	BOOL m_bCloseOnEsc;
+	BOOL m_bWrapLongBookmarks;
 
 protected:
 	CFont m_font;

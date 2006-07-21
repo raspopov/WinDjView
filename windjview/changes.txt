@@ -4,8 +4,10 @@ Copyright (C) 2004-2006 Andrew Zhezherun
 
 Changes in version 0.4.2 (2006-):
 + Added magnifying glass tool.
++ Added option to wrap long bookmarks.
 + Added option to hide scrollbars in fullscreen mode.
 + Added option to invert direction of Ctrl+Mouse Wheel zooming.
++ Added option to close the program when Escape is pressed.
 + Added keyboard shortcuts to rotate pages, change layouts and open settings.
 * Fixed Open File dialog (.djv files were not displayed).
 * Fixed print dialog: collate option is now always available.

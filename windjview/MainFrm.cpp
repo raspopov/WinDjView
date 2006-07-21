@@ -1295,3 +1295,17 @@ CMagnifyWnd* CMainFrame::GetMagnifyWnd()
 
 	return m_pMagnifyWnd;
 }
+
+BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
+	{
+		if (IsFullscreenMode())
+			m_pFullscreenWnd->Hide();
+		else if (CAppSettings::bCloseOnEsc)
+			SendMessage(WM_CLOSE);
+		return true;
+	}
+
+	return CMDIFrameWnd::PreTranslateMessage(pMsg);
+}
