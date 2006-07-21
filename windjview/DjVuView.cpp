@@ -130,6 +130,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_WM_TIMER()
 	ON_COMMAND(ID_LAYOUT_FIRSTPAGE_ALONE, OnFirstPageAlone)
 	ON_UPDATE_COMMAND_UI(ID_LAYOUT_FIRSTPAGE_ALONE, OnUpdateFirstPageAlone)
+	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -2564,6 +2565,11 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 	CMyScrollView::OnMouseMove(nFlags, point);
 }
 
+void CDjVuView::OnMouseLeave()
+{
+	UpdateActiveHyperlink(CPoint(-1, -1));
+}
+
 void CDjVuView::SelectTextRange(int nPage, int nStart, int nEnd,
 	bool& bInfoLoaded, CWaitCursor*& pWaitCursor)
 {
@@ -4164,6 +4170,16 @@ void CDjVuView::UpdateActiveHyperlink(CPoint point)
 
 			if (m_nType == Normal)
 				GetMainFrame()->SetMessageText(MakeCString(m_pActiveLink->url));
+
+			TRACKMOUSEEVENT tme;
+
+			::ZeroMemory(&tme, sizeof(tme));
+			tme.cbSize = sizeof(tme);
+			tme.dwFlags = TME_LEAVE;
+			tme.hwndTrack = m_hWnd;
+			tme.dwHoverTime = HOVER_DEFAULT;
+
+			TrackMouseEvent(&tme);
 		}
 	}
 }

@@ -235,6 +235,10 @@ SOURCE=.\MyToolBar.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MyTreeCtrl.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\NavPane.cpp
 # End Source File
 # Begin Source File
@@ -369,6 +373,10 @@ SOURCE=.\MyStatusBar.h
 # Begin Source File
 
 SOURCE=.\MyToolBar.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MyTreeCtrl.h
 # End Source File
 # Begin Source File
 

@@ -20,33 +20,23 @@
 
 #pragma once
 
+#include "MyTreeCtrl.h"
 class CDjVuDoc;
 
 
 // CBookmarksView view
 
-class CBookmarksView : public CTreeView
+class CBookmarksView : public CMyTreeCtrl
 {
 	DECLARE_DYNAMIC(CBookmarksView)
 
 public:
-	CBookmarksView();           // protected constructor used by dynamic creation
+	CBookmarksView();
 	virtual ~CBookmarksView();
 
-// Attributes
-public:
-	CDjVuDoc* GetDocument() const { return m_pDoc; }
-	void SetDocument(CDjVuDoc* pDoc) { m_pDoc = pDoc; }
+	void InitBookmarks(CDjVuDoc* pDoc);
 
-// Overrides
-public:
-	virtual void OnInitialUpdate();
-
-#ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
-#endif
-
+// Implementation
 protected:
 	CDjVuDoc* m_pDoc;
 	CImageList m_imageList;
@@ -57,9 +47,10 @@ protected:
 	list<GUTF8String> m_links;
 
 // Generated message map functions
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint point);
+	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()
 };

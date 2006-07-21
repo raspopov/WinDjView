@@ -38,6 +38,9 @@ class CMyDocTemplate;
 
 void ReportFatalError();
 
+void CreateSystemDialogFont(CFont& font);
+UINT GetMouseScrollLines();
+
 
 // CDjViewApp
 

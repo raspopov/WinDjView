@@ -180,6 +180,7 @@ void LoadThemeAPI()
 		pGetThemeSysFont = (pfGetThemeSysFont)::GetProcAddress(hThemesDLL, "GetThemeSysFont");
 		pGetThemePartSize = (pfGetThemePartSize)::GetProcAddress(hThemesDLL, "GetThemePartSize");
 		pGetThemeColor = (pfGetThemeColor)::GetProcAddress(hThemesDLL, "GetThemeColor");
+		pGetThemeSysColor = (pfGetThemeSysColor)::GetProcAddress(hThemesDLL, "GetThemeSysColor");
 /*
 		pfGetThemeBackgroundContentRect pGetThemeBackgroundContentRect = NULL;
 		pfGetThemeBackgroundExtent pGetThemeBackgroundExtent = NULL;
@@ -200,7 +201,6 @@ void LoadThemeAPI()
 		pfGetThemeIntList pGetThemeIntList = NULL;
 		pfGetThemePropertyOrigin pGetThemePropertyOrigin = NULL;
 		pfGetThemeFilename pGetThemeFilename = NULL;
-		pfGetThemeSysColor pGetThemeSysColor = NULL;
 		pfGetThemeSysColorBrush pGetThemeSysColorBrush = NULL;
 		pfGetThemeSysBool pGetThemeSysBool = NULL;
 		pfGetThemeSysSize pGetThemeSysSize = NULL;
@@ -231,7 +231,8 @@ void LoadThemeAPI()
 		&& pDrawThemeParentBackground != NULL
 		&& pGetThemeSysFont != NULL
 		&& pGetThemePartSize != NULL
-		&& pGetThemeColor != NULL)
+		&& pGetThemeColor != NULL
+		&& pGetThemeSysColor != NULL)
 	{
 		bThemeAPILoaded = true;
 	}
@@ -371,6 +372,14 @@ HRESULT XPGetThemeColor(HTHEME hTheme, int iPartId,
 		return E_FAIL;
 
 	return pGetThemeColor(hTheme, iPartId, iStateId, iPropId, pColor);
+}
+
+COLORREF XPGetThemeSysColor(HTHEME hTheme, int iColorId)
+{
+	if (!bThemeAPILoaded)
+		return RGB(0, 0, 0);
+
+	return pGetThemeSysColor(hTheme, iColorId);
 }
 
 struct XPThemeAPI

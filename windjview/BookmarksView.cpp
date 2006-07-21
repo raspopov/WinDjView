@@ -29,13 +29,14 @@
 
 // CBookmarksView
 
-IMPLEMENT_DYNAMIC(CBookmarksView, CTreeView)
+IMPLEMENT_DYNAMIC(CBookmarksView, CMyTreeCtrl)
 
-BEGIN_MESSAGE_MAP(CBookmarksView, CTreeView)
+BEGIN_MESSAGE_MAP(CBookmarksView, CMyTreeCtrl)
 	ON_NOTIFY_REFLECT(TVN_SELCHANGED, OnSelChanged)
 	ON_NOTIFY_REFLECT(TVN_KEYDOWN, OnKeyDown)
-	ON_WM_MOUSEACTIVATE()
+//	ON_WM_MOUSEACTIVATE()
 	ON_WM_MOUSEWHEEL()
+	ON_WM_CREATE()
 END_MESSAGE_MAP()
 
 CBookmarksView::CBookmarksView()
@@ -48,36 +49,29 @@ CBookmarksView::~CBookmarksView()
 }
 
 
-// CBookmarksView diagnostics
-
-#ifdef _DEBUG
-void CBookmarksView::AssertValid() const
-{
-	CTreeView::AssertValid();
-}
-
-void CBookmarksView::Dump(CDumpContext& dc) const
-{
-	CTreeView::Dump(dc);
-}
-#endif //_DEBUG
-
-
 // CBookmarksView message handlers
 
-void CBookmarksView::OnInitialUpdate()
+int CBookmarksView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-	CTreeView::OnInitialUpdate();
+	if (CMyTreeCtrl::OnCreate(lpCreateStruct) == -1)
+		return -1;
 
 	m_imageList.Create(16, 16, ILC_COLOR24 | ILC_MASK, 0, 1);
 	CBitmap bitmap;
 	bitmap.LoadBitmap(IDB_BOOKMARKS);
 	m_imageList.Add(&bitmap, RGB(192, 64, 32));
-	GetTreeCtrl().SetImageList(&m_imageList, TVSIL_NORMAL);
+	SetImageList(&m_imageList, TVSIL_NORMAL);
 
-	GetTreeCtrl().SetItemHeight(20);
+	SetItemHeight(20);
+	SetWrapLabels(true);
 
-	InitBookmarks(GetDocument()->GetBookmarks(), TVI_ROOT, 0);
+	return 0;
+}
+
+void CBookmarksView::InitBookmarks(CDjVuDoc* pDoc)
+{
+	m_pDoc = pDoc;
+	InitBookmarks(pDoc->GetBookmarks(), TVI_ROOT, 0);
 }
 
 int CBookmarksView::InitBookmarks(GP<DjVmNav> bookmarks, HTREEITEM hParent, int nPos, int nCount)
@@ -91,10 +85,10 @@ int CBookmarksView::InitBookmarks(GP<DjVmNav> bookmarks, HTREEITEM hParent, int 
 		bookmarks->getBookMark(bm, nPos);
 
 		CString strTitle = MakeCString(bm->displayname);
-		HTREEITEM hItem = GetTreeCtrl().InsertItem(strTitle, 0, 1, hParent);
+		HTREEITEM hItem = InsertItem(strTitle, 0, 1, hParent);
 
 		m_links.push_back(bm->url);
-		GetTreeCtrl().SetItemData(hItem, (DWORD_PTR)&m_links.back());
+		SetItemData(hItem, (DWORD_PTR)&m_links.back());
 
 		nPos = InitBookmarks(bookmarks, hItem, nPos + 1, bm->count);
 	}
@@ -104,7 +98,7 @@ int CBookmarksView::InitBookmarks(GP<DjVmNav> bookmarks, HTREEITEM hParent, int 
 
 void CBookmarksView::GoToBookmark(HTREEITEM hItem)
 {
-	GUTF8String* url = (GUTF8String*)GetTreeCtrl().GetItemData(hItem);
+	GUTF8String* url = (GUTF8String*)GetItemData(hItem);
 
 	if (url->length() > 0)
 	{
@@ -133,7 +127,7 @@ void CBookmarksView::OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult)
 
 	if (pTVKeyDown->wVKey == VK_RETURN || pTVKeyDown->wVKey == VK_SPACE)
 	{
-		HTREEITEM hItem = GetTreeCtrl().GetSelectedItem();
+		HTREEITEM hItem = GetSelectedItem();
 		if (hItem != NULL)
 			GoToBookmark(hItem);
 
@@ -143,20 +137,6 @@ void CBookmarksView::OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult)
 		*pResult = 1;
 }
 
-int CBookmarksView::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
-{
-	// From MFC: CView::OnMouseActivate
-	// Don't call CFrameWnd::SetActiveView
-
-	int nResult = CWnd::OnMouseActivate(pDesktopWnd, nHitTest, message);
-	if (nResult == MA_NOACTIVATE || nResult == MA_NOACTIVATEANDEAT)
-		return nResult;
-
-	// set focus to this view, but don't notify the parent frame
-	OnActivateView(TRUE, this, this);
-	return nResult;
-}
-
 BOOL CBookmarksView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 {
 	CWnd* pWnd = WindowFromPoint(point);
@@ -164,5 +144,11 @@ BOOL CBookmarksView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 			pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
 		return true;
 
-	return CTreeView::OnMouseWheel(nFlags, zDelta, point);
+	return CMyTreeCtrl::OnMouseWheel(nFlags, zDelta, point);
+}
+
+void CBookmarksView::PostNcDestroy()
+{
+	// Should be created on heap
+	delete this;
 }

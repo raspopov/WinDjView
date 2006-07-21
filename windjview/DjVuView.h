@@ -421,6 +421,7 @@ protected:
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnFirstPageAlone();
 	afx_msg void OnUpdateFirstPageAlone(CCmdUI* pCmdUI);
+	afx_msg void OnMouseLeave();
 	DECLARE_MESSAGE_MAP()
 };
 

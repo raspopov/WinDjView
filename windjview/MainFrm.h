@@ -154,6 +154,3 @@ inline CMainFrame* GetMainFrame()
 {
 	return static_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
 }
-
-void CreateSystemDialogFont(CFont& font);
-UINT GetMouseScrollLines();
