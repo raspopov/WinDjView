@@ -22,6 +22,7 @@
 #include "WinDjView.h"
 #include "MyTreeCtrl.h"
 #include "Drawing.h"
+#include "MainFrm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -56,7 +57,7 @@ CMyTreeCtrl::CMyTreeCtrl()
 	lf.lfUnderline = true;
 	m_fontHover.CreateFontIndirect(&lf);
 
-	m_toolTip.SetTree(this);
+	m_toolTip.Create(this);
 }
 
 CMyTreeCtrl::~CMyTreeCtrl()
@@ -87,7 +88,6 @@ BEGIN_MESSAGE_MAP(CMyTreeCtrl, CWnd)
 	ON_WM_MOUSEMOVE()
 	ON_WM_SETFOCUS()
 	ON_WM_KILLFOCUS()
-	ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNeedText)
 	ON_WM_SETCURSOR()
 	ON_WM_HSCROLL()
 	ON_WM_VSCROLL()
@@ -95,6 +95,7 @@ BEGIN_MESSAGE_MAP(CMyTreeCtrl, CWnd)
 	ON_WM_KEYDOWN()
 	ON_WM_MOUSEWHEEL()
 	ON_WM_SYSCOLORCHANGE()
+	ON_WM_LBUTTONDBLCLK()
 END_MESSAGE_MAP()
 
 
@@ -105,11 +106,13 @@ BOOL CMyTreeCtrl::PreCreateWindow(CREATESTRUCT& cs)
 	if (!CWnd::PreCreateWindow(cs))
 		return false;
 
+	static CString strWndClass = AfxRegisterWndClass(CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,
+		::LoadCursor(NULL, IDC_ARROW), HBRUSH(COLOR_WINDOW + 1), NULL);
+
 	cs.dwExStyle |= WS_EX_CLIENTEDGE;
 	cs.style |= WS_HSCROLL | WS_VSCROLL;
 	cs.style &= ~WS_BORDER;
-	cs.lpszClass = AfxRegisterWndClass(CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,
-		::LoadCursor(NULL, IDC_ARROW), HBRUSH(COLOR_WINDOW + 1), NULL);
+	cs.lpszClass = strWndClass;
 
 	return true;
 }
@@ -166,12 +169,12 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 
 	int nBottom = pNode->rcNode.bottom;
 
-	CRect rcIntersect;
-	if (pNode != m_pRoot && rcIntersect.IntersectRect(rcClip, pNode->rcNode - ptOffset))
-	{
-		CRect rcLine(pNode->rcNode);
-		rcLine.right = m_szDisplay.cx;
+	CRect rcLine(pNode->rcNode);
+	rcLine.right = m_szDisplay.cx;
 
+	CRect rcIntersect;
+	if (pNode != m_pRoot && rcIntersect.IntersectRect(rcClip, rcLine - ptOffset))
+	{
 		COLORREF crBackground = ::GetSysColor(COLOR_WINDOW);
 		pDC->FillSolidRect(rcLine - ptOffset, crBackground);
 
@@ -482,16 +485,21 @@ void CMyTreeCtrl::RecalcLayout()
 	{
 		int nTop = 0;
 		int nLevel = 0;
-		stack<TreeNode*> s;
-		s.push(m_pRoot);
+		stack<pair<TreeNode*, bool> > s;
+		s.push(make_pair(m_pRoot, true));
+
+		m_items.clear();
 
 		bContinue = false;
 		m_szDisplay = CSize(0, 0);
 		while (!s.empty())
 		{
-			TreeNode* pNode = s.top();
-			if (pNode != m_pRoot)
+			TreeNode* pNode = s.top().first;
+			if (pNode != m_pRoot && s.top().second)
 			{
+				pNode->nIndex = m_items.size();
+				m_items.push_back(pNode);
+
 				pNode->rcNode.left = s_nOffsetLeft + (nLevel - 1)*nChildOffset;
 				pNode->rcNode.top = nTop;
 				pNode->rcNode.bottom = nTop + m_nItemHeight;
@@ -530,34 +538,40 @@ void CMyTreeCtrl::RecalcLayout()
 				int nHeight = dc.DrawText(pNode->strLabel, pNode->rcText, nFlags);
 				pNode->rcText.bottom = pNode->rcText.top + nHeight;
 
-				pNode->rcNode.left = 0;
-				pNode->rcNode.right = pNode->rcText.right;
 				pNode->rcNode.bottom = max(pNode->rcNode.bottom, pNode->rcText.bottom + 2);
 				pNode->rcNode.bottom += (pNode->rcNode.bottom % 2);
 
 				pNode->rcLabel = pNode->rcText;
 				pNode->rcLabel.left -= s_nTextOffset;
+				pNode->rcLabel.right += s_nOffsetRight;
 				pNode->rcLabel.top = pNode->rcNode.top;
 				pNode->rcLabel.bottom = pNode->rcNode.bottom;
+
+				pNode->rcNode.left = 0;
+				pNode->rcNode.right = pNode->rcLabel.right;
 
 				m_szDisplay.cx = max(m_szDisplay.cx, pNode->rcNode.Width());
 				nTop = pNode->rcNode.bottom;
 			}
-
-			if (pNode->HasChildren() && !pNode->bCollapsed)
+			else
 			{
-				s.push(pNode->pChild);
+				pNode->nIndex = -1;
+			}
+
+			if (pNode->HasChildren())
+			{
+				s.push(make_pair(pNode->pChild, s.top().second && !pNode->bCollapsed));
 				++nLevel;
 			}
 			else
 			{
-				while (!s.empty() && s.top()->pNext == NULL)
+				while (!s.empty() && s.top().first->pNext == NULL)
 				{
 					s.pop();
 					--nLevel;
 				}
 				if (!s.empty())
-					s.top() = s.top()->pNext;
+					s.top().first = s.top().first->pNext;
 			}
 		}
 
@@ -639,22 +653,6 @@ int CMyTreeCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (XPIsAppThemed() && XPIsThemeActive())
 		m_hTheme = XPOpenThemeData(m_hWnd, L"TREEVIEW");
 
-	if (m_toolTip.Create(this, TTS_ALWAYSTIP | TTS_NOPREFIX))
-	{
-		TOOLINFO info;
-		info.cbSize = sizeof(TOOLINFO);
-		info.uFlags = TTF_IDISHWND | TTF_SUBCLASS | TTF_ABSOLUTE | TTF_TRACK/* | TTF_TRANSPARENT*/;
-		info.hwnd = m_hWnd;
-		info.uId = (UINT)m_hWnd;
-		info.hinst = AfxGetInstanceHandle();
-		info.lpszText = LPSTR_TEXTCALLBACK;
-		info.rect = CRect(0, 0, 0, 0);
-		m_toolTip.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&info);
-
-		m_toolTip.SetFont(&m_font);
-		m_toolTip.Activate(true);
-	}
-
 	return 0;
 }
 
@@ -691,6 +689,7 @@ LRESULT CMyTreeCtrl::OnThemeChanged(WPARAM wParam, LPARAM lParam)
 	if (XPIsAppThemed() && XPIsThemeActive())
 		m_hTheme = XPOpenThemeData(m_hWnd, L"TREEVIEW");
 
+	RecalcLayout();
 	Invalidate();
 
 	return 0;
@@ -708,13 +707,11 @@ void CMyTreeCtrl::OnLButtonDown(UINT nFlags, CPoint point)
 	int nArea;
 	TreeNode* pNode = HitTest(point, &nArea);
 
-	TreeNode* pNewSel = m_pSelection;
-
 	if (pNode != NULL)
 	{
 		if (nArea == HT_IMAGE || nArea == HT_LABEL)
 		{
-			pNewSel = pNode;
+			SelectNode(pNode, TVC_BYMOUSE);
 		}
 		else if (nArea == HT_GLYPH)
 		{
@@ -724,8 +721,6 @@ void CMyTreeCtrl::OnLButtonDown(UINT nFlags, CPoint point)
 			}
 		}
 	}
-
-	SelectNode(pNewSel, TVC_BYMOUSE);
 
 	CWnd::OnLButtonDown(nFlags, point);
 }
@@ -770,49 +765,6 @@ void CMyTreeCtrl::InvalidateNode(TreeNode* pNode)
 {
 	CPoint ptOffset = GetScrollPosition();
 	InvalidateRect(pNode->rcNode + (-ptOffset));
-}
-
-BOOL CMyTreeCtrl::OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult)
-{
-	TOOLTIPTEXT* pTTT = (TOOLTIPTEXT*)pNMHDR;
-
-	CPoint ptCursor;
-	::GetCursorPos(&ptCursor);
-	ScreenToClient(&ptCursor);
-
-	CRect rcClient;
-	GetClientRect(rcClient);
-
-	// Ensure that the cursor is in the client rect, because main frame
-	// also wants these messages to provide tooltips for the toolbar
-	if (!rcClient.PtInRect(ptCursor))
-		return false;
-
-	CPoint ptOffset = GetScrollPosition();
-
-	if (m_pHoverNode != NULL)
-	{
-		m_strToolTip = m_pHoverNode->strLabel;
-		pTTT->lpszText = m_strToolTip.GetBuffer(0);
-
-		m_toolTip.SetWindowPos(&wndTopMost, 0, 0, 0, 0,
-				SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER);
-	}
-	else
-	{
-		pTTT->lpszText = pTTT->szText;
-		pTTT->szText[0] = '\0';
-	}
-
-	return true;
-}
-
-BOOL CMyTreeCtrl::PreTranslateMessage(MSG* pMsg)
-{
-	if (::IsWindow(m_toolTip.m_hWnd))
-		m_toolTip.RelayEvent(pMsg);
-
-	return CWnd::PreTranslateMessage(pMsg);
 }
 
 void CMyTreeCtrl::OnMouseMove(UINT nFlags, CPoint point)
@@ -864,12 +816,7 @@ void CMyTreeCtrl::SetHoverNode(TreeNode* pNode)
 		if (m_pHoverNode != NULL)
 		{
 			InvalidateNode(m_pHoverNode);
-
-			TOOLINFO info;
-			info.cbSize = sizeof(TOOLINFO);
-			info.hwnd = m_hWnd;
-			info.uId = (UINT)m_hWnd;
-			m_toolTip.SendMessage(TTM_TRACKACTIVATE, false, reinterpret_cast<LPARAM>(&info));
+			m_toolTip.Hide();
 
 			m_bMouseInTooltip = false;
 			++m_toolTip.m_nNextCode;
@@ -892,22 +839,21 @@ void CMyTreeCtrl::SetHoverNode(TreeNode* pNode)
 				CPoint ptTooltip = pNode->rcLabel.TopLeft() + (-ptOffset);
 				ptTooltip.Offset(s_nTextOffset - 3, 0);
 
-				ClientToScreen(&ptTooltip);
-				m_toolTip.SendMessage(TTM_TRACKPOSITION, 0, MAKELPARAM(ptTooltip.x, ptTooltip.y));
+				CRect rcTooltip(pNode->rcLabel);
+				rcTooltip.DeflateRect(s_nTextOffset - 3, 0, 0, 0);
 
-				m_toolTip.SetMaxTipWidth(pNode->rcLabel.Width() - s_nTextOffset);
-				m_toolTip.SetMargin(CRect(0, 1, 0, max(0, pNode->rcNode.bottom - pNode->rcText.bottom - 2)));
+				CRect rcTooltipText(pNode->rcText - rcTooltip.TopLeft());
+				rcTooltip -= ptOffset;
+				ClientToScreen(rcTooltip);
 
 				m_bMouseInTooltip = true;
 				++m_toolTip.m_nNextCode;
 
-				TOOLINFO info;
-				info.cbSize = sizeof(TOOLINFO);
-				info.hwnd = m_hWnd;
-				info.uId = (UINT)m_hWnd;
-				m_toolTip.SendMessage(TTM_TRACKACTIVATE, true, reinterpret_cast<LPARAM>(&info));
+				m_toolTip.Show(pNode->strLabel, m_bWrapLabels, rcTooltip, rcTooltipText);
 			}
 		}
+
+		GetMainFrame()->UpdateWindow();
 	}
 }
 
@@ -1180,9 +1126,11 @@ void CMyTreeCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		break;
 
 	case VK_NEXT:
+		pSelectNode = FindNextPageNode(m_pSelection);
 		break;
 
 	case VK_PRIOR:
+		pSelectNode = FindPrevPageNode(m_pSelection);
 		break;
 	}
 
@@ -1243,58 +1191,68 @@ void CMyTreeCtrl::ToggleNode(TreeNode* pNode)
 {
 	pNode->bCollapsed = !pNode->bCollapsed;
 	RecalcLayout();
+
+	if (m_pSelection != NULL && m_pSelection->nIndex == -1)
+		SelectNode(pNode);
 }
 
 CMyTreeCtrl::TreeNode* CMyTreeCtrl::FindNextNode(TreeNode* pNode)
 {
 	if (pNode == NULL)
-		pNode = m_pRoot;
+		return (m_items.empty() ? NULL : m_items.front());
 
-	if (pNode->HasChildren() && !pNode->bCollapsed)
-		return pNode->pChild;
-	else if (pNode->pNext != NULL)
-		return pNode->pNext;
-	else
-	{
-		for (pNode = pNode->pParent; pNode != NULL && pNode != m_pRoot; pNode = pNode->pParent)
-		{
-			if (pNode->pNext != NULL)
-				return pNode->pNext;
-		}
-	}
+	if (pNode->nIndex == -1 || pNode->nIndex + 1 == m_items.size())
+		return NULL;
 
-	return NULL;
+	return m_items[pNode->nIndex + 1];
 }
 
 CMyTreeCtrl::TreeNode* CMyTreeCtrl::FindPrevNode(TreeNode* pNode)
 {
-	if (pNode == m_pRoot || m_pRoot->pChild == NULL)
+	if (pNode == NULL)
+		return (m_items.empty() ? NULL : m_items.back());
+
+	if (pNode->nIndex == -1 || pNode->nIndex == 0)
 		return NULL;
 
+	return m_items[pNode->nIndex - 1];
+}
+
+CMyTreeCtrl::TreeNode* CMyTreeCtrl::FindNextPageNode(TreeNode* pNode)
+{
 	if (pNode == NULL)
-	{
-		pNode = m_pRoot->pChild;
-		while (pNode->HasSibling() || pNode->HasChildren() && !pNode->bCollapsed)
-			pNode = pNode->HasSibling() ? pNode->pNext : pNode->pChild;
-		return pNode;
-	}
+		return (m_items.empty() ? NULL : m_items.front());
 
-	TreeNode* pParent = pNode->pParent;
-	if (pParent->pChild == pNode)
-		return pParent == m_pRoot ? NULL : pParent;
+	if (pNode->nIndex == -1 || pNode->nIndex + 1 == m_items.size())
+		return NULL;
 
-	TreeNode* pPrev = pParent->pChild;
-	while (pPrev->pNext != pNode)
-		pPrev = pPrev->pNext;
+	CRect rcClient;
+	GetClientRect(rcClient);
 
-	if (pPrev->HasChildren() && !pPrev->bCollapsed)
-	{
-		pPrev = pPrev->pChild;
-		while (pPrev->HasSibling() || pPrev->HasChildren() && !pPrev->bCollapsed)
-			pPrev = pPrev->HasSibling() ? pPrev->pNext : pPrev->pChild;
-	}
+	int nIndex = pNode->nIndex + 1;
+	while (nIndex + 1 < static_cast<int>(m_items.size()) &&
+			m_items[nIndex + 1]->rcNode.bottom <= pNode->rcNode.top + rcClient.Height())
+		++nIndex;
 
-	return pPrev;
+	return m_items[nIndex];
+}
+
+CMyTreeCtrl::TreeNode* CMyTreeCtrl::FindPrevPageNode(TreeNode* pNode)
+{
+	if (pNode == NULL)
+		return (m_items.empty() ? NULL : m_items.back());
+
+	if (pNode->nIndex == -1 || pNode->nIndex == 0)
+		return NULL;
+
+	CRect rcClient;
+	GetClientRect(rcClient);
+
+	int nIndex = pNode->nIndex - 1;
+	while (nIndex >= 1 && m_items[nIndex - 1]->rcNode.top >= pNode->rcNode.bottom - rcClient.Height())
+		--nIndex;
+
+	return m_items[nIndex];
 }
 
 void CMyTreeCtrl::SetItemData(HTREEITEM hItem, DWORD_PTR dwData)
@@ -1391,6 +1349,60 @@ void CMyTreeCtrl::EnsureVisible(TreeNode* pNode)
 	OnScrollBy(CSize(0, nScroll));
 }
 
+void CMyTreeCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	int nArea;
+	TreeNode* pNode = HitTest(point, &nArea);
+
+	if (pNode != NULL && (nArea == HT_IMAGE || nArea == HT_LABEL) && pNode->HasChildren())
+	{
+		ToggleNode(pNode);
+		return;
+	}
+
+	CWnd::OnLButtonDblClk(nFlags, point);
+}
+
+BOOL CMyTreeCtrl::CTreeToolTip::Create(CMyTreeCtrl* pTree)
+{
+	static CString strWndClass = AfxRegisterWndClass(0);
+
+	m_pTree = pTree;
+
+	CWnd* pParent = NULL;
+	OSVERSIONINFO vi;
+	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
+			vi.dwMajorVersion >= 5)
+	{
+		pParent = GetMainFrame();
+	}
+
+	return CreateEx(WS_EX_LEFT | WS_EX_TOPMOST, strWndClass, NULL, WS_POPUP,
+		CRect(0, 0, 0, 0), pParent, 0);
+}
+
+void CMyTreeCtrl::CTreeToolTip::Show(const CString& strText,
+	bool bWrap, const CRect& rcWindow, const CRect& rcText)
+{
+	m_strText = strText;
+	m_bWrap = bWrap;
+	m_rcText = rcText;
+
+	MoveWindow(rcWindow.left, rcWindow.top, rcWindow.Width(), rcWindow.Height());
+	ShowWindow(SW_SHOWNOACTIVATE);
+	SetWindowPos(&wndTopMost, 0, 0, 0, 0,
+			SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER);
+
+	Invalidate();
+	UpdateWindow();
+}
+
+void CMyTreeCtrl::CTreeToolTip::Hide()
+{
+	ShowWindow(SW_HIDE);
+}
+
 BOOL CMyTreeCtrl::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 {
 	if (message == WM_MOUSEMOVE)
@@ -1405,14 +1417,6 @@ BOOL CMyTreeCtrl::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lPa
 
 		m_nMouseLeaveCode = m_nNextCode;
 		::TrackMouseEvent(&tme);
-	}
-	else if (message == WM_NCMOUSEMOVE)
-	{
-		CPoint ptCursor;
-		::GetCursorPos(&ptCursor);
-		m_pTree->ScreenToClient(&ptCursor);
-
-		m_pTree->OnMouseMove(0, ptCursor);
 	}
 	else if (message == WM_MOUSEACTIVATE)
 	{
@@ -1453,11 +1457,35 @@ BOOL CMyTreeCtrl::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lPa
 	}
 	else if (message == WM_MOUSEWHEEL)
 	{
-		LRESULT lResult = m_pTree->SendMessage(WM_MOUSEWHEEL, wParam, lParam);
+		UINT nFlags = LOWORD(wParam);
+		short zDelta = (short) HIWORD(wParam);
+		CPoint point(LOWORD(lParam), HIWORD(lParam));
+
+		LRESULT lResult = (LRESULT) m_pTree->OnMouseWheel(nFlags, zDelta, point);
 		if (pResult != NULL)
 			*pResult = lResult;
 		return true;
 	}
+	else if (message == WM_PAINT)
+	{
+		CPaintDC dcPaint(this);
+		CFont* pOldFont = dcPaint.SelectObject(&m_pTree->m_font);
 
-	return CToolTipCtrl::OnWndMsg(message, wParam, lParam, pResult);
+		CRect rcClient;
+		GetClientRect(rcClient);
+
+		FrameRect(&dcPaint, rcClient, ::GetSysColor(COLOR_INFOTEXT));
+
+		rcClient.DeflateRect(1, 1);
+		dcPaint.FillSolidRect(rcClient, ::GetSysColor(COLOR_INFOBK));
+
+		UINT nFlags = DT_LEFT | DT_NOPREFIX | DT_TOP | (m_bWrap ? DT_WORDBREAK : DT_SINGLELINE);
+		dcPaint.SetTextColor(::GetSysColor(COLOR_INFOTEXT));
+		dcPaint.DrawText(m_strText, m_rcText, nFlags);
+
+		dcPaint.SelectObject(pOldFont);
+		return true;
+	}
+
+	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
 }

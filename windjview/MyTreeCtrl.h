@@ -48,17 +48,22 @@ public:
 // Overrides
 protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 // Implementation
 protected:
-	class CTreeToolTip : public CToolTipCtrl
+	class CTreeToolTip : public CWnd
 	{
 	public:
 		CTreeToolTip() : m_pTree(NULL), m_nNextCode(0), m_nMouseLeaveCode(0) {}
-		void SetTree(CMyTreeCtrl* pTree) { m_pTree = pTree; }
+		BOOL Create(CMyTreeCtrl* pTree);
+		void Show(const CString& strText, bool bWrap, const CRect& rcWindow, const CRect& rcText);
+		void Hide();
+
 		CMyTreeCtrl* m_pTree;
+		CString m_strText;
+		CRect m_rcText;
 		int m_nNextCode, m_nMouseLeaveCode;
+		bool m_bWrap;
 
 		virtual BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 	};
@@ -86,9 +91,13 @@ protected:
 		TreeNode* pChild;
 		TreeNode* pNext;
 
+		int nIndex;
+
 		bool HasChildren() const { return pChild != NULL; }
 		bool HasSibling() const { return pNext != NULL; }
 	};
+
+	vector<TreeNode*> m_items;
 
 	enum HitTestArea
 	{
@@ -120,6 +129,8 @@ protected:
 	void ToggleNode(TreeNode* pNode);
 	TreeNode* FindNextNode(TreeNode* pNode);
 	TreeNode* FindPrevNode(TreeNode* pNode);
+	TreeNode* FindNextPageNode(TreeNode* pNode);
+	TreeNode* FindPrevPageNode(TreeNode* pNode);
 
 	int PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip);
 	TreeNode* HitTest(CPoint point, int* pnArea);
@@ -141,8 +152,7 @@ protected:
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-	LRESULT OnThemeChanged(WPARAM wParam, LPARAM lParam);
-	afx_msg BOOL OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg LRESULT OnThemeChanged(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnKillFocus(CWnd* pNewWnd);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
@@ -152,5 +162,6 @@ protected:
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint point);
 	afx_msg void OnSysColorChange();
+	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	DECLARE_MESSAGE_MAP()
 };

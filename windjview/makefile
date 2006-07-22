@@ -76,6 +76,7 @@ LINK_OBJS = \
 	"$(INTDIR)\MyStatusBar.obj" \
 	"$(INTDIR)\MyTheme.obj" \
 	"$(INTDIR)\MyToolBar.obj" \
+	"$(INTDIR)\MyTreeCtrl.obj" \
 	"$(INTDIR)\NavPane.obj" \
 	"$(INTDIR)\PrintDlg.obj" \
 	"$(INTDIR)\ProgressDlg.obj" \
@@ -115,6 +116,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\MyStatusBar.obj" : MyStatusBar.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyTheme.obj" : MyTheme.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyToolBar.obj" : MyToolBar.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MyTreeCtrl.obj" : MyTreeCtrl.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\NavPane.obj" : NavPane.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\PrintDlg.obj" : PrintDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\ProgressDlg.obj"	: ProgressDlg.cpp "$(INTDIR)" $(PCH)
