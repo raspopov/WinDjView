@@ -3047,8 +3047,11 @@ void CDjVuView::PageRendered(int nPage, CDIB* pDIB)
 
 void CDjVuView::OnDestroy()
 {
-	m_pRenderThread->Delete();
-	m_pRenderThread = NULL;
+	if (m_pRenderThread != NULL)
+	{
+		m_pRenderThread->Delete();
+		m_pRenderThread = NULL;
+	}
 
 	KillTimer(m_nTimerID);
 	ShowCursor();
