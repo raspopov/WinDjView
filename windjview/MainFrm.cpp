@@ -134,11 +134,6 @@ CMainFrame::CMainFrame()
 
 CMainFrame::~CMainFrame()
 {
-	if (m_pFindDlg != NULL)
-	{
-		m_pFindDlg->DestroyWindow();
-		delete m_pFindDlg;
-	}
 }
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -1102,8 +1097,8 @@ void CMainFrame::OnLanguageChanged()
 	if (m_pFindDlg != NULL)
 	{
 		m_pFindDlg->UpdateData();
-		CString strFind = m_pFindDlg->m_strFind;
-		bool bMatchCase = !!m_pFindDlg->m_bMatchCase;
+		CAppSettings::strFind = m_pFindDlg->m_strFind;
+		CAppSettings::bMatchCase = !!m_pFindDlg->m_bMatchCase;
 
 		bool bVisible = !!m_pFindDlg->IsWindowVisible();
 
@@ -1113,8 +1108,6 @@ void CMainFrame::OnLanguageChanged()
 		delete m_pFindDlg;
 
 		m_pFindDlg = new CFindDlg();
-		m_pFindDlg->m_strFind = strFind;
-		m_pFindDlg->m_bMatchCase = bMatchCase;
 		m_pFindDlg->Create(IDD_FIND, this);
 
 		CRect rcNewFindDlg;
@@ -1264,6 +1257,17 @@ void CMainFrame::OnClose()
 		m_pMagnifyWnd->Hide();
 		m_pMagnifyWnd->DestroyWindow();
 		m_pMagnifyWnd = NULL;
+	}
+
+	if (m_pFindDlg != NULL)
+	{
+		m_pFindDlg->UpdateData();
+		CAppSettings::strFind = m_pFindDlg->m_strFind;
+		CAppSettings::bMatchCase = !!m_pFindDlg->m_bMatchCase;
+
+		m_pFindDlg->DestroyWindow();
+		delete m_pFindDlg;
+		m_pFindDlg = NULL;
 	}
 
 	CMDIFrameWnd::OnClose();

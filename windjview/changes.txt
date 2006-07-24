@@ -2,7 +2,7 @@ WinDjView changes history
 Copyright (C) 2004-2006 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 0.4.2 (2006-):
+Changes in version 0.4.2 (2006-07-24):
 + Added magnifying glass tool.
 + Added option to wrap long bookmarks.
 + Added option to hide scrollbars in fullscreen mode.

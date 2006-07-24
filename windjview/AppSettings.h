@@ -117,4 +117,7 @@ struct CAppSettings
 	static bool bLocalized;
 	static HMENU hDjVuMenu;
 	static HMENU hDefaultMenu;
+
+	static CString strFind;
+	static bool bMatchCase;
 };

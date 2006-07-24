@@ -773,14 +773,14 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 
 		if (updateType == TOP)
 		{
-			nAnchorPage = GetCurrentPage();
+			nAnchorPage = CalcTopPage();
 			ptAnchorOffset = ptTop - m_pages[nAnchorPage].ptOffset;
 		}
 		else if (updateType == BOTTOM)
 		{
 			CPoint ptBottom = ptTop + rcClient.Size();
 
-			int nPage = GetCurrentPage();
+			int nPage = CalcTopPage();
 			while (nPage < m_nPageCount - 1 &&
 					ptBottom.y >= m_pages[nPage].ptOffset.y + m_pages[nPage].szDisplay.cy)
 				++nPage;
@@ -880,14 +880,14 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 
 		if (updateType == TOP)
 		{
-			nAnchorPage = GetCurrentPage();
+			nAnchorPage = CalcTopPage();
 			ptAnchorOffset = ptTop - m_pages[nAnchorPage].ptOffset;
 		}
 		else if (updateType == BOTTOM)
 		{
 			CPoint ptBottom = ptTop + rcClient.Size();
 
-			int nPage = GetCurrentPage();
+			int nPage = CalcTopPage();
 			while (nPage < m_nPageCount - 1 &&
 				ptBottom.y > m_pages[nPage].rcDisplay.bottom)
 				++nPage;

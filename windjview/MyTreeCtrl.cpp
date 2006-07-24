@@ -288,61 +288,6 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 			// Draw glyph
 			if (m_hTheme != NULL)
 			{
-/*				COLORREF color;
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_BORDERCOLOR, &color);
-				TRACE(_T("Color TMT_BORDERCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_FILLCOLOR, &color);
-				TRACE(_T("Color TMT_FILLCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_TEXTCOLOR, &color);
-				TRACE(_T("Color TMT_TEXTCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_EDGELIGHTCOLOR, &color);
-				TRACE(_T("Color TMT_EDGELIGHTCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_EDGEHIGHLIGHTCOLOR, &color);
-				TRACE(_T("Color TMT_EDGEHIGHLIGHTCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_EDGESHADOWCOLOR, &color);
-				TRACE(_T("Color TMT_EDGESHADOWCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_EDGEDKSHADOWCOLOR, &color);
-				TRACE(_T("Color TMT_EDGEDKSHADOWCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_EDGEFILLCOLOR, &color);
-				TRACE(_T("Color TMT_EDGEFILLCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_TRANSPARENTCOLOR, &color);
-				TRACE(_T("Color TMT_TRANSPARENTCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_GRADIENTCOLOR1, &color);
-				TRACE(_T("Color TMT_GRADIENTCOLOR1: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_GRADIENTCOLOR2, &color);
-				TRACE(_T("Color TMT_GRADIENTCOLOR2: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_GRADIENTCOLOR3, &color);
-				TRACE(_T("Color TMT_GRADIENTCOLOR3: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_GRADIENTCOLOR4, &color);
-				TRACE(_T("Color TMT_GRADIENTCOLOR4: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_GRADIENTCOLOR5, &color);
-				TRACE(_T("Color TMT_GRADIENTCOLOR5: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_SHADOWCOLOR, &color);
-				TRACE(_T("Color TMT_SHADOWCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_GLOWCOLOR, &color);
-				TRACE(_T("Color TMT_GLOWCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_TEXTBORDERCOLOR, &color);
-				TRACE(_T("Color TMT_TEXTBORDERCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_TEXTSHADOWCOLOR, &color);
-				TRACE(_T("Color TMT_TEXTSHADOWCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_GLYPHTEXTCOLOR, &color);
-				TRACE(_T("Color TMT_GLYPHTEXTCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_GLYPHTRANSPARENTCOLOR, &color);
-				TRACE(_T("Color TMT_GLYPHTRANSPARENTCOLOR: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_FILLCOLORHINT, &color);
-				TRACE(_T("Color TMT_FILLCOLORHINT: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_BORDERCOLORHINT, &color);
-				TRACE(_T("Color TMT_BORDERCOLORHINT: %08x\n"), color);
-				XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_ACCENTCOLORHINT, &color);
-				TRACE(_T("Color TMT_ACCENTCOLORHINT: %08x\n"), color);
-
-				color = XPGetThemeSysColor(m_hTheme, TMT_BTNFACE);
-				TRACE(_T("Color TMT_BTNFACE: %08x\n"), color);
-				color = XPGetThemeSysColor(m_hTheme, TMT_BTNSHADOW);
-				TRACE(_T("Color TMT_BTNSHADOW: %08x\n"), color);
-				color = XPGetThemeSysColor(m_hTheme, TMT_HOTTRACKING);
-				TRACE(_T("Color TMT_HOTTRACKING: %08x\n"), color);
-*/
 				int iGlyph = (pNode->bCollapsed ? GLPS_CLOSED : GLPS_OPENED);
 
 				XPDrawThemeBackground(m_hTheme, pDC->m_hDC, TVP_GLYPH, iGlyph, pNode->rcGlyph - ptOffset, NULL);

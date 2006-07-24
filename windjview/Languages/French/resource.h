@@ -150,7 +150,6 @@
 #define IDC_CONTRAST_TEXT               1052
 #define IDC_GAMMA_TEXT                  1053
 #define IDC_SEARCH_STATUS               1054
-#define IDC_MERGE_FACING                1054
 #define IDC_PAGE                        1055
 #define IDC_CLOSE_ON_ESC                1055
 #define IDC_PAGE_COUNT                  1056

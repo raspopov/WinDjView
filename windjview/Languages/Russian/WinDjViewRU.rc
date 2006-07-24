@@ -526,13 +526,13 @@ BEGIN
     PUSHBUTTON      "Отмена",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 249, 309
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 249, 295
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Настройки"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,137,288,50,14
-    PUSHBUTTON      "Отмена",IDCANCEL,192,288,50,14
+    DEFPUSHBUTTON   "OK",IDOK,137,274,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,192,274,50,14
     LTEXT           "Связать файлы .djvu и .djv с программой WinDjView:",
                     IDC_STATIC,15,18,182,9
     PUSHBUTTON      "&Связать",IDC_ASSOCIATE,15,30,50,14
@@ -552,24 +552,21 @@ BEGIN
                     IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
                     197,224,10
     CONTROL         "&Применить коррекцию изображения",IDC_ADJUST_DISPLAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,225,153,9
-    LTEXT           "&Яркость: 0",IDC_BRIGHTNESS_TEXT,15,239,61,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,238,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,211,153,9
+    LTEXT           "&Яркость: 0",IDC_BRIGHTNESS_TEXT,15,225,61,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,224,
                     160,12
-    LTEXT           "&Контраст: 0",IDC_CONTRAST_TEXT,15,252,55,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,251,
+    LTEXT           "&Контраст: 0",IDC_CONTRAST_TEXT,15,238,55,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,237,
                     160,12
-    LTEXT           "&Гамма: 1.0",IDC_GAMMA_TEXT,15,265,45,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,264,160,
+    LTEXT           "&Гамма: 1.0",IDC_GAMMA_TEXT,15,251,45,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,250,160,
                     12
     GROUPBOX        "Типы файлов",IDC_STATIC,7,7,235,58
     GROUPBOX        "Разное",IDC_STATIC,7,69,235,112
-    GROUPBOX        "Отображение",IDC_STATIC,7,185,235,96
-    LTEXT           "WinDjView\n(C) Андрей Жежерун",IDC_STATIC_ABOUT,7,288,
+    GROUPBOX        "Отображение",IDC_STATIC,7,185,235,82
+    LTEXT           "WinDjView\n(C) Андрей Жежерун",IDC_STATIC_ABOUT,7,274,
                     92,18
-    CONTROL         "Скл&еивать соседние страницы при отображении",
-                    IDC_MERGE_FACING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    15,211,195,9
     CONTROL         "Всегда прятать полосы прокр&утки в полноэкранном режиме",
                     IDC_FULLSCREEN_HIDESCROLL,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,123,219,10
@@ -715,7 +712,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 242
         TOPMARGIN, 7
-        BOTTOMMARGIN, 302
+        BOTTOMMARGIN, 288
     END
 
     IDD_FIND, DIALOG

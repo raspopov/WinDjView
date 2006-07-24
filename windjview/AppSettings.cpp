@@ -77,3 +77,6 @@ CString CAppSettings::strVersion;
 bool CAppSettings::bLocalized = false;
 HMENU CAppSettings::hDjVuMenu = NULL;
 HMENU CAppSettings::hDefaultMenu = NULL;
+
+CString CAppSettings::strFind;
+bool CAppSettings::bMatchCase = false;

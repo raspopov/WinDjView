@@ -74,6 +74,8 @@ const TCHAR* s_pszCloseOnEsc = _T("close-on-esc");
 const TCHAR* s_pszWrapLongBookmarks = _T("wrap-long-bookmarks");
 const TCHAR* s_pszVersion = _T("version");
 const TCHAR* s_pszLanguage = _T("language");
+const TCHAR* s_pszFind = _T("find");
+const TCHAR* s_pszMatchCase = _T("match-case");
 
 const TCHAR* s_pszPrintSettings = _T("Print");
 const TCHAR* s_pszMarginLeft = _T("m-left");
@@ -433,6 +435,8 @@ void CDjViewApp::LoadSettings()
 	CAppSettings::bWrapLongBookmarks = !!GetProfileInt(s_pszGlobalSettings, s_pszWrapLongBookmarks, 1);
 	CAppSettings::strVersion = GetProfileString(s_pszGlobalSettings, s_pszVersion, _T(""));
 	CAppSettings::strLanguage = GetProfileString(s_pszGlobalSettings, s_pszLanguage, _T(""));
+	CAppSettings::strFind = GetProfileString(s_pszGlobalSettings, s_pszFind, _T(""));
+	CAppSettings::bMatchCase = !!GetProfileInt(s_pszGlobalSettings, s_pszMatchCase, 0);
 
 	CDisplaySettings& ds = CAppSettings::displaySettings;
 	ds.nScaleMethod = GetProfileInt(s_pszDisplaySettings, s_pszScaleMethod, CDisplaySettings::Default);
@@ -482,6 +486,8 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszGlobalSettings, s_pszWrapLongBookmarks, CAppSettings::bWrapLongBookmarks);
 	WriteProfileString(s_pszGlobalSettings, s_pszVersion, CURRENT_VERSION);
 	WriteProfileString(s_pszGlobalSettings, s_pszLanguage, CAppSettings::strLanguage);
+	WriteProfileString(s_pszGlobalSettings, s_pszFind, CAppSettings::strFind);
+	WriteProfileInt(s_pszGlobalSettings, s_pszMatchCase, CAppSettings::bMatchCase);
 
 	CDisplaySettings& ds = CAppSettings::displaySettings;
 	WriteProfileInt(s_pszDisplaySettings, s_pszScaleMethod, ds.nScaleMethod);

@@ -22,6 +22,7 @@
 #include "WinDjView.h"
 #include "FindDlg.h"
 #include "MainFrm.h"
+#include "AppSettings.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -32,8 +33,10 @@
 
 IMPLEMENT_DYNAMIC(CFindDlg, CDialog)
 CFindDlg::CFindDlg(CWnd* pParent)
-	: CDialog(CFindDlg::IDD, pParent), m_strFind(_T("")), m_bMatchCase(FALSE)
+	: CDialog(CFindDlg::IDD, pParent)
 {
+	m_strFind = CAppSettings::strFind;
+	m_bMatchCase = CAppSettings::bMatchCase;
 }
 
 CFindDlg::~CFindDlg()
