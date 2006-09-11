@@ -95,18 +95,19 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 
 		GetMainFrame()->m_cboPage.EnableWindow(true);
 		GetMainFrame()->m_cboZoom.EnableWindow(true);
+
+		GetMainFrame()->UpdatePageCombo();
+		GetMainFrame()->UpdateZoomCombo();
 	}
 	else if (pActivateWnd == NULL)
 	{
+		GetMainFrame()->m_cboPage.SetWindowText(_T(""));
 		GetMainFrame()->m_cboPage.ResetContent();
 		GetMainFrame()->m_cboPage.EnableWindow(false);
 
-		GetMainFrame()->m_cboZoom.SetWindowText(_T("100%"));
+		GetMainFrame()->m_cboZoom.SetWindowText(_T(""));
 		GetMainFrame()->m_cboZoom.EnableWindow(false);
 	}
-
-	GetMainFrame()->UpdatePageCombo();
-	GetMainFrame()->UpdateZoomCombo();
 }
 
 void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)

@@ -39,6 +39,7 @@ class CMyDocTemplate;
 void ReportFatalError();
 
 void CreateSystemDialogFont(CFont& font);
+void CreateSystemIconFont(CFont& font);
 UINT GetMouseScrollLines();
 
 

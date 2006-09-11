@@ -1,21 +1,89 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjView", "WinDjView.vcproj", "{74F36F86-9AC4-4322-BCDA-9408F6E5D9A5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjView", "WinDjView.vcproj", "{23C0653F-6D00-4E52-8D40-2B06FFB35607}"
+	ProjectSection(ProjectDependencies) = postProject
+		{970BCC82-42FF-4099-B315-5A74F0349FE0} = {970BCC82-42FF-4099-B315-5A74F0349FE0}
+		{05B12398-94BC-4EA6-8E3E-F51B46ADD3BF} = {05B12398-94BC-4EA6-8E3E-F51B46ADD3BF}
+		{DE733A28-8E9A-4475-8B26-401E24F46FEE} = {DE733A28-8E9A-4475-8B26-401E24F46FEE}
+		{64BBD8F7-E79F-4C13-928E-317C48DFE6EC} = {64BBD8F7-E79F-4C13-928E-317C48DFE6EC}
+		{6822AF46-169A-4C50-A860-369BCAEFCC1D} = {6822AF46-169A-4C50-A860-369BCAEFCC1D}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjViewFR", "Languages\French\WinDjViewFR.vcproj", "{DE733A28-8E9A-4475-8B26-401E24F46FEE}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjViewPT", "Languages\Portuguese\WinDjViewPT.vcproj", "{6822AF46-169A-4C50-A860-369BCAEFCC1D}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjViewRU", "Languages\Russian\WinDjViewRU.vcproj", "{64BBD8F7-E79F-4C13-928E-317C48DFE6EC}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjViewUA", "Languages\Ukranian\WinDjViewUA.vcproj", "{05B12398-94BC-4EA6-8E3E-F51B46ADD3BF}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjViewZH_CN", "Languages\Chinese_Simplified\WinDjViewZH_CN.vcproj", "{970BCC82-42FF-4099-B315-5A74F0349FE0}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
 Global
-	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
-		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
-	EndGlobalSection
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
+		Debug Unicode = Debug Unicode
 		Release = Release
+		Release Unicode = Release Unicode
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
-		{74F36F86-9AC4-4322-BCDA-9408F6E5D9A5}.Debug.ActiveCfg = Debug|Win32
-		{74F36F86-9AC4-4322-BCDA-9408F6E5D9A5}.Debug.Build.0 = Debug|Win32
-		{74F36F86-9AC4-4322-BCDA-9408F6E5D9A5}.Release.ActiveCfg = Release|Win32
-		{74F36F86-9AC4-4322-BCDA-9408F6E5D9A5}.Release.Build.0 = Release|Win32
+		{23C0653F-6D00-4E52-8D40-2B06FFB35607}.Debug.ActiveCfg = Debug|Win32
+		{23C0653F-6D00-4E52-8D40-2B06FFB35607}.Debug.Build.0 = Debug|Win32
+		{23C0653F-6D00-4E52-8D40-2B06FFB35607}.Debug Unicode.ActiveCfg = Debug Unicode|Win32
+		{23C0653F-6D00-4E52-8D40-2B06FFB35607}.Debug Unicode.Build.0 = Debug Unicode|Win32
+		{23C0653F-6D00-4E52-8D40-2B06FFB35607}.Release.ActiveCfg = Release|Win32
+		{23C0653F-6D00-4E52-8D40-2B06FFB35607}.Release.Build.0 = Release|Win32
+		{23C0653F-6D00-4E52-8D40-2B06FFB35607}.Release Unicode.ActiveCfg = Release Unicode|Win32
+		{23C0653F-6D00-4E52-8D40-2B06FFB35607}.Release Unicode.Build.0 = Release Unicode|Win32
+		{DE733A28-8E9A-4475-8B26-401E24F46FEE}.Debug.ActiveCfg = Release|Win32
+		{DE733A28-8E9A-4475-8B26-401E24F46FEE}.Debug.Build.0 = Release|Win32
+		{DE733A28-8E9A-4475-8B26-401E24F46FEE}.Debug Unicode.ActiveCfg = Release|Win32
+		{DE733A28-8E9A-4475-8B26-401E24F46FEE}.Debug Unicode.Build.0 = Release|Win32
+		{DE733A28-8E9A-4475-8B26-401E24F46FEE}.Release.ActiveCfg = Release|Win32
+		{DE733A28-8E9A-4475-8B26-401E24F46FEE}.Release.Build.0 = Release|Win32
+		{DE733A28-8E9A-4475-8B26-401E24F46FEE}.Release Unicode.ActiveCfg = Release|Win32
+		{DE733A28-8E9A-4475-8B26-401E24F46FEE}.Release Unicode.Build.0 = Release|Win32
+		{6822AF46-169A-4C50-A860-369BCAEFCC1D}.Debug.ActiveCfg = Release|Win32
+		{6822AF46-169A-4C50-A860-369BCAEFCC1D}.Debug.Build.0 = Release|Win32
+		{6822AF46-169A-4C50-A860-369BCAEFCC1D}.Debug Unicode.ActiveCfg = Release|Win32
+		{6822AF46-169A-4C50-A860-369BCAEFCC1D}.Debug Unicode.Build.0 = Release|Win32
+		{6822AF46-169A-4C50-A860-369BCAEFCC1D}.Release.ActiveCfg = Release|Win32
+		{6822AF46-169A-4C50-A860-369BCAEFCC1D}.Release.Build.0 = Release|Win32
+		{6822AF46-169A-4C50-A860-369BCAEFCC1D}.Release Unicode.ActiveCfg = Release|Win32
+		{6822AF46-169A-4C50-A860-369BCAEFCC1D}.Release Unicode.Build.0 = Release|Win32
+		{64BBD8F7-E79F-4C13-928E-317C48DFE6EC}.Debug.ActiveCfg = Release|Win32
+		{64BBD8F7-E79F-4C13-928E-317C48DFE6EC}.Debug.Build.0 = Release|Win32
+		{64BBD8F7-E79F-4C13-928E-317C48DFE6EC}.Debug Unicode.ActiveCfg = Release|Win32
+		{64BBD8F7-E79F-4C13-928E-317C48DFE6EC}.Debug Unicode.Build.0 = Release|Win32
+		{64BBD8F7-E79F-4C13-928E-317C48DFE6EC}.Release.ActiveCfg = Release|Win32
+		{64BBD8F7-E79F-4C13-928E-317C48DFE6EC}.Release.Build.0 = Release|Win32
+		{64BBD8F7-E79F-4C13-928E-317C48DFE6EC}.Release Unicode.ActiveCfg = Release|Win32
+		{64BBD8F7-E79F-4C13-928E-317C48DFE6EC}.Release Unicode.Build.0 = Release|Win32
+		{05B12398-94BC-4EA6-8E3E-F51B46ADD3BF}.Debug.ActiveCfg = Release|Win32
+		{05B12398-94BC-4EA6-8E3E-F51B46ADD3BF}.Debug.Build.0 = Release|Win32
+		{05B12398-94BC-4EA6-8E3E-F51B46ADD3BF}.Debug Unicode.ActiveCfg = Release|Win32
+		{05B12398-94BC-4EA6-8E3E-F51B46ADD3BF}.Debug Unicode.Build.0 = Release|Win32
+		{05B12398-94BC-4EA6-8E3E-F51B46ADD3BF}.Release.ActiveCfg = Release|Win32
+		{05B12398-94BC-4EA6-8E3E-F51B46ADD3BF}.Release.Build.0 = Release|Win32
+		{05B12398-94BC-4EA6-8E3E-F51B46ADD3BF}.Release Unicode.ActiveCfg = Release|Win32
+		{05B12398-94BC-4EA6-8E3E-F51B46ADD3BF}.Release Unicode.Build.0 = Release|Win32
+		{970BCC82-42FF-4099-B315-5A74F0349FE0}.Debug.ActiveCfg = Release|Win32
+		{970BCC82-42FF-4099-B315-5A74F0349FE0}.Debug.Build.0 = Release|Win32
+		{970BCC82-42FF-4099-B315-5A74F0349FE0}.Debug Unicode.ActiveCfg = Release|Win32
+		{970BCC82-42FF-4099-B315-5A74F0349FE0}.Debug Unicode.Build.0 = Release|Win32
+		{970BCC82-42FF-4099-B315-5A74F0349FE0}.Release.ActiveCfg = Release|Win32
+		{970BCC82-42FF-4099-B315-5A74F0349FE0}.Release.Build.0 = Release|Win32
+		{970BCC82-42FF-4099-B315-5A74F0349FE0}.Release Unicode.ActiveCfg = Release|Win32
+		{970BCC82-42FF-4099-B315-5A74F0349FE0}.Release Unicode.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

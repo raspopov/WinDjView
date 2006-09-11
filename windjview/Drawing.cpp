@@ -274,15 +274,15 @@ CDIB::~CDIB()
 		CloseHandle(m_hFile);
 }
 
-CDIB* CDIB::CreateDIB(const BITMAPINFO* pBMI)
+void CDIB::Create(const BITMAPINFO* pBMI)
 {
-	CDIB* pDIB = new CDIB();
+	ASSERT(m_hObject == NULL);
 
 	UINT nSize = sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)*pBMI->bmiHeader.biClrUsed;
-	pDIB->m_pBMI = (LPBITMAPINFO)malloc(nSize);
-	memcpy(pDIB->m_pBMI, pBMI, nSize);
+	m_pBMI = (LPBITMAPINFO)malloc(nSize);
+	memcpy(m_pBMI, pBMI, nSize);
 
-	BITMAPINFOHEADER& bmih = pDIB->m_pBMI->bmiHeader;
+	BITMAPINFOHEADER& bmih = m_pBMI->bmiHeader;
 	bmih.biPlanes = 1;
 	bmih.biSizeImage = 0;
 	bmih.biXPelsPerMeter = 0;
@@ -290,7 +290,7 @@ CDIB* CDIB::CreateDIB(const BITMAPINFO* pBMI)
 	bmih.biClrImportant = 0;
 
 	HBITMAP hBitmap = ::CreateDIBSection(NULL,
-		pDIB->m_pBMI, DIB_RGB_COLORS, (VOID**)&pDIB->m_pBits, NULL, 0);
+		m_pBMI, DIB_RGB_COLORS, (VOID**)&m_pBits, NULL, 0);
 
 	if (hBitmap == NULL)
 	{
@@ -310,29 +310,36 @@ CDIB* CDIB::CreateDIB(const BITMAPINFO* pBMI)
 			DWORD nBitsSize = nLineLength*pBMI->bmiHeader.biHeight;
 
 			// Try to create a mapped file section
-			pDIB->m_hFile = ::CreateFile(strTempFile, GENERIC_READ | GENERIC_WRITE,
+			m_hFile = ::CreateFile(strTempFile, GENERIC_READ | GENERIC_WRITE,
 				0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE, NULL);
-			pDIB->m_hSection = ::CreateFileMapping(pDIB->m_hFile, NULL,
+			m_hSection = ::CreateFileMapping(m_hFile, NULL,
 				PAGE_READWRITE, 0, nBitsSize, NULL);
 
-			hBitmap = ::CreateDIBSection(NULL, pDIB->m_pBMI, DIB_RGB_COLORS,
-				(VOID**)&pDIB->m_pBits, pDIB->m_hSection, 0);
+			hBitmap = ::CreateDIBSection(NULL, m_pBMI, DIB_RGB_COLORS,
+				(VOID**)&m_pBits, m_hSection, 0);
 			if (hBitmap == NULL)
 			{
-				::CloseHandle(pDIB->m_hSection);
-				::CloseHandle(pDIB->m_hFile);
-				pDIB->m_hSection = NULL;
-				pDIB->m_hFile = NULL;
+				::CloseHandle(m_hSection);
+				::CloseHandle(m_hFile);
+				m_hSection = NULL;
+				m_hFile = NULL;
 			}
 		}
 	}
 
-	pDIB->Attach(hBitmap);
+	Attach(hBitmap);
+}
+
+CDIB* CDIB::CreateDIB(const BITMAPINFO* pBMI)
+{
+	CDIB* pDIB = new CDIB();
+	pDIB->Create(pBMI);
 	return pDIB;
 }
 
-CDIB* CDIB::CreateDIB(CDIB* pSource, int nBitCount)
+void CDIB::Create(CDIB* pSource, int nBitCount)
 {
+	ASSERT(pSource->m_pBits != NULL);
 	ASSERT(nBitCount == -1 || nBitCount == 1 || nBitCount == 4 || nBitCount == 8 ||
 		   nBitCount == 16 || nBitCount == 24 || nBitCount == 32);
 	if (nBitCount == -1)
@@ -357,22 +364,27 @@ CDIB* CDIB::CreateDIB(CDIB* pSource, int nBitCount)
 
 	memcpy(&pBMI->bmiColors[0], &pSource->m_pBMI->bmiColors[0], nPaletteEntries*sizeof(RGBQUAD));
 
-	CDIB* pBitmap = CDIB::CreateDIB((BITMAPINFO*)&bmih);
-	if (pBitmap->m_hObject == NULL)
-		return pBitmap;
+	Create((BITMAPINFO*)&bmih);
+	if (m_hObject == NULL)
+		return;
 
 	CDC dcScreen;
 	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
 
 	CDC dcDest;
 	dcDest.CreateCompatibleDC(&dcScreen);
-	CBitmap* pOldBmp = dcDest.SelectObject(pBitmap);
+	CBitmap* pOldBmp = dcDest.SelectObject(this);
 
 	pSource->DrawDC(&dcDest, CPoint(0, 0));
 
 	dcDest.SelectObject(pOldBmp);
+}
 
-	return pBitmap;
+CDIB* CDIB::CreateDIB(CDIB* pSource, int nBitCount)
+{
+	CDIB* pDIB = new CDIB();
+	pDIB->Create(pSource, nBitCount);
+	return pDIB;
 }
 
 CDIB* CDIB::CreateDIB(int nWidth, int nHeight, int nBitCount)
@@ -405,7 +417,7 @@ CDIB* CDIB::ReduceColors()
 
 void CDIB::Draw(CDC* pDC, const CPoint& ptOffset)
 {
-	ASSERT(pDC != NULL);
+	ASSERT(pDC != NULL && m_pBits != NULL);
 	::StretchDIBits(pDC->m_hDC,
 		ptOffset.x, ptOffset.y, m_pBMI->bmiHeader.biWidth, m_pBMI->bmiHeader.biHeight,
 		0, 0, m_pBMI->bmiHeader.biWidth, m_pBMI->bmiHeader.biHeight,
@@ -414,7 +426,7 @@ void CDIB::Draw(CDC* pDC, const CPoint& ptOffset)
 
 void CDIB::Draw(CDC* pDC, const CPoint& ptOffset, const CSize& szScaled)
 {
-	ASSERT(pDC != NULL);
+	ASSERT(pDC != NULL && m_pBits != NULL);
 	pDC->SetStretchBltMode(COLORONCOLOR);
 	::StretchDIBits(pDC->m_hDC,
 		ptOffset.x, ptOffset.y, szScaled.cx, szScaled.cy,
@@ -424,6 +436,8 @@ void CDIB::Draw(CDC* pDC, const CPoint& ptOffset, const CSize& szScaled)
 
 void CDIB::DrawDC(CDC* pDC, const CPoint& ptOffset)
 {
+	ASSERT(pDC != NULL && m_hObject != NULL);
+
 	CDC dcSrc;
 	dcSrc.CreateCompatibleDC(pDC);
 	CBitmap* pOldBmpSrc = dcSrc.SelectObject(this);
@@ -437,6 +451,7 @@ void CDIB::DrawDC(CDC* pDC, const CPoint& ptOffset)
 
 void CDIB::DrawDC(CDC* pDC, const CPoint& ptOffset, const CRect& rcPart)
 {
+	ASSERT(pDC != NULL && m_hObject != NULL);
 	ASSERT(rcPart.left >= 0 && rcPart.top >= 0 &&
 		   rcPart.right <= m_pBMI->bmiHeader.biWidth &&
 		   rcPart.bottom <= m_pBMI->bmiHeader.biHeight);
@@ -475,6 +490,36 @@ void CDIB::Save(LPCTSTR pszPathName) const
 	file.Write(m_pBits, dwBitCount);
 
 	file.Close();
+}
+
+CLightweightDIB* CLightweightDIB::Create(CDIB* pSrc)
+{
+	CLightweightDIB* pDIB = new CLightweightDIB();
+
+	ASSERT(pSrc != NULL);
+	pDIB->CDIB::Create(pSrc, 24);
+
+	if (pDIB->m_hObject == NULL)
+	{
+		pDIB->m_pBits = NULL;
+		return pDIB;
+	}
+
+	DWORD dwByteCount = pDIB->m_pBMI->bmiHeader.biWidth * pDIB->m_pBMI->bmiHeader.biBitCount;
+	dwByteCount = (((dwByteCount + 31) / 32) * 4) * pDIB->m_pBMI->bmiHeader.biHeight;
+
+	LPBYTE pBits = new BYTE[dwByteCount];
+	memcpy(pBits, pDIB->m_pBits, dwByteCount);
+
+	pDIB->DeleteObject();
+	pDIB->m_pBits = pBits;
+
+	return pDIB;
+}
+
+CLightweightDIB::~CLightweightDIB()
+{
+	delete[] m_pBits;
 }
 
 CRect FindContentRect(GP<DjVuImage> pImage)
@@ -950,4 +995,24 @@ void FrameRect(CDC* pDC, const CRect& rect, COLORREF color)
 	pDC->FillSolidRect(rcVertLine, color);
 	rcVertLine.OffsetRect(rect.Width() - 1, 0);
 	pDC->FillSolidRect(rcVertLine, color);
+}
+
+void DrawDottedLine(CDC* pDC, COLORREF color, CPoint ptStart, CPoint ptEnd)
+{
+	if (ptStart.x == ptEnd.x)
+	{
+		ASSERT(ptStart.y <= ptEnd.y);
+		for (int y = ptStart.y; y < ptEnd.y; y += 2)
+			pDC->SetPixel(ptStart.x, y, color);
+	}
+	else if (ptStart.y == ptEnd.y)
+	{
+		ASSERT(ptStart.x <= ptEnd.x);
+		for (int x = ptStart.x; x < ptEnd.x; x += 2)
+			pDC->SetPixel(x, ptStart.y, color);
+	}
+	else
+	{
+		ASSERT(false);
+	}
 }

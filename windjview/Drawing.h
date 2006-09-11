@@ -39,6 +39,7 @@ public:
 	int GetBitsPerPixel() const { return m_pBMI->bmiHeader.biBitCount; }
 	int GetColorCount() const { return m_pBMI->bmiHeader.biClrUsed; }
 	RGBQUAD* GetPalette() { return &m_pBMI->bmiColors[0]; }
+	bool IsValid() const { return m_hObject != NULL; }
 
 	static CDIB* CreateDIB(const BITMAPINFO* pBMI);
 	static CDIB* CreateDIB(CDIB* pSource, int nBitCount = -1);
@@ -51,11 +52,36 @@ protected:
 	CDIB() : CBitmap(), m_pBits(NULL), m_pBMI(NULL),
 			 m_hFile(NULL), m_hSection(NULL) {}
 
+	void Create(const BITMAPINFO* pBMI);
+	void Create(CDIB* pSource, int nBitCount = -1);
+
 	LPBYTE m_pBits;
 	BITMAPINFO* m_pBMI;
 
 	HANDLE m_hFile;
 	HANDLE m_hSection;
+};
+
+// A lightweight DIB does not use a bitmap handle.
+// This allows to keep many such DIBs in memory
+// on systems where there is a limit on the number
+// of bitmap handles open (e.g., Windows 98).
+// Thus, CLightweightDIBs are used to store thumbnails.
+class CLightweightDIB : protected CDIB
+{
+public:
+	~CLightweightDIB();
+	bool IsValid() const { return m_pBits != NULL; }
+
+	using CDIB::Draw;
+	using CDIB::GetWidth;
+	using CDIB::GetHeight;
+	using CDIB::GetSize;
+
+	static CLightweightDIB* Create(CDIB* pSrc);
+
+protected:
+	CLightweightDIB() {}
 };
 
 struct CPrintSettings
@@ -94,3 +120,4 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcPage,
 unsigned int __stdcall PrintThreadProc(void* pvData);
 
 void FrameRect(CDC* pDC, const CRect& rect, COLORREF color);
+void DrawDottedLine(CDC* pDC, COLORREF color, CPoint ptStart, CPoint ptEnd);

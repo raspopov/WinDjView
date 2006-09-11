@@ -40,7 +40,7 @@ const int nFrameWidth = 1;
 const int nPadding = 3;
 const int nNumberSkip = 2;
 const int nNumberHeight = 15;
-const int nNumberWidth = 30;
+const int nNumberWidth = 34;
 const int nPageWidth = 100;
 const int nPageHeight = 110;
 
@@ -149,9 +149,9 @@ void CThumbnailsView::DrawPage(CDC* pDC, int nPage)
 
 	CRect rcCorner;
 
-	if (page.pBitmap != NULL && page.pBitmap->m_hObject != NULL)
+	if (page.pBitmap != NULL && page.pBitmap->IsValid())
 	{
-		page.pBitmap->DrawDC(pDC, page.rcBitmap.TopLeft() - ptScrollPos);
+		page.pBitmap->Draw(pDC, page.rcBitmap.TopLeft() - ptScrollPos);
 	}
 	else
 	{
@@ -193,7 +193,7 @@ void CThumbnailsView::DrawPage(CDC* pDC, int nPage)
 	{
 		rcBorder.InflateRect(1, 1);
 
-		if (page.pBitmap != NULL && page.pBitmap->m_hObject != NULL)
+		if (page.pBitmap != NULL && page.pBitmap->IsValid())
 		{
 			FrameRect(pDC, rcBorder - ptScrollPos, clrFrame);
 		}
@@ -803,7 +803,7 @@ void CThumbnailsView::UpdatePage(int nPage, CThumbnailsThread* pThread)
 {
 	Page& page = m_pages[nPage];
 
-	if (page.pBitmap == NULL)
+	if (!page.bRendered)
 	{
 		pThread->AddJob(nPage, m_nRotate, m_displaySetting);
 		InvalidatePage(nPage);
@@ -825,7 +825,12 @@ LRESULT CThumbnailsView::OnThumbnailRendered(WPARAM wParam, LPARAM lParam)
 	m_dataLock.Unlock();
 
 	page.DeleteBitmap();
-	page.pBitmap = pBitmap;
+	if (pBitmap != NULL)
+	{
+		page.pBitmap = CLightweightDIB::Create(pBitmap);
+		delete pBitmap;
+	}
+	page.bRendered = true;
 
 	RecalcPageRects(nPage);
 
@@ -954,4 +959,12 @@ void CThumbnailsView::OnSettingsChanged()
 	}
 
 	UpdateVisiblePages();
+}
+
+void CThumbnailsView::OnPan(CSize szScroll)
+{
+	OnScrollBy(szScroll, true);
+
+	if (szScroll.cy != 0)
+		UpdateVisiblePages();
 }

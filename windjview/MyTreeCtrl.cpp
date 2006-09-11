@@ -49,7 +49,7 @@ CMyTreeCtrl::CMyTreeCtrl()
 	m_pRoot = new TreeNode(NULL, -1, -1, NULL);
 	m_pRoot->bCollapsed = false;
 
-	CreateSystemDialogFont(m_font);
+	CreateSystemIconFont(m_font);
 
 	LOGFONT lf;
 	::GetObject(m_font.m_hObject, sizeof(LOGFONT), &lf);
@@ -106,8 +106,8 @@ BOOL CMyTreeCtrl::PreCreateWindow(CREATESTRUCT& cs)
 	if (!CWnd::PreCreateWindow(cs))
 		return false;
 
-	static CString strWndClass = AfxRegisterWndClass(CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,
-		::LoadCursor(NULL, IDC_ARROW), HBRUSH(COLOR_WINDOW + 1), NULL);
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
+		::LoadCursor(NULL, IDC_ARROW));
 
 	cs.dwExStyle |= WS_EX_CLIENTEDGE;
 	cs.style |= WS_HSCROLL | WS_VSCROLL;
@@ -235,37 +235,34 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 		if (m_hTheme != NULL)
 			XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_EDGESHADOWCOLOR, &crLines);
 
-		LOGBRUSH brush;
-		brush.lbColor = crLines;
-		brush.lbStyle = BS_SOLID;
-
-		CPen pen(PS_COSMETIC | PS_ALTERNATE, 1, &brush, 0, NULL);
-		CPen* pOldPen = pDC->SelectObject(&pen);
-
 		// Draw lines
 		if (m_pRoot->pChild != pNode)
 		{
 			// This node is not the first child of the root, so there should be a vertical top half-line here
-			pDC->MoveTo(CPoint(pNode->nLineX, pNode->rcNode.top) + (-ptOffset));
-			pDC->LineTo(CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset));
+			DrawDottedLine(pDC, crLines,
+				CPoint(pNode->nLineX, pNode->rcNode.top) + (-ptOffset),
+				CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset));
 		}
 
 		if (pNode->HasSibling())
 		{
 			// This node is not the last child, so there should be a vertical bottom half-line here
-			pDC->MoveTo(CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset));
-			pDC->LineTo(CPoint(pNode->nLineX, pNode->rcNode.bottom) + (-ptOffset));
+			DrawDottedLine(pDC, crLines,
+				CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset),
+				CPoint(pNode->nLineX, pNode->rcNode.bottom) + (-ptOffset));
 		}
 
 		// Horizontal line
-		pDC->MoveTo(CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset));
-		pDC->LineTo(CPoint(pNode->nLineStopX, pNode->nLineY) + (-ptOffset));
+		DrawDottedLine(pDC, crLines,
+			CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset),
+			CPoint(pNode->nLineStopX, pNode->nLineY) + (-ptOffset));
 
 		if (pNode->HasChildren() && !pNode->bCollapsed)
 		{
 			// Vertical line to the first child
-			pDC->MoveTo(CPoint(pNode->pChild->nLineX, pNode->nLineY) + (-ptOffset));
-			pDC->LineTo(CPoint(pNode->pChild->nLineX, pNode->rcNode.bottom) + (-ptOffset));
+			DrawDottedLine(pDC, crLines,
+				CPoint(pNode->pChild->nLineX, pNode->nLineY) + (-ptOffset),
+				CPoint(pNode->pChild->nLineX, pNode->rcNode.bottom) + (-ptOffset));
 		}
 
 		TreeNode* pParent = pNode->pParent;
@@ -274,14 +271,13 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 			if (pParent->HasSibling())
 			{
 				// This node has a sibling node, so there should be a full vertical line here
-				pDC->MoveTo(CPoint(pParent->nLineX, pNode->rcNode.top) + (-ptOffset));
-				pDC->LineTo(CPoint(pParent->nLineX, pNode->rcNode.bottom) + (-ptOffset));
+				DrawDottedLine(pDC, crLines,
+					CPoint(pParent->nLineX, pNode->rcNode.top) + (-ptOffset),
+					CPoint(pParent->nLineX, pNode->rcNode.bottom) + (-ptOffset));
 			}
 
 			pParent = pParent->pParent;
 		}
-
-		pDC->SelectObject(pOldPen);
 
 		if (pNode->HasChildren())
 		{
@@ -633,6 +629,9 @@ LRESULT CMyTreeCtrl::OnThemeChanged(WPARAM wParam, LPARAM lParam)
 
 	if (XPIsAppThemed() && XPIsThemeActive())
 		m_hTheme = XPOpenThemeData(m_hWnd, L"TREEVIEW");
+
+	m_font.DeleteObject();
+	CreateSystemIconFont(m_font);
 
 	RecalcLayout();
 	Invalidate();
@@ -1310,7 +1309,8 @@ void CMyTreeCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
 
 BOOL CMyTreeCtrl::CTreeToolTip::Create(CMyTreeCtrl* pTree)
 {
-	static CString strWndClass = AfxRegisterWndClass(0);
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
+		::LoadCursor(NULL, IDC_ARROW));
 
 	m_pTree = pTree;
 

@@ -41,6 +41,7 @@ CFullscreenWnd::~CFullscreenWnd()
 }
 
 BEGIN_MESSAGE_MAP(CFullscreenWnd, CWnd)
+	ON_WM_CLOSE()
 	ON_WM_SETFOCUS()
 	ON_WM_ERASEBKGND()
 	ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNeedText)
@@ -51,7 +52,8 @@ END_MESSAGE_MAP()
 
 BOOL CFullscreenWnd::Create()
 {
-	static CString strWndClass = AfxRegisterWndClass(0);
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
+		::LoadCursor(NULL, IDC_ARROW));
 
 	CDC dcScreen;
 	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
@@ -159,4 +161,9 @@ BOOL CFullscreenWnd::OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult
 BOOL CFullscreenWnd::OnEraseBkgnd(CDC* pDC)
 {
 	return true;
+}
+
+void CFullscreenWnd::OnClose()
+{
+	Hide();
 }

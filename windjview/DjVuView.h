@@ -150,6 +150,10 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual CScrollBar* GetScrollBarCtrl(int nBar) const;
 
+	virtual void OnStartPan();
+	virtual void OnPan(CSize szScroll);
+	virtual void OnEndPan();
+
 protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 
@@ -338,8 +342,9 @@ protected:
 
 	int m_nClickedPage;
 	bool m_bDragging, m_bDraggingPage, m_bDraggingText;
+	bool m_bPanning;
 	void StopDragging();
-	CPoint m_ptStart, m_ptStartPos;
+	CPoint m_ptStart, m_ptStartPos, m_ptPrevCursor;
 	int m_nStartPage, m_nPrevPage;
 	bool m_bClick;
 	CPoint m_ptClick, m_ptMouse;

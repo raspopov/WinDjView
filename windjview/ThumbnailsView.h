@@ -65,6 +65,8 @@ public:
 	virtual void OnInitialUpdate();
 	virtual BOOL OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll = TRUE);
 
+	virtual void OnPan(CSize szScroll);
+
 // Implementation
 public:
 #ifdef _DEBUG
@@ -104,16 +106,18 @@ protected:
 
 	struct Page
 	{
-		Page() : pBitmap(NULL) {}
+		Page() : pBitmap(NULL), bRendered(false) {}
 		~Page() { delete pBitmap; }
 
 		CRect rcDisplay, rcPage, rcBitmap, rcNumber;
-		CDIB* pBitmap;
+		CLightweightDIB* pBitmap;
+		bool bRendered;
 
 		void DeleteBitmap()
 		{
 			delete pBitmap;
 			pBitmap = NULL;
+			bRendered = false;
 		}
 	};
 	vector<Page> m_pages;

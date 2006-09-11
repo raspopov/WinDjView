@@ -2,6 +2,14 @@ WinDjView changes history
 Copyright (C) 2004-2006 Andrew Zhezherun
 ----------------------------------------
 
+Changes in version 0.4.3 (2006-):
++ Added panning when mouse wheel is pressed.
+* Improved performance of magnifying glass.
+* Fixed displaying UTF-8 bookmarks on pre-XP systems.
+* Fixed problem with long documents on Win98 when thumbnails are on.
+* Fixed font issues.
+* Several crash fixes.
+
 Changes in version 0.4.2 (2006-07-24):
 + Added magnifying glass tool.
 + Added option to wrap long bookmarks.

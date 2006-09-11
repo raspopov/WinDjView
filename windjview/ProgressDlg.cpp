@@ -81,10 +81,11 @@ void CProgressDlg::SetPos(int nPos)
 
 bool CProgressDlg::IsCancelled()
 {
-#if defined(InterlockedCompareExchangeAcquire)
-	return (InterlockedCompareExchange(&m_nCancelled, 1, 1) == 1);
+	DWORD_PTR nCancelled = 1;
+#if defined(InterlockedCompareExchangePointer)
+	return (InterlockedCompareExchangePointer((void**)&m_nCancelled,
+		(void*)nCancelled, (void*)nCancelled) == (void*)nCancelled);
 #else
-	long nCancelled = 1;
 	return (InterlockedCompareExchange((void**)&m_nCancelled,
 		(void*)nCancelled, (void*)nCancelled) == (void*)nCancelled);
 #endif
@@ -92,7 +93,7 @@ bool CProgressDlg::IsCancelled()
 
 void CProgressDlg::StopProgress(int nCode)
 {
-	InterlockedExchange(&m_nCode, nCode);
+	InterlockedExchange((PLONG)&m_nCode, (LONG)nCode);
 	SendMessage(WM_ENDDIALOG, m_nCancelled ? IDCANCEL : IDOK);
 }
 
@@ -120,7 +121,7 @@ void CProgressDlg::OnCancel()
 
 void CProgressDlg::OnOK()
 {
-	InterlockedExchange(&m_nCancelled, 1);
+	InterlockedExchange((PLONG)&m_nCancelled, 1L);
 }
 
 LRESULT CProgressDlg::OnEndDialog(WPARAM wParam, LPARAM lParam)

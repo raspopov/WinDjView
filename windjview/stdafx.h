@@ -106,8 +106,9 @@ using namespace std;
 #include "libdjvu/DjVmNav.h"
 
 #if (_MSC_VER < 1300)
-#define DWORD_PTR DWORD
+#define DWORD_PTR UINT_PTR
 #define IDC_HAND MAKEINTRESOURCE(32649)
+#define COLOR_HOTLIGHT 26
 #endif
 
 inline CString LoadString(UINT nID)

@@ -215,7 +215,10 @@ GLObject::print(ByteStream & str, int compact, int indent, int * cur_pos) const
   if (!cur_pos) { cur_pos = &local_cur_pos; }
   
   GUTF8String buffer;
-  const char * to_print=0;
+//< Changed for WinDjView project
+//  const char * to_print=0;
+  const char * to_print=buffer;
+//>
   switch(type)
   {
   case NUMBER:

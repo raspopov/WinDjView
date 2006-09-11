@@ -39,10 +39,14 @@ public:
 	BOOL m_bMatchCase;
 
 protected:
+	void UpdateButtons();
+
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual void OnOK();
 	virtual void OnCancel();
 	afx_msg void OnClose();
 	afx_msg void OnFindAll();
+	afx_msg void OnEnChangeFind();
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	DECLARE_MESSAGE_MAP()
 };

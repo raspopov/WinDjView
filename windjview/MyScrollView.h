@@ -21,6 +21,8 @@
 #pragma once
 
 
+class CMyAnchorWnd;
+
 // CMyScrollView
 
 class CMyScrollView : public CScrollView
@@ -29,8 +31,15 @@ class CMyScrollView : public CScrollView
 public:
 	CMyScrollView();
 
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+
+	virtual void OnStartPan();
+	virtual void OnPan(CSize szScroll);
+	virtual void OnEndPan();
+
 protected:
 	~CMyScrollView();
+	CMyAnchorWnd* m_pAnchorWnd;
 
 	void SetScrollSizesNoRepaint(const CSize& szTotal,
 		const CSize& szPage, const CSize& szLine);
@@ -42,5 +51,7 @@ protected:
 
 protected:
 	// Generated message map functions
+	afx_msg void OnDestroy();
+	afx_msg LRESULT OnMButtonDown(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };

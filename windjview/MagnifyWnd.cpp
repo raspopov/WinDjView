@@ -49,7 +49,8 @@ END_MESSAGE_MAP()
 
 BOOL CMagnifyWnd::Create()
 {
-	static CString strWndClass = AfxRegisterWndClass(0);
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
+		::LoadCursor(NULL, IDC_ARROW));
 
 	m_nWidth = 480;
 	m_nHeight = 320;

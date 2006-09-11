@@ -146,7 +146,7 @@ void CMyToolBar::DrawBorders(CDC* pDC, CRect& rect)
 	if (dwStyle & CBRS_BORDER_BOTTOM)
 		rect2.bottom -= afxData.cyBorder2;
 
-	if (IsKindOf(RUNTIME_CLASS(CToolBar)) && (dwStyle & TBSTYLE_FLAT) && (dwStyle & CBRS_BORDER_ANY))
+	if (dwStyle & CBRS_BORDER_ANY)
 	{
 		CRect rctBk;
 		rctBk.left = 0;

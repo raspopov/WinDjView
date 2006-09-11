@@ -45,10 +45,28 @@ void CreateSystemDialogFont(CFont& font)
 {
 	LOGFONT lf;
 
+	HGDIOBJ hFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
+	::GetObject(hFont, sizeof(LOGFONT), &lf);
+
+	OSVERSIONINFO vi;
+	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
+		vi.dwMajorVersion >= 5)
+	{
+		_tcscpy(lf.lfFaceName, _T("MS Shell Dlg 2"));
+	}
+
+	font.CreateFontIndirect(&lf);
+}
+
+void CreateSystemIconFont(CFont& font)
+{
+	LOGFONT lf;
+
 	if (XPIsAppThemed() && XPIsThemeActive())
 	{
 		LOGFONTW lfw;
-		HRESULT hr = XPGetThemeSysFont(NULL, TMT_MSGBOXFONT, &lfw);
+		HRESULT hr = XPGetThemeSysFont(NULL, TMT_ICONTITLEFONT, &lfw);
 		if (SUCCEEDED(hr))
 		{
 #ifdef UNICODE
@@ -62,15 +80,10 @@ void CreateSystemDialogFont(CFont& font)
 		}
 	}
 
-	HGDIOBJ hFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
-	::GetObject(hFont, sizeof(LOGFONT), &lf);
-
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-		vi.dwMajorVersion >= 5)
+	if (!SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &lf, 0))
 	{
-		_tcscpy(lf.lfFaceName, _T("MS Shell Dlg 2"));
+		CreateSystemDialogFont(font);
+		return;
 	}
 
 	font.CreateFontIndirect(&lf);
@@ -141,8 +154,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CMDIFrameWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
-	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT | TBSTYLE_TRANSPARENT, WS_CHILD | WS_VISIBLE | CBRS_TOP
-		| CBRS_TOOLTIPS | CBRS_GRIPPER | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) ||
+	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT,
+		WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_FLYBY | CBRS_TOOLTIPS) ||
 		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME))
 	{
 		TRACE(_T("Failed to create toolbar\n"));
@@ -157,11 +170,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	m_wndToolBar.SetHeight(30);
-	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
 	m_wndToolBar.SetWindowText(LoadString(IDS_TOOLBAR_TITLE));
-
-	EnableDocking(CBRS_ALIGN_ANY);
-	DockControlBar(&m_wndToolBar);
 
 	int nComboPage = m_wndToolBar.CommandToIndex(ID_VIEW_NEXTPAGE) - 1;
 	m_wndToolBar.SetButtonInfo(nComboPage, IDC_PAGENUM, TBBS_SEPARATOR, 65);

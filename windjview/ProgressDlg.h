@@ -73,8 +73,8 @@ protected:
 // Implementation
 protected:
 	ThreadProcEx m_pfnThreadProc;
-	LONG m_nCancelled;
-	LONG m_nCode;
+	DWORD_PTR m_nCancelled;
+	DWORD_PTR m_nCode;
 	DWORD_PTR m_dwUserData;
 	HANDLE m_hThread;
 

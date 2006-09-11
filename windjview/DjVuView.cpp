@@ -145,7 +145,7 @@ CDjVuView::CDjVuView()
 	  m_bNeedUpdate(false), m_bCursorHidden(false), m_bDraggingPage(false),
 	  m_bDraggingText(false), m_bFirstPageAlone(false), m_bInitialized(false),
 	  m_bDraggingMagnify(false), m_pHScrollBar(NULL), m_pVScrollBar(NULL),
-	  m_bControlDown(false), m_nType(Normal)
+	  m_bControlDown(false), m_nType(Normal), m_bPanning(false)
 {
 	m_nMargin = c_nDefaultMargin;
 	m_nShadowMargin = c_nDefaultShadowMargin;
@@ -2183,6 +2183,8 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 		SetCapture();
 		m_bDragging = true;
 
+		m_ptPrevCursor = CPoint(-1, -1);
+
 		StartMagnify();
 		UpdateMagnifyWnd();
 
@@ -2826,7 +2828,7 @@ void CDjVuView::OnPageInformation()
 			strLine = strLine.Mid(19);
 			_stscanf(strLine, _T("%d%lf%s"), &nShapes, &fSize, szName);
 			strFormatted.Format(_T(" %5.1f Kb\t'%s'\tJB2 shapes dictionary (%d shape%s)."),
-				fSize, szName, nShapes, (nColors == 1 ? _T("") : _T("s")));
+				fSize, szName, nShapes, (nShapes == 1 ? _T("") : _T("s")));
 		}
 		else if (strLine.Find(_T("DjVuFile.fg_mask")) == 0)
 		{
@@ -4244,6 +4246,9 @@ BOOL CDjVuView::OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult)
 	if (m_pActiveLink != NULL)
 	{
 		m_strToolTip = MakeCString(m_pActiveLink->comment);
+		if (m_strToolTip.IsEmpty())
+			m_strToolTip = MakeCString(m_pActiveLink->url);
+
 		pTTT->lpszText = m_strToolTip.GetBuffer(0);
 
 		m_toolTip.SetWindowPos(&wndTopMost, 0, 0, 0, 0,
@@ -4631,6 +4636,58 @@ GUTF8String CDjVuView::GetFullText()
 	return text;
 }
 
+int CheckUTF8Character(const unsigned char* s, int n)
+{
+	// Taken from libiconv
+	unsigned char c = s[0];
+
+	if (c < 0x80)
+	{
+		return 1;
+	}
+	else if (c < 0xc2)
+	{
+		return -1;
+	}
+	else if (c < 0xe0)
+	{
+		if (n < 2)
+			return -1;
+		if (!((s[1] ^ 0x80) < 0x40))
+			return -1;
+		return 2;
+	}
+	else if (c < 0xf0)
+	{
+		if (n < 3)
+			return -1;
+		if (!((s[1] ^ 0x80) < 0x40 && (s[2] ^ 0x80) < 0x40
+				&& (c >= 0xe1 || s[1] >= 0xa0)))
+			return -1;
+		return 3;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+bool CheckUTF8(const char* pszText, int nLength)
+{
+	const unsigned char* s = reinterpret_cast<const unsigned char*>(pszText);
+	const unsigned char* end = s + nLength;
+
+	while (s < end)
+	{
+		int nChar = CheckUTF8Character(s, end - s);
+		if (nChar < 0)
+			return false;
+		s += nChar;
+	}
+
+	return true;
+}
+
 CString MakeCString(const GUTF8String& text)
 {
 	CString strResult;
@@ -4639,13 +4696,33 @@ CString MakeCString(const GUTF8String& text)
 	LPWSTR pszUnicodeText = NULL;
 	int nResult = 0;
 
-	// Bookmarks may not be encoded in UTF-8 (when file was created by old software)
+	// Bookmarks or annotations may not be encoded in UTF-8
+	// (when file was created by old software)
 	// Treat input string as non-UTF8 if it is not well-formed
-	int nSize = ::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, (LPCSTR)text, -1, NULL, 0);
+	DWORD dwFlags = 0;
+
+	// Only Windows XP supports checking for invalid characters in UTF8 encoding
+	// inside MultiByteToWideChar function
+	OSVERSIONINFO vi;
+	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
+		vi.dwMajorVersion >= 5)
+	{
+		dwFlags = MB_ERR_INVALID_CHARS;
+	}
+
+	// Make our own check anyway
+	if (!CheckUTF8(text, text.length()))
+	{
+		strResult = (LPCSTR)text;
+		return strResult;
+	}
+
+	int nSize = ::MultiByteToWideChar(CP_UTF8, dwFlags, (LPCSTR)text, -1, NULL, 0);
 	if (nSize != 0)
 	{
 		pszUnicodeText = new WCHAR[nSize];
-		nResult = ::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, (LPCSTR)text, -1, pszUnicodeText, nSize);
+		nResult = ::MultiByteToWideChar(CP_UTF8, dwFlags, (LPCSTR)text, -1, pszUnicodeText, nSize);
 	}
 
 	if (nResult != 0)
@@ -5013,57 +5090,58 @@ void CDjVuView::OnViewGotoPage()
 
 void CDjVuView::OnTimer(UINT nIDEvent)
 {
-	if (nIDEvent == 1)
+	if (nIDEvent != 1)
 	{
-		if (m_bNeedUpdate)
+		CMyScrollView::OnTimer(nIDEvent);
+		return;
+	}
+
+	if (m_bNeedUpdate)
+	{
+		UpdateLayout();
+		m_bNeedUpdate = false;
+	}
+
+	if (m_nType == Fullscreen && !m_bCursorHidden && !m_bDragging && !m_bPanning)
+	{
+		int nTickCount = ::GetTickCount();
+		if (nTickCount - m_nCursorTime > s_nCursorHideDelay)
 		{
-			UpdateLayout();
-			m_bNeedUpdate = false;
+			m_bCursorHidden = true;
+			::ShowCursor(false);
 		}
+	}
 
-		if (m_nType == Fullscreen && !m_bCursorHidden && !m_bDragging)
+	if (m_nMode == Select && m_bDraggingText)
+	{
+		// Autoscroll
+		CPoint ptCursor;
+		::GetCursorPos(&ptCursor);
+
+		CRect rcClient;
+		GetClientRect(rcClient);
+		ClientToScreen(rcClient);
+
+		CSize szOffset(0, 0);
+		if (ptCursor.x < rcClient.left)
+			szOffset.cx = -50;
+		if (ptCursor.x >= rcClient.right)
+			szOffset.cx = 50;
+
+		if (ptCursor.y < rcClient.top)
+			szOffset.cy = -50;
+		if (ptCursor.y >= rcClient.bottom)
+			szOffset.cy = 50;
+
+		if (szOffset.cx != 0 || szOffset.cy != 0)
 		{
-			int nTickCount = ::GetTickCount();
-			if (nTickCount - m_nCursorTime > s_nCursorHideDelay)
+			if (OnScrollBy(szOffset))
 			{
-				m_bCursorHidden = true;
-				::ShowCursor(false);
-			}
-		}
-
-		if (m_nMode == Select && m_bDraggingText)
-		{
-			// Autoscroll
-			CPoint ptCursor;
-			::GetCursorPos(&ptCursor);
-
-			CRect rcClient;
-			GetClientRect(rcClient);
-			ClientToScreen(rcClient);
-
-			CSize szOffset(0, 0);
-			if (ptCursor.x < rcClient.left)
-				szOffset.cx = -50;
-			if (ptCursor.x >= rcClient.right)
-				szOffset.cx = 50;
-
-			if (ptCursor.y < rcClient.top)
-				szOffset.cy = -50;
-			if (ptCursor.y >= rcClient.bottom)
-				szOffset.cy = 50;
-
-			if (szOffset.cx != 0 || szOffset.cy != 0)
-			{
-				if (OnScrollBy(szOffset))
-				{
-					UpdateVisiblePages();
-					UpdateDragAction();
-				}
+				UpdateVisiblePages();
+				UpdateDragAction();
 			}
 		}
 	}
-	
-	CView::OnTimer(nIDEvent);
 }
 
 void CDjVuView::ShowCursor()
@@ -5178,9 +5256,12 @@ void CDjVuView::UpdateDragAction()
 {
 	if (m_bDragging)
 	{
+		m_ptPrevCursor = CPoint(-1, -1);
+
 		CPoint ptCursor;
 		::GetCursorPos(&ptCursor);
 		ScreenToClient(&ptCursor);
+
 		OnMouseMove(MK_LBUTTON, ptCursor);
 	}
 }
@@ -5270,11 +5351,16 @@ void CDjVuView::UpdateMagnifyWnd()
 
 	ASSERT(pMagnifyWnd->GetOwner() == this);
 
+	CPoint ptCursor;
+	::GetCursorPos(&ptCursor);
+
+	if (ptCursor == m_ptPrevCursor)
+		return;
+	m_ptPrevCursor = ptCursor;
+
 	CDjVuView* pView = pMagnifyWnd->GetView();
 	pView->SetRedraw(false);
 
-	CPoint ptCursor;
-	::GetCursorPos(&ptCursor);
 	CPoint ptCenter = ptCursor;
 
 	ScreenToClient(&ptCursor);
@@ -5320,4 +5406,31 @@ void CDjVuView::UpdateMagnifyWnd()
 		GetMainFrame()->UpdateWindow();
 
 	pMagnifyWnd->UpdateWindow();
+}
+
+void CDjVuView::OnStartPan()
+{
+	StopDragging();
+	ShowCursor();
+	m_bPanning = true;
+}
+
+void CDjVuView::OnPan(CSize szScroll)
+{
+	if ((m_nLayout == Continuous || m_nLayout == ContinuousFacing) && szScroll.cy != 0)
+		UpdatePageSizes(GetScrollPos(SB_VERT), szScroll.cy);
+
+	OnScrollBy(szScroll, true);
+
+	if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
+	{
+		UpdateVisiblePages();
+		GetMainFrame()->UpdatePageCombo();
+	}
+}
+
+void CDjVuView::OnEndPan()
+{
+	ShowCursor();
+	m_bPanning = false;
 }

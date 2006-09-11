@@ -54,6 +54,8 @@ void CFindDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CFindDlg, CDialog)
 	ON_BN_CLICKED(IDC_FIND_ALL, OnFindAll)
 	ON_WM_CLOSE()
+	ON_EN_CHANGE(IDC_FIND, OnEnChangeFind)
+	ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
 
@@ -97,4 +99,27 @@ void CFindDlg::OnFindAll()
 void CFindDlg::SetStatusText(const CString& strStatus)
 {
 	GetDlgItem(IDC_SEARCH_STATUS)->SetWindowText(strStatus);
+}
+
+void CFindDlg::OnEnChangeFind()
+{
+	UpdateButtons();
+}
+
+void CFindDlg::UpdateButtons()
+{
+	CString strText;
+	GetDlgItem(IDC_FIND)->GetWindowText(strText);
+
+	bool bEnable = !strText.IsEmpty();
+	GetDlgItem(IDOK)->EnableWindow(bEnable);
+	GetDlgItem(IDC_FIND_ALL)->EnableWindow(bEnable);
+}
+
+void CFindDlg::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	CDialog::OnShowWindow(bShow, nStatus);
+
+	if (bShow)
+		UpdateButtons();
 }

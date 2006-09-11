@@ -1231,6 +1231,9 @@ IW44Image::Codec::decode_buckets(ZPCodec &zp, int bit, int band,
         if (bucketstate[buckno] & ACTIVE)
           {
             short *pcoeff = (short*)blk.data(fbucket+buckno);
+//< Changed for WinDjView project
+			if (pcoeff == 0) continue;
+//>
             for (int i=0; i<16; i++)
               if (cstate[i] & ACTIVE)
                 {
