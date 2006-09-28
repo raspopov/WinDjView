@@ -81,6 +81,17 @@ IDC_CURSOR_DRAG         CURSOR  DISCARDABLE     "..\\..\\res\\drag.cur"
 IDC_CURSOR_LINK         CURSOR  DISCARDABLE     "..\\..\\res\\link.cur"
 IDC_CURSOR_HAND         CURSOR  DISCARDABLE     "..\\..\\res\\hand.cur"
 IDC_CURSOR_MAGNIFY      CURSOR  DISCARDABLE     "..\\..\\res\\magnify.cur"
+IDC_CURSOR_PAN_UR       CURSOR  DISCARDABLE     "..\\..\\res\\pan_ur.cur"
+IDC_CURSOR_PAN_ALL      CURSOR  DISCARDABLE     "..\\..\\res\\pan_all.cur"
+IDC_CURSOR_PAN_D        CURSOR  DISCARDABLE     "..\\..\\res\\pan_d.cur"
+IDC_CURSOR_PAN_DL       CURSOR  DISCARDABLE     "..\\..\\res\\pan_dl.cur"
+IDC_CURSOR_PAN_DR       CURSOR  DISCARDABLE     "..\\..\\res\\pan_dr.cur"
+IDC_CURSOR_PAN_L        CURSOR  DISCARDABLE     "..\\..\\res\\pan_l.cur"
+IDC_CURSOR_PAN_LR       CURSOR  DISCARDABLE     "..\\..\\res\\pan_lr.cur"
+IDC_CURSOR_PAN_R        CURSOR  DISCARDABLE     "..\\..\\res\\pan_r.cur"
+IDC_CURSOR_PAN_U        CURSOR  DISCARDABLE     "..\\..\\res\\pan_u.cur"
+IDC_CURSOR_PAN_UD       CURSOR  DISCARDABLE     "..\\..\\res\\pan_ud.cur"
+IDC_CURSOR_PAN_UL       CURSOR  DISCARDABLE     "..\\..\\res\\pan_ul.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -108,6 +119,7 @@ IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "..\\..\\res\\Toolbar.bmp"
 IDB_CLOSE               BITMAP  MOVEABLE PURE   "..\\..\\res\\close.bmp"
 IDB_BOOKMARKS           BITMAP  MOVEABLE PURE   "..\\..\\res\\bookmarks.bmp"
 IDB_DONATE              BITMAP  MOVEABLE PURE   "..\\..\\res\\donate.bmp"
+IDB_PAN_ANCHOR          BITMAP  MOVEABLE PURE   "..\\..\\res\\pan_anchor.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -193,13 +205,19 @@ BEGIN
         MENUITEM "副本另存为(&A)...\tCtrl+S",   ID_FILE_SAVE_COPY_AS
         MENUITEM "关闭(&C)\tCtrl+W",            ID_FILE_CLOSE
         MENUITEM SEPARATOR
-        MENUITEM "设置(&S)...",                 ID_FILE_SETTINGS
+        MENUITEM "设置(&S)...\tCtrl+,",         ID_FILE_SETTINGS
         MENUITEM "导出文本(&E)...",             ID_FILE_EXPORT_TEXT
         MENUITEM "打印(&P)...\tCtrl+P",         ID_FILE_PRINT
         MENUITEM SEPARATOR
         MENUITEM "近期打开的文件",              ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "退出(&X)\tCtrl+Q",            ID_APP_EXIT
+    END
+    POPUP "编辑(&E)"
+    BEGIN
+        MENUITEM "复制文本(&C)\tCtrl+C",        ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "查找(&F)...\tCtrl+F",         ID_EDIT_FIND
     END
     POPUP "查看(&V)"
     BEGIN
@@ -239,16 +257,16 @@ BEGIN
         END
         POPUP "旋转(&R)"
         BEGIN
-            MENUITEM "逆时针(&L)",                  ID_ROTATE_LEFT
-            MENUITEM "顺时针(&R)",                  ID_ROTATE_RIGHT
-            MENUITEM "180度(&1)",                   ID_ROTATE_180
+            MENUITEM "逆时针(&L)\tCtrl+Shift+Left Arrow", ID_ROTATE_LEFT
+            MENUITEM "顺时针(&R)\tCtrl+Shift+Right Arrow", ID_ROTATE_RIGHT
+            MENUITEM "180度(&1)\tCtrl+Shift+Down Arrow", ID_ROTATE_180
         END
         POPUP "布局(&Y)"
         BEGIN
-            MENUITEM "单页(&S)",                    ID_LAYOUT_SINGLEPAGE
-            MENUITEM "连续(&C)",                    ID_LAYOUT_CONTINUOUS
-            MENUITEM "对开(&F)",                    ID_LAYOUT_FACING
-            MENUITEM "连续(&O) - 对开",             ID_LAYOUT_CONTINUOUS_FACING
+            MENUITEM "单页(&S)\tCtrl+Atl+1",        ID_LAYOUT_SINGLEPAGE
+            MENUITEM "连续(&C)\tCtrl+Atl+2",        ID_LAYOUT_CONTINUOUS
+            MENUITEM "对开(&F)\tCtrl+Atl+3",        ID_LAYOUT_FACING
+            MENUITEM "连续(&O) - 对开\tCtrl+Atl+4", ID_LAYOUT_CONTINUOUS_FACING
 
             MENUITEM SEPARATOR
             MENUITEM "首页单独显示(&A)",            ID_LAYOUT_FIRSTPAGE_ALONE
@@ -262,13 +280,16 @@ BEGIN
             MENUITEM "前景(&F)\tCtrl+Shift+4",      ID_DISPLAY_FOREGROUND
         END
         MENUITEM SEPARATOR
-        MENUITEM "查找(&F)...\tCtrl+F",         ID_EDIT_FIND
-        MENUITEM "复制文本(&C)\tCtrl+C",        ID_EDIT_COPY
-        MENUITEM SEPARATOR
         POPUP "&Language"
         BEGIN
             MENUITEM "&English",                    ID_LANGUAGE_FIRST
         END
+    END
+    POPUP "工具(&T)"
+    BEGIN
+        MENUITEM "手型工具(&H)",                ID_MODE_DRAG
+        MENUITEM "选择工具(&S)",                ID_MODE_SELECT
+        MENUITEM "放大镜(&M)",                  ID_MODE_MAGNIFY
     END
     POPUP "窗口(&W)"
     BEGIN
@@ -438,12 +459,16 @@ BEGIN
     EDITTEXT        IDC_POSITION_TOP,204,184,38,12,ES_AUTOHSCROLL
     CONTROL         "图像居中(&M)",IDC_CENTER_IMAGE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,198,202,57,9
+    CONTROL         "修剪内容",IDC_CLIP_CONTENT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,198,216,63,9
     LTEXT           "缩放(&S):",IDC_STATIC,304,168,33,8
     EDITTEXT        IDC_SCALE,338,166,38,12,ES_AUTOHSCROLL
     CONTROL         "按纸张大小缩放",IDC_SCALE_TO_FIT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,316,188,73,9
     CONTROL         "收缩过大的页面(&H)",IDC_SHRINK_OVERSIZED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,316,202,89,9
+    CONTROL         "忽略打印机的边距设定",IDC_IGNORE_MARGINS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,316,216,97,9
     LTEXT           "左(&L):",IDC_STATIC,14,251,29,9
     EDITTEXT        IDC_MARGIN_LEFT,44,249,36,12,ES_AUTOHSCROLL
     LTEXT           "上(&T):",IDC_STATIC,14,269,29,9
@@ -461,6 +486,8 @@ BEGIN
     LTEXT           "打印",IDC_STATIC,304,269,17,9
     COMBOBOX        IDC_COMBO_PAGESPERSHEET,326,267,91,84,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
+    CONTROL         "逆序打印",IDC_REVERSE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,12,297,66,9
     DEFPUSHBUTTON   "打印",IDOK,319,295,50,14
     PUSHBUTTON      "关闭",IDCANCEL,374,295,50,14
     GROUPBOX        "打印机",IDC_STATIC,167,7,257,87
@@ -486,12 +513,6 @@ BEGIN
     LTEXT           "毫米",IDC_STATIC,248,168,21,9
     LTEXT           "毫米",IDC_STATIC,248,186,21,9
     CTEXT           "页面尺寸",IDC_STATIC_PAPER,14,138,138,8
-    CONTROL         "逆序打印",IDC_REVERSE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,297,66,9
-    CONTROL         "修剪内容",IDC_CLIP_CONTENT,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,198,216,63,9
-    CONTROL         "忽略打印机的边距设定",IDC_IGNORE_MARGINS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,316,216,97,9
 END
 
 IDD_PROGRESS DIALOG DISCARDABLE  0, 0, 171, 61
@@ -516,42 +537,50 @@ BEGIN
     PUSHBUTTON      "取消",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 219, 240
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 219, 295
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "设置"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "确定",IDOK,107,219,50,14
-    PUSHBUTTON      "取消",IDCANCEL,162,219,50,14
-    GROUPBOX        "文件关联",IDC_STATIC,7,7,205,58
+    DEFPUSHBUTTON   "确定",IDOK,107,274,50,14
+    PUSHBUTTON      "取消",IDCANCEL,162,274,50,14
     LTEXT           "点击按钮将.djvu和.djv文件关联到本程序:",IDC_STATIC,15,
                     18,182,9
     PUSHBUTTON      "关联(&A)",IDC_ASSOCIATE,15,30,50,14
     CONTROL         "在程序启动时恢复关联(&R)",IDC_RESTORE_ASSOCS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,49,188,10
-    GROUPBOX        "显示",IDC_STATIC,7,144,205,68
     CONTROL         "在后台为所有页面生成缩略图(&T)",IDC_GEN_ALL_THUMBNAILS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,81,188,10
-    CONTROL         "全屏模式下点击鼠标来切换页面(&M)",IDC_FULLSCREEN_CLICKS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,95,188,10
-    CONTROL         "调整设定(&D):",IDC_ADJUST_DISPLAY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,156,97,9
-    LTEXT           "亮度(&B): 0",IDC_BRIGHTNESS_TEXT,15,170,65,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,82,170,
-                    125,12
-    LTEXT           "对比度(&C): 0",IDC_CONTRAST_TEXT,15,183,65,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,82,183,
-                    125,12
-    LTEXT           "伽玛值(&G): 1.0",IDC_GAMMA_TEXT,15,196,65,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,82,195,125,
-                    12
-    LTEXT           "WinDjView\nby Andrew Zhezherun",IDC_STATIC_ABOUT,7,219,
-                    92,18
-    GROUPBOX        "综合",IDC_STATIC,7,69,205,70
-    CONTROL         "在关闭多个文档时发出警告(&W)",IDC_WARN_CLOSE_MULTIPLE,
+    CONTROL         "全屏模式下点击鼠标来切换页面(&M)",IDC_FULLSCREEN_CLICKS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,109,188,10
+    CONTROL         "在关闭多个文档时发出警告(&W)",IDC_WARN_CLOSE_MULTIPLE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,81,188,10
     CONTROL         "在高放大级别时对图像进行锐化(&S)",IDC_HQ_SCALING,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,123,188,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,197,188,10
+    CONTROL         "调整设定(&D):",IDC_ADJUST_DISPLAY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,211,97,9
+    LTEXT           "亮度(&B): 0",IDC_BRIGHTNESS_TEXT,15,225,65,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,82,224,
+                    125,12
+    LTEXT           "对比度(&C): 0",IDC_CONTRAST_TEXT,15,238,65,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,82,237,
+                    125,12
+    LTEXT           "伽玛值(&G): 1.0",IDC_GAMMA_TEXT,15,251,65,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,82,250,125,
+                    12
+    GROUPBOX        "文件关联",IDC_STATIC,7,7,205,58
+    GROUPBOX        "综合",IDC_STATIC,7,69,205,112
+    GROUPBOX        "显示",IDC_STATIC,7,185,205,82
+    LTEXT           "WinDjView\nby Andrew Zhezherun",IDC_STATIC_ABOUT,7,274,
+                    92,18
+    CONTROL         "全屏模式下总是隐藏滚动条(&H)",IDC_FULLSCREEN_HIDESCROLL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,123,188,10
+    CONTROL         "反转Ctrl+鼠标滚轮的缩放方向(&I)",IDC_INVERT_WHEEL_ZOOM,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,137,188,10
+    CONTROL         "按Esc键退出程序(&E)",IDC_CLOSE_ON_ESC,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,151,188,10
+    CONTROL         "换行显示过长的书签(&L)",IDC_WRAP_BOOKMARKS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,165,188,10
 END
 
 IDD_FIND DIALOG DISCARDABLE  0, 0, 287, 64
@@ -578,7 +607,7 @@ BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
 END
 
-IDD_GOTO_PAGE DIALOG DISCARDABLE  0, 0, 138, 47
+IDD_GOTO_PAGE DIALOG DISCARDABLE  0, 0, 132, 47
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "页面跳转"
 FONT 8, "MS Shell Dlg"
@@ -587,9 +616,9 @@ BEGIN
     EDITTEXT        IDC_PAGE,41,7,35,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN_PAGE,"msctls_updown32",UDS_ALIGNRIGHT | 
                     UDS_AUTOBUDDY | UDS_ARROWKEYS,67,7,11,14
-    LTEXT           "( 共9999页 )",IDC_PAGE_COUNT,80,7,49,12,SS_CENTERIMAGE
-    DEFPUSHBUTTON   "确定",IDOK,14,26,50,14
-    PUSHBUTTON      "取消",IDCANCEL,73,26,50,14
+    LTEXT           "( 共9999页 )",IDC_PAGE_COUNT,80,7,45,12,SS_CENTERIMAGE
+    DEFPUSHBUTTON   "确定",IDOK,13,26,50,14
+    PUSHBUTTON      "取消",IDCANCEL,68,26,50,14
 END
 
 
@@ -600,8 +629,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,4,2,0
- PRODUCTVERSION 0,4,2,0
+ FILEVERSION 0,4,3,0
+ PRODUCTVERSION 0,4,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -619,14 +648,14 @@ BEGIN
             VALUE "Comments", "简体中文\0"
             VALUE "CompanyName", "Andrew Zhezherun\0"
             VALUE "FileDescription", "WinDjView 简体中文资源文件\0"
-            VALUE "FileVersion", "0.4.2\0"
-            VALUE "InternalName", "WinDjView-0.4.2-zh_CN.dll\0"
+            VALUE "FileVersion", "0.4.3\0"
+            VALUE "InternalName", "WinDjView-0.4.3-zh_CN.dll\0"
             VALUE "LegalCopyright", "版权所有 (C) 2004-2006 Andrew Zhezherun。 保留所有权利。\0"
             VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "WinDjView-0.4.2-zh_CN.dll\0"
+            VALUE "OriginalFilename", "WinDjView-0.4.3-zh_CN.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "WinDjView\0"
-            VALUE "ProductVersion", "0.4.2\0"
+            VALUE "ProductVersion", "0.4.3\0"
             VALUE "SpecialBuild", "\0"
         END
     END
@@ -684,7 +713,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 212
         TOPMARGIN, 7
-        BOTTOMMARGIN, 233
+        BOTTOMMARGIN, 288
     END
 
     IDD_FIND, DIALOG
@@ -706,7 +735,7 @@ BEGIN
     IDD_GOTO_PAGE, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 131
+        RIGHTMARGIN, 125
         TOPMARGIN, 7
         BOTTOMMARGIN, 40
     END
@@ -816,7 +845,7 @@ BEGIN
     ID_EDIT_CLEAR_ALL       "擦除所有的内容\n擦除所有"
     ID_EDIT_COPY            "复制选中的内容并放入剪贴板\n复制"
     ID_EDIT_CUT             "剪切选中的内容并放入剪贴板\n剪切"
-    ID_EDIT_FIND            "在当前文档中查找文本\n查找"
+    ID_EDIT_FIND            "查找指定的文本\n查找"
     ID_EDIT_PASTE           "插入剪贴板的内容\n粘贴"
     ID_EDIT_REPEAT          "重复上一次操作\n重复"
     ID_EDIT_REPLACE         "将指定的文本替换成其它的文本\n替换"
@@ -851,8 +880,13 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    ID_LAYOUT_FIRSTPAGE_ALONE "在对开或连续-对开页面布局时将第一页单独显示"
     IDS_OPENFILE            "打开"
-	IDS_ALLFILTER           "所有文件 (*.*)"
+    IDS_ALLFILTER           "所有文件 (*.*)"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
     AFX_IDS_PREVIEW_CLOSE   "关闭打印预览模式\n取消预览"
 END
 
@@ -933,7 +967,7 @@ BEGIN
     IDS_CENTIMETER          "厘米"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "0.4.2"
+    IDS_CURRENT_VERSION     "0.4.3"
     IDS_FATAL_ERROR         "发生了一个严重错误。\n\n该错误可能是由于恶意文档所导致。程序可能将无法正常工作。强烈建议你重启本程序。\n\n点击 确定 以关闭本程序，或者点击 取消 返回你打开的文档。"
     IDS_WARN_CLOSE_MULTIPLE "你将要同时关闭%d个已打开的文档，确定要继续吗？"
 END
@@ -966,7 +1000,7 @@ BEGIN
     ID_ZOOM_OUT             "放大\n放大"
     ID_MODE_DRAG            "手型工具\n手型工具"
     ID_MODE_SELECT          "选择工具\n选择工具"
-    ID_MODE_MAGNIFY         "Activate magnifying glass\nMagnifying Glass"
+    ID_MODE_MAGNIFY         "激活放大镜\n放大镜"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -996,7 +1030,7 @@ BEGIN
     IDS_PRINTING            "正在打印，请稍候..."
     IDS_ERROR_RENDERING_PAGE "页面显示错误"
     IDS_SEARCHING_PAGE      "正在搜索页面%d ( 共%d页 )"
-    IDS_NUM_OCCURRENCES     "%d occurrences found"
+    IDS_NUM_OCCURRENCES     "共找到 %d 处相符"
     IDS_EXPORT_TEXT         "导出文本"
     IDS_TEXT_FILTER         "文本文档 (*.txt)|*.txt|所有文件 (*.*)|*.*||"
     IDS_PRINTING_PAGE       "正在打印第%d页 ( 共%d页 )，请稍候..."
@@ -1006,11 +1040,6 @@ BEGIN
     IDS_FIT_HEIGHT          "适应高度"
     IDS_FIT_PAGE            "适应页面"
     IDS_ACTUAL_SIZE         "实际大小"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_LAYOUT_FIRSTPAGE_ALONE "在对开或连续-对开页面布局时将第一页单独显示"
 END
 
 #endif    // Chinese (P.R.C.) resources

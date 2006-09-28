@@ -43,7 +43,7 @@ RSC=rc.exe
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x1809 /d "NDEBUG"
-# ADD RSC /l 0x419 /d "NDEBUG"
+# ADD RSC /l 0x804 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -103,6 +103,50 @@ SOURCE=..\..\res\link.cur
 # Begin Source File
 
 SOURCE=..\..\res\magnify.cur
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\pan_all.cur
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\pan_d.cur
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\pan_dl.cur
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\pan_dr.cur
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\pan_l.cur
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\pan_lr.cur
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\pan_r.cur
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\pan_u.cur
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\pan_ud.cur
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\pan_ul.cur
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\pan_ur.cur
 # End Source File
 # Begin Source File
 

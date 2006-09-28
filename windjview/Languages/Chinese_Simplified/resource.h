@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
-// Used by WinDjViewZH_CN.rc
+// Microsoft Visual C++ generated include file.
+// Used by WinDjView.rc
 //
 #define IDR_MANIFEST                    1
 #define IDC_PROPERTIES                  3
@@ -94,6 +94,18 @@
 #define IDS_CURRENT_VERSION             204
 #define IDS_FATAL_ERROR                 205
 #define IDS_WARN_CLOSE_MULTIPLE         206
+#define IDC_CURSOR_PAN_UR               207
+#define IDC_CURSOR_PAN_ALL              208
+#define IDC_CURSOR_PAN_D                209
+#define IDC_CURSOR_PAN_DL               210
+#define IDC_CURSOR_PAN_DR               211
+#define IDC_CURSOR_PAN_L                212
+#define IDC_CURSOR_PAN_LR               213
+#define IDC_CURSOR_PAN_R                214
+#define IDC_CURSOR_PAN_U                215
+#define IDC_CURSOR_PAN_UD               216
+#define IDC_CURSOR_PAN_UL               217
+#define IDB_PAN_ANCHOR                  218
 #define IDC_CURSOR_MAGNIFY              254
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
@@ -227,7 +239,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        207
+#define _APS_NEXT_RESOURCE_VALUE        219
 #define _APS_NEXT_COMMAND_VALUE         33123
 #define _APS_NEXT_CONTROL_VALUE         1061
 #define _APS_NEXT_SYMED_VALUE           109

@@ -10,6 +10,7 @@
 #include "afxres.h"
 #ifndef VK_OEM_PLUS
 #define VK_OEM_PLUS 0xBB
+#define VK_OEM_COMMA 0xBC
 #define VK_OEM_MINUS 0xBD
 #endif
 #ifndef RT_MANIFEST
@@ -241,6 +242,17 @@ IDC_CURSOR_DRAG         CURSOR  DISCARDABLE     "..\\..\\res\\drag.cur"
 IDC_CURSOR_LINK         CURSOR  DISCARDABLE     "..\\..\\res\\link.cur"
 IDC_CURSOR_HAND         CURSOR  DISCARDABLE     "..\\..\\res\\hand.cur"
 IDC_CURSOR_MAGNIFY      CURSOR  DISCARDABLE     "..\\..\\res\\magnify.cur"
+IDC_CURSOR_PAN_UR       CURSOR  DISCARDABLE     "..\\..\\res\\pan_ur.cur"
+IDC_CURSOR_PAN_ALL      CURSOR  DISCARDABLE     "..\\..\\res\\pan_all.cur"
+IDC_CURSOR_PAN_D        CURSOR  DISCARDABLE     "..\\..\\res\\pan_d.cur"
+IDC_CURSOR_PAN_DL       CURSOR  DISCARDABLE     "..\\..\\res\\pan_dl.cur"
+IDC_CURSOR_PAN_DR       CURSOR  DISCARDABLE     "..\\..\\res\\pan_dr.cur"
+IDC_CURSOR_PAN_L        CURSOR  DISCARDABLE     "..\\..\\res\\pan_l.cur"
+IDC_CURSOR_PAN_LR       CURSOR  DISCARDABLE     "..\\..\\res\\pan_lr.cur"
+IDC_CURSOR_PAN_R        CURSOR  DISCARDABLE     "..\\..\\res\\pan_r.cur"
+IDC_CURSOR_PAN_U        CURSOR  DISCARDABLE     "..\\..\\res\\pan_u.cur"
+IDC_CURSOR_PAN_UD       CURSOR  DISCARDABLE     "..\\..\\res\\pan_ud.cur"
+IDC_CURSOR_PAN_UL       CURSOR  DISCARDABLE     "..\\..\\res\\pan_ul.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -268,6 +280,7 @@ IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "..\\..\\res\\Toolbar.bmp"
 IDB_CLOSE               BITMAP  MOVEABLE PURE   "..\\..\\res\\close.bmp"
 IDB_BOOKMARKS           BITMAP  MOVEABLE PURE   "..\\..\\res\\bookmarks.bmp"
 IDB_DONATE              BITMAP  MOVEABLE PURE   "..\\..\\res\\donate.bmp"
+IDB_PAN_ANCHOR          BITMAP  MOVEABLE PURE   "..\\..\\res\\pan_anchor.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
