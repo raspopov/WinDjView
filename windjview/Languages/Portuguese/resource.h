@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by WinDjView.rc
+// Used by WinDjViewPT.rc
 //
 #define IDR_MANIFEST                    1
 #define IDC_PROPERTIES                  3

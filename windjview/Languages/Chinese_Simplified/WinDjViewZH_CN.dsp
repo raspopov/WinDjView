@@ -110,6 +110,10 @@ SOURCE=..\..\res\pan_all.cur
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\res\pan_anchor.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\res\pan_d.cur
 # End Source File
 # Begin Source File
@@ -155,6 +159,10 @@ SOURCE=..\..\res\Toolbar.bmp
 # Begin Source File
 
 SOURCE=..\..\res\WinDjView.ico
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\WinDjView.rc2
 # End Source File
 # End Group
 # Begin Source File
