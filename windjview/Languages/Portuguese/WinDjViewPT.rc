@@ -21,12 +21,12 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Russian resources
+// Portuguese (Portugal) resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_PTG)
 #ifdef _WIN32
-LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
-#pragma code_page(1251)
+LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE
+#pragma code_page(1252)
 #endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
@@ -45,6 +45,7 @@ BEGIN
     "#include ""afxres.h""\r\n"
     "#ifndef VK_OEM_PLUS\r\n"
     "#define VK_OEM_PLUS 0xBB\r\n"
+    "#define VK_OEM_COMMA 0xBC\r\n"
     "#define VK_OEM_MINUS 0xBD\r\n"
     "#endif\r\n"
     "#ifndef RT_MANIFEST\r\n"
@@ -60,7 +61,7 @@ BEGIN
     "#define _AFX_NO_TRACKER_RESOURCES\r\n"
     "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
     "\r\n"
-    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_PTG)\r\n"
     "LANGUAGE 9, 1\r\n"
     "#pragma code_page(1252)\r\n"
     "#include ""..\\..\\res\\WinDjView.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
@@ -71,19 +72,6 @@ BEGIN
 END
 
 #endif    // APSTUDIO_INVOKED
-
-#endif    // Russian resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Portuguese (Portugal) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_PTG)
-#ifdef _WIN32
-LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE
-#pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1066,7 +1054,7 @@ END
 #define _AFX_NO_TRACKER_RESOURCES
 #define _AFX_NO_PROPERTY_RESOURCES
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_PTG)
 LANGUAGE 9, 1
 #pragma code_page(1252)
 #include "..\..\res\WinDjView.rc2"  // non-Microsoft Visual C++ edited resources

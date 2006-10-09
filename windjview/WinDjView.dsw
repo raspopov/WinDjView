@@ -26,6 +26,9 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name WinDjViewZH_CN
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name WinDjViewTT
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -55,6 +58,18 @@ Package=<4>
 ###############################################################################
 
 Project: "WinDjViewRU"=.\Languages\Russian\WinDjViewRU.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "WinDjViewTT"=.\Languages\Tatarish\WinDjViewTT.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

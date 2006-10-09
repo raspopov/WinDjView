@@ -10,6 +10,7 @@
 #include "afxres.h"
 #ifndef VK_OEM_PLUS
 #define VK_OEM_PLUS 0xBB
+#define VK_OEM_COMMA 0xBC
 #define VK_OEM_MINUS 0xBD
 #endif
 #ifndef RT_MANIFEST
@@ -44,6 +45,7 @@ BEGIN
     "#include ""afxres.h""\r\n"
     "#ifndef VK_OEM_PLUS\r\n"
     "#define VK_OEM_PLUS 0xBB\r\n"
+    "#define VK_OEM_COMMA 0xBC\r\n"
     "#define VK_OEM_MINUS 0xBD\r\n"
     "#endif\r\n"
     "#ifndef RT_MANIFEST\r\n"
@@ -59,7 +61,7 @@ BEGIN
     "#define _AFX_NO_TRACKER_RESOURCES\r\n"
     "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
     "\r\n"
-    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)\r\n"
     "LANGUAGE 9, 1\r\n"
     "#pragma code_page(1252)\r\n"
     "#include ""..\\..\\res\\WinDjView.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
@@ -1072,7 +1074,7 @@ END
 #define _AFX_NO_TRACKER_RESOURCES
 #define _AFX_NO_PROPERTY_RESOURCES
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
 LANGUAGE 9, 1
 #pragma code_page(1252)
 #include "..\..\res\WinDjView.rc2"  // non-Microsoft Visual C++ edited resources

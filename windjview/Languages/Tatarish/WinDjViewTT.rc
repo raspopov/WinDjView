@@ -1,0 +1,1055 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+#ifndef VK_OEM_PLUS
+#define VK_OEM_PLUS 0xBB
+#define VK_OEM_COMMA 0xBC
+#define VK_OEM_MINUS 0xBD
+#endif
+#ifndef RT_MANIFEST
+#define RT_MANIFEST 24
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Tatarish resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_TAT)
+#ifdef _WIN32
+LANGUAGE LANG_TURKISH, 3
+#pragma code_page(1254)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE MOVEABLE PURE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE MOVEABLE PURE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "#ifndef VK_OEM_PLUS\r\n"
+    "#define VK_OEM_PLUS 0xBB\r\n"
+    "#define VK_OEM_COMMA 0xBC\r\n"
+    "#define VK_OEM_MINUS 0xBD\r\n"
+    "#endif\r\n"
+    "#ifndef RT_MANIFEST\r\n"
+    "#define RT_MANIFEST 24\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE MOVEABLE PURE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_TAT)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""..\\..\\res\\WinDjView.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#include ""afxprint.rc""       // printing/print preview resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_CURSOR_DRAG         CURSOR  DISCARDABLE     "..\\..\\res\\drag.cur"
+IDC_CURSOR_LINK         CURSOR  DISCARDABLE     "..\\..\\res\\link.cur"
+IDC_CURSOR_HAND         CURSOR  DISCARDABLE     "..\\..\\res\\hand.cur"
+IDC_CURSOR_MAGNIFY      CURSOR  DISCARDABLE     "..\\..\\res\\magnify.cur"
+IDC_CURSOR_PAN_UR       CURSOR  DISCARDABLE     "..\\..\\res\\pan_ur.cur"
+IDC_CURSOR_PAN_ALL      CURSOR  DISCARDABLE     "..\\..\\res\\pan_all.cur"
+IDC_CURSOR_PAN_D        CURSOR  DISCARDABLE     "..\\..\\res\\pan_d.cur"
+IDC_CURSOR_PAN_DL       CURSOR  DISCARDABLE     "..\\..\\res\\pan_dl.cur"
+IDC_CURSOR_PAN_DR       CURSOR  DISCARDABLE     "..\\..\\res\\pan_dr.cur"
+IDC_CURSOR_PAN_L        CURSOR  DISCARDABLE     "..\\..\\res\\pan_l.cur"
+IDC_CURSOR_PAN_LR       CURSOR  DISCARDABLE     "..\\..\\res\\pan_lr.cur"
+IDC_CURSOR_PAN_R        CURSOR  DISCARDABLE     "..\\..\\res\\pan_r.cur"
+IDC_CURSOR_PAN_U        CURSOR  DISCARDABLE     "..\\..\\res\\pan_u.cur"
+IDC_CURSOR_PAN_UD       CURSOR  DISCARDABLE     "..\\..\\res\\pan_ud.cur"
+IDC_CURSOR_PAN_UL       CURSOR  DISCARDABLE     "..\\..\\res\\pan_ul.cur"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// 24
+//
+
+IDR_MANIFEST            24      MOVEABLE PURE   "..\\..\\res\\WinDjView.manifest"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "..\\..\\res\\WinDjView.ico"
+IDR_DjVuTYPE            ICON    DISCARDABLE     "..\\..\\res\\DjVuDoc.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "..\\..\\res\\Toolbar.bmp"
+IDB_CLOSE               BITMAP  MOVEABLE PURE   "..\\..\\res\\close.bmp"
+IDB_BOOKMARKS           BITMAP  MOVEABLE PURE   "..\\..\\res\\bookmarks.bmp"
+IDB_DONATE              BITMAP  MOVEABLE PURE   "..\\..\\res\\donate.bmp"
+IDB_PAN_ANCHOR          BITMAP  MOVEABLE PURE   "..\\..\\res\\pan_anchor.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR MOVEABLE PURE  16, 16
+BEGIN
+    BUTTON      ID_FILE_OPEN
+    SEPARATOR
+    BUTTON      ID_FILE_PRINT
+    BUTTON      ID_EDIT_FIND
+    BUTTON      ID_APP_ABOUT
+    SEPARATOR
+    BUTTON      ID_MODE_DRAG
+    BUTTON      ID_MODE_SELECT
+    BUTTON      ID_MODE_MAGNIFY
+    SEPARATOR
+    BUTTON      ID_VIEW_FIRSTPAGE
+    BUTTON      ID_VIEW_PREVIOUSPAGE
+    SEPARATOR
+    BUTTON      ID_VIEW_NEXTPAGE
+    BUTTON      ID_VIEW_LASTPAGE
+    SEPARATOR
+    BUTTON      ID_VIEW_BACK
+    BUTTON      ID_VIEW_FORWARD
+    SEPARATOR
+    BUTTON      ID_LAYOUT_SINGLEPAGE
+    BUTTON      ID_LAYOUT_CONTINUOUS
+    BUTTON      ID_LAYOUT_FACING
+    BUTTON      ID_LAYOUT_CONTINUOUS_FACING
+    SEPARATOR
+    BUTTON      ID_ZOOM_OUT
+    SEPARATOR
+    BUTTON      ID_ZOOM_IN
+    BUTTON      ID_ZOOM_100
+    BUTTON      ID_ZOOM_FITPAGE
+    BUTTON      ID_ZOOM_FITWIDTH
+    SEPARATOR
+    BUTTON      ID_ROTATE_LEFT
+    BUTTON      ID_ROTATE_RIGHT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU DISCARDABLE 
+BEGIN
+    POPUP "&Birem"
+    BEGIN
+        MENUITEM "&Açu...\tCtrl+O",             57601
+        MENUITEM "&Caylaw...\tCtrl+,",          32813
+        MENUITEM SEPARATOR
+        MENUITEM "Soñðý Birem",                 57616, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&Çýðýþ\tCtrl+Q",              57665
+    END
+    POPUP "&Küreneþ"
+    BEGIN
+        MENUITEM "&Qoraltirä",                  59392
+        MENUITEM "&Torýþtirä",                  59393
+        MENUITEM SEPARATOR
+        POPUP "&Telläþterü"
+        BEGIN
+            MENUITEM "&Ýnglizçä",                   32860
+        END
+    END
+    POPUP "&Yärdäm"
+    BEGIN
+        MENUITEM "&Yañartma Ezläw...",          32852
+        MENUITEM "WinDjView &Turýnda...",       57664
+    END
+END
+
+IDR_DjVuTYPE MENU DISCARDABLE 
+BEGIN
+    POPUP "&Birem"
+    BEGIN
+        MENUITEM "&Açu...\tCtrl+O",             57601
+        MENUITEM "Save Copy &As...\tCtrl+S",    57611
+        MENUITEM "&Yap\tCtrl+W",                57602
+        MENUITEM SEPARATOR
+        MENUITEM "&Caylaw...\tCtrl+,",          32813
+        MENUITEM "&Yazmalar Saqlaw...",         32850
+        MENUITEM "&Bastýr...\tCtrl+P",          57607
+        MENUITEM SEPARATOR
+        MENUITEM "Soñðý Birem",                 57616, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&Çýðýþ\tCtrl+Q",              57665
+    END
+    POPUP "&Üzgärtü"
+    BEGIN
+        MENUITEM "&Ýskä al\tCtrl+C",            57634
+        MENUITEM SEPARATOR
+        MENUITEM "&Ezläw...\tCtrl+F",           57636
+    END
+    POPUP "&Küreneþ"
+    BEGIN
+        MENUITEM "&Qoraltirä",                  59392
+        MENUITEM "&Torýþtirä",                  59393
+        MENUITEM SEPARATOR
+        MENUITEM "&Cäyep\tCtrl+L",              32858
+        MENUITEM SEPARATOR
+        MENUITEM "Tulý &Bit\tCtrl+0",           32784
+        MENUITEM "Bit &Kiñlege\tCtrl+2",        32782
+        MENUITEM "Bit &Suzýp\tCtrl+3",          32786
+        MENUITEM "&Çýn Ülçäm\tCtrl+4",          32785
+        POPUP "&Erelek"
+        BEGIN
+            MENUITEM "&Ereräk\tCtrl+Plus",          32842
+            MENUITEM "&Keçeräk\tCtrl+Minus",        32843
+            MENUITEM SEPARATOR
+            MENUITEM "&50%",                        32777
+            MENUITEM "&75%",                        32778
+            MENUITEM "&100%\tCtrl+1",               32779
+            MENUITEM "&200%",                       32780
+            MENUITEM "&400%",                       32781
+            MENUITEM SEPARATOR
+            MENUITEM "Ü&zençä...\tCtrl+M",          32787
+        END
+        MENUITEM SEPARATOR
+        POPUP "&Küçü"
+        BEGIN
+            MENUITEM "&Berençe Bit\tCtrl+Home",     32797
+            MENUITEM "&Ütkän Bit\tCtrl+PgUp",       32772
+            MENUITEM "&Kiläse Bit\tCtrl+PgDn",      32771
+            MENUITEM "&Soñðý Bit\tCtrl+End",        32798
+            MENUITEM "B&erär Bitkä...\tCtrl+G",     32859
+            MENUITEM SEPARATOR
+            MENUITEM "Ü&tkän Küreneþ\tAlt+Left Arrow", 32819
+            MENUITEM "K&iläse Küreneþ\tAlt+Right Arrow", 32820
+        END
+        POPUP "&Boru"
+        BEGIN
+            MENUITEM "&Sulða\tCtrl+Shift+Left Arrow", 32793
+            MENUITEM "&Uñða\tCtrl+Shift+Right Arrow", 32790
+            MENUITEM "&180°\tCtrl+Shift+Down Arrow", 32794
+        END
+        POPUP "Bit Te&zü"
+        BEGIN
+            MENUITEM "&Berläp\tCtrl+Atl+1",         33116
+            MENUITEM "&Ber-ber Artlý\tCtrl+Alt+2",  33117
+            MENUITEM "Ýke &Yaðýn\tCtrl+Alt+3",      33118
+            MENUITEM "Ýke Y&aðýn, Ber-ber Artlý\tCtrl+Alt+4", 33119
+            MENUITEM SEPARATOR
+            MENUITEM "B&erençe Yalðýz",             33120
+        END
+        POPUP "Tö&slelek"
+        BEGIN
+            MENUITEM "&Tösle\tCrtl+Shift+1",        32854
+            MENUITEM "&Qara && Aq\tCtrl+Shift+2",   32855
+            MENUITEM "&Asyaq\tCtrl+Shift+3",        32856
+            MENUITEM "Ö&syaq\tCtrl+Shift+4",        32857
+        END
+        MENUITEM SEPARATOR
+        POPUP "&Telläþterü"
+        BEGIN
+            MENUITEM "&Ýnglizçä",                   32860
+        END
+    END
+    POPUP "&Qoral"
+    BEGIN
+        MENUITEM "&Qul Qoralý",                 32844
+        MENUITEM "&Saylaw Qoralý",              32845
+        MENUITEM "&Eräytkeç",                   32846
+    END
+    POPUP "&Täräzä"
+    BEGIN
+        MENUITEM "Be&r-ber Artlý",              57650
+        MENUITEM "&Arqýlýða Bülep",             57651
+        MENUITEM "&Buyða Bülep",                57652
+        MENUITEM "&Tamðalar Tezü",              57649
+        MENUITEM SEPARATOR
+        MENUITEM "Bu täräzäne aç",              32826
+    END
+    POPUP "&Yärdäm"
+    BEGIN
+        MENUITEM "&Yañartma Ezläw...",          32852
+        MENUITEM "WinDjView &Turýnda...",       57664
+    END
+END
+
+IDR_POPUP MENU DISCARDABLE 
+BEGIN
+    POPUP "Popup"
+    BEGIN
+        MENUITEM "&Ýskä al",                    57634
+        MENUITEM SEPARATOR
+        MENUITEM "Bit &Turýnda...",             32809
+        MENUITEM "Bit &Saqlaw...",              32815
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS MOVEABLE PURE 
+BEGIN
+    "0",            ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_ZOOM_100,            VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_LAYOUT_SINGLEPAGE,   VIRTKEY, CONTROL, ALT, NOINVERT
+    "1",            ID_DISPLAY_COLOR,       VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    187,            ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    187,            ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    188,            ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
+    189,            ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    189,            ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_LAYOUT_CONTINUOUS,   VIRTKEY, CONTROL, ALT, NOINVERT
+    "2",            ID_DISPLAY_BW,          VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_LAYOUT_FACING,       VIRTKEY, CONTROL, ALT, NOINVERT
+    "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "4",            ID_ZOOM_ACTUALSIZE,     VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_LAYOUT_CONTINUOUS_FACING, VIRTKEY, CONTROL, ALT, 
+                                                    NOINVERT
+    "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, NOINVERT
+    "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_VIEW_GOTO_PAGE,      VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
+    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_ZOOM_IN,             VIRTKEY, NOINVERT
+    VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    VK_DOWN,        ID_ROTATE_180,          VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, NOINVERT
+    VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, CONTROL, NOINVERT
+    VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_HOME,        ID_VIEW_FIRSTPAGE,      VIRTKEY, NOINVERT
+    VK_HOME,        ID_VIEW_FIRSTPAGE,      VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_LEFT,        ID_VIEW_BACK,           VIRTKEY, ALT, NOINVERT
+    VK_LEFT,        ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, NOINVERT
+    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
+    VK_NEXT,        ID_VIEW_NEXTPAGE,       VIRTKEY, CONTROL, NOINVERT
+    VK_PRIOR,       ID_VIEW_PREVIOUSPAGE,   VIRTKEY, CONTROL, NOINVERT
+    VK_RIGHT,       ID_VIEW_FORWARD,        VIRTKEY, ALT, NOINVERT
+    VK_RIGHT,       ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, NOINVERT
+    VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 251, 122
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "WinDjView turýnda"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    ICON            IDR_MAINFRAME,-1,9,9,20,20
+    LTEXT           "WinDjView",1059,40,7,119,8,SS_NOPREFIX
+    LTEXT           "Qälämxaq (C) 2004-2006 Andrew Zhezherun",-1,40,17,149,8
+    DEFPUSHBUTTON   "Yap",1,194,7,50,14,WS_GROUP
+    LTEXT           "Eþlänmäneñ üz bite:",-1,40,35,64,8
+    LTEXT           "DjVuLibre'neñ üz bite:",-1,40,45,72,8
+    LTEXT           "http://windjview.sourceforge.net",1039,106,35,139,8
+    LTEXT           "http://djvu.sourceforge.net",1041,114,45,131,8
+    LTEXT           "Buþlay yazýlým bu; Free Software Foundation iðlan itkän GNU Töp Açýq Kileþü buyýnça bu yazýlýmný tarata, üzgärtä alasýñ.",
+                    -1,40,62,204,26
+    LTEXT           "PayPal aþa iðänäçe bulýp, bu yazýlým citeþterüen dawam itärgä yärtäm itä alasýñ",
+                    -1,40,94,137,17
+    CONTROL         "Ýðänä",1058,"Button",BS_OWNERDRAW | BS_BITMAP | 
+                    WS_TABSTOP,181,94,63,21
+END
+
+IDD_PRINT DIALOG DISCARDABLE  0, 0, 432, 316
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Bastýru"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "&Name:",-1,174,21,37,9
+    COMBOBOX        1000,215,19,145,82,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    PUSHBUTTON      "&Caylaw...",3,366,18,50,14
+    CONTROL         "&Birem eçenä bastýrasý",1002,"Button",BS_AUTOCHECKBOX | 
+                    NOT WS_VISIBLE | WS_TABSTOP,332,77,84,12
+    CONTROL         "Bastýrýp",1014,"Button",BS_AUTORADIOBUTTON | WS_GROUP,
+                    174,112,53,11
+    CONTROL         "Yatqýrýp",1015,"Button",BS_AUTORADIOBUTTON,174,128,53,
+                    11
+    LTEXT           "&Niçä tapqýr:",-1,304,111,62,11
+    EDITTEXT        1008,379,109,38,12,ES_AUTOHSCROLL
+    CONTROL         "",1007,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS,405,111,11,14
+    CONTROL         "Tezep",1009,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,379,
+                    128,37,11
+    CONTROL         "&Barýsýn",1003,"Button",BS_AUTORADIOBUTTON | WS_GROUP,
+                    14,166,37,11
+    CONTROL         "&Älege bitne",1006,"Button",BS_AUTORADIOBUTTON,14,180,
+                    59,11
+    CONTROL         "&Bitlär:",1004,"Button",BS_AUTORADIOBUTTON,14,194,37,11
+    EDITTEXT        1005,56,193,95,12,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "&Sul:",-1,174,168,21,9
+    EDITTEXT        1023,198,166,38,12,ES_AUTOHSCROLL
+    LTEXT           "&Ös:",-1,174,186,21,9
+    EDITTEXT        1024,198,184,38,12,ES_AUTOHSCROLL
+    CONTROL         "Sýnýn ü&zäkkä",1027,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,198,202,57,9
+    CONTROL         "Eçtälegen kisep",1031,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,198,216,69,9
+    LTEXT           "&Erelek:",-1,304,168,21,9
+    EDITTEXT        1026,331,166,38,12,ES_AUTOHSCROLL
+    CONTROL         "Tabaq eçenä sýydýrasý",1028,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,325,188,96,9
+    CONTROL         "Olýraq bitlär qýsasý",1029,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,325,202,89,9
+    CONTROL         "Basaq çiklärenä qarama",1033,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,325,216,95,9
+    LTEXT           "&Sulda:",-1,14,251,21,9
+    EDITTEXT        1017,38,249,38,12,ES_AUTOHSCROLL
+    LTEXT           "&Östä:",-1,14,269,21,9
+    EDITTEXT        1018,38,267,38,12,ES_AUTOHSCROLL
+    LTEXT           "&Uñda:",-1,84,251,27,9
+    EDITTEXT        1019,113,249,38,12,ES_AUTOHSCROLL
+    LTEXT           "&Asta:",-1,84,269,27,9
+    EDITTEXT        1020,113,267,38,12,ES_AUTOHSCROLL
+    LTEXT           "Ülçä&me:",-1,172,251,26,9
+    COMBOBOX        1001,198,249,84,81,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Bastýru:",-1,301,251,24,9
+    COMBOBOX        1016,326,249,92,81,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Bastýru:",-1,301,269,24,9
+    COMBOBOX        1022,326,267,92,84,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    CONTROL         "Kire tärtip",1035,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    12,297,66,9
+    DEFPUSHBUTTON   "Bastýr",1,320,295,50,14
+    PUSHBUTTON      "Yap",2,375,295,50,14
+    GROUPBOX        "Basaq",-1,167,7,258,87
+    LTEXT           "Urýnlaþu:",-1,174,55,37,9
+    LTEXT           "Töre:",-1,174,40,37,9
+    LTEXT           "Açýqlama:",-1,174,70,37,9
+    LTEXT           "Type",1011,216,40,138,9
+    LTEXT           "Location",1012,216,55,138,9
+    LTEXT           "Comment",1013,216,70,138,9
+    GROUPBOX        "Bastýru arasý",-1,7,154,153,78
+    GROUPBOX        "Tapqýr",-1,296,98,129,51
+    CONTROL         "",1021,"Static",SS_BLACKFRAME | NOT WS_VISIBLE,14,20,
+                    138,115
+    GROUPBOX        "Yünäleþ",-1,167,98,122,51
+    GROUPBOX        "Kürep alu",-1,7,7,153,142
+    GROUPBOX        "Çiklär (millimeter)",-1,7,237,153,49
+    GROUPBOX        "Tabaq",-1,167,237,122,49
+    LTEXT           "Öter belän ayýrýp bit sannarýn yä bit aralarýn kertäse. Ürnäk: 1,3,5-9",
+                    -1,16,210,137,17
+    GROUPBOX        "Bastýru köyläneþe",-1,296,237,129,49
+    GROUPBOX        "Urýnlaþu",-1,167,154,122,78
+    GROUPBOX        "Ereräytep bastýru",-1,296,155,129,78
+    LTEXT           "mm",-1,242,168,21,9
+    LTEXT           "mm",-1,242,186,21,9
+    CTEXT           "Tabaq ülçäme",1030,14,138,138,8
+END
+
+IDD_PROGRESS DIALOGEX 0, 0, 171, 61
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Kiräkmi",1,60,40,50,14
+    CTEXT           "Bit bastýru: 1, barý 3. Kötep tor...",1034,7,7,157,9
+    CONTROL         "",1032,"msctls_progress32",WS_BORDER,7,22,157,12
+END
+
+IDD_ZOOM DIALOGEX 0, 0, 119, 47
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Üzençä Erelek"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Erelek:",-1,13,7,35,12,SS_CENTERIMAGE
+    EDITTEXT        32807,51,7,55,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",1,7,26,50,14
+    PUSHBUTTON      "Kiräkmi",2,62,26,50,14
+END
+
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 219, 295
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Caylaw"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON   "OK",1,107,274,50,14
+    PUSHBUTTON      "Kiräkmi",2,162,274,50,14
+    LTEXT           ".djvu && .djv biremnärenä WinDjView kileþterü öçen basasý:",
+                    -1,15,18,182,9
+    PUSHBUTTON      "&Kileþter",1042,15,30,50,14
+    CONTROL         "Yazýlým cibärelgän sayýn, aña kileþterüen &torðýzasý",
+                    1036,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,49,188,10
+    CONTROL         "Bitlär öçen &týrnaqsýnnar artyaqta yasýysý",1038,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,95,188,10
+    CONTROL         "Cäyep kürsätkändä, &küse çirtü aþa bitlär äyländeräse",
+                    1043,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,109,188,10
+    CONTROL         "Berniçä istälek yapqanda &kisätäse",1040,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,81,188,10
+    CONTROL         "&Keçeräytkändä kiskenräk itäse (eþe äkrenäyä)",1046,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,197,188,10
+    CONTROL         "Sýn köyläneþen ü&zläþterü:",1047,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,211,97,9
+    LTEXT           "&Yaqtýlýq: 0",1051,15,225,61,9
+    CONTROL         "",1048,"msctls_trackbar32",WS_TABSTOP,76,224,131,12
+    LTEXT           "&Kiskenlek: 0",1052,15,238,55,9
+    CONTROL         "",1049,"msctls_trackbar32",WS_TABSTOP,76,237,131,12
+    LTEXT           "&Tösmer: 1.0",1053,15,251,45,9
+    CONTROL         "",1050,"msctls_trackbar32",WS_TABSTOP,76,250,131,12
+    GROUPBOX        "Kileþterü",-1,7,7,205,58
+    GROUPBOX        "Töp köyläneþ",-1,7,69,205,112
+    GROUPBOX        "Kürsätü",-1,7,185,205,82
+    LTEXT           "WinDjView\n(C) Andrew Zhezherun",1044,7,274,84,18
+    CONTROL         "Cäyep kürsätkändä, ç&ornaðýçlar yäþertäse",1041,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,123,188,10
+    CONTROL         "Ctrl basýlsa, küse tägärmäçe kire yaqqa ereräytsen",
+                    1045,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,137,188,10
+    CONTROL         "&Esc basýlðanda yazýlýmný yabasý",1055,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,151,188,10
+    CONTROL         "&Ozýn bulsa bitbilge törep kürsätäse",1056,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,165,188,10
+END
+
+IDD_FIND DIALOG DISCARDABLE  0, 0, 287, 64
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Ezläw"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "&Ni ezlise:",-1,7,7,35,12,SS_CENTERIMAGE
+    EDITTEXT        1045,47,7,173,12,ES_AUTOHSCROLL
+    CONTROL         "&Böyeklegen ayýrýp",1037,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,28,78,8
+    DEFPUSHBUTTON   "&Kiläsen Tap",1,230,7,50,14
+    PUSHBUTTON      "&Barýsýn Tap",4,230,25,50,14
+    PUSHBUTTON      "Yap",2,230,43,50,14
+    LTEXT           "Bit ezläw: 1, barý 10...",IDC_SEARCH_STATUS,7,48,214,9,
+                    NOT WS_VISIBLE
+END
+
+IDD_UPDATE DIALOGEX 0, 0, 167, 34
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Yañartma ezläw. Köt beraz...",-1,39,10,118,11
+    ICON            IDR_MAINFRAME,-1,7,7,20,20
+END
+
+IDD_GOTO_PAGE DIALOG DISCARDABLE  0, 0, 123, 48
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Bitkä Küçü"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "&Bit:",-1,7,7,21,12,SS_CENTERIMAGE
+    EDITTEXT        1055,30,7,55,12,ES_AUTOHSCROLL
+    CONTROL         "",1060,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS,77,8,11,14
+    LTEXT           "barý 9999",1056,87,7,33,12,SS_CENTERIMAGE
+    DEFPUSHBUTTON   "OK",1,9,27,50,14
+    PUSHBUTTON      "Kiräkmi",2,64,27,50,14
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,4,3,0
+ PRODUCTVERSION 0,4,3,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "04090000"
+        BEGIN
+            VALUE "Comments", "Tatarça\0"
+            VALUE "CompanyName", "Andrew Zhezherun\0"
+            VALUE "FileDescription", "WinDjView Localized Resources\0"
+            VALUE "FileVersion", "0.4.3\0"
+            VALUE "InternalName", "WinDjViewTT.dll\0"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun.  All rights reserved.\0"
+            VALUE "OriginalFilename", "WinDjView.exe\0"
+            VALUE "ProductName", "WinDjView\0"
+            VALUE "ProductVersion", "0.4.3\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 0
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO MOVEABLE PURE 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 244
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 115
+    END
+
+    IDD_PRINT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 425
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 309
+    END
+
+    IDD_PROGRESS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 164
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 54
+    END
+
+    IDD_ZOOM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 112
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 40
+    END
+
+    IDD_SETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 212
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 288
+    END
+
+    IDD_FIND, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 280
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 57
+    END
+
+    IDD_UPDATE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 160
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 27
+    END
+
+    IDD_GOTO_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 116
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 41
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    128                     "WinDjView"
+    129                     "\nDjVu\nDjVu\nDjVu Biremnäre (*.djvu;*.djv)\n.djvu;.djv\nDjVu.Birem\n"
+    130                     "Bitbilge"
+    131                     "Explorer'da ike tapqýr çirtep tä\n.djvu/.djv biremnären WinDjView eçendä açýp bula."
+    132                     "Birem tören tyazýlýmða kileþtergän çaqta yalðýþlýq oçradý.\nSistem terkälegenä yazarlýq xoquqlarýñ bulmawý bar."
+    134                     "Týrnaqsýn"
+    135                     "Tabýlðaný"
+    137                     "Küçermä Saqlaw"
+    139                     "DjVu Ýstälege (*.djvu)|*.djvu|Bar Biremnär (*.*)|*.*||"
+    141                     "Elekke urýnlaþu buyýnça istälekne saqlap bulmadý"
+    142                     "Ýstälek saqlaðan çaqta yalðýþlýq kilep çýqtýt"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    144                     "Bit eçtälegendä yalðýþlýq"
+    146                     "Bitmap Bireme (*.bmp)|*.bmp|Bar Biremnär (*.*)|*.*||"
+    148                     "Bit Saqlaw"
+    149                     "Servergä totaþqan çaqta yalðýþlýq kilep çýqtý. Çeltärgä totaþuýñný tikþerep alasý."
+    150                     "Älegä yañartmalar bulmadý. Beraz soñraq qabat tikþerep al."
+    152                     "Yaña %s söreme bar idne. Yazýlým biten açasý kiläme?"
+    154                     "http://windjview.sourceforge.net/version.txt"
+    156                     "http://windjview.sourceforge.net"
+    158                     "http://djvu.sourceforge.net"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    57344                   "WinDjView"
+    57345                   " "
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    57600                   "Yaña istälek yaratu\nYaña"
+    57601                   "Bulðan istälek açu\nAçu"
+    57602                   "Älege istälek yabu\nYap"
+    57603                   "Älege istälek saqlaw\nSaqla"
+    57604                   "Älege istälekne baþqaça atap saqlaw\nBaþqaça Saqlaw"
+    57605                   "Bit caylawýn üzgärtü\nBit Caylaw"
+    57606                   "Basaq belän bastýru caylawýn üzgärtü\nBastýru Caylawý"
+    57607                   "Älege istälek bastýru\nBastýr"
+    57609                   "Basýlasý tabaqlar kürep alu\nBasma Küreneþe"
+    57611                   "Älege istälekneñ küçermäsen saqlaw\nKüçermä Saqlaw"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    57664                   "Yazýlým, anýñ söreme, qälämxaqý turýnda beleþmä alu\nTurýnda"
+    57665                   "Yazýlýmnan çýðu\nÇýðýþ"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    57616                   "Ul istälekne açu"
+    57617                   "Ul istälekne açu"
+    57618                   "Ul istälekne açu"
+    57619                   "Ul istälekne açu"
+    57620                   "Ul istälekne açu"
+    57621                   "Ul istälekne açu"
+    57622                   "Ul istälekne açu"
+    57623                   "Ul istälekne açu"
+    57624                   "Ul istälekne açu"
+    57625                   "Ul istälekne açu"
+    57626                   "Ul istälekne açu"
+    57627                   "Ul istälekne açu"
+    57628                   "Ul istälekne açu"
+    57629                   "Ul istälekne açu"
+    57630                   "Ul istälekne açu"
+    57631                   "Ul istälekne açu"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
+    ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
+    ID_WINDOW_CASCADE       "Arrange windows so they overlap\nCascade Windows"
+    ID_WINDOW_TILE_HORZ     "Arrange windows as non-overlapping tiles\nTile Horizontal"
+    ID_WINDOW_TILE_VERT     "Arrange windows as non-overlapping tiles\nTile Vertical"
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    57632                   "Saylanðanýn buþatu\nBuþat"
+    57633                   "Barýn da buþatu\nBarýn da Buþat"
+    57634                   "Saylanðanný kesägä iskä alu\nÝskä al"
+    57635                   "Saylanðanný kesägä kisep alu\nKisep al"
+    57636                   "Älege istälektä berär yazma tabu\nEzläw"
+    57637                   "Kesä eçtälegen östäp quyu\nÖstäp quy"
+    57640                   "Soñðý eþ qabatlaw\nQabatla"
+    57641                   "Berär yazma tabýp baþqaða almaþtýru\nAlmaþtýru"
+    57642                   "Ýstälek eçtälegen saylap beterü\nBarýn da Sayla"
+    57643                   "Soñðý eþne kire alu\nKire al"
+    57644                   "Aldan alýnðan eþne kire quyu\nKire quy"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    59392                   "Qoraltirä kürsätü/yäþtertü\nQoraltirä kürsätü"
+    59393                   "Torýþtirä kürsätü/yäþtertü\nTorýþtirä kürsätü"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    61184                   "Täräzä ülçämen üzgärtü"
+    61185                   "Täräzä urýnlaþuýn üzgärtü"
+    61186                   "Täräzäne tamðaða tikle törep quyu"
+    61187                   "Täräzäne cäyep quyu"
+    61188                   "Kiläse istälek täräzäsenä küçü"
+    61189                   "Ütkän istälek täräzäsenä küçü"
+    61190                   "Älege täräzäne yabu"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    61202                   "Täräzä ülçämen torðýzu"
+    61203                   "Yök Tezmäsen Kürsätü"
+    61215                   "Täräzäne kürsätü"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    33120                   "Ýke yaðýn da kürsätü saylanðan çaqta berençe biten yalðýz çýðaru"
+    33121                   "Açu"
+    33122                   "Bar Biremnär (*.*)"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    61445                   "Basma küreneþen yabu\nKüreneþen Yap"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    32771                   "Kiläse bitkä küçü\nKiläse Bit"
+    32772                   "Ütkän bitkä küçü\nÜtkän Bit"
+    32777                   "Erelegen 50% itü"
+    32778                   "Erelegen 75% itü"
+    32779                   "Erelegen 100% itü\nÇýn Erelek"
+    32780                   "Erelegen 200% itü"
+    32781                   "Erelegen 400% itü"
+    32782                   "Bit ülçämen täräzä kiñlegenä turý kiterü\nKiñlekkä Kiter"
+    32783                   "Bit ülçämen täräzä böyeklegenä turý kiterü"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    32784                   "Täräzä eçendä sýyarlýq kiterü\nBitkä Kiter"
+    32785                   "Çýñ ülçämendä kürsätü"
+    32786                   "Täräzä ülçämenä kiterep suzu"
+    32787                   "Üzença erelek äytü"
+    32790                   "Uñða taba 90 gradusqa boru\nUñða Bor"
+    32793                   "Sulða taba 90 gradusqa boru\nSulða Bor"
+    32794                   "180 gradusqa boru\nKire Bor"
+    32797                   "Berençe bitkä küçü\nBerençe Bit"
+    32798                   "Soñðý bitkä küçü\nSoñðý Bit"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    32806                   "Küçäse bit kertü\nBit"
+    32807                   "Erelek saylaw\nErelek"
+    32809                   "Bit turýnda beleþmä"
+    32813                   "Yazýlým caylawlarýn üzgärtü\nCaylaw"
+    32815                   "Älege bitne BMP kileþ saqlaw"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    33116                   "Bitlärne berämtekläp kürsätü\nBerläp"
+    33117                   "Bitlärne ber-ber artlý kürsätü\nBer-ber Artlý"
+    33118                   "Bitlärne ike yaðýn bergä kürsätü\nÝke Yaðýn"
+    33119                   "Bitlärne ike yaðýn da ber-ber artlý kürsätü\nÝke Yaðýn, Ber-ber Artlý"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    176                     "Suzýp"
+    177                     "Yaqtýlýq: %+d"
+    178                     "Kiskenlek: %+d"
+    179                     "Tösmer: %1.1f"
+    180                     "  Qara & Aq  "
+    181                     "  Ösyaq  "
+    182                     "  Asyaq  "
+    183                     "All Pages In Range"
+    184                     "Odd Pages"
+    185                     "Even Pages"
+    186                     "Tabaq Sayýn Ber Bit"
+    187                     "Tabaq Sayýn Ýke Bit"
+    188                     "Köt beraz..."
+    189                     "p# %d"
+    190                     "&Yaqtýlýq: %d"
+    191                     "&Yaqtýlýq: %+d"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    192                     "&Kiskenlek: %d"
+    193                     "&Kiskenlek: %+d"
+    194                     "&Tösmer: %1.1f"
+    195                     "Ýstälekne açýp bulmadý\n"
+    196                     "Qoraltirä"
+    197                     "Yäþer"
+    198                     "\nThis is not a valid DjVu document."
+    199                     "Failed to print the document. There could be a problem\nwith the printer or with the printer driver."
+    200                     "%s x %s mm"
+    201                     "cm"
+    202                     "WinDjView %s\n(C) Andrew Zhezherun"
+    203                     "WinDjView %s"
+    204                     "0.4.3"
+    205                     "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
+    206                     "You are about to close %d open documents. Are you sure you want to continue?"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    32819                   "Ütkän küreneþkä küçü\nÜtkän Küreneþ"
+    32820                   "Kiläse küreneþkä küçü\nKiläse Küreneþ"
+    32826                   "Ul täräzägä küç"
+    32827                   "Ul täräzägä küç"
+    32828                   "Ul täräzägä küç"
+    32829                   "Ul täräzägä küç"
+    32830                   "Ul täräzägä küç"
+    32831                   "Ul täräzägä küç"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    32832                   "Ul täräzägä küç"
+    32833                   "Ul täräzägä küç"
+    32834                   "Ul täräzägä küç"
+    32835                   "Ul täräzägä küç"
+    32836                   "Ul täräzägä küç"
+    32837                   "Ul täräzägä küç"
+    32838                   "Ul täräzägä küç"
+    32839                   "Ul täräzägä küç"
+    32840                   "Ul täräzägä küç"
+    32841                   "Ul täräzägä küç"
+    32842                   "Ereräyt\nEreräyt"
+    32843                   "Keçeräyt\nKeçeräyt"
+    32844                   "Qul qoralýn totu\nQul Qoralý"
+    32845                   "Saylaw qoralýn totu\nSaylaw Qoralý"
+    32846                   "Ereräytkeç qoralýn totu\nEreräytkeç Qoralý"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    32850                   "Älege istälek eçtälegendäge yazmalarný birem kileþ saqlaw\nYazmalar Saqlaw"
+    32852                   "Yazýlým yañartmalarý çeltärdä buluýn tikþerep alu\nYañartma Tikþerü"
+    32854                   "Ýstälekne çýn töslärendä kürsätü"
+    32855                   "Ýstälekne aq-qara itep kürsätü"
+    32856                   "Ýstälekneñ asyaðýn kürsätü"
+    32857                   "Ýstälekneñ ösyaðýn kürsätü"
+    32858                   "Ýstälekne tulayým cäyep kürsätü\nCäyep"
+    32859                   "Berär bit sanýn äytü"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    104                     "  Bit: %d, barý %d  "
+    105                     "  %s x %s %s  "
+    106                     "  Adjusted  "
+    107                     "  Kürsätü Isulý  "
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    161                     "https://sourceforge.net/donate/index.php?group_id=114927"
+    162                     "Ezlängän närsä tabýlmadý"
+    163                     "Bastýrýp çýqqançý köt beraz..."
+    164                     "Bit kürsätkändä yalðýþlýq"
+    165                     "Bit ezläw: %d, barý %d"
+    166                     "%d tapqýr tabýldý"
+    167                     "Yazmasýn Çýðaru"
+    168                     "Yazmalar Bireme (*.txt)|*.txt|Bar Biremnär (*.*)|*.*||"
+    169                     "Bit Bastýru: %d, barý %d, köt beraz..."
+    170                     "Ezläw"
+    171                     ", barý %d"
+    172                     "Bit Kiñlege"
+    173                     "Bit Böyeklege"
+    174                     "Tulý Bit"
+    175                     "Çýn Ülçäm"
+END
+
+#endif    // Tatarish resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_TAT)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "..\..\res\WinDjView.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#include "afxprint.rc"       // printing/print preview resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
