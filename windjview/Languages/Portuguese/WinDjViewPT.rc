@@ -73,6 +73,7 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
@@ -175,9 +176,9 @@ BEGIN
     POPUP "&Ficheiro"
     BEGIN
         MENUITEM "&Abrir...\tCtrl+O",           ID_FILE_OPEN
-        MENUITEM "&Configurações...",           ID_FILE_SETTINGS
+        MENUITEM "&Configurações...\tCtrl+,",   ID_FILE_SETTINGS
         MENUITEM SEPARATOR
-        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "Ficheiros Recentes",          ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "&Sair\tCtrl+Q",               ID_APP_EXIT
     END
@@ -207,13 +208,19 @@ BEGIN
         MENUITEM "&Guardar Cópia Como...\tCtrl+S", ID_FILE_SAVE_COPY_AS
         MENUITEM "&Fechar\tCtrl+W",             ID_FILE_CLOSE
         MENUITEM SEPARATOR
-        MENUITEM "&Configurações...",           ID_FILE_SETTINGS
+        MENUITEM "&Configurações...\tCtrl+,",   ID_FILE_SETTINGS
         MENUITEM "&Exportar Texto...",          ID_FILE_EXPORT_TEXT
         MENUITEM "&Imprimir...\tCtrl+P",        ID_FILE_PRINT
         MENUITEM SEPARATOR
-        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "Ficheiros Recentes",          ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "&Sair\tCtrl+Q",               ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Copiar Texto\tCtrl+C",       ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "&Localizar...\tCtrl+F",       ID_EDIT_FIND
     END
     POPUP "&Ver"
     BEGIN
@@ -276,13 +283,16 @@ BEGIN
             MENUITEM "&Primeiro Plano\tCtrl+Shift+4", ID_DISPLAY_FOREGROUND
         END
         MENUITEM SEPARATOR
-        MENUITEM "L&ocalizar...\tCtrl+F",       ID_EDIT_FIND
-        MENUITEM "&Copiar Texto\tCtrl+C",       ID_EDIT_COPY
-        MENUITEM SEPARATOR
         POPUP "&Language"
         BEGIN
             MENUITEM "&English",                    ID_LANGUAGE_FIRST
         END
+    END
+    POPUP "Fe&rramentas"
+    BEGIN
+        MENUITEM "Ferramenta de &Mão",          ID_MODE_DRAG
+        MENUITEM "Ferramenta de &Selecção",     ID_MODE_SELECT
+        MENUITEM "&Lupa",                       ID_MODE_MAGNIFY
     END
     POPUP "&Janela"
     BEGIN
@@ -510,9 +520,9 @@ BEGIN
     CTEXT           "Tamanho do papel",IDC_STATIC_PAPER,14,138,138,8
 END
 
-IDD_PROGRESS DIALOGEX 0, 0, 171, 61
+IDD_PROGRESS DIALOG DISCARDABLE  0, 0, 171, 61
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     DEFPUSHBUTTON   "Cancelar",IDOK,60,40,50,14
     CTEXT           "Imprimindo página 1 de 3, aguarde por favor...",
@@ -532,46 +542,57 @@ BEGIN
     PUSHBUTTON      "Cancelar",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 238, 240
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 238, 295
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Configurações"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,126,219,50,14
-    PUSHBUTTON      "Cancelar",IDCANCEL,181,219,50,14
+    DEFPUSHBUTTON   "OK",IDOK,126,274,50,14
+    PUSHBUTTON      "Cancelar",IDCANCEL,181,274,50,14
+    GROUPBOX        "Associação de ficheiros",IDC_STATIC,7,7,224,58
     LTEXT           "Pressione para associar o WinDjView com ficheiros .djvu e .djv:",
                     IDC_STATIC,15,18,182,9
     PUSHBUTTON      "&Associar",IDC_ASSOCIATE,15,30,50,14
     CONTROL         "&Restaurar associações no arranque do programa",
                     IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     15,49,188,10
-    CONTROL         "Gerar &miniaturas para todas as páginas em fundo",
-                    IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,81,188,10
-    CONTROL         "&Clicks do rato mudam as páginas em modo ecrã inteiro",
-                    IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,95,188,10
+    GROUPBOX        "Geral",IDC_STATIC,7,69,224,112
     CONTROL         "A&visar ao fechar vários documentos",
                     IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,81,188,10
+    CONTROL         "Gerar &miniaturas para todas as páginas em fundo",
+                    IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,95,188,10
+    CONTROL         "&Clicks do rato mudam as páginas em modo ecrã inteiro",
+                    IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,109,188,10
-    CONTROL         "&Escaloneamento exacto em níveis baixos de zoom (mais lento)",
+    CONTROL         "Esco&nder sempre as barras de scroll em modo ecrã inteiro",
+                    IDC_FULLSCREEN_HIDESCROLL,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,123,203,10
+    CONTROL         "&Inverter a direcção do zoom de Ctrl+Roda do Rato",
+                    IDC_INVERT_WHEEL_ZOOM,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,137,188,10
+    CONTROL         "Fechar o programa quando a tecla &Escape é pressionada",
+                    IDC_CLOSE_ON_ESC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    15,151,202,10
+    CONTROL         "Dissimular marcadores e&xtensos",IDC_WRAP_BOOKMARKS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,165,188,10
+    GROUPBOX        "Visualização",IDC_STATIC,7,185,224,82
+    CONTROL         "Esca&loneamento exacto em níveis baixos de zoom (mais lento)",
                     IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
-                    123,214,10
+                    197,214,10
     CONTROL         "A&justar configurações:",IDC_ADJUST_DISPLAY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,156,97,9
-    LTEXT           "&Luminosidade: 0",IDC_BRIGHTNESS_TEXT,15,170,61,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,169,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,211,97,9
+    LTEXT           "&Luminosidade: 0",IDC_BRIGHTNESS_TEXT,15,225,61,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,224,
                     149,12
-    LTEXT           "&Contraste: 0",IDC_CONTRAST_TEXT,15,183,55,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,182,
+    LTEXT           "&Contraste: 0",IDC_CONTRAST_TEXT,15,238,55,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,237,
                     149,12
-    LTEXT           "&Gama: 1.0",IDC_GAMMA_TEXT,15,196,45,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,195,149,
+    LTEXT           "&Gama: 1.0",IDC_GAMMA_TEXT,15,251,45,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,250,149,
                     12
-    GROUPBOX        "Associação de ficheiros",IDC_STATIC,7,7,224,58
-    GROUPBOX        "Geral",IDC_STATIC,7,69,224,70
-    GROUPBOX        "Visualização",IDC_STATIC,7,144,224,68
-    LTEXT           "WinDjView\npor Andrew Zhezherun",IDC_STATIC_ABOUT,7,219,
+    LTEXT           "WinDjView\npor Andrew Zhezherun",IDC_STATIC_ABOUT,7,274,
                     92,18
 END
 
@@ -591,9 +612,9 @@ BEGIN
                     214,9,NOT WS_VISIBLE
 END
 
-IDD_UPDATE DIALOGEX 0, 0, 252, 34
+IDD_UPDATE DIALOG DISCARDABLE  0, 0, 252, 34
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "Verificando a existência de actualizações. Aguarde por favor...",
                     IDC_STATIC,39,10,206,11
@@ -610,8 +631,8 @@ BEGIN
     CONTROL         "",IDC_SPIN_PAGE,"msctls_updown32",UDS_ALIGNRIGHT | 
                     UDS_AUTOBUDDY | UDS_ARROWKEYS,80,8,11,14
     LTEXT           "de 9999",IDC_PAGE_COUNT,92,7,28,12,SS_CENTERIMAGE
-    DEFPUSHBUTTON   "OK",IDOK,9,28,50,14
-    PUSHBUTTON      "Cancelar",IDCANCEL,67,28,50,14
+    DEFPUSHBUTTON   "OK",IDOK,11,28,50,14
+    PUSHBUTTON      "Cancelar",IDCANCEL,66,28,50,14
 END
 
 
@@ -622,8 +643,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,4,2,0
- PRODUCTVERSION 0,4,2,0
+ FILEVERSION 0,4,3,0
+ PRODUCTVERSION 0,4,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -641,14 +662,14 @@ BEGIN
             VALUE "Comments", "Português\0"
             VALUE "CompanyName", "Andrew Zhezherun\0"
             VALUE "FileDescription", "WinDjView Localized Resources\0"
-            VALUE "FileVersion", "0.4.2\0"
+            VALUE "FileVersion", "0.4.3\0"
             VALUE "InternalName", "WinDjViewPT.dll\0"
             VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun. All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "WinDjViewPT.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "WinDjView\0"
-            VALUE "ProductVersion", "0.4.2\0"
+            VALUE "ProductVersion", "0.4.3\0"
             VALUE "SpecialBuild", "\0"
         END
     END
@@ -706,7 +727,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 231
         TOPMARGIN, 7
-        BOTTOMMARGIN, 233
+        BOTTOMMARGIN, 288
     END
 
     IDD_FIND, DIALOG
@@ -956,7 +977,7 @@ BEGIN
     IDS_CENTIMETER          "cm"
     IDS_VERSION_INFO        "WinDjView %s\npor Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "0.4.2"
+    IDS_CURRENT_VERSION     "0.4.3"
     IDS_FATAL_ERROR         "Ocorreu um erro fatal.\n\nPode ter sido causado por um documento djvu defeituoso. A aplicação poderá não funcionar correctamente depois deste erro. É fortemente recomendado que volte a iniciar esta aplicação.\n\nPressione OK para fechar a aplicação, ou pressione Cancelar para voltar ao seu documento activo."
     IDS_WARN_CLOSE_MULTIPLE "Está prestes a fechar %d documentos abertos. Tem a certeza que pretende continuar?"
 END
@@ -989,7 +1010,7 @@ BEGIN
     ID_ZOOM_OUT             "Diminui\nDiminuir"
     ID_MODE_DRAG            "Ferramenta de Mão\nFerramenta de Mão"
     ID_MODE_SELECT          "Ferramenta de Selecção\nFerramenta de Selecção"
-    ID_MODE_MAGNIFY         "Activate magnifying glass\nMagnifying Glass"
+    ID_MODE_MAGNIFY         "Activa a lupa\nLupa"
 END
 
 STRINGTABLE DISCARDABLE 

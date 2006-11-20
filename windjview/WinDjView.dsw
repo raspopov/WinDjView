@@ -29,11 +29,26 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name WinDjViewTT
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name WinDjViewHU
+    End Project Dependency
 }}}
 
 ###############################################################################
 
 Project: "WinDjViewFR"=.\Languages\French\WinDjViewFR.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "WinDjViewHU"=.\Languages\Hungarian\WinDjViewHU.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

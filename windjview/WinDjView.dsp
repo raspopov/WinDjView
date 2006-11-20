@@ -468,6 +468,50 @@ SOURCE=.\res\magnify.cur
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\pan_all.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\pan_d.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\pan_dl.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\pan_dr.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\pan_l.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\pan_lr.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\pan_r.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\pan_u.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\pan_ud.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\pan_ul.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\pan_ur.cur
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\Toolbar.bmp
 # End Source File
 # Begin Source File
