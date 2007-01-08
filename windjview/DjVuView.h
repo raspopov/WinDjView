@@ -36,7 +36,12 @@ inline bool IsStandardZoom(int nZoomType, double fZoom)
 
 typedef GList<DjVuTXT::Zone*> DjVuSelection;
 
+void MakeWString(const CString& strText, wstring& result);
+bool MakeWString(const GUTF8String& text, wstring& result);
+CString MakeCString(const wstring& text);
 CString MakeCString(const GUTF8String& text);
+GUTF8String MakeUTF8String(const CString& strText);
+GUTF8String MakeUTF8String(const wstring& strText);
 CString MakePreviewString(const GUTF8String& text, int nStart, int nEnd);
 
 

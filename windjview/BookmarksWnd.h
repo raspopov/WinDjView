@@ -24,15 +24,15 @@
 class CDjVuDoc;
 
 
-// CBookmarksView view
+// CBookmarksWnd view
 
-class CBookmarksView : public CMyTreeCtrl
+class CBookmarksWnd : public CMyTreeCtrl
 {
-	DECLARE_DYNAMIC(CBookmarksView)
+	DECLARE_DYNAMIC(CBookmarksWnd)
 
 public:
-	CBookmarksView();
-	virtual ~CBookmarksView();
+	CBookmarksWnd();
+	virtual ~CBookmarksWnd();
 
 	void InitBookmarks(CDjVuDoc* pDoc);
 	void OnSettingsChanged();
@@ -50,8 +50,8 @@ protected:
 // Generated message map functions
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnItemClicked(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint point);
 	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()
 };

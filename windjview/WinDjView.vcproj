@@ -36,7 +36,8 @@
 				ProgramDataBaseFileName=".\Release/"
 				BrowseInformation="1"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"/>
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
@@ -46,6 +47,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				IgnoreDefaultLibraryNames="msvcrt.lib"
+				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Release/WinDjView.pdb"
 				SubSystem="2"
 				TargetMachine="1"/>
@@ -161,6 +163,7 @@
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdafx.h"
@@ -180,7 +183,7 @@
 				OutputFile=".\Debug/WinDjView.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				IgnoreDefaultLibraryNames="libcmtd.lib"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug/WinDjView.pdb"
 				SubSystem="2"
@@ -248,7 +251,7 @@
 				OutputFile=".\Debug_Unicode/WinDjView.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				IgnoreDefaultLibraryNames="libcmtd.lib"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug_Unicode/WinDjView.pdb"
 				SubSystem="2"
@@ -328,41 +331,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="BookmarksView.cpp">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="3"
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="3"
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_UNICODE;$(NoInherit)"
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_UNICODE;_AFXDLL;$(NoInherit)"
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
-				</FileConfiguration>
+				RelativePath=".\BookmarksWnd.cpp">
 			</File>
 			<File
 				RelativePath="ChildFrm.cpp">
@@ -1142,6 +1111,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\PageIndexWnd.cpp">
+			</File>
+			<File
 				RelativePath="PrintDlg.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
@@ -1597,7 +1569,7 @@
 				RelativePath="AppSettings.h">
 			</File>
 			<File
-				RelativePath="BookmarksView.h">
+				RelativePath=".\BookmarksWnd.h">
 			</File>
 			<File
 				RelativePath="ChildFrm.h">
@@ -1658,6 +1630,9 @@
 			</File>
 			<File
 				RelativePath="NavPane.h">
+			</File>
+			<File
+				RelativePath=".\PageIndexWnd.h">
 			</File>
 			<File
 				RelativePath="PrintDlg.h">
@@ -1727,40 +1702,40 @@
 				RelativePath="res\magnify.cur">
 			</File>
 			<File
-				RelativePath=".\res\pan_all.cur">
+				RelativePath="res\pan_all.cur">
 			</File>
 			<File
 				RelativePath=".\res\pan_anchor.bmp">
 			</File>
 			<File
-				RelativePath=".\res\pan_d.cur">
+				RelativePath="res\pan_d.cur">
 			</File>
 			<File
-				RelativePath=".\res\pan_dl.cur">
+				RelativePath="res\pan_dl.cur">
 			</File>
 			<File
-				RelativePath=".\res\pan_dr.cur">
+				RelativePath="res\pan_dr.cur">
 			</File>
 			<File
-				RelativePath=".\res\pan_l.cur">
+				RelativePath="res\pan_l.cur">
 			</File>
 			<File
-				RelativePath=".\res\pan_lr.cur">
+				RelativePath="res\pan_lr.cur">
 			</File>
 			<File
-				RelativePath=".\res\pan_r.cur">
+				RelativePath="res\pan_r.cur">
 			</File>
 			<File
-				RelativePath=".\res\pan_u.cur">
+				RelativePath="res\pan_u.cur">
 			</File>
 			<File
-				RelativePath=".\res\pan_ud.cur">
+				RelativePath="res\pan_ud.cur">
 			</File>
 			<File
-				RelativePath=".\res\pan_ul.cur">
+				RelativePath="res\pan_ul.cur">
 			</File>
 			<File
-				RelativePath=".\res\pan_ur.cur">
+				RelativePath="res\pan_ur.cur">
 			</File>
 			<File
 				RelativePath="res\Toolbar.bmp">
@@ -1792,8 +1767,5 @@
 		</Filter>
 	</Files>
 	<Globals>
-		<Global
-			Name="RESOURCE_FILE"
-			Value="WinDjView.rc"/>
 	</Globals>
 </VisualStudioProject>

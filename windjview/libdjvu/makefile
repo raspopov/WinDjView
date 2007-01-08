@@ -12,7 +12,7 @@ INTDIR = .\ObjsU.dbg
 INTDIR = .\Objs.dbg
 !ENDIF
 
-OPTS = /nologo /MTd /W3 /GX /Zi
+OPTS = /nologo /MDd /W3 /GX /Zi
 
 !ELSE
 
@@ -21,6 +21,7 @@ INTDIR = .\ObjsU
 !ELSE
 INTDIR = .\Objs
 !ENDIF
+
 OPTS = /nologo /MT /W3 /GX /Ox /Og /Ot /Oi /Ob2
 
 !ENDIF
@@ -32,7 +33,7 @@ OUTOPT = /nologo /LD /Fe
 
 !IFDEF DEBUG
 OUT = libdjvud.dll
-OUTOTHER = libcpmt.lib /link /def:libdjvud.def
+OUTOTHER = libcpmtd.lib /link /def:libdjvud.def
 !ELSE
 OUT = libdjvu.dll
 OUTOTHER = libcpmt.lib /link /def:libdjvu.def
@@ -42,7 +43,7 @@ OUTOTHER = libcpmt.lib /link /def:libdjvu.def
 
 !IFDEF DEBUG
 
-OUTOPT = /nologo /subsystem:windows /machine:x86 /nodefaultlib:"msvcrtd.lib" /out:
+OUTOPT = /nologo /subsystem:windows /machine:x86 /out:
 !IFDEF UNICODE
 OUT = libdjvudu.lib
 !ELSE

@@ -1649,6 +1649,31 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 	switch (nChar)
 	{
+	case 'G':
+	case 'g':
+		OnViewGotoPage();
+		return;
+
+	case VK_HOME:
+		OnViewFirstpage();
+		return;
+
+	case VK_END:
+		OnViewLastpage();
+		return;
+
+	case VK_ADD:
+		OnViewZoomIn();
+		return;
+
+	case VK_SUBTRACT:
+		OnViewZoomOut();
+		return;
+
+	case VK_MULTIPLY:
+		OnViewZoom(ID_ZOOM_FITPAGE);
+		return;
+
 	case VK_DOWN:
 		szScroll.cy = 3*m_lineDev.cy;
 		bNextPage = !bHasVertBar;
@@ -3636,6 +3661,20 @@ GUTF8String MakeUTF8String(const CString& strText)
 	return utf8String;
 }
 
+GUTF8String MakeUTF8String(const wstring& strText)
+{
+	LPCWSTR pszUnicodeText = (LPCWSTR)strText.c_str();
+
+	int nSize = ::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, NULL, 0, NULL, NULL);
+	LPSTR pszTextUTF8 = new CHAR[nSize];
+	::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, pszTextUTF8, nSize, NULL, NULL);
+
+	GUTF8String utf8String(pszTextUTF8);
+	delete[] pszTextUTF8;
+
+	return utf8String;
+}
+
 void CDjVuView::OnFindString()
 {
 	CWaitCursor wait;
@@ -4088,6 +4127,11 @@ CRect CDjVuView::TranslatePageRect(int nPage, GRect rect, bool bText) const
 	double fRatioX = (1.0*page.szDisplay.cx) / szPage.cx;
 	double fRatioY = (1.0*page.szDisplay.cy) / szPage.cy;
 
+	rect.xmin = max(rect.xmin, 0);
+	rect.xmax = min(rect.xmax, szPage.cx);
+	rect.ymin = max(rect.ymin, 0);
+	rect.ymax = min(rect.ymax, szPage.cy);
+
 	CRect rcResult(static_cast<int>(rect.xmin * fRatioX),
 		static_cast<int>((szPage.cy - rect.ymax) * fRatioY),
 		static_cast<int>(rect.xmax * fRatioX),
@@ -4404,7 +4448,11 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory
 	}
 
 	// Open a web link
-	::ShellExecute(NULL, _T("open"), MakeCString(url), NULL, NULL, SW_SHOWNORMAL);
+	DWORD dwResult = (DWORD)::ShellExecute(NULL, _T("open"), MakeCString(url), NULL, NULL, SW_SHOWNORMAL);
+	if (dwResult <= 32) // Failure
+	{
+		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + MakeCString(url));
+	}
 }
 
 void CDjVuView::GoToPage(int nPage, int nLinkPage, int nAddToHistory)
@@ -4746,6 +4794,73 @@ CString MakeCString(const GUTF8String& text)
 	delete[] pszUnicodeText;
 
 	return strResult;
+}
+
+CString MakeCString(const wstring& text)
+{
+	CString strResult;
+	LPCWSTR pszUnicodeText = (LPCWSTR)text.c_str();
+
+#ifdef _UNICODE
+	strResult = pszUnicodeText;
+#else
+	// Prepare ANSI text
+	int nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+		pszUnicodeText, -1, NULL, 0, NULL, NULL);
+	::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+		pszUnicodeText, -1, strResult.GetBuffer(nSize), nSize, NULL, NULL);
+	strResult.ReleaseBuffer();
+#endif
+
+	return strResult;
+}
+
+void MakeWString(const CString& strText, wstring& result)
+{
+	LPCTSTR pszText = (LPCTSTR)strText;
+
+#ifdef _UNICODE
+	result = (const wchar_t*)pszText;
+#else
+	int nSize = ::MultiByteToWideChar(CP_ACP, 0, pszText, -1, NULL, 0);
+	result.resize(nSize - 1);
+	::MultiByteToWideChar(CP_ACP, 0, pszText, -1, (LPWSTR)result.data(), nSize);
+#endif
+}
+
+bool MakeWString(const GUTF8String& text, wstring& result)
+{
+	// Prepare Unicode text
+	LPWSTR pszUnicodeText = NULL;
+	int nResult = 0;
+
+	DWORD dwFlags = 0;
+
+	// Only Windows XP supports checking for invalid characters in UTF8 encoding
+	// inside MultiByteToWideChar function
+	OSVERSIONINFO vi;
+	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
+		vi.dwMajorVersion >= 5)
+	{
+		dwFlags = MB_ERR_INVALID_CHARS;
+	}
+
+	// Make our own check anyway
+	if (!CheckUTF8(text, text.length()))
+	{
+		return false;
+	}
+
+	int nSize = ::MultiByteToWideChar(CP_UTF8, dwFlags, (LPCSTR)text, -1, NULL, 0);
+	if (nSize != 0)
+	{
+		result.resize(nSize - 1);
+		nResult = ::MultiByteToWideChar(CP_UTF8, dwFlags, (LPCSTR)text, -1,
+			(LPWSTR)result.data(), nSize);
+	}
+
+	return (nResult != 0);
 }
 
 void CDjVuView::OnFileExportText()

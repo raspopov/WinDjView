@@ -31,7 +31,7 @@
 #include "SettingsDlg.h"
 #include "UpdateDlg.h"
 #include "ThumbnailsView.h"
-#include "BookmarksView.h"
+#include "BookmarksWnd.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -664,8 +664,8 @@ void CDjViewApp::OnFileSettings()
 				pFrame->GetDjVuView()->OnSettingsChanged();
 				pFrame->GetThumbnailsView()->OnSettingsChanged();
 
-				if (pFrame->GetBookmarksView() != NULL)
-					pFrame->GetBookmarksView()->OnSettingsChanged();
+				if (pFrame->GetBookmarksWnd() != NULL)
+					pFrame->GetBookmarksWnd()->OnSettingsChanged();
 			}
 		}
 	}
@@ -673,6 +673,7 @@ void CDjViewApp::OnFileSettings()
 
 CDjVuDoc* CDjViewApp::OpenDocument(const CString& strPathName, const GUTF8String& strPage)
 {
+/**/
 	CDjVuDoc* pDoc = (CDjVuDoc*)FindOpenDocument(strPathName);
 	if (pDoc == NULL)
 		pDoc = (CDjVuDoc*)OpenDocumentFile(strPathName);
@@ -686,7 +687,16 @@ CDjVuDoc* CDjViewApp::OpenDocument(const CString& strPathName, const GUTF8String
 	CDjVuView* pView = pDoc->GetDjVuView();
 	CFrameWnd* pFrame = pView->GetParentFrame();
 	pFrame->ActivateFrame();
+/*/
+	CDjVuDoc* pDoc = (CDjVuDoc*)OpenDocumentFile(strPathName);
+	if (pDoc == NULL)
+	{
+		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + strPathName);
+		return NULL;
+	}
 
+	CDjVuView* pView = pDoc->GetDjVuView();
+/**/
 	if (strPage.length() > 0)
 	{
 		pView->GoToURL(strPage, -1, CDjVuView::AddTarget);
@@ -709,8 +719,7 @@ CDocument* CDjViewApp::FindOpenDocument(LPCTSTR lpszFileName)
 	if (!AfxFullPath(szPath, szTemp))
 	{
 		ASSERT(FALSE);
-		return NULL; // We won't open the file. MFC requires paths with
-		// length < _MAX_PATH
+		return NULL; // We won't open the file. MFC requires paths with length < _MAX_PATH
 	}
 
 	POSITION pos = GetFirstDocTemplatePosition();

@@ -49,6 +49,7 @@ public:
 	};
 
 	PRINTER_INFO_2* m_pPrinter;
+	DEVMODE* m_pDevMode;
 	Paper* m_pPaper;
 	HANDLE m_hPrinter;
 	bool m_bTwoPages;
@@ -99,6 +100,7 @@ protected:
 	DWORD m_nMaxCopies;
 
 	vector<BYTE> m_printerData;
+	vector<BYTE> m_devModeData;
 	vector<Paper> m_paperSizes;
 	WORD m_nPaperCode;
 
@@ -114,7 +116,7 @@ protected:
 
 	static map<CString, vector<byte> > s_devModes;
 	static LPDEVMODE GetCachedDevMode(const CString& strPrinter);
-	static void UpdateDevModeCache(const CString& strPrinter, LPDEVMODE pDevMode);
+	static void UpdateDevModeCache(const CString& strPrinter, LPDEVMODE pDevMode, UINT nSize);
 
 	void LoadPaperTypes();
 	bool ParseRange();

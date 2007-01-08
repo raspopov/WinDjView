@@ -56,7 +56,7 @@ clean:
 
 LINK_OBJS = \
 	"$(INTDIR)\AppSettings.obj" \
-	"$(INTDIR)\BookmarksView.obj" \
+	"$(INTDIR)\BookmarksWnd.obj" \
 	"$(INTDIR)\ChildFrm.obj" \
 	"$(INTDIR)\DjVuDoc.obj" \
 	"$(INTDIR)\DjVuView.obj" \
@@ -78,6 +78,7 @@ LINK_OBJS = \
 	"$(INTDIR)\MyToolBar.obj" \
 	"$(INTDIR)\MyTreeCtrl.obj" \
 	"$(INTDIR)\NavPane.obj" \
+	"$(INTDIR)\PageIndexWnd.obj" \
 	"$(INTDIR)\PrintDlg.obj" \
 	"$(INTDIR)\ProgressDlg.obj" \
 	"$(INTDIR)\RenderThread.obj" \
@@ -96,7 +97,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 	@$(LINK) $(LINK_FLAGS) $(LINK_OBJS)
 
 "$(INTDIR)\AppSettings.obj" : AppSettings.cpp "$(INTDIR)" $(PCH)
-"$(INTDIR)\BookmarksView.obj" : BookmarksView.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\BookmarksWnd.obj" : BookmarksWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\ChildFrm.obj" : ChildFrm.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DjVuDoc.obj" : DjVuDoc.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DjVuView.obj" : DjVuView.cpp "$(INTDIR)" $(PCH)
@@ -118,6 +119,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\MyToolBar.obj" : MyToolBar.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyTreeCtrl.obj" : MyTreeCtrl.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\NavPane.obj" : NavPane.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\PageIndexWnd.obj" : PageIndexWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\PrintDlg.obj" : PrintDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\ProgressDlg.obj"	: ProgressDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\RenderThread.obj" : RenderThread.cpp "$(INTDIR)" $(PCH)

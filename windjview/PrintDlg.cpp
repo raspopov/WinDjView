@@ -429,7 +429,7 @@ void CPrintDlg::OnPaint()
 		if (!m_settings.bIgnorePrinterMargins)
 		{
 			CDC infoDC;
-			infoDC.Attach(::CreateIC(m_pPrinter->pDriverName, m_pPrinter->pPrinterName, NULL, m_pPrinter->pDevMode));
+			infoDC.Attach(::CreateIC(m_pPrinter->pDriverName, m_pPrinter->pPrinterName, NULL, m_pDevMode));
 			ASSERT(infoDC.m_hDC);
 
 			int nPhysicalWidth = infoDC.GetDeviceCaps(PHYSICALWIDTH);
@@ -539,6 +539,7 @@ void CPrintDlg::OnChangePrinter()
 
 	m_hPrinter = NULL;
 	m_pPrinter = NULL;
+	m_pDevMode = NULL;
 	m_pPaper = NULL;
 
 	m_strLocation.Empty();
@@ -575,10 +576,21 @@ void CPrintDlg::OnChangePrinter()
 	::GetPrinter(m_hPrinter, 2, &m_printerData[0], cbNeeded, &cbNeeded);
 	m_pPrinter = reinterpret_cast<PRINTER_INFO_2*>(&m_printerData[0]);
 
-	if (defaults.pDevMode != NULL && m_pPrinter->pDevMode->dmSize == defaults.pDevMode->dmSize &&
-			m_pPrinter->pDevMode->dmDriverExtra == defaults.pDevMode->dmDriverExtra &&
-			m_pPrinter->pDevMode->dmSpecVersion == defaults.pDevMode->dmSpecVersion)
-		memcpy(m_pPrinter->pDevMode, defaults.pDevMode, defaults.pDevMode->dmSize + defaults.pDevMode->dmDriverExtra);
+	DWORD cbDevMode = ::DocumentProperties(NULL, m_hPrinter,
+		m_pPrinter->pPrinterName, NULL, NULL, 0);
+	m_devModeData.resize(cbDevMode);
+	m_pDevMode = reinterpret_cast<DEVMODE*>(&m_devModeData[0]);
+
+	if (defaults.pDevMode != NULL)
+	{
+		::DocumentProperties(NULL, m_hPrinter, m_pPrinter->pPrinterName,
+			m_pDevMode, defaults.pDevMode, DM_IN_BUFFER | DM_OUT_BUFFER);
+	}
+	else
+	{
+		::DocumentProperties(NULL, m_hPrinter, m_pPrinter->pPrinterName,
+			m_pDevMode, NULL, DM_OUT_BUFFER);
+	}
 
 	m_strComment = m_pPrinter->pComment;
 	m_strLocation = m_pPrinter->pPortName;
@@ -587,17 +599,17 @@ void CPrintDlg::OnChangePrinter()
 	LoadPaperTypes();
 
 	m_nMaxCopies = ::DeviceCapabilities(m_pPrinter->pPrinterName, m_pPrinter->pPortName,
-		DC_COPIES, NULL, m_pPrinter->pDevMode);
+		DC_COPIES, NULL, m_pDevMode);
 	if (m_nMaxCopies <= 1)
 		m_nMaxCopies = 9999;
 
-	if ((m_pPrinter->pDevMode->dmFields & DM_COPIES) == 0)
+	if ((m_pDevMode->dmFields & DM_COPIES) == 0)
 		m_nCopies = 1;
 	else
 		m_nCopies = min(m_nCopies, m_nMaxCopies);
 
 	m_bPrinterCanCollate = ::DeviceCapabilities(m_pPrinter->pPrinterName, m_pPrinter->pPortName,
-		DC_COLLATE, NULL, m_pPrinter->pDevMode) > 0;
+		DC_COLLATE, NULL, m_pDevMode) > 0;
 
 	UpdateData(false);
 	UpdateDevMode();
@@ -608,22 +620,22 @@ void CPrintDlg::OnChangePrinter()
 void CPrintDlg::LoadPaperTypes()
 {
 	int nPapers = ::DeviceCapabilities(m_pPrinter->pPrinterName, m_pPrinter->pPortName,
-		DC_PAPERNAMES, NULL, m_pPrinter->pDevMode);
+		DC_PAPERNAMES, NULL, m_pDevMode);
 	CString strPaperNames;
 	::DeviceCapabilities(m_pPrinter->pPrinterName, m_pPrinter->pPortName,
-		DC_PAPERNAMES, strPaperNames.GetBufferSetLength(nPapers*64), m_pPrinter->pDevMode);
+		DC_PAPERNAMES, strPaperNames.GetBufferSetLength(nPapers*64), m_pDevMode);
 
 	int nSizeNames = ::DeviceCapabilities(m_pPrinter->pPrinterName, m_pPrinter->pPortName,
-		DC_PAPERS, NULL, m_pPrinter->pDevMode);
+		DC_PAPERS, NULL, m_pDevMode);
 	vector<WORD> size_names(nSizeNames);
 	::DeviceCapabilities(m_pPrinter->pPrinterName, m_pPrinter->pPortName,
-		DC_PAPERS, (LPTSTR)&size_names[0], m_pPrinter->pDevMode);
+		DC_PAPERS, (LPTSTR)&size_names[0], m_pDevMode);
 
 	int nSizes = ::DeviceCapabilities(m_pPrinter->pPrinterName, m_pPrinter->pPortName,
-		DC_PAPERSIZE, NULL, m_pPrinter->pDevMode);
+		DC_PAPERSIZE, NULL, m_pDevMode);
 	vector<POINT> sizes(nSizes);
 	::DeviceCapabilities(m_pPrinter->pPrinterName, m_pPrinter->pPortName,
-		DC_PAPERSIZE, (LPTSTR)&sizes[0], m_pPrinter->pDevMode);
+		DC_PAPERSIZE, (LPTSTR)&sizes[0], m_pDevMode);
 
 	// Retain selected paper size
 	int i;
@@ -631,7 +643,7 @@ void CPrintDlg::LoadPaperTypes()
 	{
 		if (size_names[i] == m_nPaperCode)
 		{
-			m_pPrinter->pDevMode->dmPaperSize = m_nPaperCode;
+			m_pDevMode->dmPaperSize = m_nPaperCode;
 			break;
 		}
 	}
@@ -649,7 +661,7 @@ void CPrintDlg::LoadPaperTypes()
 			int nItem = m_cboPaper.AddString(szPaperName);
 			m_cboPaper.SetItemData(nItem, size_names[i]);
 
-			if (size_names[i] == m_pPrinter->pDevMode->dmPaperSize)
+			if (size_names[i] == m_pDevMode->dmPaperSize)
 				m_cboPaper.SetCurSel(nItem);
 
 			m_paperSizes.push_back(Paper(szPaperName, size_names[i], sizes[i]));
@@ -702,19 +714,19 @@ void CPrintDlg::OnProperties()
 	UpdateData();
 
 	::DocumentProperties(m_hWnd, m_hPrinter, m_pPrinter->pPrinterName,
-			m_pPrinter->pDevMode, m_pPrinter->pDevMode,
+			m_pDevMode, m_pDevMode,
 			DM_IN_PROMPT | DM_IN_BUFFER | DM_OUT_BUFFER);
 
-	m_bLandscape = (m_pPrinter->pDevMode->dmOrientation == DMORIENT_LANDSCAPE);
-	m_nCopies = m_pPrinter->pDevMode->dmCopies;
+	m_bLandscape = (m_pDevMode->dmOrientation == DMORIENT_LANDSCAPE);
+	m_nCopies = m_pDevMode->dmCopies;
 
 	if (m_bPrinterCanCollate)
-		m_bCollate = (m_pPrinter->pDevMode->dmCollate == DMCOLLATE_TRUE);
+		m_bCollate = (m_pDevMode->dmCollate == DMCOLLATE_TRUE);
 
 	UpdateData(false);
 
 	m_pPaper = NULL;
-	m_nPaperCode = m_pPrinter->pDevMode->dmPaperSize;
+	m_nPaperCode = m_pDevMode->dmPaperSize;
 	LoadPaperTypes();
 	OnChangePaper();
 }
@@ -723,11 +735,11 @@ void CPrintDlg::OnKickIdle()
 {
 	bool bOk = (m_pPrinter != NULL);
 
-	GetDlgItem(IDC_PORTRAIT)->EnableWindow(bOk && (m_pPrinter->pDevMode->dmFields & DM_ORIENTATION));
-	GetDlgItem(IDC_LANDSCAPE)->EnableWindow(bOk && (m_pPrinter->pDevMode->dmFields & DM_ORIENTATION));
+	GetDlgItem(IDC_PORTRAIT)->EnableWindow(bOk && (m_pDevMode->dmFields & DM_ORIENTATION));
+	GetDlgItem(IDC_LANDSCAPE)->EnableWindow(bOk && (m_pDevMode->dmFields & DM_ORIENTATION));
 
-	GetDlgItem(IDC_EDIT_COPIES)->EnableWindow(bOk && (m_pPrinter->pDevMode->dmFields & DM_COPIES));
-	GetDlgItem(IDC_SPIN_COPIES)->EnableWindow(bOk && (m_pPrinter->pDevMode->dmFields & DM_COPIES));
+	GetDlgItem(IDC_EDIT_COPIES)->EnableWindow(bOk && (m_pDevMode->dmFields & DM_COPIES));
+	GetDlgItem(IDC_SPIN_COPIES)->EnableWindow(bOk && (m_pDevMode->dmFields & DM_COPIES));
 
 	GetDlgItem(IDC_COLLATE)->EnableWindow(bOk && m_nCopies >= 2);
 
@@ -782,13 +794,13 @@ void CPrintDlg::UpdateDevMode()
 	if (m_pPrinter == NULL)
 		return;
 
-	m_pPrinter->pDevMode->dmPaperSize = m_nPaperCode;
-	m_pPrinter->pDevMode->dmOrientation = (m_bLandscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT);
+	m_pDevMode->dmPaperSize = m_nPaperCode;
+	m_pDevMode->dmOrientation = (m_bLandscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT);
 
-	m_pPrinter->pDevMode->dmCollate = (m_bCollate && m_bPrinterCanCollate ? DMCOLLATE_TRUE : DMCOLLATE_FALSE);
-	m_pPrinter->pDevMode->dmCopies = (WORD)m_nCopies;
+	m_pDevMode->dmCollate = (m_bCollate && m_bPrinterCanCollate ? DMCOLLATE_TRUE : DMCOLLATE_FALSE);
+	m_pDevMode->dmCopies = (WORD)m_nCopies;
 
-	UpdateDevModeCache(m_pPrinter->pPrinterName, m_pPrinter->pDevMode);
+	UpdateDevModeCache(m_pPrinter->pPrinterName, m_pDevMode, m_devModeData.size());
 }
 
 void CPrintDlg::SaveSettings()
@@ -887,12 +899,12 @@ LPDEVMODE CPrintDlg::GetCachedDevMode(const CString& strPrinter)
 	return NULL;
 }
 
-void CPrintDlg::UpdateDevModeCache(const CString& strPrinter, LPDEVMODE pDevMode)
+void CPrintDlg::UpdateDevModeCache(const CString& strPrinter, LPDEVMODE pDevMode, UINT nSize)
 {
 	map<CString, vector<byte> >::iterator it = s_devModes.find(strPrinter);
 	if (it == s_devModes.end())
 		it = s_devModes.insert(make_pair(strPrinter, vector<byte>())).first;
 
-	it->second.resize(pDevMode->dmSize + pDevMode->dmDriverExtra);
+	it->second.resize(nSize);
 	memcpy(&(it->second[0]), pDevMode, it->second.size());
 }

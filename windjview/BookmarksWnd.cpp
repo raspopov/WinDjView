@@ -20,37 +20,37 @@
 
 #include "stdafx.h"
 #include "WinDjView.h"
-#include "BookmarksView.h"
+#include "BookmarksWnd.h"
 #include "DjVuDoc.h"
 #include "ChildFrm.h"
 #include "DjVuView.h"
 #include "MainFrm.h"
 #include "AppSettings.h"
 
-// CBookmarksView
+// CBookmarksWnd
 
-IMPLEMENT_DYNAMIC(CBookmarksView, CMyTreeCtrl)
+IMPLEMENT_DYNAMIC(CBookmarksWnd, CMyTreeCtrl)
 
-BEGIN_MESSAGE_MAP(CBookmarksView, CMyTreeCtrl)
+BEGIN_MESSAGE_MAP(CBookmarksWnd, CMyTreeCtrl)
 	ON_NOTIFY_REFLECT(TVN_SELCHANGED, OnSelChanged)
+	ON_NOTIFY_REFLECT(TVN_ITEMCLICKED, OnItemClicked)
 	ON_NOTIFY_REFLECT(TVN_KEYDOWN, OnKeyDown)
-	ON_WM_MOUSEWHEEL()
 	ON_WM_CREATE()
 END_MESSAGE_MAP()
 
-CBookmarksView::CBookmarksView()
+CBookmarksWnd::CBookmarksWnd()
 	: m_pDoc(NULL)
 {
 }
 
-CBookmarksView::~CBookmarksView()
+CBookmarksWnd::~CBookmarksWnd()
 {
 }
 
 
-// CBookmarksView message handlers
+// CBookmarksWnd message handlers
 
-int CBookmarksView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
+int CBookmarksWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
 	if (CMyTreeCtrl::OnCreate(lpCreateStruct) == -1)
 		return -1;
@@ -67,13 +67,13 @@ int CBookmarksView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-void CBookmarksView::InitBookmarks(CDjVuDoc* pDoc)
+void CBookmarksWnd::InitBookmarks(CDjVuDoc* pDoc)
 {
 	m_pDoc = pDoc;
 	InitBookmarks(pDoc->GetBookmarks(), TVI_ROOT, 0);
 }
 
-int CBookmarksView::InitBookmarks(GP<DjVmNav> bookmarks, HTREEITEM hParent, int nPos, int nCount)
+int CBookmarksWnd::InitBookmarks(GP<DjVmNav> bookmarks, HTREEITEM hParent, int nPos, int nCount)
 {
 	if (nCount == -1)
 		nCount = bookmarks->getBookMarkCount();
@@ -95,7 +95,7 @@ int CBookmarksView::InitBookmarks(GP<DjVmNav> bookmarks, HTREEITEM hParent, int 
 	return nPos;
 }
 
-void CBookmarksView::GoToBookmark(HTREEITEM hItem)
+void CBookmarksWnd::GoToBookmark(HTREEITEM hItem)
 {
 	GUTF8String* url = (GUTF8String*)GetItemData(hItem);
 
@@ -106,7 +106,7 @@ void CBookmarksView::GoToBookmark(HTREEITEM hItem)
 	}
 }
 
-void CBookmarksView::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
+void CBookmarksWnd::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
 
@@ -120,7 +120,21 @@ void CBookmarksView::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult = 0;
 }
 
-void CBookmarksView::OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult)
+void CBookmarksWnd::OnItemClicked(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
+
+	if (pNMTreeView->action == TVC_BYMOUSE)
+	{
+		HTREEITEM hItem = pNMTreeView->itemNew.hItem;
+		if (hItem != NULL)
+			GoToBookmark(hItem);
+	}
+
+	*pResult = 0;
+}
+
+void CBookmarksWnd::OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMTVKEYDOWN pTVKeyDown = reinterpret_cast<LPNMTVKEYDOWN>(pNMHDR);
 
@@ -136,23 +150,13 @@ void CBookmarksView::OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult)
 		*pResult = 1;
 }
 
-BOOL CBookmarksView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
-{
-	CWnd* pWnd = WindowFromPoint(point);
-	if (pWnd != this && !IsChild(pWnd) && GetMainFrame()->IsChild(pWnd) &&
-			pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
-		return true;
-
-	return CMyTreeCtrl::OnMouseWheel(nFlags, zDelta, point);
-}
-
-void CBookmarksView::PostNcDestroy()
+void CBookmarksWnd::PostNcDestroy()
 {
 	// Should be created on heap
 	delete this;
 }
 
-void CBookmarksView::OnSettingsChanged()
+void CBookmarksWnd::OnSettingsChanged()
 {
 	SetWrapLabels(CAppSettings::bWrapLongBookmarks);
 }

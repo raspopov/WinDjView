@@ -22,6 +22,8 @@
 
 #include "MyTheme.h"
 
+#define TVN_ITEMCLICKED (WM_USER + 30)
+
 
 class CMyTreeCtrl : public CWnd
 {
@@ -36,6 +38,7 @@ public:
 	void SetItemHeight(int nHeight);
 	void SetImageList(CImageList* pImageList, DWORD dwStyle);
 	void SetWrapLabels(bool bWrapLabels);
+	void SetRedirectWheel(bool bRedirectWheel);
 	void RecalcLayout();
 
 	HTREEITEM InsertItem(LPCTSTR pszItem, HTREEITEM hParent = TVI_ROOT, HTREEITEM hInsertAfter = TVI_LAST);
@@ -44,6 +47,7 @@ public:
 	void SetItemData(HTREEITEM hItem, DWORD_PTR dwData);
 	DWORD_PTR GetItemData(HTREEITEM hItem);
 	HTREEITEM GetSelectedItem();
+	void SetSelectedItem(HTREEITEM hItem);
 
 // Overrides
 protected:
@@ -113,6 +117,8 @@ protected:
 	CImageList* m_pImageList;
 
 	bool m_bWrapLabels;
+	bool m_bRedirectWheel;
+	bool m_bLinesAtRoot;
 	CFont m_font, m_fontHover;
 	CSize m_szDisplay;
 	CBitmap* m_pOffscreenBitmap;
@@ -142,6 +148,7 @@ protected:
 	bool OnScroll(UINT nScrollCode, UINT nPos);
 	bool OnScrollBy(CSize sz);
 	void CheckScrollBars(bool& bHasHorzBar, bool& bHasVertBar) const;
+	bool UpdateParameters();
 
 	// Generated message map functions
 	afx_msg void OnPaint();
@@ -163,5 +170,6 @@ protected:
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint point);
 	afx_msg void OnSysColorChange();
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
+	afx_msg void OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct);
 	DECLARE_MESSAGE_MAP()
 };

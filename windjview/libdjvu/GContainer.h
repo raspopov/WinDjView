@@ -445,6 +445,10 @@ public:
       subscript range: an exception \Ref{GException} is thrown if argument #n#
       is not in the valid subscript range. */
   inline TYPE& operator[](int const n);
+//< Changed for WinDjView project
+  inline TYPE& operator[](unsigned int const n)
+    { return (*this)[static_cast<int>(n)]; }
+//>
   /** Returns a constant reference to the array element for subscript #n#.
       This reference can only be used for reading (as "#a[n]#") an array
       element.  This operation will not extend the valid subscript range: an
@@ -452,6 +456,10 @@ public:
       subscript range.  This variant of #operator[]# is necessary when dealing
       with a #const GArray<TYPE>#. */
   inline const TYPE& operator[](int n) const;
+//< Changed for WinDjView project
+  inline const TYPE& operator[](unsigned int n) const
+    { return (*this)[static_cast<int>(n)]; }
+//>
   // -- CONVERSION
   /** Returns a pointer for reading or writing the array elements.  This
       pointer can be used to access the array elements with the same

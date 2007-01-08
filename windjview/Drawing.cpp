@@ -865,6 +865,8 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 		return 1;
 	}
 
+	print_dc.SetMapMode(MM_TEXT);
+
 	double fPrinterMMx = print_dc.GetDeviceCaps(LOGPIXELSX) / 25.4;
 	double fPrinterMMy = print_dc.GetDeviceCaps(LOGPIXELSY) / 25.4;
 

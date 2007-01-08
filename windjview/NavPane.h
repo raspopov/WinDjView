@@ -50,6 +50,8 @@ public:
 	void ActivateTab(int nTab);
 	void SetTabName(CWnd* pTabContent, const CString& strName);
 	void SetTabName(int nTab, const CString& strName);
+	void SetTabBorder(CWnd* pTabContent, bool bDrawBorder);
+	void SetTabBorder(int nTab, bool bDrawBorder);
 
 // Implementation
 protected:
@@ -58,6 +60,7 @@ protected:
 		CString strName;
 		CRect rcTab;
 		CWnd* pWnd;
+		bool bHasBorder;
 	};
 	vector<Tab> m_tabs;
 	CFont m_font;

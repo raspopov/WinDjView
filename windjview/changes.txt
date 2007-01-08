@@ -2,6 +2,12 @@ WinDjView changes history
 Copyright (C) 2004-2006 Andrew Zhezherun
 ----------------------------------------
 
+Changes in version 0.4.4:
++ Page number can be specified when opening files
+  via command line or DDE.
+* Reduced memory usage on files with large shared dictionaries.
+* Crash fixes.
+
 Changes in version 0.4.3 (2006-09-15):
 + Added panning when mouse wheel is pressed.
 * Improved performance of magnifying glass.

@@ -25,8 +25,9 @@
 class CDjVuView;
 class CNavPaneWnd;
 class CThumbnailsView;
-class CBookmarksView;
+class CBookmarksWnd;
 class CSearchResultsView;
+class CPageIndexWnd;
 
 
 // CChildFrame
@@ -46,7 +47,8 @@ public:
 	void CreateNavPanes();
 
 	CThumbnailsView* GetThumbnailsView() { return m_pThumbnailsView; }
-	CBookmarksView* GetBookmarksView() { return m_pBookmarksView; }
+	CBookmarksWnd* GetBookmarksWnd() { return m_pBookmarksWnd; }
+	CPageIndexWnd* GetPageIndexWnd() { return m_pPageIndexWnd; }
 	CSearchResultsView* GetResultsView();
 
 protected:
@@ -67,8 +69,9 @@ protected:
 	bool m_bActivating;
 	CMySplitterWnd m_wndSplitter;
 	CThumbnailsView* m_pThumbnailsView;
-	CBookmarksView* m_pBookmarksView;
+	CBookmarksWnd* m_pBookmarksWnd;
 	CSearchResultsView* m_pResultsView;
+	CPageIndexWnd* m_pPageIndexWnd;
 
 // Generated message map functions
 	afx_msg void OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeactivateWnd);

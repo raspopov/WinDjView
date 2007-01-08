@@ -25,8 +25,9 @@
 #include "MainFrm.h"
 #include "DjVuView.h"
 #include "ThumbnailsView.h"
-#include "BookmarksView.h"
+#include "BookmarksWnd.h"
 #include "SearchResultsView.h"
+#include "PageIndexWnd.h"
 #include "NavPane.h"
 #include "AppSettings.h"
 
@@ -55,7 +56,7 @@ END_MESSAGE_MAP()
 
 CChildFrame::CChildFrame()
 	: m_bCreated(false), m_bActivating(false), m_pThumbnailsView(NULL),
-	  m_pBookmarksView(NULL), m_pResultsView(NULL)
+	  m_pBookmarksWnd(NULL), m_pResultsView(NULL)
 {
 }
 
@@ -186,17 +187,34 @@ void CChildFrame::CreateNavPanes()
 
 	if (pDoc->GetBookmarks() != NULL)
 	{
-		m_pBookmarksView = new CBookmarksView();
-		m_pBookmarksView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
+		m_pBookmarksWnd = new CBookmarksWnd();
+		m_pBookmarksWnd->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 			| TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP
 			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 1);
-		pNavPane->AddTab(LoadString(IDS_BOOKMARKS_TAB), m_pBookmarksView);
-		m_pBookmarksView->InitBookmarks(pDoc);
+		pNavPane->AddTab(LoadString(IDS_BOOKMARKS_TAB), m_pBookmarksWnd);
+		m_pBookmarksWnd->InitBookmarks(pDoc);
+	}
+
+	if (pDoc->GetPageIndex().length() > 0)
+	{
+		m_pPageIndexWnd = new CPageIndexWnd();
+		m_pPageIndexWnd->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD,
+			CRect(), pNavPane, 2);
+		if (m_pPageIndexWnd->InitPageIndex(pDoc))
+		{
+			pNavPane->AddTab(LoadString(IDS_PAGE_INDEX_TAB), m_pPageIndexWnd);
+			pNavPane->SetTabBorder(m_pPageIndexWnd, false);
+		}
+		else
+		{
+			m_pPageIndexWnd->DestroyWindow();
+			m_pPageIndexWnd = NULL;
+		}
 	}
 
 	m_pThumbnailsView = new CThumbnailsView();
 	m_pThumbnailsView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
-		| WS_HSCROLL | WS_VSCROLL, CRect(), pNavPane, 2);
+		| WS_HSCROLL | WS_VSCROLL, CRect(), pNavPane, 3);
 	pNavPane->AddTab(LoadString(IDS_THUMBNAILS_TAB), m_pThumbnailsView);
 	m_pThumbnailsView->SetDocument(pDoc);
 }
@@ -334,7 +352,7 @@ CSearchResultsView* CChildFrame::GetResultsView()
 		m_pResultsView = new CSearchResultsView();
 		m_pResultsView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 			| TVS_HASBUTTONS | TVS_DISABLEDRAGDROP | TVS_INFOTIP
-			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 3);
+			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 4);
 		pNavPane->AddTab(LoadString(IDS_SEARCH_RESULTS_TAB), m_pResultsView);
 		m_pResultsView->SetDocument(pDoc);
 		m_pResultsView->OnInitialUpdate();
@@ -353,8 +371,8 @@ void CChildFrame::OnLanguageChanged()
 	if (m_pThumbnailsView != NULL)
 		pNavPane->SetTabName(m_pThumbnailsView, LoadString(IDS_THUMBNAILS_TAB));
 
-	if (m_pBookmarksView != NULL)
-		pNavPane->SetTabName(m_pBookmarksView, LoadString(IDS_BOOKMARKS_TAB));
+	if (m_pBookmarksWnd != NULL)
+		pNavPane->SetTabName(m_pBookmarksWnd, LoadString(IDS_BOOKMARKS_TAB));
 
 	if (m_pResultsView != NULL)
 		pNavPane->SetTabName(m_pResultsView, LoadString(IDS_SEARCH_RESULTS_TAB));

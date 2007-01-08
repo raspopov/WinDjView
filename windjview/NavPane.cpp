@@ -141,17 +141,25 @@ void CNavPaneWnd::OnPaint()
 	rcTabs.left = rcTabs.right + 2;
 	rcTabs.right = rcTabs.left + s_nLeftMargin;
 	dc.FillSolidRect(rcTabs, clrBtnface);
-	rcLine.OffsetRect(s_nLeftMargin + 1, 0);
-	rcLine.top += s_nTopMargin;
-	dc.FillSolidRect(rcLine, clrShadow);
+
+	if (m_tabs[m_nActiveTab].bHasBorder)
+	{
+		rcLine.OffsetRect(s_nLeftMargin + 1, 0);
+		rcLine.top += s_nTopMargin;
+		dc.FillSolidRect(rcLine, clrShadow);
+	}
 
 	// Top space
 	rcTabs.right = rcClient.right;
 	rcTabs.bottom = rcTabs.top + s_nTopMargin;
 	dc.FillSolidRect(rcTabs, clrBtnface);
-	rcLine.right = rcClient.right;
-	rcLine.bottom = rcLine.top + 1;
-	dc.FillSolidRect(rcLine, clrShadow);
+
+	if (m_tabs[m_nActiveTab].bHasBorder)
+	{
+		rcLine.right = rcClient.right;
+		rcLine.bottom = rcLine.top + 1;
+		dc.FillSolidRect(rcLine, clrShadow);
+	}
 
 	if (rcClient.Width() > 50)
 	{
@@ -249,7 +257,7 @@ void CNavPaneWnd::DrawTab(CDC* pDC, int nTab, bool bActive)
 	pDC->SelectObject(pOldFont);
 }
 
-void CNavPaneWnd::OnWindowPosChanged(WINDOWPOS FAR* lpwndpos) 
+void CNavPaneWnd::OnWindowPosChanged(WINDOWPOS* lpwndpos) 
 {
 	CWnd::OnWindowPosChanged(lpwndpos);
 	UpdateCloseButton(false);
@@ -259,15 +267,20 @@ void CNavPaneWnd::OnWindowPosChanged(WINDOWPOS FAR* lpwndpos)
 
 void CNavPaneWnd::UpdateTabContents()
 {
-	CRect rc;
-	GetClientRect(&rc);
+	CRect rcFull;
+	GetClientRect(&rcFull);
 
-	rc.left += s_nTabsWidth + s_nLeftMargin + 3;
-	rc.top += s_nTopMargin + 1;
+	rcFull.left += s_nTabsWidth + s_nLeftMargin + 2;
+	rcFull.top += s_nTopMargin;
+
+	CRect rcBordered(rcFull);
+	rcBordered.DeflateRect(1, 1, 0, 0);
 
 	for (size_t i = 0; i < m_tabs.size(); ++i)
 	{
 		CWnd* pWnd = m_tabs[i].pWnd;
+		CRect rc = (m_tabs[i].bHasBorder ? rcBordered : rcFull);
+
 		if (rc.Height() <= 0 || rc.Width() <= 0)
 		{
 			pWnd->ShowWindow(SW_HIDE);
@@ -286,6 +299,7 @@ int CNavPaneWnd::AddTab(const CString& strName, CWnd* pWnd)
 	Tab tab;
 	tab.pWnd = pWnd;
 	tab.strName = strName;
+	tab.bHasBorder = true;
 
 	int nTop = s_nTabSize;
 	if (!m_tabs.empty())
@@ -569,4 +583,25 @@ void CNavPaneWnd::OnLanguageChanged()
 {
 	m_toolTip.DelTool(this);
 	m_toolTip.AddTool(this, IDS_TOOLTIP_HIDE);
+}
+
+void CNavPaneWnd::SetTabBorder(CWnd* pTabContent, bool bDrawBorder)
+{
+	int nTab = GetTabIndex(pTabContent);
+	if (nTab == -1)
+		return;
+
+	SetTabBorder(nTab, bDrawBorder);
+}
+
+void CNavPaneWnd::SetTabBorder(int nTab, bool bDrawBorder)
+{
+	Tab& tab = m_tabs[nTab];
+	tab.bHasBorder = bDrawBorder;
+
+	if (::IsWindow(m_hWnd))
+	{
+		UpdateTabContents();
+		Invalidate();
+	}
 }

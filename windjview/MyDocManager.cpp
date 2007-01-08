@@ -140,3 +140,60 @@ BOOL CMyDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle,
 	fileName.ReleaseBuffer();
 	return nResult == IDOK;
 }
+/*
+CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName)
+{
+	// find the highest confidence
+	CDocTemplate::Confidence bestMatch = CDocTemplate::noAttempt;
+	CDocTemplate* pBestTemplate = NULL;
+
+	TCHAR szPath[_MAX_PATH], szTemp[_MAX_PATH];
+	ASSERT(lstrlen(lpszFileName) < _countof(szPath));
+	if (lpszFileName[0] == '\"')
+		++lpszFileName;
+	lstrcpyn(szTemp, lpszFileName, _MAX_PATH);
+	LPTSTR lpszLast = _tcsrchr(szTemp, '\"');
+	if (lpszLast != NULL)
+		*lpszLast = 0;
+
+	if (!AfxFullPath(szPath, szTemp))
+	{
+		ASSERT(FALSE);
+		return NULL; // We won't open the file. MFC requires paths with length < _MAX_PATH
+	}
+
+	POSITION pos = GetFirstDocTemplatePosition();
+	while (pos != NULL)
+	{
+		CDocTemplate* pTemplate = GetNextDocTemplate(pos);
+		ASSERT_KINDOF(CDocTemplate, pTemplate);
+
+		CDocument* pDocument = NULL;
+		CDocTemplate::Confidence match = pTemplate->MatchDocType(szPath, pDocument);
+		if (match == CDocTemplate::yesAlreadyOpen && pDocument != NULL)
+		{
+			CDjVuView* pView = (CDjVuDoc*)pDocument->GetDjVuView();
+			CFrameWnd* pFrame = pView->GetParentFrame();
+			pFrame->ActivateFrame();
+
+			if (pFrame != GetMainFrame())
+				GetMainFrame()->ActivateFrame();
+
+			return pDocument;
+		}
+		else if (match > bestMatch)
+		{
+			bestMatch = match;
+			pBestTemplate = pTemplate;
+		}
+	}
+
+	if (pBestTemplate == NULL)
+	{
+		AfxMessageBox(AFX_IDP_FAILED_TO_OPEN_DOC);
+		return NULL;
+	}
+
+	return pBestTemplate->OpenDocumentFile(szPath);
+}
+*/

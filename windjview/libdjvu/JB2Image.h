@@ -205,6 +205,13 @@ public:
   unsigned int shapeno;
 };
 
+//< Changed for WinDjView project
+struct ShapeRect
+{
+  int top, left, right, bottom;
+  void compute_bounding_box(const GBitmap &cbm);
+};
+//>
 
 /** Shape data structure.  A #JB2Image# contains an array of #JB2Shape# data
     structures.  Each array entry represents an elementary blob of ink such as
@@ -232,6 +239,10 @@ public:
       of the JB2Image data structures.  Neither the rendering functions nor
       the coding functions ever access this value. */
   long userdata;
+
+//< Changed for WinDjView project
+  ShapeRect bb;
+//>
 };
 
 
@@ -595,11 +606,13 @@ public:
   class Decode;
   class Encode;
   typedef unsigned int NumContext;
-  struct LibRect
-  {
-    int top,left,right,bottom;
-    void compute_bounding_box(const GBitmap &cbm);
-  };
+//< Changed for WinDjView project
+//  struct LibRect
+//  {
+//    int top,left,right,bottom;
+//    void compute_bounding_box(const GBitmap &cbm);
+//  };
+//>
   virtual ~JB2Codec();
 protected:
   // Constructors
@@ -618,7 +631,9 @@ protected:
   void code_bitmap_by_cross_coding (GBitmap &bm, GP<GBitmap> &cbm, const int libno);
   void code_record(int &rectype, const GP<JB2Dict> &jim, JB2Shape *jshp);
   void code_record(int &rectype, const GP<JB2Image> &jim, JB2Shape *jshp, JB2Blit *jblt);
-  static void compute_bounding_box(GBitmap &cbm, LibRect &lrect);
+//< Changed for WinDjView project
+//  static void compute_bounding_box(GBitmap &cbm, LibRect &lrect);
+//>
   static int get_direct_context( unsigned char const * const up2,
     unsigned char const * const up1, unsigned char const * const up0,
     const int column);
@@ -680,7 +695,10 @@ protected:
   // Library
   GTArray<int> shape2lib;
   GTArray<int> lib2shape;
-  GTArray<LibRect> libinfo;
+//< Changed for WinDjView project
+//  GTArray<LibRect> libinfo;
+  GTArray<ShapeRect> libinfo;
+//>
   // Code pairs
   NumContext abs_loc_x;
   NumContext abs_loc_y;

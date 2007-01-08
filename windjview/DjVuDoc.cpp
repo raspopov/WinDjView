@@ -148,10 +148,25 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 	GetPage(0);
 
-	// Read bookmarks
-	GP<DataPool> pDataPool = m_pDjVuDoc->get_init_data_pool();
-	GP<ByteStream> pStream = pDataPool->get_stream();
-	GP<IFFByteStream> iff = IFFByteStream::create(pStream);
+	PageInfo info = GetPageInfo(0);
+	if (info.pAnnoStream != NULL)
+	{
+		try
+		{
+			info.pAnnoStream->seek(0);
+			GP<DjVuAnno> pDjVuAnno = DjVuAnno::create();
+			pDjVuAnno->decode(info.pAnnoStream);
+			m_strPageIndex = pDjVuAnno->ant->metadata["page-index"];
+		}
+		catch (GException&)
+		{
+		}
+		catch (...)
+		{
+			ReportFatalError();
+			return false;
+		}
+	}
 
 	CDjVuView* pView = GetDjVuView();
 	CChildFrame* pFrame = (CChildFrame*)pView->GetParentFrame();

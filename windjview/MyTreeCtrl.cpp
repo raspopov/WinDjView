@@ -44,7 +44,7 @@ CMyTreeCtrl::CMyTreeCtrl()
 	: m_nItemHeight(20), m_pImageList(NULL), m_bWrapLabels(true), m_hTheme(NULL),
 	  m_pOffscreenBitmap(NULL), m_szOffscreen(0, 0), m_pSelection(NULL), m_pHoverNode(NULL),
 	  m_ptScrollOffset(0, 0), m_szDisplay(0, 0), m_szLine(15, 15), m_szPage(0, 0),
-	  m_bMouseInTooltip(false)
+	  m_bMouseInTooltip(false), m_bRedirectWheel(true), m_bLinesAtRoot(false)
 {
 	m_pRoot = new TreeNode(NULL, -1, -1, NULL);
 	m_pRoot->bCollapsed = false;
@@ -96,6 +96,7 @@ BEGIN_MESSAGE_MAP(CMyTreeCtrl, CWnd)
 	ON_WM_MOUSEWHEEL()
 	ON_WM_SYSCOLORCHANGE()
 	ON_WM_LBUTTONDBLCLK()
+	ON_WM_STYLECHANGED()
 END_MESSAGE_MAP()
 
 
@@ -109,9 +110,7 @@ BOOL CMyTreeCtrl::PreCreateWindow(CREATESTRUCT& cs)
 	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
 
-	cs.dwExStyle |= WS_EX_CLIENTEDGE;
 	cs.style |= WS_HSCROLL | WS_VSCROLL;
-	cs.style &= ~WS_BORDER;
 	cs.lpszClass = strWndClass;
 
 	return true;
@@ -235,51 +234,54 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 		if (m_hTheme != NULL)
 			XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_EDGESHADOWCOLOR, &crLines);
 
-		// Draw lines
-		if (m_pRoot->pChild != pNode)
+		if (pNode->pParent != m_pRoot || m_bLinesAtRoot)
 		{
-			// This node is not the first child of the root, so there should be a vertical top half-line here
-			DrawDottedLine(pDC, crLines,
-				CPoint(pNode->nLineX, pNode->rcNode.top) + (-ptOffset),
-				CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset));
-		}
-
-		if (pNode->HasSibling())
-		{
-			// This node is not the last child, so there should be a vertical bottom half-line here
-			DrawDottedLine(pDC, crLines,
-				CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset),
-				CPoint(pNode->nLineX, pNode->rcNode.bottom) + (-ptOffset));
-		}
-
-		// Horizontal line
-		DrawDottedLine(pDC, crLines,
-			CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset),
-			CPoint(pNode->nLineStopX, pNode->nLineY) + (-ptOffset));
-
-		if (pNode->HasChildren() && !pNode->bCollapsed)
-		{
-			// Vertical line to the first child
-			DrawDottedLine(pDC, crLines,
-				CPoint(pNode->pChild->nLineX, pNode->nLineY) + (-ptOffset),
-				CPoint(pNode->pChild->nLineX, pNode->rcNode.bottom) + (-ptOffset));
-		}
-
-		TreeNode* pParent = pNode->pParent;
-		while (pParent != m_pRoot)
-		{
-			if (pParent->HasSibling())
+			// Draw lines
+			if (m_pRoot->pChild != pNode)
 			{
-				// This node has a sibling node, so there should be a full vertical line here
+				// This node is not the first child of the root, so there should be a vertical top half-line here
 				DrawDottedLine(pDC, crLines,
-					CPoint(pParent->nLineX, pNode->rcNode.top) + (-ptOffset),
-					CPoint(pParent->nLineX, pNode->rcNode.bottom) + (-ptOffset));
+					CPoint(pNode->nLineX, pNode->rcNode.top) + (-ptOffset),
+					CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset));
 			}
 
-			pParent = pParent->pParent;
+			if (pNode->HasSibling())
+			{
+				// This node is not the last child, so there should be a vertical bottom half-line here
+				DrawDottedLine(pDC, crLines,
+					CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset),
+					CPoint(pNode->nLineX, pNode->rcNode.bottom) + (-ptOffset));
+			}
+
+			// Horizontal line
+			DrawDottedLine(pDC, crLines,
+				CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset),
+				CPoint(pNode->nLineStopX, pNode->nLineY) + (-ptOffset));
+
+			if (pNode->HasChildren() && !pNode->bCollapsed)
+			{
+				// Vertical line to the first child
+				DrawDottedLine(pDC, crLines,
+					CPoint(pNode->pChild->nLineX, pNode->nLineY) + (-ptOffset),
+					CPoint(pNode->pChild->nLineX, pNode->rcNode.bottom) + (-ptOffset));
+			}
+
+			TreeNode* pParent = pNode->pParent;
+			while (pParent != m_pRoot)
+			{
+				if (pParent->HasSibling())
+				{
+					// This node has a sibling node, so there should be a full vertical line here
+					DrawDottedLine(pDC, crLines,
+						CPoint(pParent->nLineX, pNode->rcNode.top) + (-ptOffset),
+						CPoint(pParent->nLineX, pNode->rcNode.bottom) + (-ptOffset));
+				}
+
+				pParent = pParent->pParent;
+			}
 		}
 
-		if (pNode->HasChildren())
+		if (pNode->HasChildren() && (pNode->pParent != m_pRoot || m_bLinesAtRoot))
 		{
 			// Draw glyph
 			if (m_hTheme != NULL)
@@ -335,6 +337,11 @@ void CMyTreeCtrl::SetWrapLabels(bool bWrapLabels)
 		m_bWrapLabels = bWrapLabels;
 		RecalcLayout();
 	}
+}
+
+void CMyTreeCtrl::SetRedirectWheel(bool bRedirectWheel)
+{
+	m_bRedirectWheel = bRedirectWheel;
 }
 
 CPoint CMyTreeCtrl::GetScrollPosition()
@@ -445,7 +452,11 @@ void CMyTreeCtrl::RecalcLayout()
 				pNode->rcNode.top = nTop;
 				pNode->rcNode.bottom = nTop + m_nItemHeight;
 
-				pNode->rcText.left = pNode->rcNode.left + nChildOffset;
+				bool bHasLine = nLevel > 1 || m_bLinesAtRoot;
+				if (nLevel > 1 && !m_bLinesAtRoot)
+					pNode->rcNode.left -= nChildOffset;
+
+				pNode->rcText.left = pNode->rcNode.left + (bHasLine ? nChildOffset : 0);
 				pNode->rcText.top = nTop + nTextOffsetTop;
 				pNode->rcText.bottom = nTop + m_nItemHeight;
 
@@ -588,6 +599,8 @@ void CMyTreeCtrl::RecalcLayout()
 
 int CMyTreeCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
+	m_bLinesAtRoot = (lpCreateStruct->style & TVS_LINESATROOT) != 0;
+
 	if (CWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
@@ -1084,6 +1097,18 @@ void CMyTreeCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	CWnd::OnKeyDown(nChar, nRepCnt, nFlags);
 }
 
+void CMyTreeCtrl::SetSelectedItem(HTREEITEM hItem)
+{
+	if (hItem == TVI_ROOT)
+	{
+		SelectNode(NULL);
+		return;
+	}
+
+	TreeNode* pNode = (TreeNode*)hItem;
+	SelectNode(pNode);
+}
+
 void CMyTreeCtrl::SelectNode(TreeNode* pNode, UINT nAction)
 {
 	if (m_pSelection != pNode)
@@ -1124,6 +1149,24 @@ void CMyTreeCtrl::SelectNode(TreeNode* pNode, UINT nAction)
 			nmtv.itemNew.state = TVIS_SELECTED | (!pNode->bCollapsed ? TVIS_EXPANDED : 0);
 			nmtv.itemNew.lParam = (LPARAM) pNode->dwUserData;
 		}
+
+		GetParent()->SendMessage(WM_NOTIFY, GetDlgCtrlID(), (LPARAM) &nmtv);
+	}
+	else if (pNode != NULL && nAction == TVC_BYMOUSE)
+	{
+		// Still send a notification message
+		NMTREEVIEW nmtv;
+		::ZeroMemory(&nmtv, sizeof(nmtv));
+
+		nmtv.hdr.hwndFrom = GetSafeHwnd();
+		nmtv.hdr.idFrom = GetDlgCtrlID();
+		nmtv.hdr.code = TVN_ITEMCLICKED;
+		nmtv.action = nAction;
+
+		nmtv.itemNew.mask = TVIF_HANDLE | TVIF_STATE | TVIF_PARAM;
+		nmtv.itemNew.hItem = (HTREEITEM) pNode;
+		nmtv.itemNew.state = TVIS_SELECTED | (!pNode->bCollapsed ? TVIS_EXPANDED : 0);
+		nmtv.itemNew.lParam = (LPARAM) pNode->dwUserData;
 
 		GetParent()->SendMessage(WM_NOTIFY, GetDlgCtrlID(), (LPARAM) &nmtv);
 	}
@@ -1218,6 +1261,14 @@ HTREEITEM CMyTreeCtrl::GetSelectedItem()
 
 BOOL CMyTreeCtrl::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 {
+	if (m_bRedirectWheel)
+	{
+		CWnd* pWnd = WindowFromPoint(point);
+		if (pWnd != this && !IsChild(pWnd) && GetMainFrame()->IsChild(pWnd) &&
+				pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
+			return true;
+	}
+
 	bool bHasHorzBar, bHasVertBar;
 	CheckScrollBars(bHasHorzBar, bHasVertBar);
 
@@ -1305,6 +1356,28 @@ void CMyTreeCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
 	}
 
 	CWnd::OnLButtonDblClk(nFlags, point);
+}
+
+bool CMyTreeCtrl::UpdateParameters()
+{
+	bool bChanged = false;
+	DWORD dwStyle = GetStyle();
+
+	if (m_bLinesAtRoot != ((dwStyle & TVS_LINESATROOT) != 0))
+	{
+		m_bLinesAtRoot = (dwStyle & TVS_LINESATROOT) != 0;
+		bChanged = true;
+	}
+
+	return bChanged;
+}
+
+void CMyTreeCtrl::OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct)
+{
+	if (UpdateParameters())
+	{
+		RecalcLayout();
+	}
 }
 
 BOOL CMyTreeCtrl::CTreeToolTip::Create(CMyTreeCtrl* pTree)

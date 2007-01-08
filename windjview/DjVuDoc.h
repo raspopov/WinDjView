@@ -81,6 +81,7 @@ public:
 	int GetPageFromId(const GUTF8String& strPageId) const;
 
 	GP<DjVmNav> GetBookmarks() { return m_pDjVuDoc->get_djvm_nav(); }
+	const GUTF8String& GetPageIndex() { return m_strPageIndex; }
 
 	CDjVuView* GetDjVuView();
 
@@ -129,6 +130,7 @@ protected:
 	int m_nPageCount;
 	CCriticalSection m_lock;
 	bool m_bHasText;
+	GUTF8String m_strPageIndex;
 
 // Generated message map functions
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);

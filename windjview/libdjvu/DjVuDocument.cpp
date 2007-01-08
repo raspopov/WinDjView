@@ -1711,8 +1711,10 @@ DjVuDocument::get_djvm_doc()
              data=file->get_init_data_pool();
            doc->insert_file(f, data);
          }
-       if (djvm_nav)
-         doc->set_djvm_nav(djvm_nav);
+//< Changed for WinDjView project
+//       if (djvm_nav)
+//         doc->set_djvm_nav(djvm_nav);
+//>
      } 
    else if (doc_type==SINGLE_PAGE)
      {
@@ -1763,6 +1765,10 @@ DjVuDocument::get_djvm_doc()
              }
          }
      }
+//< Changed for WinDjView project
+   if (djvm_nav)
+     doc->set_djvm_nav(djvm_nav);
+//>
    return doc;
 }
 

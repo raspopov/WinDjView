@@ -21,6 +21,7 @@
 #define IDS_ASSOCIATE_SUCCESSFUL        131
 #define IDS_ASSOCIATE_FAILED            132
 #define IDC_CURSOR_DRAG                 133
+#define IDS_PAGE_INDEX_TAB              133
 #define IDS_THUMBNAILS_TAB              134
 #define IDS_SEARCH_RESULTS_TAB          135
 #define IDD_PROGRESS                    136
