@@ -1,0 +1,236 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE MOVEABLE PURE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE MOVEABLE PURE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE MOVEABLE PURE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\BookmarkTool.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\BookmarkTool.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// 24
+//
+
+IDR_MANIFEST            24      MOVEABLE PURE   "res\\BookmarkTool.manifest"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_BOOKMARKTOOL DIALOGEX 0, 0, 323, 93
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | 
+    WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "DjVu Bookmark Tool"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON   "Close",IDOK,266,43,50,14
+    PUSHBUTTON      "Embed",IDC_EMBED,266,7,50,14
+    PUSHBUTTON      "Export",IDC_EXPORT,266,25,50,14
+    RTEXT           "DjVu Bookmark Tool 2.0 (C) 2005-2007 Andrew Zhezherun",
+                    IDC_STATIC,7,79,309,8
+    GROUPBOX        "DjVu File",IDC_DJVU_GROUP,7,7,250,24
+    CONTROL         "File name",IDC_DJVU_FILE,"Static",SS_LEFTNOWORDWRAP | 
+                    SS_PATHELLIPSIS | WS_GROUP,13,18,221,9
+    PUSHBUTTON      "...",IDC_BROWSE_DJVU,239,15,13,12
+    GROUPBOX        "Bookmark File",IDC_BOOKMARK_GROUP,7,35,250,24
+    CONTROL         "File name",IDC_BOOKMARK_FILE,"Static",SS_LEFTNOWORDWRAP | 
+                    SS_PATHELLIPSIS | WS_GROUP,13,46,221,9
+    PUSHBUTTON      "...",IDC_BROWSE_BOOKMARKS,239,43,13,12
+    CONTROL         "Do not overwrite the original DjVu file (prompt for new filename)",
+                    IDC_PROMPT_FILENAME,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,65,250,9
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 2,0,0,0
+ PRODUCTVERSION 2,0,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "04090000"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "Andrew Zhezherun\0"
+            VALUE "FileDescription", "DjVu Bookmark Tool\0"
+            VALUE "FileVersion", "2.0\0"
+            VALUE "InternalName", "BookmarkTool.exe\0"
+            VALUE "LegalCopyright", "Copyright (C) 2005-2007 Andrew Zhezherun. All rights reserved.\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "BookmarkTool.exe\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "DjVu Bookmark Tool\0"
+            VALUE "ProductVersion", "2.0\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 0
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO MOVEABLE PURE 
+BEGIN
+    IDD_BOOKMARKTOOL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 316
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 86
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_DJVU_FILTER         "DjVu Documents (*.djvu,*.djv)|*.djvu;*.djv|All Files (*.*)|*.*||"
+    IDS_BROWSE_DJVU         "Browse for DjVu"
+    IDS_BROWSE_DJVU_PROMPT  "Please select or drop a DjVu file"
+    IDS_BROWSE_BOOKMARKS_PROMPT "Please select or drop a bookmark file"
+    IDS_BROWSE_BOOKMARKS    "Browse for bookmarks"
+    IDS_BOOKMARKS_FILTER    "HTML Documents (*.html,*.htm)|*.html;*.htm|Text Documents (*.txt)|*.txt|All Files (*.*)|*.*||"
+    IDS_EXPORT_BOOKMARKS    "Export Bookmarks"
+    IDS_NO_BOOKMARKS        "The selected DjVu file does not contain bookmarks."
+    IDS_CANNOT_WRITE        "Unable to open the selected bookmark file for writing."
+    IDS_EXPORT_ERROR        "An error occurred while exporting bookmarks."
+    IDS_FATAL_ERROR         "A fatal error occurred. It is recommended to close the application."
+    IDS_EXPORT_DONE         "Export was completed successfully."
+    IDS_LOAD_ERROR          "Unable to open the selected DjVu file."
+    IDS_EXPORT_DJVU         "Save As"
+    IDS_CANNOT_OPEN_BOOKMARK_FILE 
+                            "Unable to open the selected bookmark file for reading."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "DjVu Bookmark Tool"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_ERROR_READING_BOOKMARKS "Invalid bookmark file format."
+    IDS_ERROR_WRITING_TEMP  "Error creating a temporary file. The directory might be read only,\nor the disk may be full."
+    IDS_ERROR_WRITING_RESULT 
+                            "Error writing to the output file. The directory might be read-only,\nor the disk may be full."
+    IDS_REPLACE_ERROR       "Error saving the result file. The file might be in use by other application."
+    IDS_EMBEDDING_DONE      "Bookmarks were successfully embedded into the document."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\BookmarkTool.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
