@@ -567,7 +567,8 @@ GBitmap::get_grays() const
 inline unsigned char *
 GBitmap::operator[](int row) 
 {
-  if (!bytes) uncompress();
+  if (!bytes) 
+    uncompress();
   if (row<0 || row>=nrows) {
 #ifndef NDEBUG
     if (zerosize < bytes_per_row + border)
@@ -581,7 +582,8 @@ GBitmap::operator[](int row)
 inline const unsigned char *
 GBitmap::operator[](int row) const
 {
-  if (!bytes) ((GBitmap*)this)->uncompress();
+  if (!bytes) 
+    ((GBitmap*)this)->uncompress();
   if (row<0 || row>=nrows) {
 #ifndef NDEBUG
     if (zerosize < bytes_per_row + border)

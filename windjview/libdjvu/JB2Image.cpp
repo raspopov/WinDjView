@@ -470,10 +470,7 @@ JB2Dict::JB2Codec::CodeNum(int low, int high, NumContext *pctx, int v)
   bool negative=false;
   int cutoff;
   // Check
-//< Changed for WinDjView project (source: KViewShell DjVu plugin)
-//  if (pctx && ((int)*pctx >= cur_ncell))
   if (!pctx || ((int)*pctx >= cur_ncell))
-//>
     G_THROW( ERR_MSG("JB2Image.bad_numcontext") );
   // Start all phases
   cutoff = 0;
@@ -584,11 +581,7 @@ JB2Dict::JB2Codec::init_library(JB2Dict &jim)
     {
       shape2lib[i] = i;
       lib2shape[i] = i;
-      JB2Shape &jshp = jim.get_shape(i);
-//< Changed for WinDjView project
-//      libinfo[i].compute_bounding_box(*(jshp.bits));
-  libinfo[i] = jshp.bb;
-//
+      jim.get_bounding_box(i, libinfo[i]);
     }
 }
 
@@ -601,10 +594,7 @@ JB2Dict::JB2Codec::add_library(const int shapeno, JB2Shape &jshp)
   shape2lib.touch(shapeno);
   shape2lib[shapeno] = libno;
   libinfo.touch(libno);
-//< Changed for WinDjView project
-//  libinfo[libno].compute_bounding_box(*(jshp.bits));
-  libinfo[libno] = jshp.bb;
-//
+  libinfo[libno].compute_bounding_box(*(jshp.bits));
   return libno;
 }
 
@@ -876,10 +866,7 @@ JB2Dict::JB2Codec::code_bitmap_by_cross_coding (GBitmap &bm, GP<GBitmap> &cbm, c
   const int cw = cbm->columns();
   const int dw = bm.columns();
   const int dh = bm.rows();
-//< Changed for WinDjView project
-//  const LibRect &l = libinfo[libno];
-  const ShapeRect &l = libinfo[libno];
-//>
+  const LibRect &l = libinfo[libno];
   const int xd2c = (dw/2 - dw + 1) - ((l.right - l.left + 1)/2 - l.right);
   const int yd2c = (dh/2 - dh + 1) - ((l.top - l.bottom + 1)/2 - l.top);
   // Ensure borders are adequate
@@ -996,10 +983,7 @@ JB2Dict::JB2Codec::code_record(
         JB2Shape &jshp=*xjshp;
         int match = code_match_index (jshp.parent, jim);
         cbm = jim.get_shape(jshp.parent).bits;
-//< Changed for WinDjView project
-//        LibRect &l = libinfo[match];
-        const ShapeRect &l = libinfo[match];
-//>
+        LibRect &l = libinfo[match];
         code_relative_mark_size (*bm, l.right-l.left+1, l.top-l.bottom+1, 4);
         code_bitmap_by_cross_coding (*bm, cbm, jshp.parent);
         break;
@@ -1052,9 +1036,6 @@ JB2Dict::JB2Codec::code_record(
                G_THROW( ERR_MSG("JB2Image.bad_number") );
             }
             JB2Shape &jshp=*xjshp;
-//< Changed for WinDjView project
-            jshp.bb.compute_bounding_box(*(jshp.bits));
-//>
             shapeno = gjim->add_shape(jshp);
             add_library(shapeno, jshp);
             break;
@@ -1078,19 +1059,24 @@ JB2Dict::JB2Codec::Decode::code(const GP<JB2Dict> &gjim)
     G_THROW( ERR_MSG("JB2Image.bad_number") );
   }
   JB2Dict &jim=*gjim;
-      // -------------------------
-      // THIS IS THE DECODING PART
-      // -------------------------
-      int rectype;
-      JB2Shape tmpshape;
-      do
-        {
-          code_record(rectype, gjim, &tmpshape);        
-        } 
-      while(rectype != END_OF_DATA);
-      if (!gotstartrecordp)
-        G_THROW( ERR_MSG("JB2Image.no_start") );
-      jim.compress();
+  // -------------------------
+  // THIS IS THE DECODING PART
+  // -------------------------
+  int rectype;
+  JB2Shape tmpshape;
+  do {
+    code_record(rectype, gjim, &tmpshape);        
+  } while(rectype != END_OF_DATA);
+  if (!gotstartrecordp)
+    G_THROW( ERR_MSG("JB2Image.no_start") );
+  // cache bounding boxes
+  int nshapes = jim.get_shape_count();
+  int ishapes = jim.get_inherited_shape_count();
+  jim.boxes.resize(0, nshapes-ishapes-1);
+  for (int i = ishapes; i < nshapes; i++)
+    jim.boxes[i-ishapes] = libinfo[i];
+  // compress
+  jim.compress();
 }
 
 
@@ -1182,10 +1168,7 @@ JB2Dict::JB2Codec::code_record(
         JB2Image &jim=*gjim;
         match = code_match_index (jshp.parent, jim);
         cbm = jim.get_shape(jshp.parent).bits;
-//< Changed for WinDjView project
-//        LibRect &l = libinfo[match];
-        const ShapeRect &l = libinfo[match];
-//>
+        LibRect &l = libinfo[match];
         code_relative_mark_size (*bm, l.right-l.left+1, l.top-l.bottom+1, 4); 
         code_bitmap_by_cross_coding (*bm, cbm, match);
         code_relative_location (jblt, bm->rows(), bm->columns() );
@@ -1201,10 +1184,7 @@ JB2Dict::JB2Codec::code_record(
         JB2Shape &jshp=*xjshp;
         match = code_match_index (jshp.parent, jim);
         cbm = jim.get_shape(jshp.parent).bits;
-//< Changed for WinDjView project
-//        LibRect &l = libinfo[match];
-        const ShapeRect &l = libinfo[match];
-//>
+        LibRect &l = libinfo[match];
         code_relative_mark_size (*bm, l.right-l.left+1, l.top-l.bottom+1, 4);
         break;
       }
@@ -1218,10 +1198,7 @@ JB2Dict::JB2Codec::code_record(
         JB2Shape &jshp=*xjshp;
         match = code_match_index (jshp.parent, jim);
         cbm = jim.get_shape(jshp.parent).bits;
-//< Changed for WinDjView project
-//        LibRect &l = libinfo[match];
-        const ShapeRect &l = libinfo[match];
-//>
+        LibRect &l = libinfo[match];
         code_relative_mark_size (*bm, l.right-l.left+1, l.top-l.bottom+1, 4);
         code_bitmap_by_cross_coding (*bm, cbm, match);
         code_relative_location (jblt, bm->rows(), bm->columns() );
@@ -1239,10 +1216,7 @@ JB2Dict::JB2Codec::code_record(
         match = code_match_index (temp, jim);
         if (!encoding) jblt->shapeno = temp;
         bm = jim.get_shape(jblt->shapeno).bits;
-//< Changed for WinDjView project
-//        LibRect &l = libinfo[match];
-        const ShapeRect &l = libinfo[match];
-//>
+        LibRect &l = libinfo[match];
         jblt->left += l.left;
         jblt->bottom += l.bottom;
         if (jim.reproduce_old_bug)
@@ -1317,9 +1291,6 @@ JB2Dict::JB2Codec::code_record(
             shapeno = gjim->add_shape(jshp);
             shape2lib.touch(shapeno);
             shape2lib[shapeno] = -1;
-//< Changed for WinDjView project
-            jshp.bb.compute_bounding_box(*(jshp.bits));
-//>
             break;
           }
         }
@@ -1395,12 +1366,9 @@ JB2Dict::JB2Codec::Decode::code(const GP<JB2Image> &gjim)
 ////////////////////////////////////////
 
 void 
-//< Changed for WinDjView project
-//JB2Dict::JB2Codec::LibRect::compute_bounding_box(const GBitmap &bm)
-ShapeRect::compute_bounding_box(const GBitmap &bm)
-//>
+JB2Dict::LibRect::compute_bounding_box(const GBitmap &bm)
 {
-  // First lock the stuff.
+  // Avoid trouble
   GMonitorLock lock(bm.monitor());
   // Get size
   const int w = bm.columns();
@@ -1447,6 +1415,27 @@ ShapeRect::compute_bounding_box(const GBitmap &bm)
         break;
     }
 }
+
+
+void
+JB2Dict::get_bounding_box(int shapeno, LibRect &dest)
+{
+  if (shapeno < inherited_shapes && inherited_dict)
+    {
+      inherited_dict->get_bounding_box(shapeno, dest);
+    }
+  else if (shapeno >= inherited_shapes &&
+           shapeno < inherited_shapes + boxes.size())
+    {
+      dest = boxes[shapeno - inherited_shapes];
+    }
+  else
+    {
+      JB2Shape &jshp = get_shape(shapeno);
+      dest.compute_bounding_box(*(jshp.bits));
+    }
+}
+
 
 GP<JB2Dict>
 JB2Dict::create(void)

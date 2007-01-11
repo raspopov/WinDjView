@@ -205,13 +205,6 @@ public:
   unsigned int shapeno;
 };
 
-//< Changed for WinDjView project
-struct ShapeRect
-{
-  int top, left, right, bottom;
-  void compute_bounding_box(const GBitmap &cbm);
-};
-//>
 
 /** Shape data structure.  A #JB2Image# contains an array of #JB2Shape# data
     structures.  Each array entry represents an elementary blob of ink such as
@@ -239,10 +232,6 @@ public:
       of the JB2Image data structures.  Neither the rendering functions nor
       the coding functions ever access this value. */
   long userdata;
-
-//< Changed for WinDjView project
-  ShapeRect bb;
-//>
 };
 
 
@@ -336,7 +325,16 @@ private:
   int inherited_shapes;
   GP<JB2Dict> inherited_dict;
   GArray<JB2Shape> shapes;
-  
+
+//< Changed for WinDjView project
+public:
+//>
+  struct LibRect {
+    int top,left,right,bottom;
+    void compute_bounding_box(const GBitmap &cbm);
+  };
+  GTArray<LibRect> boxes;
+  void get_bounding_box(int shapeno, LibRect &dest);
 };
 
 /** Main JB2 data structure.  Each #JB2Image# consists of an array of shapes
@@ -606,13 +604,6 @@ public:
   class Decode;
   class Encode;
   typedef unsigned int NumContext;
-//< Changed for WinDjView project
-//  struct LibRect
-//  {
-//    int top,left,right,bottom;
-//    void compute_bounding_box(const GBitmap &cbm);
-//  };
-//>
   virtual ~JB2Codec();
 protected:
   // Constructors
@@ -695,10 +686,7 @@ protected:
   // Library
   GTArray<int> shape2lib;
   GTArray<int> lib2shape;
-//< Changed for WinDjView project
-//  GTArray<LibRect> libinfo;
-  GTArray<ShapeRect> libinfo;
-//>
+  GTArray<LibRect> libinfo;
   // Code pairs
   NumContext abs_loc_x;
   NumContext abs_loc_y;
