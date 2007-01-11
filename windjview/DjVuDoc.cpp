@@ -224,36 +224,25 @@ GP<DjVuImage> CDjVuDoc::GetPage(int nPage, bool bAddToCache)
 	data.hDecodingThread = ::GetCurrentThread();
 	data.nOrigThreadPriority = ::GetThreadPriority(data.hDecodingThread);
 
-	GP<DjVuFile> file;
-	try
-	{
-		file = m_pDjVuDoc->get_djvu_file(nPage);
-	}
-	catch (GException&)
-	{
-	}
-	catch (...)
-	{
-		m_lock.Unlock();
-		ReportFatalError();
-		return NULL;
-	}
-
 	m_lock.Unlock();
 
-	if (file)
+	try
 	{
-		try
+		GP<DjVuFile> file = m_pDjVuDoc->get_djvu_file(nPage);
+		if (file)
 		{
 			pImage = DjVuImage::create(file);
 			file->resume_decode();
 			if (pImage && THREADMODEL != NOTHREADS)
 				pImage->wait_for_complete_decode();
 		}
-		catch (...)
-		{
-			ReportFatalError();
-		}
+	}
+	catch (GException&)
+	{
+	}
+	catch (...)
+	{
+		ReportFatalError();
 	}
 
 	m_lock.Lock();
@@ -343,30 +332,11 @@ PageInfo CDjVuDoc::ReadPageInfo(int nPage)
 	pageInfo.szPage.cy = 100;
 	pageInfo.nDPI = 100;
 
-	GP<DjVuFile> file;
-
-	m_lock.Lock();
-	try
-	{
-		file = (m_pDjVuDoc->get_djvu_file(nPage));
-	}
-	catch (GException&)
-	{
-		m_lock.Unlock();
-		return pageInfo;
-	}
-	catch (...)
-	{
-		m_lock.Unlock();
-		ReportFatalError();
-		return pageInfo;
-	}
-	m_lock.Unlock();
-
 	try
 	{
 		// Get raw data from the document and decode only page info chunk
-		GP<DataPool> pool = file->get_init_data_pool();
+		GURL url = m_pDjVuDoc->page_to_url(nPage);
+		GP<DataPool> pool = m_pDjVuDoc->request_data(NULL, url);
 		GP<ByteStream> stream = pool->get_stream();
 		GP<IFFByteStream> iff(IFFByteStream::create(stream));
 
