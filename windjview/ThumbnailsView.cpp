@@ -71,7 +71,7 @@ END_MESSAGE_MAP()
 CThumbnailsView::CThumbnailsView()
 	: m_bInsideUpdateView(false), m_nPageCount(0), m_bVisible(false),
 	  m_pThread(NULL), m_pIdleThread(NULL), m_nSelectedPage(-1), m_pDoc(NULL),
-	  m_nCurrentPage(-1), m_nRotate(0), m_nPagesInRow(1)
+	  m_nCurrentPage(-1), m_nRotate(0), m_nPagesInRow(1), m_bInitialized(false)
 {
 	CFont systemFont;
 	CreateSystemDialogFont(systemFont);
@@ -306,6 +306,12 @@ void CThumbnailsView::OnInitialUpdate()
 	m_pIdleThread = new CThumbnailsThread(GetDocument(), this, true);
 	m_pIdleThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
 
+	UpdateView(RECALC);
+}
+
+void CThumbnailsView::Start()
+{
+	m_bInitialized = true;
 	UpdateView(RECALC);
 }
 
@@ -765,7 +771,7 @@ void CThumbnailsView::UpdateVisiblePages()
 	m_pThread->ClearQueue();
 	m_pIdleThread->ClearQueue();
 
-	if (m_bVisible)
+	if (m_bVisible && m_bInitialized)
 	{
 		m_pThread->PauseJobs();
 		m_pIdleThread->PauseJobs();

@@ -43,6 +43,8 @@ BEGIN_MESSAGE_MAP(CMyToolBar, CToolBar)
 	ON_WM_CREATE()
 	ON_WM_NCPAINT()
 	ON_MESSAGE(WM_THEMECHANGED, OnThemeChanged)
+	ON_WM_RBUTTONDOWN()
+	ON_WM_RBUTTONUP()
 END_MESSAGE_MAP()
 
 
@@ -229,4 +231,14 @@ LRESULT CMyToolBar::OnThemeChanged(WPARAM wParam, LPARAM lParam)
 		m_hTheme = XPOpenThemeData(m_hWnd, L"TOOLBAR");
 
 	return 0;
+}
+
+void CMyToolBar::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	// Just eat the message. Standard windows toolbar does some strange things after right-clicking.
+}
+
+void CMyToolBar::OnRButtonUp(UINT nFlags, CPoint point)
+{
+	// Just eat the message. Standard windows toolbar does some strange things after right-clicking.
 }

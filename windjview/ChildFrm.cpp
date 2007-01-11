@@ -160,6 +160,8 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 
 	m_bActivating = false;
 	GetDjVuView()->UpdateVisiblePages();
+
+	GetThumbnailsView()->Start();
 }
 
 BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)

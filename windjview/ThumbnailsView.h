@@ -53,6 +53,7 @@ public:
 	void SetRotate(int nRotate);
 	int GetRotate() const { return m_nRotate; }
 
+	void Start();
 	void StopDecoding();
 	void RestartThreads();
 	void OnSettingsChanged();
@@ -82,7 +83,7 @@ protected:
 	bool m_bInsideUpdateView;
 	CFont m_font;
 	int m_nSelectedPage, m_nCurrentPage;
-	bool m_bVisible;
+	bool m_bVisible, m_bInitialized;
 	int m_nRotate;
 	int m_nPagesInRow;
 

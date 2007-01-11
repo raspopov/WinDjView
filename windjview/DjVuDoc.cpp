@@ -87,23 +87,6 @@ void CDjVuDoc::Dump(CDumpContext& dc) const
 }
 #endif //_DEBUG
 
-GURL MakeFilenameURL(const CString& strFilename)
-{
-#ifdef _UNICODE
-	int nSize = ::WideCharToMultiByte(CP_UTF8, 0, strFilename, -1, NULL, 0, NULL, NULL);
-	LPSTR pszText = new CHAR[nSize];
-	::WideCharToMultiByte(CP_UTF8, 0, strFilename, -1, pszText, nSize, NULL, NULL);
-
-	GURL url = GURL::Filename::UTF8(pszText);
-	delete[] pszText;
-
-	return url;
-#else
-	return GURL::Filename::Native((LPCSTR)strFilename);
-#endif
-}
-
-
 BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 {
 	DeleteContents();
@@ -122,7 +105,8 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 	try
 	{
-		m_pDjVuDoc = DjVuDocument::create(MakeFilenameURL(pszName));
+		GURL url = GURL::Filename::UTF8(MakeUTF8String(pszName));
+		m_pDjVuDoc = DjVuDocument::create(url);
 		m_pDjVuDoc->wait_get_pages_num();
 	}
 	catch (GException&)
@@ -145,8 +129,6 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 	m_pages.clear();
 	m_pages.resize(m_nPageCount);
-
-	GetPage(0);
 
 	PageInfo info = GetPageInfo(0);
 	if (info.pAnnoStream != NULL)
@@ -252,8 +234,8 @@ GP<DjVuImage> CDjVuDoc::GetPage(int nPage, bool bAddToCache)
 	}
 	catch (...)
 	{
-		ReportFatalError();
 		m_lock.Unlock();
+		ReportFatalError();
 		return NULL;
 	}
 
@@ -287,9 +269,10 @@ GP<DjVuImage> CDjVuDoc::GetPage(int nPage, bool bAddToCache)
 	data.hDecodingThread = NULL;
 	data.requests.clear();
 
-	if (pImage != NULL && bAddToCache)
+	if (pImage != NULL)
 	{
-		data.pImage = pImage;
+		if (bAddToCache)
+			data.pImage = pImage;
 
 		if (!data.bFullInfo)
 		{
@@ -504,7 +487,8 @@ void CDjVuDoc::OnSaveCopyAs()
 	try
 	{
 		m_pDjVuDoc->wait_for_complete_init();
-		m_pDjVuDoc->save_as(MakeFilenameURL(strFileName), true);
+		GURL url = GURL::Filename::UTF8(MakeUTF8String(strFileName));
+		m_pDjVuDoc->write(ByteStream::create(url, "wb"), true);
 	}
 	catch (GException&)
 	{

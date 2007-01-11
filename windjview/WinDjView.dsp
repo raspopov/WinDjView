@@ -81,7 +81,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 libdjvu/libdjvud.lib msimg32.lib version.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"libcmtd.lib" /pdbtype:sept
+# ADD LINK32 libdjvu/libdjvud.lib msimg32.lib version.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
 !ELSEIF  "$(CFG)" == "WinDjView - Win32 Debug Unicode"
 
@@ -155,7 +155,7 @@ SOURCE=.\AppSettings.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\BookmarksView.cpp
+SOURCE=.\BookmarksWnd.cpp
 # End Source File
 # Begin Source File
 
@@ -243,6 +243,10 @@ SOURCE=.\NavPane.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\PageIndexWnd.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\PrintDlg.cpp
 # End Source File
 # Begin Source File
@@ -300,7 +304,7 @@ SOURCE=.\AppSettings.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\BookmarksView.h
+SOURCE=.\BookmarksWnd.h
 # End Source File
 # Begin Source File
 
@@ -381,6 +385,10 @@ SOURCE=.\MyTreeCtrl.h
 # Begin Source File
 
 SOURCE=.\NavPane.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\PageIndexWnd.h
 # End Source File
 # Begin Source File
 
