@@ -105,7 +105,7 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 	try
 	{
-		GURL url = GURL::Filename::UTF8(MakeUTF8String(pszName));
+		GURL url = GURL::Filename::UTF8(MakeUTF8String(CString(pszName)));
 		m_pDjVuDoc = DjVuDocument::create(url);
 		m_pDjVuDoc->wait_get_pages_num();
 	}
