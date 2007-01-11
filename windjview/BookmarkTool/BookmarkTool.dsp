@@ -175,9 +175,15 @@ SOURCE=.\stdafx.cpp
 
 !ELSEIF  "$(CFG)" == "BookmarkTool - Win32 Debug"
 
+# ADD CPP /Yc"stdafx.h"
+
 !ELSEIF  "$(CFG)" == "BookmarkTool - Win32 Debug Unicode"
 
+# ADD CPP /Yc"stdafx.h"
+
 !ELSEIF  "$(CFG)" == "BookmarkTool - Win32 Release Unicode"
+
+# ADD CPP /Yc"stdafx.h"
 
 !ENDIF 
 

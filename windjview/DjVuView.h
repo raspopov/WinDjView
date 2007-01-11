@@ -1,10 +1,9 @@
 //	WinDjView
-//	Copyright (C) 2004-2006 Andrew Zhezherun
+//	Copyright (C) 2004-2007 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation; either version 2 of the License, or
-//	(at your option) any later version.
+//	it under the terms of the GNU General Public License version 2
+//	as published by the Free Software Foundation.
 //
 //	This program is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -210,7 +209,7 @@ protected:
 		Page() :
 			bInfoLoaded(false), szDisplay(0, 0), ptOffset(0, 0),
 			pBitmap(NULL), bTextDecoded(false), bAnnoDecoded(false),
-			nSelStart(-1), nSelEnd(-1), bHasSize(false) {}
+			nSelStart(-1), nSelEnd(-1), bHasSize(false), bBitmapRendered(false) {}
 		~Page() { delete pBitmap; }
 
 		CSize GetSize(int nRotate) const
@@ -236,6 +235,7 @@ protected:
 		CSize szDisplay;
 		CRect rcDisplay;
 		CDIB* pBitmap;
+		bool bBitmapRendered;
 
 		bool bTextDecoded;
 		GP<DjVuTXT> pText;
@@ -273,6 +273,7 @@ protected:
 		{
 			delete pBitmap;
 			pBitmap = NULL;
+			bBitmapRendered = false;
 		}
 	};
 	vector<Page> m_pages;
@@ -362,6 +363,7 @@ protected:
 	static HCURSOR hCursorLink;
 	static HCURSOR hCursorText;
 	static HCURSOR hCursorMagnify;
+	CImageList m_hourglass;
 
 	// Dummy invisible scrollbars
 	CScrollBar* m_pHScrollBar;

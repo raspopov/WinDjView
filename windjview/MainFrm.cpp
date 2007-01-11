@@ -1,10 +1,9 @@
 //	WinDjView
-//	Copyright (C) 2004-2006 Andrew Zhezherun
+//	Copyright (C) 2004-2007 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation; either version 2 of the License, or
-//	(at your option) any later version.
+//	it under the terms of the GNU General Public License version 2
+//	as published by the Free Software Foundation.
 //
 //	This program is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -89,6 +88,13 @@ void CreateSystemIconFont(CFont& font)
 	font.CreateFontIndirect(&lf);
 }
 
+// AppCommand constants from winuser.h
+#define WM_APPCOMMAND                0x0319
+#define APPCOMMAND_BROWSER_BACKWARD       1
+#define APPCOMMAND_BROWSER_FORWARD        2
+#define FAPPCOMMAND_MASK             0xF000
+#define GET_APPCOMMAND_LPARAM(lParam) ((short)(HIWORD(lParam) & ~FAPPCOMMAND_MASK))
+
 
 // CMainFrame
 
@@ -125,6 +131,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_LANGUAGE_FIRST, OnUpdateLanguageList)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_LANGUAGE_FIRST + 1, ID_LANGUAGE_LAST, OnUpdateLanguage)
 	ON_WM_CLOSE()
+	ON_MESSAGE(WM_APPCOMMAND, OnAppCommand)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -693,7 +700,7 @@ void CMainFrame::GoToHistoryPos(const HistoryPos& pos)
 
 void CMainFrame::OnViewBack()
 {
-	if (m_history.empty() || m_historyPos == m_history.begin())
+	if (IsFullscreenMode() || m_history.empty() || m_historyPos == m_history.begin())
 		return;
 
 	const HistoryPos& pos = *(--m_historyPos);
@@ -708,7 +715,7 @@ void CMainFrame::OnUpdateViewBack(CCmdUI* pCmdUI)
 
 void CMainFrame::OnViewForward()
 {
-	if (m_history.empty())
+	if (IsFullscreenMode() || m_history.empty())
 		return;
 
 	list<HistoryPos>::iterator it = m_history.end();
@@ -1321,4 +1328,22 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 	}
 
 	return CMDIFrameWnd::PreTranslateMessage(pMsg);
+}
+
+LRESULT CMainFrame::OnAppCommand(WPARAM wParam, LPARAM lParam)
+{
+	UINT nCommand = GET_APPCOMMAND_LPARAM(lParam);
+	if (nCommand == APPCOMMAND_BROWSER_BACKWARD)
+	{
+		OnViewBack();
+		return 1;
+	}
+	else if (nCommand == APPCOMMAND_BROWSER_FORWARD)
+	{
+		OnViewForward();
+		return 1;
+	}
+
+	Default();
+	return 0;
 }

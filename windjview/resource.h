@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
+// Microsoft Developer Studio generated include file.
 // Used by WinDjView.rc
 //
 #define IDR_MANIFEST                    1
@@ -107,6 +107,7 @@
 #define IDC_CURSOR_PAN_UD               216
 #define IDC_CURSOR_PAN_UL               217
 #define IDB_PAN_ANCHOR                  218
+#define IDB_HOURGLASS                   219
 #define IDC_CURSOR_MAGNIFY              254
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
@@ -240,7 +241,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        219
+#define _APS_NEXT_RESOURCE_VALUE        220
 #define _APS_NEXT_COMMAND_VALUE         33123
 #define _APS_NEXT_CONTROL_VALUE         1061
 #define _APS_NEXT_SYMED_VALUE           109

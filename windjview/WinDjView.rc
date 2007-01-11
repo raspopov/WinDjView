@@ -1,4 +1,4 @@
-// Microsoft Visual C++ generated resource script.
+//Microsoft Developer Studio generated resource script.
 //
 #include "resource.h"
 
@@ -35,12 +35,12 @@ LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "#ifndef VK_OEM_PLUS\r\n"
@@ -54,7 +54,7 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
     "#define _AFX_NO_OLE_RESOURCES\r\n"
@@ -91,28 +91,28 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Cursor
 //
 
-IDC_CURSOR_DRAG         CURSOR                  "res\\drag.cur"
-IDC_CURSOR_LINK         CURSOR                  "res\\link.cur"
-IDC_CURSOR_HAND         CURSOR                  "res\\hand.cur"
-IDC_CURSOR_MAGNIFY      CURSOR                  "res\\magnify.cur"
-IDC_CURSOR_PAN_UR       CURSOR                  "res\\pan_ur.cur"
-IDC_CURSOR_PAN_ALL      CURSOR                  "res\\pan_all.cur"
-IDC_CURSOR_PAN_D        CURSOR                  "res\\pan_d.cur"
-IDC_CURSOR_PAN_DL       CURSOR                  "res\\pan_dl.cur"
-IDC_CURSOR_PAN_DR       CURSOR                  "res\\pan_dr.cur"
-IDC_CURSOR_PAN_L        CURSOR                  "res\\pan_l.cur"
-IDC_CURSOR_PAN_LR       CURSOR                  "res\\pan_lr.cur"
-IDC_CURSOR_PAN_R        CURSOR                  "res\\pan_r.cur"
-IDC_CURSOR_PAN_U        CURSOR                  "res\\pan_u.cur"
-IDC_CURSOR_PAN_UD       CURSOR                  "res\\pan_ud.cur"
-IDC_CURSOR_PAN_UL       CURSOR                  "res\\pan_ul.cur"
+IDC_CURSOR_DRAG         CURSOR  DISCARDABLE     "res\\drag.cur"
+IDC_CURSOR_LINK         CURSOR  DISCARDABLE     "res\\link.cur"
+IDC_CURSOR_HAND         CURSOR  DISCARDABLE     "res\\hand.cur"
+IDC_CURSOR_MAGNIFY      CURSOR  DISCARDABLE     "res\\magnify.cur"
+IDC_CURSOR_PAN_UR       CURSOR  DISCARDABLE     "res\\pan_ur.cur"
+IDC_CURSOR_PAN_ALL      CURSOR  DISCARDABLE     "res\\pan_all.cur"
+IDC_CURSOR_PAN_D        CURSOR  DISCARDABLE     "res\\pan_d.cur"
+IDC_CURSOR_PAN_DL       CURSOR  DISCARDABLE     "res\\pan_dl.cur"
+IDC_CURSOR_PAN_DR       CURSOR  DISCARDABLE     "res\\pan_dr.cur"
+IDC_CURSOR_PAN_L        CURSOR  DISCARDABLE     "res\\pan_l.cur"
+IDC_CURSOR_PAN_LR       CURSOR  DISCARDABLE     "res\\pan_lr.cur"
+IDC_CURSOR_PAN_R        CURSOR  DISCARDABLE     "res\\pan_r.cur"
+IDC_CURSOR_PAN_U        CURSOR  DISCARDABLE     "res\\pan_u.cur"
+IDC_CURSOR_PAN_UD       CURSOR  DISCARDABLE     "res\\pan_ud.cur"
+IDC_CURSOR_PAN_UL       CURSOR  DISCARDABLE     "res\\pan_ul.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// RT_MANIFEST
+// 24
 //
 
-IDR_MANIFEST            RT_MANIFEST             "res\\WinDjView.manifest"
+IDR_MANIFEST            24      MOVEABLE PURE   "res\\WinDjView.manifest"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -121,26 +121,27 @@ IDR_MANIFEST            RT_MANIFEST             "res\\WinDjView.manifest"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\WinDjView.ico"
-IDR_DjVuTYPE            ICON                    "res\\DjVuDoc.ico"
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\WinDjView.ico"
+IDR_DjVuTYPE            ICON    DISCARDABLE     "res\\DjVuDoc.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
-IDB_CLOSE               BITMAP                  "res\\close.bmp"
-IDB_BOOKMARKS           BITMAP                  "res\\bookmarks.bmp"
-IDB_DONATE              BITMAP                  "res\\donate.bmp"
-IDB_PAN_ANCHOR          BITMAP                  "res\\pan_anchor.bmp"
+IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
+IDB_CLOSE               BITMAP  MOVEABLE PURE   "res\\close.bmp"
+IDB_BOOKMARKS           BITMAP  MOVEABLE PURE   "res\\bookmarks.bmp"
+IDB_DONATE              BITMAP  MOVEABLE PURE   "res\\donate.bmp"
+IDB_PAN_ANCHOR          BITMAP  MOVEABLE PURE   "res\\pan_anchor.bmp"
+IDB_HOURGLASS           BITMAP  DISCARDABLE     "res\\hourglass.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR  16, 16
+IDR_MAINFRAME TOOLBAR MOVEABLE PURE  16, 16
 BEGIN
     BUTTON      ID_FILE_OPEN
     SEPARATOR
@@ -183,7 +184,7 @@ END
 // Menu
 //
 
-IDR_MAINFRAME MENU 
+IDR_MAINFRAME MENU DISCARDABLE 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -211,7 +212,7 @@ BEGIN
     END
 END
 
-IDR_DjVuTYPE MENU 
+IDR_DjVuTYPE MENU DISCARDABLE 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -322,7 +323,7 @@ BEGIN
     END
 END
 
-IDR_POPUP MENU 
+IDR_POPUP MENU DISCARDABLE 
 BEGIN
     POPUP "Popup"
     BEGIN
@@ -339,7 +340,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS 
+IDR_MAINFRAME ACCELERATORS MOVEABLE PURE 
 BEGIN
     "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
     "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, 
@@ -357,7 +358,7 @@ BEGIN
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
-    VK_OEM_COMMA,   ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
+    188,            ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
     "2",            ID_LAYOUT_CONTINUOUS,   VIRTKEY, CONTROL, ALT, NOINVERT
     "4",            ID_LAYOUT_CONTINUOUS_FACING, VIRTKEY, CONTROL, ALT, 
                                                     NOINVERT
@@ -369,13 +370,13 @@ BEGIN
                                                     NOINVERT
     VK_LEFT,        ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
-    VK_OEM_MINUS,   ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+    189,            ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     VK_ADD,         ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
-    VK_OEM_PLUS,    ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
+    187,            ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     VK_RIGHT,       ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
@@ -397,8 +398,8 @@ BEGIN
     VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
     "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
     VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
-    VK_OEM_PLUS,    ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
-    VK_OEM_MINUS,   ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    187,            ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    189,            ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
     "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
 END
@@ -409,9 +410,8 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG  0, 0, 251, 122
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 251, 122
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -434,9 +434,8 @@ BEGIN
                     WS_TABSTOP,181,94,63,21
 END
 
-IDD_PRINT DIALOG  0, 0, 432, 316
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+IDD_PRINT DIALOG DISCARDABLE  0, 0, 432, 316
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Print"
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -527,7 +526,7 @@ BEGIN
 END
 
 IDD_PROGRESS DIALOGEX 0, 0, 171, 61
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Cancel",IDOK,60,40,50,14
@@ -538,8 +537,7 @@ BEGIN
 END
 
 IDD_ZOOM DIALOGEX 0, 0, 119, 47
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Zoom Custom"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -549,9 +547,8 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS DIALOG  0, 0, 219, 295
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 219, 295
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Settings"
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -604,9 +601,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,165,188,10
 END
 
-IDD_FIND DIALOG  0, 0, 287, 64
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+IDD_FIND DIALOG DISCARDABLE  0, 0, 287, 64
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Find"
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -622,7 +618,7 @@ BEGIN
 END
 
 IDD_UPDATE DIALOGEX 0, 0, 167, 34
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Checking for update. Please wait...",IDC_STATIC,39,10,
@@ -630,9 +626,8 @@ BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
 END
 
-IDD_GOTO_PAGE DIALOG  0, 0, 123, 48
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+IDD_GOTO_PAGE DIALOG DISCARDABLE  0, 0, 123, 48
+STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Go To Page"
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -646,6 +641,7 @@ BEGIN
 END
 
 
+#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -668,14 +664,14 @@ BEGIN
     BEGIN
         BLOCK "04090000"
         BEGIN
-            VALUE "CompanyName", "Andrew Zhezherun"
-            VALUE "FileDescription", "WinDjView"
-            VALUE "FileVersion", "0.4.3"
-            VALUE "InternalName", "WinDjView.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun.  All rights reserved."
-            VALUE "OriginalFilename", "WinDjView.exe"
-            VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "0.4.3"
+            VALUE "CompanyName", "Andrew Zhezherun\0"
+            VALUE "FileDescription", "WinDjView\0"
+            VALUE "FileVersion", "0.4.3\0"
+            VALUE "InternalName", "WinDjView.exe\0"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun.  All rights reserved.\0"
+            VALUE "OriginalFilename", "WinDjView.exe\0"
+            VALUE "ProductName", "WinDjView\0"
+            VALUE "ProductVersion", "0.4.3\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -684,6 +680,8 @@ BEGIN
     END
 END
 
+#endif    // !_MAC
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -691,7 +689,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO MOVEABLE PURE 
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -765,7 +763,7 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     IDR_MAINFRAME           "WinDjView"
     IDR_DjVuTYPE            "\nDjVu\nDjVu\nDjVu Documents (*.djvu;*.djv)\n.djvu;.djv\nDjVu.Document\n"
@@ -782,7 +780,7 @@ BEGIN
     IDS_SAVE_ERROR          "An error occurred while saving the document"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_ERROR_DECODING_PAGE "Error decoding page"
     IDS_BMP_FILTER          "Bitmap Files (*.bmp)|*.bmp|All Files (*.*)|*.*||"
@@ -797,13 +795,13 @@ BEGIN
     IDS_DJVULIBRE_URL       "http://djvu.sourceforge.net"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     AFX_IDS_APP_TITLE       "WinDjView"
     AFX_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing document\nOpen"
@@ -817,13 +815,13 @@ BEGIN
     ID_FILE_SAVE_COPY_AS    "Save a copy of the active document with a new name\nSave Copy As"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quit the application\nExit"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_FILE_MRU_FILE1       "Open this document"
     ID_FILE_MRU_FILE2       "Open this document"
@@ -843,13 +841,13 @@ BEGIN
     ID_FILE_MRU_FILE16      "Open this document"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
     ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
     ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
@@ -859,7 +857,7 @@ BEGIN
     ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_EDIT_CLEAR           "Erase the selection\nErase"
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
@@ -874,13 +872,13 @@ BEGIN
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     AFX_IDS_SCSIZE          "Change the window size"
     AFX_IDS_SCMOVE          "Change the window position"
@@ -891,14 +889,14 @@ BEGIN
     AFX_IDS_SCCLOSE         "Close the active window"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     AFX_IDS_SCRESTORE       "Restore the window to normal size"
     AFX_IDS_SCTASKLIST      "Activate Task List"
     AFX_IDS_MDICHILD        "Activate this window"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_LAYOUT_FIRSTPAGE_ALONE 
                             "Display first page alone in facing and continuous-facing layouts"
@@ -906,12 +904,12 @@ BEGIN
     IDS_ALLFILTER           "All Files (*.*)"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_VIEW_NEXTPAGE        "Go to next page\nNext Page"
     ID_VIEW_PREVIOUSPAGE    "Go to previous page\nPrevious Page"
@@ -924,7 +922,7 @@ BEGIN
     ID_ZOOM_FITHEIGHT       "Fit page to height of the window"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_ZOOM_FITPAGE         "Fit page to the window\nFit Page"
     ID_ZOOM_ACTUALSIZE      "Display page in actual size"
@@ -937,7 +935,7 @@ BEGIN
     ID_VIEW_LASTPAGE        "Go to last page\nLast Page"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     IDC_PAGENUM             "Select page number\nPage"
     IDC_ZOOM                "Select zoom level\nZoom"
@@ -946,7 +944,7 @@ BEGIN
     ID_EXPORT_PAGE          "Exports current page as bmp file"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_LAYOUT_SINGLEPAGE    "Single page layout\nSingle Page"
     ID_LAYOUT_CONTINUOUS    "Continuous page layout\nContinuous"
@@ -955,7 +953,7 @@ BEGIN
                             "Continuous-facing page layout\nContinuous - Facing"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_STRETCH             "Stretch"
     IDS_TOOLTIP_BRIGHTNESS  "Brightness: %+d"
@@ -975,7 +973,7 @@ BEGIN
     IDS_BRIGHTNESS_TEXT     "&Brightness: %+d"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_CONTRAST_TEXT_ZERO  "&Contrast: %d"
     IDS_CONTRAST_TEXT       "&Contrast: %+d"
@@ -994,7 +992,7 @@ BEGIN
     IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure you want to continue?"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_VIEW_BACK            "Go to previous view\nPrevious View"
     ID_VIEW_FORWARD         "Go to next view\nNext View"
@@ -1006,7 +1004,7 @@ BEGIN
     ID_WINDOW_ACTIVATE_5    "Activate this window"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_WINDOW_ACTIVATE_6    "Activate this window"
     ID_WINDOW_ACTIVATE_7    "Activate this window"
@@ -1025,7 +1023,7 @@ BEGIN
     ID_MODE_MAGNIFY         "Activate magnifying glass\nMagnifying Glass"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_FILE_EXPORT_TEXT     "Extract text from the active document and save it into a file\nExport Text"
     ID_CHECK_FOR_UPDATE     "Checks program website for available updates\nCheck for update"
@@ -1037,7 +1035,7 @@ BEGIN
     ID_VIEW_GOTO_PAGE       "Specify page number"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_INDICATOR_PAGE       "  Page %d of %d  "
     ID_INDICATOR_SIZE       "  %s x %s %s  "
@@ -1045,7 +1043,7 @@ BEGIN
     ID_INDICATOR_MODE       "  Display Mode  "
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_DONATE_URL          "https://sourceforge.net/donate/index.php?group_id=114927"
     IDS_STRING_NOT_FOUND    "Search string not found"

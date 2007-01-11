@@ -468,6 +468,10 @@ SOURCE=.\res\hand.cur
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\hourglass.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\link.cur
 # End Source File
 # Begin Source File

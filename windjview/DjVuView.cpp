@@ -1,10 +1,9 @@
 //	WinDjView
-//	Copyright (C) 2004-2006 Andrew Zhezherun
+//	Copyright (C) 2004-2007 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation; either version 2 of the License, or
-//	(at your option) any later version.
+//	it under the terms of the GNU General Public License version 2
+//	as published by the Free Software Foundation.
 //
 //	This program is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -65,6 +64,9 @@ const int c_nFullscreenPageGap = 4;
 const int c_nFullscreenFacingGap = 4;
 const int c_nFullscreenPageBorder = 0;
 const int c_nFullscreenPageShadow = 0;
+
+const int c_nHourglassWidth = 15;
+const int c_nHourglassHeight = 24;
 
 const int s_nCursorHideDelay = 3500;
 
@@ -416,10 +418,13 @@ void CDjVuView::DrawPage(CDC* pDC, int nPage)
 		CRect rcPage(page.ptOffset, page.szDisplay);
 		pDC->FillSolidRect(rcPage - ptScrollPos, clrWindow);
 
-		//CString strPage;
-		//strPage.Format(_T("%d"), nPage + 1);
-		//pDC->DrawText(strPage, rcPage - ptScrollPos,
-		//		DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+		if (!page.bBitmapRendered &&
+				page.szDisplay.cx >= c_nHourglassWidth && page.szDisplay.cy >= c_nHourglassHeight)
+		{
+			// Draw hourglass
+			CPoint pt((page.szDisplay.cx - c_nHourglassWidth) / 2, (page.szDisplay.cy - c_nHourglassHeight) / 2);
+			m_hourglass.Draw(pDC, 0, CPoint(pt + page.ptOffset - ptScrollPos), ILD_NORMAL);
+		}
 	}
 	else if (page.pBitmap->GetSize() == page.szDisplay)
 	{
@@ -515,6 +520,11 @@ CDjVuDoc* CDjVuView::GetDocument() const // non-debug version is inline
 void CDjVuView::OnInitialUpdate()
 {
 	CMyScrollView::OnInitialUpdate();
+
+	CBitmap bitmap;
+	bitmap.LoadBitmap(IDB_HOURGLASS);
+	m_hourglass.Create(c_nHourglassWidth, c_nHourglassHeight, ILC_COLOR24 | ILC_MASK, 0, 1);
+	m_hourglass.Add(&bitmap, RGB(192, 0, 32));
 
 	m_nTimerID = SetTimer(1, 100, NULL);
 	ShowCursor();
@@ -3040,6 +3050,7 @@ LRESULT CDjVuView::OnPageRendered(WPARAM wParam, LPARAM lParam)
 
 	page.DeleteBitmap();
 	page.pBitmap = pBitmap;
+	page.bBitmapRendered = true;
 	m_evtRendered.SetEvent();
 	
 	if (InvalidatePage(nPage))
@@ -5133,11 +5144,14 @@ void CDjVuView::CopyBitmapsFrom(CDjVuView* pSource, bool bMove)
 			if (bMove)
 			{
 				page.pBitmap = srcPage.pBitmap;
+				page.bBitmapRendered = true;
 				srcPage.pBitmap = NULL;
+				srcPage.bBitmapRendered = false;
 			}
 			else
 			{
 				page.pBitmap = CDIB::CreateDIB(srcPage.pBitmap);
+				page.bBitmapRendered = true;
 			}
 		}
 	}
@@ -5153,6 +5167,7 @@ void CDjVuView::CopyBitmapFrom(CDjVuView* pSource, int nPage)
 	if (page.pBitmap == NULL && srcPage.pBitmap != NULL)
 	{
 		page.pBitmap = CDIB::CreateDIB(srcPage.pBitmap);
+		page.bBitmapRendered = true;
 	}
 }
 
