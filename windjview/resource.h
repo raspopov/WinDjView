@@ -34,6 +34,7 @@
 #define IDC_CURSOR_LINK                 143
 #define IDS_ERROR_DECODING_PAGE         144
 #define IDD_SETTINGS                    145
+#define IDD_SETTINGS_GENERAL            145
 #define IDS_BMP_FILTER                  146
 #define IDD_FIND                        147
 #define IDS_EXPORT_PAGE                 148
@@ -49,7 +50,9 @@
 #define IDS_DJVULIBRE_URL               158
 #define IDD_GOTO_PAGE                   159
 #define IDB_DONATE                      160
+#define IDD_SETTINGS_ASSOCS             160
 #define IDS_DONATE_URL                  161
+#define IDD_SETTINGS_DISPLAY            161
 #define IDS_STRING_NOT_FOUND            162
 #define IDS_PRINTING                    163
 #define IDS_ERROR_RENDERING_PAGE        164
@@ -164,10 +167,12 @@
 #define IDC_CONTRAST_TEXT               1052
 #define IDC_GAMMA_TEXT                  1053
 #define IDC_SEARCH_STATUS               1054
+#define IDC_INVERT_COLORS               1054
 #define IDC_PAGE                        1055
 #define IDC_CLOSE_ON_ESC                1055
 #define IDC_PAGE_COUNT                  1056
 #define IDC_WRAP_BOOKMARKS              1056
+#define IDC_RESTORE_VIEW                1057
 #define IDC_DONATE                      1058
 #define IDC_STATIC_VERSION              1059
 #define IDC_SPIN_PAGE                   1060
@@ -236,13 +241,14 @@
 #define ID_LAYOUT_FIRSTPAGE_ALONE       33120
 #define IDS_OPENFILE                    33121
 #define IDS_ALLFILTER                   33122
+#define IDS_SETTINGS                    33123
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        220
-#define _APS_NEXT_COMMAND_VALUE         33123
+#define _APS_NEXT_RESOURCE_VALUE        223
+#define _APS_NEXT_COMMAND_VALUE         33124
 #define _APS_NEXT_CONTROL_VALUE         1061
 #define _APS_NEXT_SYMED_VALUE           109
 #endif

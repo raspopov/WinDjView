@@ -2,12 +2,19 @@ WinDjView changes history
 Copyright (C) 2004-2007 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 0.4.4:
-//+ Page number can be specified when opening files
-//  via command line or DDE.
-+ Back/Forward keys on multimedia keyboards now work.
-* Reduced memory usage on files with large shared dictionaries.
-* Crash fixes.
+Changes in version 0.4.4 (2007-??-??):
++ Open page and view settings can be restored when opening a file.
++ Page number can be specified when opening files via command line or DDE.
++ Back/Forward keys on multimedia keyboards now work as Alt+arrows.
++ Added option to invert colors.
+* Fixed slow loading of large bookmark trees.
+* Reorganized Settings dialog.
+* Improvements for files with large shared dictionaries:
+  * Reduced memory usage.
+  * Fixed interface stalls.
+  * Increased decoding speed.
+* Fixed printing in two pages per sheet mode.
+* Fixed a crash in print dialog with some printers.
 
 Changes in version 0.4.3 (2006-09-15):
 + Added panning when mouse wheel is pressed.
@@ -18,7 +25,7 @@ Changes in version 0.4.3 (2006-09-15):
 * Several crash fixes.
 
 Changes in version 0.4.2 (2006-07-24):
-+ Added magnifying glass tool.
+! Added magnifying glass tool.
 + Added option to wrap long bookmarks.
 + Added option to hide scrollbars in fullscreen mode.
 + Added option to invert direction of Ctrl+Mouse Wheel zooming.
@@ -31,9 +38,9 @@ Changes in version 0.4.2 (2006-07-24):
 * Several crash fixes, including a patch from KViewShell DjVu plugin.
 
 Changes in version 0.4.1 (2006-02-25):
+! Added support for JPEG-encoded DjVu files.
 + Added an option to select different scaling algorithm
   (slower, but gives better results on low zoom levels).
-+ Added support for JPEG-encoded DjVu files.
 + Reduced redrawing when switching documents.
 + Added autoscroll when selecting text by dragging.
 + Rendered pages are reused when entering/exiting fullscreen mode.
@@ -68,7 +75,7 @@ Changes in version 0.3.6 (2005-12-21):
   background, black and white or color).
 * Fixed bug with preview in print dialog and printing: color pages
   sometimes were not shown in preview and not printed.
-* Fixed bug in print dialog: clicking Properties buttons
+* Fixed bug in print dialog: clicking Properties button
   sometimes resets printing options.
 * Fixed parsing print ranges in print dialog.
 * Fixed paper orientation: original orientation as specified
@@ -78,7 +85,7 @@ Changes in version 0.3.6 (2005-12-21):
 Changes in version 0.3.5 (2005-06-14):
 + Added "Save Copy As" dialog.
 * Fixed a crash when opening some corrupted files.
-* Fixed opening files with '#' character in filename.
+* Fixed opening files with a '#' character in filename.
 * Fixed a problem which could cause crashes after printing and after
   checking for update.
 
@@ -102,8 +109,8 @@ Changes in version 0.3.3 (2005-03-31):
 * Fixed wrong resolution of first page in single page layout.
 
 Changes in version 0.3.2 (2005-03-19):
+! Added fullscreen mode.
 + Added "Find All" button which displays search results in a list.
-+ Added fullscreen mode.
 + Added status bar indicators for page count and current page size.
 + Added brightness, contrast and gamma adjustment.
 + Added display modes (Color/B&W/Foreground/Background).
@@ -111,8 +118,8 @@ Changes in version 0.3.2 (2005-03-19):
 * Fixed some issues with single-page layout.
 
 Changes in version 0.3.1 (2005-03-08):
-+ Added bookmarks.
-+ Added text selection, copying to clipboard and export to file.
+! Added bookmarks.
+! Added text selection, copying to clipboard and export to file.
 + Added zoom in/out toolbar buttons.
 + Added option to disable generating thumbnails in background.
 + Added checking for updates.
@@ -120,9 +127,9 @@ Changes in version 0.3.1 (2005-03-08):
 * Thumbnails fixes and improvements.
 
 Changes in version 0.3 (2005-02-19):
-+ Added text searching.
+! Added thumbnails.
+! Added text searching.
 + Added hyperlink support.
-+ Added thumbnails.
 + Significantly reduced memory usage due to new caching algorithm
   (+/- 2 screens are stored as bitmaps, +/- 10 screens are stored
   in a decoded form for faster rendering).

@@ -19,48 +19,10 @@
 
 #pragma once
 
+#include "DjVuSource.h"
 
 class CDjVuView;
 
-struct PageInfo
-{
-	PageInfo() : szPage(0, 0), nDPI(0), nInitialRotate(0) {}
-	PageInfo(GP<DjVuImage> pImage) : szPage(0, 0), nDPI(0), nInitialRotate(0)
-	{
-		if (pImage != NULL)
-		{
-			RotateImage(pImage, 0);
-			nInitialRotate = pImage->get_rotate();
-			szPage = CSize(pImage->get_width(), pImage->get_height());
-			nDPI = pImage->get_dpi();
-			if (szPage.cx <= 0 || szPage.cy <= 0)
-			{
-				szPage.cx = 100;
-				szPage.cy = 100;
-				nDPI = 100;
-			}
-
-			try
-			{
-				pTextStream = pImage->get_text();
-				pAnnoStream = pImage->get_anno();
-			}
-			catch (GException&)
-			{
-			}
-			catch (...)
-			{
-				ReportFatalError();
-			}
-		}
-	}
-
-	CSize szPage;
-	int nInitialRotate;
-	int nDPI;
-	GP<ByteStream> pTextStream;
-	GP<ByteStream> pAnnoStream;
-};
 
 class CDjVuDoc : public CDocument
 {
@@ -70,18 +32,7 @@ protected: // create from serialization only
 
 // Operations
 public:
-	GP<DjVuImage> GetPage(int nPage, bool bAddToCache = true);
-	PageInfo GetPageInfo(int nPage);
-	void RemoveFromCache(int nPage);
-	bool IsPageCached(int nPage);
-	int GetPageCount() const { return m_nPageCount; }
-
-	bool HasText() const { return m_bHasText; }
-	int GetPageFromId(const GUTF8String& strPageId) const;
-
-	GP<DjVmNav> GetBookmarks() { return m_pDjVuDoc->get_djvm_nav(); }
-	const GUTF8String& GetPageIndex() { return m_strPageIndex; }
-
+	DjVuSource* GetSource() { return m_pSource; }
 	CDjVuView* GetDjVuView();
 
 // Overrides
@@ -97,41 +48,10 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-
 protected:
-	struct PageRequest
-	{
-		HANDLE hEvent;
-		GP<DjVuImage> pImage;
-	};
-	stack<HANDLE> m_eventCache;
-	CCriticalSection m_eventLock;
+	DjVuSource* m_pSource;
 
-	struct PageData
-	{
-		PageData() : pImage(NULL), bHasInfo(false),
-					 bFullInfo(false), hDecodingThread(NULL) {}
-
-		GP<DjVuImage> pImage;
-		PageInfo info;
-		bool bHasInfo;
-		bool bFullInfo;
-
-		HANDLE hDecodingThread;
-		int nOrigThreadPriority;
-		vector<PageRequest*> requests;
-	};
-
-
-	PageInfo ReadPageInfo(int nPage);
-	GP<DjVuDocument> m_pDjVuDoc;
-	vector<PageData> m_pages;
-	int m_nPageCount;
-	CCriticalSection m_lock;
-	bool m_bHasText;
-	GUTF8String m_strPageIndex;
-
-// Generated message map functions
+	// Generated message map functions
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
 	afx_msg void OnSaveCopyAs();

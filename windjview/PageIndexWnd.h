@@ -19,13 +19,14 @@
 
 #pragma once
 
+#include "BookmarksWnd.h"
 #include "MyTreeCtrl.h"
-class CDjVuDoc;
+class DjVuSource;
 
 
 // CPageIndexWnd view
 
-class CPageIndexWnd : public CWnd
+class CPageIndexWnd : public CWnd, public Observable
 {
 	DECLARE_DYNAMIC(CPageIndexWnd)
 
@@ -33,29 +34,16 @@ public:
 	CPageIndexWnd();
 	virtual ~CPageIndexWnd();
 
-	bool InitPageIndex(CDjVuDoc* pDoc);
+	bool InitPageIndex(DjVuSource* pSource);
 
 // Implementation
 protected:
-	CDjVuDoc* m_pDoc;
 	CImageList m_imageList;
 	CFont m_font;
 	CRect m_rcText, m_rcGap, m_rcList;
 
-	class CIndexEdit : public CEdit
-	{
-	public:
-		CIndexEdit() {}
-		void SetParent(CPageIndexWnd* pParent) { m_pParent = pParent; }
-
-	protected:
-		virtual BOOL PreTranslateMessage(MSG* pMsg);
-		CPageIndexWnd* m_pParent;
-	};
-	friend class CIndexEdit;
-
 	CMyTreeCtrl m_list;
-	CIndexEdit m_edtText;
+	CEdit m_edtText;
 
 	enum
 	{
@@ -81,6 +69,7 @@ protected:
 // Overrides
 protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 // Generated message map functions
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);

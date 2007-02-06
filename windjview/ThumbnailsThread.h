@@ -20,15 +20,16 @@
 #pragma once
 
 #include "AppSettings.h"
+#include "Global.h"
 
-class CDjVuDoc;
-class CThumbnailsView;
+class DjVuSource;
+class CDIB;
 
 
 class CThumbnailsThread
 {
 public:
-	CThumbnailsThread(CDjVuDoc* pDoc, CThumbnailsView* pOwner, bool bIdle = false);
+	CThumbnailsThread(DjVuSource* pSource, Observer* pOwner, bool bIdle = false);
 	void Stop();
 	void Delete();
 
@@ -48,8 +49,8 @@ private:
 	CEvent m_stop;
 	CEvent m_finished;
 	CEvent m_jobReady;
-	CThumbnailsView* m_pOwner;
-	CDjVuDoc* m_pDoc;
+	DjVuSource* m_pSource;
+	Observer* m_pOwner;
 	bool m_bPaused;
 	CSize m_szThumbnail;
 

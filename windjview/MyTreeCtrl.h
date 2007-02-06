@@ -46,7 +46,11 @@ public:
 	void SetItemData(HTREEITEM hItem, DWORD_PTR dwData);
 	DWORD_PTR GetItemData(HTREEITEM hItem);
 	HTREEITEM GetSelectedItem();
-	void SetSelectedItem(HTREEITEM hItem);
+	void SelectItem(HTREEITEM hItem);
+	bool Expand(HTREEITEM hItem, UINT nCode);
+
+	void BeginBatchUpdate();
+	void EndBatchUpdate();
 
 // Overrides
 protected:
@@ -80,7 +84,7 @@ protected:
 	{
 		TreeNode(LPCTSTR pszItem, int nImageIndex, int nSelectedIndex, TreeNode* pParentNode)
 			: strLabel(pszItem), nImage(nImageIndex), nSelectedImage(nSelectedIndex), pParent(pParentNode),
-			  pChild(NULL), pNext(NULL), bCollapsed(true), dwUserData(0) {}
+			  pChild(NULL), pLastChild(NULL), pNext(NULL), bCollapsed(true), dwUserData(0) {}
 		~TreeNode();
 
 		CString strLabel;
@@ -92,6 +96,7 @@ protected:
 		DWORD_PTR dwUserData;
 		TreeNode* pParent;
 		TreeNode* pChild;
+		TreeNode* pLastChild;
 		TreeNode* pNext;
 
 		int nIndex;
@@ -118,10 +123,13 @@ protected:
 	bool m_bWrapLabels;
 	bool m_bRedirectWheel;
 	bool m_bLinesAtRoot;
+	bool m_bHasLines;
+	bool m_bHasGlyphs;
 	CFont m_font, m_fontHover;
 	CSize m_szDisplay;
 	CBitmap* m_pOffscreenBitmap;
 	CSize m_szOffscreen;
+	bool m_bBatchUpdate;
 
 	TreeNode* m_pSelection;
 	TreeNode* m_pHoverNode;
@@ -132,6 +140,7 @@ protected:
 	void SetHoverNode(TreeNode* pNode);
 	void SelectNode(TreeNode* pNode, UINT nAction = TVC_UNKNOWN);
 	void ToggleNode(TreeNode* pNode);
+	void ExpandNode(TreeNode* pNode, bool bExpand = true);
 	TreeNode* FindNextNode(TreeNode* pNode);
 	TreeNode* FindPrevNode(TreeNode* pNode);
 	TreeNode* FindNextPageNode(TreeNode* pNode);

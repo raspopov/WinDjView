@@ -3,6 +3,7 @@ GENLIB = lib
 OUTOTHER =
 
 #MAKEDLL = 1
+#dumpbin /linkermember:1 libdjvud.lib > libdjvud.map
 
 !IFDEF DEBUG
 
@@ -29,14 +30,15 @@ OPTS = /nologo /MT /W3 /GX /Ox /Og /Ot /Oi /Ob2
 !IFDEF MAKEDLL
 
 GENLIB = cl
-OUTOPT = /nologo /LD /Fe
 
 !IFDEF DEBUG
+OUTOPT = /nologo /LDd /Fe
 OUT = libdjvud.dll
-OUTOTHER = libcpmtd.lib /link /def:libdjvud.def
+OUTOTHER = libcpmtd.lib gdi32.lib /link /def:libdjvud.def
 !ELSE
+OUTOPT = /nologo /LD /Fe
 OUT = libdjvu.dll
-OUTOTHER = libcpmt.lib /link /def:libdjvu.def
+OUTOTHER = libcpmt.lib gdi32.lib /link /def:libdjvu.def
 !ENDIF
 
 !ELSE

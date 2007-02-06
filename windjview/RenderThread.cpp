@@ -33,11 +33,11 @@
 
 // CRenderThread class
 
-CRenderThread::CRenderThread(CDjVuDoc* pDoc, CDjVuView* pOwner)
-	: m_pOwner(pOwner), m_pDoc(pDoc), m_bPaused(false)
+CRenderThread::CRenderThread(DjVuSource* pSource, Observer* pOwner)
+	: m_pOwner(pOwner), m_pSource(pSource), m_bPaused(false), m_bRejectCurrentJob(false)
 {
 	m_currentJob.nPage = -1;
-	m_pages.resize(m_pOwner->GetPageCount(), m_jobs.end());
+	m_pages.resize(m_pSource->GetPageCount(), m_jobs.end());
 
 	UINT dwThreadId;
 	m_hThread = (HANDLE)_beginthreadex(NULL, 0, RenderThreadProc, this, 0, &dwThreadId);
@@ -87,32 +87,53 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 		pData->m_pages[job.nPage] = pData->m_jobs.end();
 		pData->m_lock.Unlock();
 
+		CDIB* pBitmap = NULL;
+
 		switch (job.type)
 		{
 		case RENDER:
-			pData->Render(job);
+			pBitmap = pData->Render(job);
 			break;
 
 		case DECODE:
-			pData->m_pDoc->GetPage(job.nPage);
-			pData->m_pOwner->PageDecoded(job.nPage);
+			pData->m_pSource->GetPage(job.nPage, pData->m_pOwner);
 			break;
 
 		case READINFO:
-			pData->m_pDoc->GetPageInfo(job.nPage);
-			pData->m_pOwner->PageDecoded(job.nPage);
+			pData->m_pSource->GetPageInfo(job.nPage);
 			break;
 
 		case CLEANUP:
-			pData->m_pDoc->RemoveFromCache(job.nPage);
+			pData->m_pSource->RemoveFromCache(job.nPage, pData->m_pOwner);
 			break;
 		}
 
 		pData->m_lock.Lock();
+		bool bNotify = (!pData->m_bRejectCurrentJob);
+		pData->m_bRejectCurrentJob = false;
 		pData->m_currentJob.nPage = -1;
 		if (!pData->m_jobs.empty() && !pData->m_bPaused)
 			pData->m_jobReady.SetEvent();
 		pData->m_lock.Unlock();
+
+		if (bNotify)
+		{
+			switch (job.type)
+			{
+			case RENDER:
+				pData->m_pOwner->OnUpdate(NULL, &PageRendered(job.nPage, pBitmap));
+				break;
+
+			case DECODE:
+			case READINFO:
+				pData->m_pOwner->OnUpdate(NULL, &PageDecoded(job.nPage));
+				break;
+			}
+		}
+		else
+		{
+			delete pBitmap;
+		}
 
 		if (::WaitForSingleObject(pData->m_stop.m_hObject, 0) == WAIT_OBJECT_0)
 			break;
@@ -153,17 +174,15 @@ void CRenderThread::RemoveFromQueue(int nPage)
 	}
 }
 
-void CRenderThread::Render(Job& job)
+CDIB* CRenderThread::Render(Job& job)
 {
-	GP<DjVuImage> pImage = m_pDoc->GetPage(job.nPage);
+	GP<DjVuImage> pImage = m_pSource->GetPage(job.nPage, m_pOwner);
 	CDIB* pBitmap = NULL;
 
 	if (pImage != NULL)
 	{
-		RotateImage(pImage, job.nRotate);
-
 		if (job.size.cx > 0 && job.size.cy > 0)
-			pBitmap = Render(pImage, job.size, job.displaySettings, job.nDisplayMode);
+			pBitmap = Render(pImage, job.size, job.displaySettings, job.nDisplayMode, job.nRotate);
 	}
 
 	if (pBitmap == NULL || pBitmap->m_hObject == NULL)
@@ -172,22 +191,30 @@ void CRenderThread::Render(Job& job)
 		pBitmap = NULL;
 	}
 
-	m_pOwner->PageRendered(job.nPage, pBitmap);
+	return pBitmap;
 }
 
 CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
-		const CDisplaySettings& displaySettings, int nDisplayMode)
+		const CDisplaySettings& displaySettings, int nDisplayMode, int nRotate)
 {
-	GRect rect(0, 0, size.cx, size.cy);
-	if (rect.isempty())
+	if (size.cx <= 0 || size.cy <= 0)
 		return NULL;
 
+	CSize szImage(pImage->get_width(), pImage->get_height());
+	int nTotalRotate = GetTotalRotate(pImage, nRotate);
+
+	CSize szRotated(size);
+	if (nTotalRotate % 2 != 0)
+		swap(szRotated.cx, szRotated.cy);
+
+	GRect rect(0, 0, szRotated.cx, szRotated.cy);
+
 	int nScaleMethod = displaySettings.nScaleMethod;
-	if (size.cx >= pImage->get_width() / 2 || size.cy >= pImage->get_height() / 2)
+	if (szRotated.cx >= szImage.cx / 2 || szRotated.cy >= szImage.cy / 2)
 		nScaleMethod = CDisplaySettings::Default;
 
 	if (nScaleMethod == CDisplaySettings::PnmScaleFixed)
-		rect = GRect(0, 0, pImage->get_width(), pImage->get_height());
+		rect = GRect(0, 0, szImage.cx, szImage.cy);
 
 	GP<GBitmap> pGBitmap;
 	GP<GPixmap> pGPixmap;
@@ -229,6 +256,9 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 
 	if (pGPixmap != NULL)
 	{
+		if (nTotalRotate != 0)
+			pGPixmap = pGPixmap->rotate(nTotalRotate);
+
 		if (nScaleMethod == CDisplaySettings::PnmScaleFixed)
 			pGPixmap = RescalePnm(pGPixmap, size.cx, size.cy);
 
@@ -236,13 +266,14 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 	}
 	else if (pGBitmap != NULL)
 	{
+		if (nTotalRotate != 0)
+			pGBitmap = pGBitmap->rotate(nTotalRotate);
+
 		if (nScaleMethod == CDisplaySettings::PnmScaleFixed)
 			pGBitmap = RescalePnm(pGBitmap, size.cx, size.cy);
 
 		pBitmap = RenderBitmap(*pGBitmap, displaySettings);
 	}
-	else
-		pBitmap = RenderEmpty(CSize(rect.width(), rect.height()), displaySettings);
 
 	return pBitmap;
 }
@@ -317,7 +348,15 @@ void CRenderThread::RemoveAllJobs()
 	m_lock.Lock();
 
 	m_jobs.clear();
-	m_pages.assign(m_pOwner->GetPageCount(), m_jobs.end());
+	m_pages.assign(m_pSource->GetPageCount(), m_jobs.end());
 
+	m_lock.Unlock();
+}
+
+void CRenderThread::RejectCurrentJob()
+{
+	m_lock.Lock();
+	if (m_currentJob.nPage != -1)
+		m_bRejectCurrentJob = true;
 	m_lock.Unlock();
 }

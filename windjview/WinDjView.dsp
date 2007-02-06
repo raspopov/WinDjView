@@ -167,6 +167,10 @@ SOURCE=.\DjVuDoc.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\DjVuSource.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\DjVuView.cpp
 # End Source File
 # Begin Source File
@@ -180,6 +184,10 @@ SOURCE=.\FindDlg.cpp
 # Begin Source File
 
 SOURCE=.\FullscreenWnd.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Global.cpp
 # End Source File
 # Begin Source File
 
@@ -267,7 +275,19 @@ SOURCE=.\SearchResultsView.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\SettingsAssocsPage.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\SettingsDisplayPage.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\SettingsDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\SettingsGeneralPage.cpp
 # End Source File
 # Begin Source File
 
@@ -316,6 +336,10 @@ SOURCE=.\DjVuDoc.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\DjVuSource.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\DjVuView.h
 # End Source File
 # Begin Source File
@@ -329,6 +353,10 @@ SOURCE=.\FindDlg.h
 # Begin Source File
 
 SOURCE=.\FullscreenWnd.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Global.h
 # End Source File
 # Begin Source File
 
@@ -416,7 +444,19 @@ SOURCE=.\SearchResultsView.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\SettingsAssocsPage.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\SettingsDisplayPage.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\SettingsDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\SettingsGeneralPage.h
 # End Source File
 # Begin Source File
 

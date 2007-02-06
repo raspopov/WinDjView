@@ -22,11 +22,9 @@
 
 #include "DjVuDoc.h"
 #include "ThumbnailsView.h"
-#include "MainFrm.h"
 #include "Drawing.h"
 #include "ThumbnailsThread.h"
 #include "ChildFrm.h"
-#include "DjVuView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -69,7 +67,7 @@ END_MESSAGE_MAP()
 
 CThumbnailsView::CThumbnailsView()
 	: m_bInsideUpdateView(false), m_nPageCount(0), m_bVisible(false),
-	  m_pThread(NULL), m_pIdleThread(NULL), m_nSelectedPage(-1), m_pDoc(NULL),
+	  m_pThread(NULL), m_pIdleThread(NULL), m_nSelectedPage(-1), m_pSource(NULL),
 	  m_nCurrentPage(-1), m_nRotate(0), m_nPagesInRow(1), m_bInitialized(false)
 {
 	CFont systemFont;
@@ -293,16 +291,16 @@ void CThumbnailsView::OnInitialUpdate()
 {
 	CMyScrollView::OnInitialUpdate();
 
-	m_nPageCount = GetDocument()->GetPageCount();
+	m_nPageCount = m_pSource->GetPageCount();
 	m_pages.resize(m_nPageCount);
 
 	m_displaySetting = CAppSettings::displaySettings;
 	m_displaySetting.nScaleMethod = CDisplaySettings::Default;
 
-	m_pThread = new CThumbnailsThread(GetDocument(), this);
+	m_pThread = new CThumbnailsThread(m_pSource, this);
 	m_pThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
 
-	m_pIdleThread = new CThumbnailsThread(GetDocument(), this, true);
+	m_pIdleThread = new CThumbnailsThread(m_pSource, this, true);
 	m_pIdleThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
 
 	UpdateView(RECALC);
@@ -396,8 +394,7 @@ void CThumbnailsView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	case VK_SPACE:
 		if (m_nSelectedPage != -1)
 		{
-			CDjVuView* pView = ((CChildFrame*)GetParentFrame())->GetDjVuView();
-			pView->GoToPage(m_nSelectedPage);
+			UpdateObservers(ThumbnailClicked(m_nSelectedPage));
 		}
 		return;
 
@@ -477,8 +474,7 @@ void CThumbnailsView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	if (nPage != -1)
 	{
-		CDjVuView* pView = ((CChildFrame*)GetParentFrame())->GetDjVuView();
-		pView->GoToPage(nPage);
+		UpdateObservers(ThumbnailClicked(nPage));
 	}
 
 	CMyScrollView::OnLButtonDown(nFlags, point);
@@ -564,7 +560,7 @@ BOOL CThumbnailsView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 		return true;
 
 	CWnd* pWnd = WindowFromPoint(point);
-	if (pWnd != this && !IsChild(pWnd) && GetMainFrame()->IsChild(pWnd) &&
+	if (pWnd != this && !IsChild(pWnd) && IsFromCurrentProcess(pWnd) &&
 			pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
 		return true;
 
@@ -845,20 +841,42 @@ LRESULT CThumbnailsView::OnThumbnailRendered(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-void CThumbnailsView::ThumbnailRendered(int nPage, CDIB* pDIB)
+void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 {
-	m_dataLock.Lock();
+	if (message->code == THUMBNAIL_RENDERED)
+	{
+		const ThumbnailRendered* msg = static_cast<const ThumbnailRendered*>(message);
 
-	m_bitmaps.push_front(pDIB);
-	list<CDIB*>::iterator it = m_bitmaps.begin();
+		m_dataLock.Lock();
 
-	LPARAM lParam;
-	VERIFY(sizeof(it) == sizeof(LPARAM));
-	memcpy(&lParam, &it, sizeof(LPARAM));
+		m_bitmaps.push_front(msg->pDIB);
+		list<CDIB*>::iterator it = m_bitmaps.begin();
 
-	m_dataLock.Unlock();
+		LPARAM lParam;
+		VERIFY(sizeof(it) == sizeof(LPARAM));
+		memcpy(&lParam, &it, sizeof(LPARAM));
 
-	PostMessage(WM_THUMBNAIL_RENDERED, nPage, lParam);
+		m_dataLock.Unlock();
+
+		PostMessage(WM_THUMBNAIL_RENDERED, msg->nPage, lParam);
+	}
+	else if (message->code == CURRENT_PAGE_CHANGED)
+	{
+		const CurrentPageChanged* msg = static_cast<const CurrentPageChanged*>(message);
+
+		if (GetCurrentPage() != msg->nPage)
+		{
+			SetCurrentPage(msg->nPage);
+			EnsureVisible(msg->nPage);
+		}
+	}
+	else if (message->code == ROTATE_CHANGED)
+	{
+		const RotateChanged* msg = static_cast<const RotateChanged*>(message);
+
+		if (GetRotate() != msg->nRotate)
+			SetRotate(msg->nRotate);
+	}
 }
 
 void CThumbnailsView::RecalcPageRects(int nPage)
@@ -938,10 +956,10 @@ void CThumbnailsView::RestartThreads()
 	if (m_pIdleThread != NULL)
 		m_pIdleThread->Delete();
 
-	m_pThread = new CThumbnailsThread(GetDocument(), this);
+	m_pThread = new CThumbnailsThread(m_pSource, this);
 	m_pThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
 
-	m_pIdleThread = new CThumbnailsThread(GetDocument(), this, true);
+	m_pIdleThread = new CThumbnailsThread(m_pSource, this, true);
 	m_pIdleThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
 
 	UpdateView(TOP);

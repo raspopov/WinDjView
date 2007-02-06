@@ -87,8 +87,8 @@ struct CPrintSettings
 {
 	CPrintSettings() :
 		fMarginLeft(0.0), fMarginTop(0.0), fMarginRight(0.0), fMarginBottom(0.0),
-		fPosLeft(0.0), fPosTop(0.0), bCenterImage(false), bClipContent(false),
-		fScale(100.0), bShrinkOversized(false), bScaleToFit(false),
+		fPosLeft(0.0), fPosTop(0.0), bCenterImage(true), bClipContent(false),
+		fScale(100.0), bShrinkOversized(true), bScaleToFit(false),
 		bIgnorePrinterMargins(false) {}
 
 	double fMarginLeft;
@@ -113,7 +113,7 @@ CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip, const CDisplaySettings& dis
 CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip, const CDisplaySettings& displaySettings);
 CDIB* RenderEmpty(const CSize& szBitmap, const CDisplaySettings& displaySettings);
 
-void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcPage,
+void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRect& rcPage,
 	double fPrinterMMx, double fPrinterMMy, CPrintSettings& settings, bool bPreview = false);
 
 unsigned int __stdcall PrintThreadProc(void* pvData);

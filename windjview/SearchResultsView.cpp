@@ -20,10 +20,6 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "SearchResultsView.h"
-#include "DjVuDoc.h"
-#include "ChildFrm.h"
-#include "DjVuView.h"
-#include "MainFrm.h"
 
 
 // CSearchResultsView
@@ -39,7 +35,7 @@ BEGIN_MESSAGE_MAP(CSearchResultsView, CTreeView)
 END_MESSAGE_MAP()
 
 CSearchResultsView::CSearchResultsView()
-	: m_pDoc(NULL), m_bChangeInternal(false)
+	: m_bChangeInternal(false)
 {
 }
 
@@ -107,9 +103,7 @@ void CSearchResultsView::Reset()
 void CSearchResultsView::HilightResult(HTREEITEM hItem)
 {
 	ResultData* data = (ResultData*)GetTreeCtrl().GetItemData(hItem);
-
-	CDjVuView* pView = ((CChildFrame*)GetParentFrame())->GetDjVuView();
-	pView->GoToSelection(data->nPage, data->nSelStart, data->nSelEnd);
+	UpdateObservers(SearchResultClicked(data->nPage, data->nSelStart, data->nSelEnd));
 }
 
 void CSearchResultsView::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
@@ -175,7 +169,7 @@ int CSearchResultsView::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT m
 BOOL CSearchResultsView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 {
 	CWnd* pWnd = WindowFromPoint(point);
-	if (pWnd != this && !IsChild(pWnd) && GetMainFrame()->IsChild(pWnd) &&
+	if (pWnd != this && !IsChild(pWnd) && IsFromCurrentProcess(pWnd) &&
 			pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
 		return true;
 

@@ -59,10 +59,12 @@ LINK_OBJS = \
 	"$(INTDIR)\BookmarksWnd.obj" \
 	"$(INTDIR)\ChildFrm.obj" \
 	"$(INTDIR)\DjVuDoc.obj" \
+	"$(INTDIR)\DjVuSource.obj" \
 	"$(INTDIR)\DjVuView.obj" \
 	"$(INTDIR)\Drawing.obj" \
 	"$(INTDIR)\FindDlg.obj" \
 	"$(INTDIR)\FullscreenWnd.obj" \
+	"$(INTDIR)\Global.obj" \
 	"$(INTDIR)\GotoPageDlg.obj" \
 	"$(INTDIR)\MainFrm.obj" \
 	"$(INTDIR)\MagnifyWnd.obj" \
@@ -84,7 +86,10 @@ LINK_OBJS = \
 	"$(INTDIR)\RenderThread.obj" \
 	"$(INTDIR)\Scaling.obj" \
 	"$(INTDIR)\SearchResultsView.obj" \
+	"$(INTDIR)\SettingsAssocsPage.obj" \
+	"$(INTDIR)\SettingsDisplayPage.obj" \
 	"$(INTDIR)\SettingsDlg.obj" \
+	"$(INTDIR)\SettingsGeneralPage.obj" \
 	"$(INTDIR)\stdafx.obj" \
 	"$(INTDIR)\ThumbnailsThread.obj" \
 	"$(INTDIR)\ThumbnailsView.obj" \
@@ -100,13 +105,15 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\BookmarksWnd.obj" : BookmarksWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\ChildFrm.obj" : ChildFrm.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DjVuDoc.obj" : DjVuDoc.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\DjVuSource.obj" : DjVuSource.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DjVuView.obj" : DjVuView.cpp "$(INTDIR)" $(PCH)
-"$(INTDIR)\Drawing.obj"	: Drawing.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\Drawing.obj" : Drawing.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\FindDlg.obj" : FindDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\FullscreenWnd.obj" : FullscreenWnd.cpp "$(INTDIR)" $(PCH)
-"$(INTDIR)\GotoPageDlg.obj"	: GotoPageDlg.cpp "$(INTDIR)" $(PCH)
-"$(INTDIR)\MainFrm.obj"	: MainFrm.cpp "$(INTDIR)" $(PCH)
-"$(INTDIR)\MagnifyWnd.obj"	: MagnifyWnd.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\Global.obj" : Global.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\GotoPageDlg.obj" : GotoPageDlg.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MainFrm.obj" : MainFrm.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MagnifyWnd.obj" : MagnifyWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyBitmapButton.obj" : MyBitmapButton.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyComboBox.obj" : MyComboBox.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDocManager.obj" : MyDocManager.cpp "$(INTDIR)" $(PCH)
@@ -125,7 +132,10 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\RenderThread.obj" : RenderThread.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\Scaling.obj" : Scaling.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\SearchResultsView.obj" : SearchResultsView.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\SettingsAssocsPage.obj" : SettingsAssocsPage.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\SettingsDisplayPage.obj" : SettingsDisplayPage.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\SettingsDlg.obj" : SettingsDlg.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\SettingsGeneralPage.obj" : SettingsGeneralPage.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\ThumbnailsThread.obj" : ThumbnailsThread.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\ThumbnailsView.obj" : ThumbnailsView.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\UpdateDlg.obj" : UpdateDlg.cpp "$(INTDIR)" $(PCH)

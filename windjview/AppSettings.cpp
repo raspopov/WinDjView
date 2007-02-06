@@ -33,7 +33,7 @@ int CAppSettings::nWindowWidth = 700;
 int CAppSettings::nWindowHeight = 500;
 
 bool CAppSettings::bWindowMaximized = false;
-bool CAppSettings::bChildMaximized = false;
+bool CAppSettings::bChildMaximized = true;
 
 bool CAppSettings::bToolbar = true;
 bool CAppSettings::bStatusBar = true;
@@ -55,6 +55,7 @@ bool CAppSettings::bWarnCloseMultiple = false;
 bool CAppSettings::bInvertWheelZoom = false;
 bool CAppSettings::bCloseOnEsc = false;
 bool CAppSettings::bWrapLongBookmarks = true;
+bool CAppSettings::bRestoreView = true;
 
 CString CAppSettings::strLanguage;
 

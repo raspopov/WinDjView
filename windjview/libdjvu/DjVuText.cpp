@@ -284,7 +284,10 @@ DjVuTXT::Zone::decode(const GP<ByteStream> &gbs, int maxtext,
   int size = bs.read24();
 
   // Checks
-  if (rect.isempty() || text_start<0 || text_start+text_length>maxtext )
+//< Changed for WinDjView project
+//  if (rect.isempty() || text_start<0 || text_start+text_length>maxtext )
+  if (text_start<0 || text_start+text_length>maxtext)
+//>
     G_THROW( ERR_MSG("DjVuText.corrupt_text") );
 
   // Process children
@@ -294,6 +297,11 @@ DjVuTXT::Zone::decode(const GP<ByteStream> &gbs, int maxtext,
   {
     Zone *z = append_child();
     z->decode(gbs, maxtext, this, prev_child);
+//< Changed for WinDjView project
+    if (z->rect.isempty())
+      children.del(children.lastpos());
+    else
+//>
     prev_child=z;
   }
 }

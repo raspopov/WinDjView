@@ -20,31 +20,30 @@
 #pragma once
 
 #include "AppSettings.h"
-#include "SettingsGeneralPage.h"
-#include "SettingsDisplayPage.h"
-#include "SettingsAssocsPage.h"
 
 
-// CSettingsDlg dialog
+// CSettingsGeneralPage dialog
 
-class CSettingsDlg : public CPropertySheet
+class CSettingsGeneralPage : public CPropertyPage
 {
-	DECLARE_DYNAMIC(CSettingsDlg)
+	DECLARE_DYNAMIC(CSettingsGeneralPage)
 
 public:
-	CSettingsDlg(CWnd* pParent = NULL);
-	virtual ~CSettingsDlg();
+	CSettingsGeneralPage();
+	virtual ~CSettingsGeneralPage();
 
-	CSettingsGeneralPage m_pageGeneral;
-	CSettingsDisplayPage m_pageDisplay;
-	CSettingsAssocsPage m_pageAssocs;
+// Dialog Data
+	enum { IDD = IDD_SETTINGS_GENERAL };
+	BOOL m_bGenAllThumbnails;
+	BOOL m_bFullscreenClicks;
+	BOOL m_bFullscreenHideScroll;
+	BOOL m_bWarnCloseMultiple;
+	BOOL m_bInvertWheelZoom;
+	BOOL m_bCloseOnEsc;
+	BOOL m_bWrapLongBookmarks;
+	BOOL m_bRestoreView;
 
 protected:
-	CFont m_font;
-	CStatic m_ctlAbout;
-
-	virtual BOOL OnInitDialog();
-	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	DECLARE_MESSAGE_MAP()
 };

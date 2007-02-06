@@ -23,7 +23,6 @@
 #include "ThumbnailsThread.h"
 #include "Drawing.h"
 #include "DjVuDoc.h"
-#include "ThumbnailsView.h"
 #include "RenderThread.h"
 
 #ifdef _DEBUG
@@ -33,8 +32,8 @@
 
 // CThumbnailsThread class
 
-CThumbnailsThread::CThumbnailsThread(CDjVuDoc* pDoc, CThumbnailsView* pOwner, bool bIdle)
-	: m_pOwner(pOwner), m_pDoc(pDoc), m_bPaused(false), m_bRejectCurrentJob(false)
+CThumbnailsThread::CThumbnailsThread(DjVuSource* pSource, Observer* pOwner, bool bIdle)
+	: m_pSource(pSource), m_pOwner(pOwner), m_bPaused(false), m_bRejectCurrentJob(false)
 {
 	m_currentJob.nPage = -1;
 
@@ -85,20 +84,20 @@ unsigned int __stdcall CThumbnailsThread::RenderThreadProc(void* pvData)
 		pData->m_currentJob = job;
 		pData->m_jobs.pop_front();
 		bool bHasMoreJobs = !pData->m_jobs.empty();
-		pData->m_bRejectCurrentJob = false;
 		pData->m_lock.Unlock();
 
 		CDIB* pBitmap = pData->Render(job);
 
 		pData->m_lock.Lock();
-		bool bNotify = (!pData->m_bRejectCurrentJob && ::IsWindow(pData->m_pOwner->m_hWnd));
+		bool bNotify = (!pData->m_bRejectCurrentJob);
+		pData->m_bRejectCurrentJob = false;
 		pData->m_currentJob.nPage = -1;
 		if (bHasMoreJobs && !pData->m_bPaused)
 			pData->m_jobReady.SetEvent();
 		pData->m_lock.Unlock();
 
 		if (bNotify)
-			pData->m_pOwner->ThumbnailRendered(job.nPage, pBitmap);
+			pData->m_pOwner->OnUpdate(NULL, &ThumbnailRendered(job.nPage, pBitmap));
 
 		if (::WaitForSingleObject(pData->m_stop.m_hObject, 0) == WAIT_OBJECT_0)
 			break;
@@ -139,11 +138,15 @@ CDIB* CThumbnailsThread::Render(Job& job)
 {
 	CDIB* pBitmap = NULL;
 
-	GP<DjVuImage> pImage = m_pDoc->GetPage(job.nPage, false);
+	GP<DjVuImage> pImage = m_pSource->GetPage(job.nPage, NULL);
 	if (pImage != NULL)
 	{
-		RotateImage(pImage, job.nRotate);
 		CSize szPage(pImage->get_width(), pImage->get_height());
+
+		int nTotalRotate = GetTotalRotate(pImage, job.nRotate);
+		if (nTotalRotate % 2 != 0)
+			swap(szPage.cx, szPage.cy);
+
 		if (szPage.cx > 0 && szPage.cy > 0)
 		{
 			CSize szDisplay = m_szThumbnail;
@@ -155,7 +158,7 @@ CDIB* CThumbnailsThread::Render(Job& job)
 				szDisplay.cy = szDisplay.cx * szPage.cy / szPage.cx;
 			}
 
-			pBitmap = CRenderThread::Render(pImage, szDisplay, job.displaySettings);
+			pBitmap = CRenderThread::Render(pImage, szDisplay, job.displaySettings, CDjVuView::Color, job.nRotate);
 		}
 	}
 

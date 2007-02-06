@@ -34,12 +34,15 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0
 
 class CDjVuDoc;
 class CMyDocTemplate;
+struct DjVuUserData;
 
 void ReportFatalError();
 
 void CreateSystemDialogFont(CFont& font);
 void CreateSystemIconFont(CFont& font);
 UINT GetMouseScrollLines();
+
+bool IsFromCurrentProcess(CWnd* pWnd);
 
 
 // CDjViewApp
@@ -51,6 +54,7 @@ public:
 
 	BOOL WriteProfileDouble(LPCTSTR pszSection, LPCTSTR pszEntry, double fValue);
 	double GetProfileDouble(LPCTSTR pszSection, LPCTSTR pszEntry, double fDefault);
+	void LoadDjVuUserData(const CString& strKey, DjVuUserData* pData);
 
 // Overrides
 public:

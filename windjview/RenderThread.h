@@ -19,15 +19,16 @@
 
 #pragma once
 
+#include "Global.h"
 #include "DjVuView.h"
-
-class CDjVuDoc;
+class DjVuSource;
 class CDIB;
+
 
 class CRenderThread
 {
 public:
-	CRenderThread(CDjVuDoc* pDoc, CDjVuView* pOwner);
+	CRenderThread(DjVuSource* pSource, Observer* pOwner);
 	void Stop();
 	void Delete();
 
@@ -39,10 +40,12 @@ public:
 	void RemoveAllJobs();
 
 	static CDIB* Render(GP<DjVuImage> pImage, const CSize& size,
-		const CDisplaySettings& displaySettings, int nDisplayMode = CDjVuView::Color);
+		const CDisplaySettings& displaySettings, int nDisplayMode, int nRotate);
 
 	void PauseJobs();
 	void ResumeJobs();
+
+	void RejectCurrentJob();
 
 private:
 	HANDLE m_hThread, m_hStopThread;
@@ -50,9 +53,10 @@ private:
 	CEvent m_stop;
 	CEvent m_finished;
 	CEvent m_jobReady;
-	CDjVuView* m_pOwner;
-	CDjVuDoc* m_pDoc;
+	Observer* m_pOwner;
+	DjVuSource* m_pSource;
 	bool m_bPaused;
+	bool m_bRejectCurrentJob;
 
 	enum JobType { RENDER, DECODE, READINFO, CLEANUP };
 
@@ -70,7 +74,7 @@ private:
 	Job m_currentJob;
 
 	static unsigned int __stdcall RenderThreadProc(void* pvData);
-	void Render(Job& job);
+	CDIB* Render(Job& job);
 	void AddJob(const Job& job);
 	void RemoveFromQueue(int nPage);
 	~CRenderThread();

@@ -93,20 +93,11 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 		if (!m_bActivating)
 			pView->UpdateVisiblePages();
 
-		GetMainFrame()->m_cboPage.EnableWindow(true);
-		GetMainFrame()->m_cboZoom.EnableWindow(true);
-
-		GetMainFrame()->UpdatePageCombo();
-		GetMainFrame()->UpdateZoomCombo();
+		GetMainFrame()->OnUpdate(pView, &ViewActivated());
 	}
 	else if (pActivateWnd == NULL)
 	{
-		GetMainFrame()->m_cboPage.SetWindowText(_T(""));
-		GetMainFrame()->m_cboPage.ResetContent();
-		GetMainFrame()->m_cboPage.EnableWindow(false);
-
-		GetMainFrame()->m_cboZoom.SetWindowText(_T(""));
-		GetMainFrame()->m_cboZoom.EnableWindow(false);
+		GetMainFrame()->OnUpdate(NULL, &ViewActivated());
 	}
 }
 
@@ -169,6 +160,11 @@ BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 
 	m_wndSplitter.CreateView(0, 0, RUNTIME_CLASS(CNavPaneWnd),
 		CSize(100, 0), pContext);
+/*
+	m_wndDynSplitter.Create(&m_wndSplitter, 2, 2, CSize(10, 10), pContext,
+		WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | SPLS_DYNAMIC_SPLIT,
+		m_wndSplitter.IdFromRowCol(0, 1));
+*/
 	m_wndSplitter.CreateView(0, 1, RUNTIME_CLASS(CDjVuView),
 		CSize(0, 0), pContext);
 
@@ -184,27 +180,30 @@ BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 void CChildFrame::CreateNavPanes()
 {
 	CNavPaneWnd* pNavPane = GetNavPane();
-	CDjVuDoc* pDoc = (CDjVuDoc*)GetActiveDocument();
+	DjVuSource* pSource = ((CDjVuDoc*)GetActiveDocument())->GetSource();
+	CDjVuView* pDjVuView = GetDjVuView();
 
-	if (pDoc->GetBookmarks() != NULL)
+	if (pSource->GetBookmarks() != NULL)
 	{
 		m_pBookmarksWnd = new CBookmarksWnd();
 		m_pBookmarksWnd->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 			| TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP
 			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 1);
 		pNavPane->AddTab(LoadString(IDS_BOOKMARKS_TAB), m_pBookmarksWnd);
-		m_pBookmarksWnd->InitBookmarks(pDoc);
+		m_pBookmarksWnd->InitBookmarks(pSource);
+		m_pBookmarksWnd->AddObserver(pDjVuView);
 	}
 
-	if (pDoc->GetPageIndex().length() > 0)
+	if (pSource->GetPageIndex().length() > 0)
 	{
 		m_pPageIndexWnd = new CPageIndexWnd();
 		m_pPageIndexWnd->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD,
 			CRect(), pNavPane, 2);
-		if (m_pPageIndexWnd->InitPageIndex(pDoc))
+		if (m_pPageIndexWnd->InitPageIndex(pSource))
 		{
 			pNavPane->AddTab(LoadString(IDS_PAGE_INDEX_TAB), m_pPageIndexWnd);
 			pNavPane->SetTabBorder(m_pPageIndexWnd, false);
+			m_pPageIndexWnd->AddObserver(pDjVuView);
 		}
 		else
 		{
@@ -217,7 +216,9 @@ void CChildFrame::CreateNavPanes()
 	m_pThumbnailsView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 		| WS_HSCROLL | WS_VSCROLL, CRect(), pNavPane, 3);
 	pNavPane->AddTab(LoadString(IDS_THUMBNAILS_TAB), m_pThumbnailsView);
-	m_pThumbnailsView->SetDocument(pDoc);
+	m_pThumbnailsView->SetSource(pSource);
+	m_pThumbnailsView->AddObserver(pDjVuView);
+	pDjVuView->AddObserver(m_pThumbnailsView);
 }
 
 void CChildFrame::OnCollapsePane()
@@ -237,6 +238,7 @@ CDjVuView* CChildFrame::GetDjVuView()
 		return NULL;
 
 	return static_cast<CDjVuView*>(m_wndSplitter.GetPane(0, 1));
+//	return static_cast<CDjVuView*>(static_cast<CSplitterWnd*>(m_wndSplitter.GetPane(0, 1))->GetPane(0, 0));
 }
 
 CNavPaneWnd* CChildFrame::GetNavPane()
@@ -348,15 +350,15 @@ CSearchResultsView* CChildFrame::GetResultsView()
 
 	if (m_pResultsView == NULL)
 	{
-		CDjVuDoc* pDoc = (CDjVuDoc*)GetActiveDocument();
+		CDjVuView* pDjVuView = GetDjVuView();
 
 		m_pResultsView = new CSearchResultsView();
 		m_pResultsView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 			| TVS_HASBUTTONS | TVS_DISABLEDRAGDROP | TVS_INFOTIP
 			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 4);
 		pNavPane->AddTab(LoadString(IDS_SEARCH_RESULTS_TAB), m_pResultsView);
-		m_pResultsView->SetDocument(pDoc);
 		m_pResultsView->OnInitialUpdate();
+		m_pResultsView->AddObserver(pDjVuView);
 	}
 
 	pNavPane->ActivateTab(m_pResultsView);

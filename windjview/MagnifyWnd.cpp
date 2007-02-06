@@ -60,7 +60,7 @@ BOOL CMagnifyWnd::Create()
 	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
 			vi.dwMajorVersion >= 5)
 	{
-		pParent = GetMainFrame();
+		pParent = GetTopLevelParent();
 	}
 
 	return CreateEx(WS_EX_LEFT | WS_EX_TOPMOST, strWndClass, NULL, WS_POPUP,

@@ -56,6 +56,7 @@
 #include <afxext.h>         // MFC extensions
 #include <afxcview.h>
 #include <afxinet.h>
+#include <afxdlgs.h>
 
 #include <afxdtctl.h>		// MFC support for Internet Explorer 4 Common Controls
 #ifndef _AFX_NO_AFXCMN_SUPPORT
@@ -117,8 +118,8 @@ inline CString LoadString(UINT nID)
 	return strResult;
 }
 
-inline void RotateImage(GP<DjVuImage> pImage, int nRotate)
+inline int GetTotalRotate(GP<DjVuImage> pImage, int nRotate)
 {
 	GP<DjVuInfo> info = pImage->get_info();
-	pImage->set_rotate((nRotate + (info != NULL ? info->orientation : 0)) % 4);
+	return (nRotate + (info != NULL ? info->orientation : 0)) % 4;
 }

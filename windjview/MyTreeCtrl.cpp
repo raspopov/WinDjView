@@ -21,7 +21,6 @@
 #include "WinDjView.h"
 #include "MyTreeCtrl.h"
 #include "Drawing.h"
-#include "MainFrm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -43,7 +42,8 @@ CMyTreeCtrl::CMyTreeCtrl()
 	: m_nItemHeight(20), m_pImageList(NULL), m_bWrapLabels(true), m_hTheme(NULL),
 	  m_pOffscreenBitmap(NULL), m_szOffscreen(0, 0), m_pSelection(NULL), m_pHoverNode(NULL),
 	  m_ptScrollOffset(0, 0), m_szDisplay(0, 0), m_szLine(15, 15), m_szPage(0, 0),
-	  m_bMouseInTooltip(false), m_bRedirectWheel(true), m_bLinesAtRoot(false)
+	  m_bMouseInTooltip(false), m_bRedirectWheel(true), m_bLinesAtRoot(false),
+	  m_bHasLines(false), m_bHasGlyphs(false), m_bBatchUpdate(false)
 {
 	m_pRoot = new TreeNode(NULL, -1, -1, NULL);
 	m_pRoot->bCollapsed = false;
@@ -233,7 +233,7 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 		if (m_hTheme != NULL)
 			XPGetThemeColor(m_hTheme, TVP_BRANCH, 0, TMT_EDGESHADOWCOLOR, &crLines);
 
-		if (pNode->pParent != m_pRoot || m_bLinesAtRoot)
+		if (m_bHasLines && (pNode->pParent != m_pRoot || m_bLinesAtRoot))
 		{
 			// Draw lines
 			if (m_pRoot->pChild != pNode)
@@ -280,7 +280,7 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 			}
 		}
 
-		if (pNode->HasChildren() && (pNode->pParent != m_pRoot || m_bLinesAtRoot))
+		if (pNode->HasChildren() && m_bHasGlyphs && (pNode->pParent != m_pRoot || m_bLinesAtRoot))
 		{
 			// Draw glyph
 			if (m_hTheme != NULL)
@@ -361,9 +361,7 @@ HTREEITEM CMyTreeCtrl::InsertItem(LPCTSTR pszItem, int nImage, int nSelectedImag
 	TreeNode* pInsertAfter = NULL;
 	if (hInsertAfter == TVI_LAST)
 	{
-		pInsertAfter = pParent->pChild;
-		while (pInsertAfter != NULL && pInsertAfter->pNext != NULL)
-			pInsertAfter = pInsertAfter->pNext;
+		pInsertAfter = pParent->pLastChild;
 	}
 	else if (hInsertAfter != TVI_FIRST)
 	{
@@ -384,9 +382,28 @@ HTREEITEM CMyTreeCtrl::InsertItem(LPCTSTR pszItem, int nImage, int nSelectedImag
 		pParent->pChild = pNode;
 	}
 
-	RecalcLayout();
+	if (pParent->pLastChild == pInsertAfter)
+		pParent->pLastChild = pNode;
+
+	if (!m_bBatchUpdate)
+		RecalcLayout();
 
 	return reinterpret_cast<HTREEITEM>(pNode);
+}
+
+void CMyTreeCtrl::BeginBatchUpdate()
+{
+	m_bBatchUpdate = true;
+}
+
+void CMyTreeCtrl::EndBatchUpdate()
+{
+	m_bBatchUpdate = false;
+
+	RecalcLayout();
+
+	if (m_pSelection != NULL && m_pSelection->nIndex == -1)
+		SelectNode(NULL);
 }
 
 void CMyTreeCtrl::RecalcLayout()
@@ -598,7 +615,9 @@ void CMyTreeCtrl::RecalcLayout()
 
 int CMyTreeCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
+	m_bHasLines = (lpCreateStruct->style & TVS_HASLINES) != 0;
 	m_bLinesAtRoot = (lpCreateStruct->style & TVS_LINESATROOT) != 0;
+	m_bHasGlyphs = (lpCreateStruct->style & TVS_HASBUTTONS) != 0;
 
 	if (CWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
@@ -809,7 +828,7 @@ void CMyTreeCtrl::SetHoverNode(TreeNode* pNode)
 			}
 		}
 
-		GetMainFrame()->UpdateWindow();
+		GetTopLevelParent()->UpdateWindow();
 	}
 }
 
@@ -1096,7 +1115,7 @@ void CMyTreeCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	CWnd::OnKeyDown(nChar, nRepCnt, nFlags);
 }
 
-void CMyTreeCtrl::SetSelectedItem(HTREEITEM hItem)
+void CMyTreeCtrl::SelectItem(HTREEITEM hItem)
 {
 	if (hItem == TVI_ROOT)
 	{
@@ -1173,13 +1192,51 @@ void CMyTreeCtrl::SelectNode(TreeNode* pNode, UINT nAction)
 	UpdateWindow();
 }
 
+void CMyTreeCtrl::ExpandNode(TreeNode* pNode, bool bExpand)
+{
+	pNode->bCollapsed = !bExpand;
+
+	if (!m_bBatchUpdate)
+	{
+		RecalcLayout();
+
+		if (m_pSelection != NULL && m_pSelection->nIndex == -1)
+			SelectNode(pNode);
+	}
+}
+
 void CMyTreeCtrl::ToggleNode(TreeNode* pNode)
 {
-	pNode->bCollapsed = !pNode->bCollapsed;
-	RecalcLayout();
+	ExpandNode(pNode, pNode->bCollapsed);
+}
 
-	if (m_pSelection != NULL && m_pSelection->nIndex == -1)
-		SelectNode(pNode);
+bool CMyTreeCtrl::Expand(HTREEITEM hItem, UINT nCode)
+{
+	if (hItem == TVI_ROOT)
+		return false;
+
+	TreeNode* pNode = reinterpret_cast<TreeNode*>(hItem);
+	ASSERT_POINTER(pNode, TreeNode);
+
+	switch (nCode)
+	{
+	case TVE_COLLAPSE:
+		ExpandNode(pNode, false);
+		return true;
+
+	case TVE_COLLAPSERESET:
+		return false;
+
+	case TVE_EXPAND:
+		ExpandNode(pNode, true);
+		return true;
+
+	case TVE_TOGGLE:
+		ToggleNode(pNode);
+		return true;
+   	}
+
+	return false;
 }
 
 CMyTreeCtrl::TreeNode* CMyTreeCtrl::FindNextNode(TreeNode* pNode)
@@ -1263,7 +1320,7 @@ BOOL CMyTreeCtrl::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 	if (m_bRedirectWheel)
 	{
 		CWnd* pWnd = WindowFromPoint(point);
-		if (pWnd != this && !IsChild(pWnd) && GetMainFrame()->IsChild(pWnd) &&
+		if (pWnd != this && !IsChild(pWnd) && IsFromCurrentProcess(pWnd) &&
 				pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
 			return true;
 	}
@@ -1362,9 +1419,21 @@ bool CMyTreeCtrl::UpdateParameters()
 	bool bChanged = false;
 	DWORD dwStyle = GetStyle();
 
+	if (m_bHasLines != ((dwStyle & TVS_HASLINES) != 0))
+	{
+		m_bLinesAtRoot = (dwStyle & TVS_HASLINES) != 0;
+		bChanged = true;
+	}
+
 	if (m_bLinesAtRoot != ((dwStyle & TVS_LINESATROOT) != 0))
 	{
 		m_bLinesAtRoot = (dwStyle & TVS_LINESATROOT) != 0;
+		bChanged = true;
+	}
+
+	if (m_bHasGlyphs != ((dwStyle & TVS_HASBUTTONS) != 0))
+	{
+		m_bHasGlyphs = (dwStyle & TVS_HASBUTTONS) != 0;
 		bChanged = true;
 	}
 
@@ -1392,7 +1461,7 @@ BOOL CMyTreeCtrl::CTreeToolTip::Create(CMyTreeCtrl* pTree)
 	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
 			vi.dwMajorVersion >= 5)
 	{
-		pParent = GetMainFrame();
+		pParent = GetTopLevelParent();
 	}
 
 	return CreateEx(WS_EX_LEFT | WS_EX_TOPMOST, strWndClass, NULL, WS_POPUP,

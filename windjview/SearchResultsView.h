@@ -19,26 +19,21 @@
 
 #pragma once
 
-class CDjVuDoc;
+#include "Global.h"
 
 
 // CSearchResultsView view
 
-class CSearchResultsView : public CTreeView
+class CSearchResultsView : public CTreeView, public Observable
 {
 	DECLARE_DYNAMIC(CSearchResultsView)
 
 public:
-	CSearchResultsView();           // protected constructor used by dynamic creation
+	CSearchResultsView();
 	virtual ~CSearchResultsView();
 
 	void AddString(const CString& strResult, int nPage, int nSelStart, int nSelEnd);
 	void Reset();
-
-// Attributes
-public:
-	CDjVuDoc* GetDocument() const { return m_pDoc; }
-	void SetDocument(CDjVuDoc* pDoc) { m_pDoc = pDoc; }
 
 // Overrides
 public:
@@ -50,7 +45,6 @@ public:
 #endif
 
 protected:
-	CDjVuDoc* m_pDoc;
 	CImageList m_imageList;
 
 	struct ResultData

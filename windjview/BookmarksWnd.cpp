@@ -20,10 +20,7 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "BookmarksWnd.h"
-#include "DjVuDoc.h"
-#include "ChildFrm.h"
-#include "DjVuView.h"
-#include "MainFrm.h"
+#include "DjVuSource.h"
 #include "AppSettings.h"
 
 // CBookmarksWnd
@@ -38,7 +35,6 @@ BEGIN_MESSAGE_MAP(CBookmarksWnd, CMyTreeCtrl)
 END_MESSAGE_MAP()
 
 CBookmarksWnd::CBookmarksWnd()
-	: m_pDoc(NULL)
 {
 }
 
@@ -66,21 +62,23 @@ int CBookmarksWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-void CBookmarksWnd::InitBookmarks(CDjVuDoc* pDoc)
+void CBookmarksWnd::InitBookmarks(DjVuSource* pSource)
 {
-	m_pDoc = pDoc;
-	InitBookmarks(pDoc->GetBookmarks(), TVI_ROOT, 0);
+	BeginBatchUpdate();
+
+	const GPList<DjVmNav::DjVuBookMark>& bookmarks = pSource->GetBookmarks()->getBookMarkList();
+	GPosition pos = bookmarks;
+	InitBookmarks(bookmarks, TVI_ROOT, pos, bookmarks.size());
+
+	EndBatchUpdate();
 }
 
-int CBookmarksWnd::InitBookmarks(GP<DjVmNav> bookmarks, HTREEITEM hParent, int nPos, int nCount)
+void CBookmarksWnd::InitBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks,
+	HTREEITEM hParent, GPosition& pos, int nCount)
 {
-	if (nCount == -1)
-		nCount = bookmarks->getBookMarkCount();
-
-	for (int i = 0; i < nCount && nPos < bookmarks->getBookMarkCount(); ++i)
+	for (int i = 0; i < nCount && !!pos; ++i)
 	{
-		GP<DjVmNav::DjVuBookMark> bm;
-		bookmarks->getBookMark(bm, nPos);
+		const GP<DjVmNav::DjVuBookMark> bm = bookmarks[pos];
 
 		CString strTitle = MakeCString(bm->displayname);
 		HTREEITEM hItem = InsertItem(strTitle, 0, 1, hParent);
@@ -88,10 +86,8 @@ int CBookmarksWnd::InitBookmarks(GP<DjVmNav> bookmarks, HTREEITEM hParent, int n
 		m_links.push_back(bm->url);
 		SetItemData(hItem, (DWORD_PTR)&m_links.back());
 
-		nPos = InitBookmarks(bookmarks, hItem, nPos + 1, bm->count);
+		InitBookmarks(bookmarks, hItem, ++pos, bm->count);
 	}
-
-	return nPos;
 }
 
 void CBookmarksWnd::GoToBookmark(HTREEITEM hItem)
@@ -100,8 +96,7 @@ void CBookmarksWnd::GoToBookmark(HTREEITEM hItem)
 
 	if (url->length() > 0)
 	{
-		CDjVuView* pView = ((CChildFrame*)GetParentFrame())->GetDjVuView();
-		pView->GoToURL(*url);
+		UpdateObservers(BookmarkClicked(*url));
 	}
 }
 

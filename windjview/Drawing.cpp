@@ -32,6 +32,12 @@
 #endif
 
 
+void BuildInvertTable(BYTE* table)
+{
+	for (int i = 0; i < 256; ++i)
+		table[i] = static_cast<BYTE>(255 - table[i]);
+}
+
 void BuildBrightnessTable(int nBrightness, BYTE* table)
 {
 	for (int i = 0; i < 256; ++i)
@@ -97,13 +103,15 @@ CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip, const CDisplaySettings& dis
 	int nBrightness = displaySettings.GetBrightness();
 	int nContrast = displaySettings.GetContrast();
 	double fGamma = displaySettings.GetGamma();
-	if (fGamma != 1.0 || nBrightness != 0 || nContrast != 0)
+	if (fGamma != 1.0 || nBrightness != 0 || nContrast != 0 || displaySettings.bInvertColors)
 	{
 		// Adjust gamma
 		BYTE table[256];
 		for (int i = 0; i < 256; ++i)
 			table[i] = i;
 
+		if (displaySettings.bInvertColors)
+			BuildInvertTable(table);
 		if (nBrightness != 0)
 			BuildBrightnessTable(nBrightness, table);
 		if (nContrast != 0)
@@ -167,13 +175,15 @@ CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip, const CDisplaySettings& dis
 	int nBrightness = displaySettings.GetBrightness();
 	int nContrast = displaySettings.GetContrast();
 	double fGamma = displaySettings.GetGamma();
-	if (fGamma != 1.0 || nBrightness != 0 || nContrast != 0)
+	if (fGamma != 1.0 || nBrightness != 0 || nContrast != 0 || displaySettings.bInvertColors)
 	{
 		// Adjust gamma
 		BYTE table[256];
 		for (int i = 0; i < 256; ++i)
 			table[i] = i;
 
+		if (displaySettings.bInvertColors)
+			BuildInvertTable(table);
 		if (nBrightness != 0)
 			BuildBrightnessTable(nBrightness, table);
 		if (nContrast != 0)
@@ -227,13 +237,15 @@ CDIB* RenderEmpty(const CSize& szBitmap, const CDisplaySettings& displaySettings
 	int nBrightness = displaySettings.GetBrightness();
 	int nContrast = displaySettings.GetContrast();
 	double fGamma = displaySettings.GetGamma();
-	if (fGamma != 1.0 || nBrightness != 0 || nContrast != 0)
+	if (fGamma != 1.0 || nBrightness != 0 || nContrast != 0 || displaySettings.bInvertColors)
 	{
 		// Adjust gamma
 		BYTE table[256];
 		for (int i = 0; i < 256; ++i)
 			table[i] = i;
 
+		if (displaySettings.bInvertColors)
+			BuildInvertTable(table);
 		if (nBrightness != 0)
 			BuildBrightnessTable(nBrightness, table);
 		if (nContrast != 0)
@@ -527,7 +539,7 @@ CRect FindContentRect(GP<DjVuImage> pImage)
 	if (pImage == NULL)
 		return rcResult;
 
-	CSize szImage = CSize(pImage->get_width(), pImage->get_height());
+	CSize szImage(pImage->get_width(), pImage->get_height());
 
 	rcResult = CRect(CPoint(0, 0), szImage);
 	GRect rect(0, 0, szImage.cx, szImage.cy);
@@ -644,11 +656,30 @@ CRect FindContentRect(GP<DjVuImage> pImage)
 	return rcResult;
 }
 
-void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPage,
+void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRect& rcFullPage,
 	double fPrinterMMx, double fPrinterMMy, CPrintSettings& settings, bool bPreview)
 {
 	if (pImage == NULL)
 		return;
+
+	CSize szImage(pImage->get_width(), pImage->get_height());
+	if (szImage.cx <= 0 || szImage.cy <= 0)
+		return;
+
+	CPoint ptSrcOffset(0, 0);
+	CSize szDjVuPage(szImage);
+
+	if (settings.bClipContent)
+	{
+		CRect rcContent = FindContentRect(pImage);
+		ptSrcOffset = rcContent.TopLeft();
+
+		szDjVuPage = rcContent.Size();
+	}
+
+	int nTotalRotate = GetTotalRotate(pImage, nRotate);
+	if (nTotalRotate % 2 != 0)
+		swap(szDjVuPage.cx, szDjVuPage.cy);
 
 	CRect rcPage = rcFullPage;
 
@@ -657,18 +688,6 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPag
 					   static_cast<int>(settings.fMarginTop*fPrinterMMy),
 					   static_cast<int>(settings.fMarginRight*fPrinterMMx),
 					   static_cast<int>(settings.fMarginBottom*fPrinterMMy));
-
-	CPoint ptSrcOffset(0, 0);
-	CSize szDjVuPage = CSize(pImage->get_width(), pImage->get_height());
-	if (szDjVuPage.cx <= 0 || szDjVuPage.cy <= 0)
-		return;
-
-	if (settings.bClipContent)
-	{
-		CRect rcContent = FindContentRect(pImage);
-		ptSrcOffset = rcContent.TopLeft();
-		szDjVuPage = rcContent.Size();
-	}
 
 	double fSourceMM = pImage->get_dpi() / 25.4;
 
@@ -718,12 +737,19 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPag
 	GRect rect, rectAll;
 	if (settings.bClipContent || !bPreview)
 	{
-		rect = GRect(ptSrcOffset.x, ptSrcOffset.y, szDjVuPage.cx, szDjVuPage.cy);
-		rectAll = GRect(0, 0, pImage->get_width(), pImage->get_height());
+		if (nTotalRotate % 2 == 0)
+			rect = GRect(ptSrcOffset.x, ptSrcOffset.y, szDjVuPage.cx, szDjVuPage.cy);
+		else
+			rect = GRect(ptSrcOffset.x, ptSrcOffset.y, szDjVuPage.cy, szDjVuPage.cx);
+
+		rectAll = GRect(0, 0, szImage.cx, szImage.cy);
 	}
 	else // if (bPreview)
 	{
 		rect = GRect(0, 0, szScaled.cx, szScaled.cy);
+		if (nTotalRotate % 2 != 0)
+			swap(rect.xmax, rect.ymax);
+
 		rectAll = rect;
 	}
 
@@ -766,17 +792,20 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPag
 
 	if (pm != NULL)
 	{
+		if (nTotalRotate != 0)
+			pm = pm->rotate(nTotalRotate);
+
 		if (settings.bClipContent && bPreview)
 		{
 			// Scale the pixmap to needed size
 			GRect rcDest(0, 0, szScaled.cx, szScaled.cy);
-			GRect rcSrc(0, 0, rect.width(), rect.height());
+			GRect rcSrc(0, 0, szDjVuPage.cx, szDjVuPage.cy);
 
 			GP<GPixmapScaler> ps = GPixmapScaler::create();
-			ps->set_input_size(rect.width(), rect.height());
+			ps->set_input_size(szDjVuPage.cx, szDjVuPage.cy);
 			ps->set_output_size(szScaled.cx, szScaled.cy);
-			ps->set_horz_ratio(szScaled.cx, rect.width());
-			ps->set_vert_ratio(szScaled.cy, rect.height());
+			ps->set_horz_ratio(szScaled.cx, szDjVuPage.cx);
+			ps->set_vert_ratio(szScaled.cy, szDjVuPage.cy);
 
 			GP<GPixmap> pmStretched = GPixmap::create();
 			ps->scale(rcSrc, *pm, rcDest, *pmStretched);
@@ -787,17 +816,20 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nMode, const CRect& rcFullPag
 	}
 	else if (bm != NULL)
 	{
+		if (nTotalRotate != 0)
+			bm = bm->rotate(nTotalRotate);
+
 		if (settings.bClipContent && bPreview)
 		{
 			// Scale the bitmap to needed size
 			GRect rcDest(0, 0, szScaled.cx, szScaled.cy);
-			GRect rcSrc(0, 0, rect.width(), rect.height());
+			GRect rcSrc(0, 0, szDjVuPage.cx, szDjVuPage.cy);
 
 			GP<GBitmapScaler> bs = GBitmapScaler::create();
-			bs->set_input_size(rect.width(), rect.height());
+			bs->set_input_size(szDjVuPage.cx, szDjVuPage.cy);
 			bs->set_output_size(szScaled.cx, szScaled.cy);
-			bs->set_horz_ratio(szScaled.cx, rect.width());
-			bs->set_vert_ratio(szScaled.cy, rect.height());
+			bs->set_horz_ratio(szScaled.cx, szDjVuPage.cx);
+			bs->set_vert_ratio(szScaled.cy, szDjVuPage.cy);
 
 			GP<GBitmap> bmStretched = GBitmap::create();
 			bs->scale(rcSrc, *bm, rcDest, *bmStretched);
@@ -841,48 +873,49 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 	CPrintDlg& dlg = *reinterpret_cast<CPrintDlg*>(pProgress->GetUserData());
 
 	CDjVuDoc* pDoc = dlg.GetDocument();
+	DjVuSource* pSource = pDoc->GetSource();
 
 	size_t nPages = dlg.m_arrPages.size();
 	if (dlg.m_nCopies > 1 && dlg.m_bCollate && !dlg.m_bPrinterCanCollate)
 	{
 		// We will do collation ourselves
 		nPages *= dlg.m_nCopies;
-		dlg.m_pPrinter->pDevMode->dmCopies = 1;
+		dlg.m_pDevMode->dmCopies = 1;
 	}
 
 	pProgress->SetRange(0, nPages);
 	pProgress->SetStatus(LoadString(IDS_PRINTING));
 
 	// Printing
-	CDC print_dc;
-	print_dc.CreateDC(dlg.m_pPrinter->pDriverName, dlg.m_pPrinter->pPrinterName, NULL, dlg.m_pPrinter->pDevMode);
+	CDC dcPrint;
+	dcPrint.CreateDC(dlg.m_pPrinter->pDriverName, dlg.m_pPrinter->pPrinterName, NULL, dlg.m_pDevMode);
 
-	if (print_dc.m_hDC == NULL)
+	if (dcPrint.m_hDC == NULL)
 	{
 		pProgress->StopProgress(1);
 		::CoUninitialize();
 		return 1;
 	}
 
-	print_dc.SetMapMode(MM_TEXT);
+	dcPrint.SetMapMode(MM_TEXT);
 
-	double fPrinterMMx = print_dc.GetDeviceCaps(LOGPIXELSX) / 25.4;
-	double fPrinterMMy = print_dc.GetDeviceCaps(LOGPIXELSY) / 25.4;
+	double fPrinterMMx = dcPrint.GetDeviceCaps(LOGPIXELSX) / 25.4;
+	double fPrinterMMy = dcPrint.GetDeviceCaps(LOGPIXELSY) / 25.4;
 
 	int nPageWidth, nPageHeight;
 	if (dlg.m_settings.bIgnorePrinterMargins)
 	{
-		nPageWidth = print_dc.GetDeviceCaps(PHYSICALWIDTH);
-		nPageHeight = print_dc.GetDeviceCaps(PHYSICALHEIGHT);
+		nPageWidth = dcPrint.GetDeviceCaps(PHYSICALWIDTH);
+		nPageHeight = dcPrint.GetDeviceCaps(PHYSICALHEIGHT);
 
-		int nOffsetX = print_dc.GetDeviceCaps(PHYSICALOFFSETX);
-		int nOffsetY = print_dc.GetDeviceCaps(PHYSICALOFFSETY);
-		print_dc.SetViewportOrg(-nOffsetX, -nOffsetY);
+		int nOffsetX = dcPrint.GetDeviceCaps(PHYSICALOFFSETX);
+		int nOffsetY = dcPrint.GetDeviceCaps(PHYSICALOFFSETY);
+		dcPrint.SetViewportOrg(-nOffsetX, -nOffsetY);
 	}
 	else
 	{
-		nPageWidth = print_dc.GetDeviceCaps(HORZRES);
-		nPageHeight = print_dc.GetDeviceCaps(VERTRES);
+		nPageWidth = dcPrint.GetDeviceCaps(HORZRES);
+		nPageHeight = dcPrint.GetDeviceCaps(VERTRES);
 	}
 
 	CSize szPaper(nPageWidth, nPageHeight);
@@ -914,7 +947,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 	di.lpszDatatype = NULL;
 	di.lpszOutput = (dlg.m_bPrintToFile ? _T("C:\\Output.prn") : NULL);
 
-	if (print_dc.StartDoc(&di) <= 0)
+	if (dcPrint.StartDoc(&di) <= 0)
 	{
 		pProgress->StopProgress(2);
 		::CoUninitialize();
@@ -930,7 +963,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 
 		if (pProgress->IsCancelled())
 		{
-			print_dc.AbortDoc();
+			dcPrint.AbortDoc();
 
 			pProgress->StopProgress(0);
 			::CoUninitialize();
@@ -940,11 +973,11 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 		int nPage = dlg.m_arrPages[i % dlg.m_pages.size()].first - 1;
 		int nSecondPage = dlg.m_arrPages[i % dlg.m_pages.size()].second - 1;
 
-		if ((nPage < 0 || nPage >= pDoc->GetPageCount()) &&
-			(!dlg.m_bTwoPages || nSecondPage < 0 || nSecondPage >= pDoc->GetPageCount()))
+		if ((nPage < 0 || nPage >= pSource->GetPageCount()) &&
+			(!dlg.m_bTwoPages || nSecondPage < 0 || nSecondPage >= pSource->GetPageCount()))
 			continue;
 
-		if (print_dc.StartPage() <= 0)
+		if (dcPrint.StartPage() <= 0)
 		{
 			pProgress->StopProgress(3);
 			::CoUninitialize();
@@ -952,24 +985,22 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 		}
 
 		GP<DjVuImage> pImage;
-		if (nPage >= 0 && nPage < pDoc->GetPageCount())
-			pImage = pDoc->GetPage(nPage, false);
+		if (nPage >= 0 && nPage < pSource->GetPageCount())
+			pImage = pSource->GetPage(nPage, NULL);
 		if (pImage != NULL)
 		{
-			RotateImage(pImage, nRotate);
-			PrintPage(&print_dc, pImage, nMode, rcOddPage, fPrinterMMx, fPrinterMMy, dlg.m_settings);
+			PrintPage(&dcPrint, pImage, nRotate, nMode, rcOddPage, fPrinterMMx, fPrinterMMy, dlg.m_settings);
 		}
 
 		pImage = NULL;
-		if (dlg.m_bTwoPages && nSecondPage >= 0 && nSecondPage < pDoc->GetPageCount())
-			pImage = pDoc->GetPage(nSecondPage, false);
+		if (dlg.m_bTwoPages && nSecondPage >= 0 && nSecondPage < pSource->GetPageCount())
+			pImage = pSource->GetPage(nSecondPage, NULL);
 		if (pImage != NULL)
 		{
-			RotateImage(pImage, nRotate);
-			PrintPage(&print_dc, pImage, nMode, rcEvenPage, fPrinterMMx, fPrinterMMy, dlg.m_settings);
+			PrintPage(&dcPrint, pImage, nRotate, nMode, rcEvenPage, fPrinterMMx, fPrinterMMy, dlg.m_settings);
 		}
 
-		if (print_dc.EndPage() <= 0)
+		if (dcPrint.EndPage() <= 0)
 		{
 			pProgress->StopProgress(4);
 			::CoUninitialize();
@@ -977,7 +1008,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 		}
 	}
 
-	print_dc.EndDoc();
+	dcPrint.EndDoc();
 
 	pProgress->StopProgress(0);
 

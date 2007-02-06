@@ -19,13 +19,14 @@
 
 #pragma once
 
+#include "Global.h"
 #include "MyTreeCtrl.h"
-class CDjVuDoc;
+class DjVuSource;
 
 
 // CBookmarksWnd view
 
-class CBookmarksWnd : public CMyTreeCtrl
+class CBookmarksWnd : public CMyTreeCtrl, public Observable
 {
 	DECLARE_DYNAMIC(CBookmarksWnd)
 
@@ -33,16 +34,16 @@ public:
 	CBookmarksWnd();
 	virtual ~CBookmarksWnd();
 
-	void InitBookmarks(CDjVuDoc* pDoc);
+	void InitBookmarks(DjVuSource* pSource);
 	void OnSettingsChanged();
 
 // Implementation
 protected:
-	CDjVuDoc* m_pDoc;
 	CImageList m_imageList;
 
 	void GoToBookmark(HTREEITEM hItem);
-	int InitBookmarks(GP<DjVmNav> bookmarks, HTREEITEM hParent, int nPos, int nCount = -1);
+	void InitBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks,
+		HTREEITEM hParent, GPosition& pos, int nCount);
 
 	list<GUTF8String> m_links;
 

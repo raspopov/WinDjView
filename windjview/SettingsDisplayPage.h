@@ -20,31 +20,36 @@
 #pragma once
 
 #include "AppSettings.h"
-#include "SettingsGeneralPage.h"
-#include "SettingsDisplayPage.h"
-#include "SettingsAssocsPage.h"
 
 
-// CSettingsDlg dialog
+// CSettingsDisplayPage dialog
 
-class CSettingsDlg : public CPropertySheet
+class CSettingsDisplayPage : public CPropertyPage
 {
-	DECLARE_DYNAMIC(CSettingsDlg)
+	DECLARE_DYNAMIC(CSettingsDisplayPage)
 
 public:
-	CSettingsDlg(CWnd* pParent = NULL);
-	virtual ~CSettingsDlg();
+	CSettingsDisplayPage();
+	virtual ~CSettingsDisplayPage();
 
-	CSettingsGeneralPage m_pageGeneral;
-	CSettingsDisplayPage m_pageDisplay;
-	CSettingsAssocsPage m_pageAssocs;
+// Dialog Data
+	enum { IDD = IDD_SETTINGS_DISPLAY };
+	BOOL m_bHQScaling;
+	BOOL m_bInvertColors;
+	BOOL m_bAdjustDisplay;
+	CSliderCtrl m_sliderBrightness;
+	CSliderCtrl m_sliderContrast;
+	CSliderCtrl m_sliderGamma;
+	CString m_strBrightnessValue;
+	CString m_strContrastValue;
+	CString m_strGammaValue;
+
+	CDisplaySettings m_displaySettings;
 
 protected:
-	CFont m_font;
-	CStatic m_ctlAbout;
-
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual BOOL OnInitDialog();
-	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnAdjustDisplay();
 	DECLARE_MESSAGE_MAP()
 };

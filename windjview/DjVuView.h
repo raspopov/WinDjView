@@ -19,10 +19,12 @@
 
 #pragma once
 
+#include "Global.h"
 #include "MyScrollView.h"
 #include "AppSettings.h"
 #include "Drawing.h"
 #include "DjVuDoc.h"
+#include "DjVuSource.h"
 
 class CPrintDlg;
 class CRenderThread;
@@ -35,19 +37,13 @@ inline bool IsStandardZoom(int nZoomType, double fZoom)
 
 typedef GList<DjVuTXT::Zone*> DjVuSelection;
 
-void MakeWString(const CString& strText, wstring& result);
-bool MakeWString(const GUTF8String& text, wstring& result);
-CString MakeCString(const wstring& text);
-CString MakeCString(const GUTF8String& text);
-GUTF8String MakeUTF8String(const CString& strText);
-GUTF8String MakeUTF8String(const wstring& strText);
 CString MakePreviewString(const GUTF8String& text, int nStart, int nEnd);
 
 
 #define WM_PAGE_DECODED (WM_APP + 1)
 #define WM_PAGE_RENDERED (WM_APP + 2)
 
-class CDjVuView : public CMyScrollView
+class CDjVuView : public CMyScrollView, public Observer, public Observable
 {
 protected: // create from serialization only
 	CDjVuView();
@@ -56,7 +52,7 @@ protected: // create from serialization only
 // Attributes
 public:
 	CDjVuDoc* GetDocument() const;
-	void SetDocument(CDjVuDoc* pDoc) { m_pDocument = pDoc; }
+	void SetDocument(CDjVuDoc* pDocument) { m_pDocument = pDocument; }
 
 // Operations
 public:
@@ -72,7 +68,7 @@ public:
 		int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
 
 	int GetPageCount() const { return m_nPageCount; }
-	int GetCurrentPage() const;
+	int GetCurrentPage() const { return m_nPage; }
 	int GetZoomType() const { return m_nZoomType; }
 	double GetZoom() const;
 	void ZoomTo(int nZoomType, double fZoom = 100.0);
@@ -82,9 +78,9 @@ public:
 	GUTF8String GetFullText();
 	void StopDecoding();
 	void RestartThread();
-	bool UpdatePageInfoFrom(CDjVuView* pSource);
-	void CopyBitmapsFrom(CDjVuView* pSource, bool bMove = false);
-	void CopyBitmapFrom(CDjVuView* pSource, int nPage);
+	bool UpdatePageInfoFrom(CDjVuView* pFrom);
+	void CopyBitmapsFrom(CDjVuView* pFrom, bool bMove = false);
+	void CopyBitmapFrom(CDjVuView* pFrom, int nPage);
 
 	CSize GetPageSize(int nPage) const { return m_pages[nPage].GetSize(m_nRotate); }
 	int GetPageDPI(int nPage) const { return m_pages[nPage].info.nDPI; }
@@ -170,6 +166,8 @@ public:
 #endif
 
 protected:
+	DjVuSource* m_pSource;
+
 	CToolTipCtrl m_toolTip;
 	CString m_strToolTip;
 	CRenderThread* m_pRenderThread;
@@ -189,6 +187,7 @@ protected:
 	int m_nPendingPage;
 	CSize m_szDisplay;
 	int CalcTopPage() const;
+	int CalcCurrentPage() const;
 	void RenderPage(int nPage, int nTimeout = -1);
 
 	bool InvalidatePage(int nPage);
@@ -207,9 +206,8 @@ protected:
 	struct Page
 	{
 		Page() :
-			bInfoLoaded(false), szDisplay(0, 0), ptOffset(0, 0),
-			pBitmap(NULL), bTextDecoded(false), bAnnoDecoded(false),
-			nSelStart(-1), nSelEnd(-1), bHasSize(false), bBitmapRendered(false) {}
+			szDisplay(0, 0), ptOffset(0, 0), pBitmap(NULL), nSelStart(-1), nSelEnd(-1),
+			bHasSize(false), bBitmapRendered(false) {}
 		~Page() { delete pBitmap; }
 
 		CSize GetSize(int nRotate) const
@@ -220,14 +218,11 @@ protected:
 			return sz;
 		}
 
-		void Init(const PageInfo& info)
+		void Init(DjVuSource* pSource, int nPage, bool bNeedText = false, bool bNeedAnno = false)
 		{
-			this->info = info;
-			bInfoLoaded = true;
-			DecodeAnno();
+			info.Update(pSource->GetPageInfo(nPage, bNeedText, bNeedAnno));
 		}
 
-		bool bInfoLoaded;
 		PageInfo info;
 
 		bool bHasSize;
@@ -237,37 +232,8 @@ protected:
 		CDIB* pBitmap;
 		bool bBitmapRendered;
 
-		bool bTextDecoded;
-		GP<DjVuTXT> pText;
 		DjVuSelection selection;
 		int nSelStart, nSelEnd;
-
-		bool bAnnoDecoded;
-		GP<DjVuANT> pAnt;
-
-		void DecodeText()
-		{
-			if (info.pTextStream != NULL && !bTextDecoded)
-			{
-				info.pTextStream->seek(0);
-				GP<DjVuText> pDjVuText = DjVuText::create();
-				pDjVuText->decode(info.pTextStream);
-				pText = pDjVuText->txt;
-				bTextDecoded = true;
-			}
-		}
-
-		void DecodeAnno()
-		{
-			if (info.pAnnoStream != NULL && !bAnnoDecoded)
-			{
-				info.pAnnoStream->seek(0);
-				GP<DjVuAnno> pDjVuAnno = DjVuAnno::create();
-				pDjVuAnno->decode(info.pAnnoStream);
-				pAnt = pDjVuAnno->ant;
-				bAnnoDecoded = true;
-			}
-		}
 
 		void DeleteBitmap()
 		{
@@ -304,6 +270,9 @@ protected:
 	int FixPageNumber(int nPage) const;
 	int GetNextPage(int nPage) const;
 	void SetLayout(int nLayout, int nPage, int nOffset);
+	void UpdatePageNumber();
+
+	virtual void OnUpdate(const Observable* source, const Message* message);
 
 	enum UpdateType
 	{

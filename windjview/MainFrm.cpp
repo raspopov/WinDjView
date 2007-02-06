@@ -363,13 +363,11 @@ void CMainFrame::OnCancelChangePageZoom()
 	pView->SetFocus();
 }
 
-void CMainFrame::UpdateZoomCombo()
+void CMainFrame::UpdateZoomCombo(const CDjVuView* pView)
 {
-	CMDIChildWnd* pActive = MDIGetActive();
-	if (pActive == NULL)
+	if (pView == NULL)
 		return;
 
-	CDjVuView* pView = (CDjVuView*)pActive->GetActiveView();
 	int nZoomType = pView->GetZoomType();
 	double fZoom = pView->GetZoom();
 
@@ -401,13 +399,10 @@ void CMainFrame::UpdateZoomCombo()
 		m_cboZoom.SetWindowText(FormatDouble(fZoom) + _T("%"));
 }
 
-void CMainFrame::UpdatePageCombo()
+void CMainFrame::UpdatePageCombo(const CDjVuView* pView)
 {
-	CMDIChildWnd* pActive = MDIGetActive();
-	if (pActive == NULL)
+	if (pView == NULL)
 		return;
-
-	CDjVuView* pView = (CDjVuView*)pActive->GetActiveView();
 
 	if (pView->GetPageCount() != m_cboPage.GetCount())
 	{
@@ -423,19 +418,6 @@ void CMainFrame::UpdatePageCombo()
 	int nPage = pView->GetCurrentPage();
 	if (m_cboPage.GetCurSel() != nPage)
 		m_cboPage.SetCurSel(nPage);
-
-	CThumbnailsView* pThumbnails = ((CChildFrame*)pView->GetParentFrame())->GetThumbnailsView();
-	if (pThumbnails != NULL)
-	{
-		if (pThumbnails->GetCurrentPage() != nPage)
-		{
-			pThumbnails->EnsureVisible(nPage);
-			pThumbnails->SetCurrentPage(nPage);
-		}
-
-		if (pThumbnails->GetRotate() != pView->GetRotate())
-			pThumbnails->SetRotate(pView->GetRotate());
-	}
 }
 
 void CMainFrame::OnChangeZoom()
@@ -571,7 +553,7 @@ void CMainFrame::OnUpdateEditFind(CCmdUI* pCmdUI)
 	}
 
 	CDjVuDoc* pDoc = (CDjVuDoc*)pFrame->GetActiveDocument();
-	pCmdUI->Enable(pDoc->HasText());
+	pCmdUI->Enable(pDoc->GetSource()->HasText());
 }
 
 void CMainFrame::HilightStatusMessage(LPCTSTR pszMessage)
@@ -1141,7 +1123,7 @@ void CMainFrame::OnLanguageChanged()
 void CMainFrame::LoadLanguages()
 {
 	LanguageInfo english;
-	english.strLanguage = _T("&English");
+	english.strLanguage = _T("English");
 	english.hInstance = AfxGetInstanceHandle();
 	m_languages.push_back(english);
 
@@ -1346,4 +1328,54 @@ LRESULT CMainFrame::OnAppCommand(WPARAM wParam, LPARAM lParam)
 
 	Default();
 	return 0;
+}
+
+void CMainFrame::OnUpdate(const Observable* source, const Message* message)
+{
+	if (message->code == CURRENT_PAGE_CHANGED)
+	{
+		const CDjVuView* pView = static_cast<const CDjVuView*>(source);
+
+		CMDIChildWnd* pActive = MDIGetActive();
+		if (pActive == NULL)
+			return;
+
+		CDjVuView* pActiveView = (CDjVuView*)pActive->GetActiveView();
+		if (pActiveView == pView)
+			UpdatePageCombo(pView);
+	}
+	else if (message->code == ZOOM_CHANGED)
+	{
+		const CDjVuView* pView = static_cast<const CDjVuView*>(source);
+
+		CMDIChildWnd* pActive = MDIGetActive();
+		if (pActive == NULL)
+			return;
+
+		CDjVuView* pActiveView = (CDjVuView*)pActive->GetActiveView();
+		if (pActiveView == pView)
+			UpdateZoomCombo(pView);
+	}
+	else if (message->code == VIEW_ACTIVATED)
+	{
+		const CDjVuView* pView = static_cast<const CDjVuView*>(source);
+
+		if (pView != NULL)
+		{
+			m_cboPage.EnableWindow(true);
+			m_cboZoom.EnableWindow(true);
+
+			UpdatePageCombo(pView);
+			UpdateZoomCombo(pView);
+		}
+		else
+		{
+			m_cboPage.SetWindowText(_T(""));
+			m_cboPage.ResetContent();
+			m_cboPage.EnableWindow(false);
+
+			m_cboZoom.SetWindowText(_T(""));
+			m_cboZoom.EnableWindow(false);
+		}
+	}
 }

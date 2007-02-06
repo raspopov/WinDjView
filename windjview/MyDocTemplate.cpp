@@ -18,7 +18,11 @@
 // $Id$
 
 #include "stdafx.h"
+#include "WinDjView.h"
 #include "MyDocTemplate.h"
+#include "ChildFrm.h"
+#include "DjVuView.h"
+#include "MainFrm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -89,4 +93,14 @@ void CMyDocTemplate::UpdateTemplate()
 	{
 		TRACE1("Warning: no document names in string for template #%d.\n", m_nIDResource);
 	}
+}
+
+void CMyDocTemplate::InitialUpdateFrame(CFrameWnd* pFrame, CDocument* pDoc, BOOL bMakeVisible)
+{
+	CChildFrame* pChildFrm = (CChildFrame*)pFrame;
+	pChildFrm->CreateNavPanes();
+
+	pChildFrm->GetDjVuView()->AddObserver(GetMainFrame());
+
+	CMultiDocTemplate::InitialUpdateFrame(pFrame, pDoc, bMakeVisible);
 }

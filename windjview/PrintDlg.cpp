@@ -31,49 +31,6 @@
 #endif
 
 
-CString FormatDouble(double fValue)
-{
-	char nDecimalPoint = localeconv()->decimal_point[0];
-
-	CString strResult;
-	strResult.Format(_T("%.6f"), fValue);
-	while (!strResult.IsEmpty() && strResult[strResult.GetLength() - 1] == '0')
-		strResult = strResult.Left(strResult.GetLength() - 1);
-
-	if (!strResult.IsEmpty() && strResult[strResult.GetLength() - 1] == nDecimalPoint)
-		strResult = strResult.Left(strResult.GetLength() - 1);
-
-	if (strResult.IsEmpty())
-		strResult = _T("0");
-
-	return strResult;
-}
-
-void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, double& value, double def, LPCTSTR pszSuffix)
-{
-	CString strText = FormatDouble(value) + pszSuffix;
-	DDX_Text(pDX, nIDC, strText);
-
-	if (pDX->m_bSaveAndValidate)
-	{
-		if (_stscanf(strText, _T("%lf"), &value) != 1)
-			value = def;
-	}
-}
-
-void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def, LPCTSTR pszSuffix)
-{
-	CString strText;
-	strText.Format(_T("%u%s"), value, (LPCTSTR)CString(pszSuffix));
-	DDX_Text(pDX, nIDC, strText);
-
-	if (pDX->m_bSaveAndValidate)
-	{
-		if (_stscanf(strText, _T("%u"), &value) != 1)
-			value = def;
-	}
-}
-
 // CPrintDlg dialog
 
 map<CString, vector<byte> > CPrintDlg::s_devModes;
@@ -86,8 +43,8 @@ CPrintDlg::CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, int nMode, CWnd* pP
 	  m_strType(_T("")), m_strLocation(_T("")),
 	  m_strComment(_T("")), m_bLandscape(FALSE), m_nRangeType(0),
 	  m_pPrinter(NULL), m_hPrinter(NULL), m_pPaper(NULL), m_bReverse(false),
-	  m_pDoc(pDoc), m_nCurPage(nPage), m_nRotate(nRotate), m_nMode(nMode),
-	  m_bTwoPages(false), m_bPrinterCanCollate(false)
+	  m_pDoc(pDoc), m_pSource(pDoc->GetSource()), m_nCurPage(nPage), m_nRotate(nRotate),
+	  m_nMode(nMode), m_bTwoPages(false), m_bPrinterCanCollate(false)
 {
 }
 
@@ -313,12 +270,14 @@ void CPrintDlg::OnOK()
 	m_pages.clear();
 	if (m_nRangeType == 0)
 	{
-		for (int i = 1; i <= m_pDoc->GetPageCount(); ++i)
+		for (int i = 1; i <= m_pSource->GetPageCount(); ++i)
 			m_pages.push_back(i);
 	}
 	else if (m_nRangeType == 1)
 	{
 		m_pages.push_back(m_nCurPage + 1);
+		if (m_bTwoPages && m_nCurPage < m_pSource->GetPageCount() - 1)
+			m_pages.push_back(m_nCurPage + 2);
 	}
 	else
 	{
@@ -326,12 +285,13 @@ void CPrintDlg::OnOK()
 			return;
 	}
 
-	bool bAllPages = (m_cboPagesInRange.GetCurSel() == 0);
-	bool bOddPages = (m_cboPagesInRange.GetCurSel() == 1);
-	bool bEvenPages = (m_cboPagesInRange.GetCurSel() == 2);
+	bool bAllPages = (m_cboPagesInRange.GetCurSel() == 0) || m_nRangeType == 1;
+	bool bOddPages = (m_cboPagesInRange.GetCurSel() == 1) && m_nRangeType != 1;
+	bool bEvenPages = (m_cboPagesInRange.GetCurSel() == 2) && m_nRangeType != 1;
 	int i = 1;
+	int inc = (m_bTwoPages ? 2 : 1);
 
-	for (size_t j = 0; j < m_pages.size(); ++j, ++i)
+	for (size_t j = 0; j < m_pages.size(); j += inc, ++i)
 	{
 		int nFirst = m_pages[j];
 		if (!m_bTwoPages)
@@ -350,7 +310,7 @@ void CPrintDlg::OnOK()
 			else
 			{
 				if (bAllPages || bOddPages && (i % 2) == 1 || bEvenPages && (i % 2) == 0)
-					m_arrPages.push_back(make_pair(nFirst, m_pages[++j]));
+					m_arrPages.push_back(make_pair(nFirst, m_pages[j + 1]));
 			}
 		}
 	}
@@ -417,11 +377,7 @@ void CPrintDlg::OnPaint()
 		dc.FrameRect(rcFrame, &CBrush(::GetSysColor(COLOR_WINDOWFRAME)));
 
 		if (m_pCurPage == NULL)
-		{
-			m_pCurPage = m_pDoc->GetPage(m_nCurPage, false);
-			if (m_pCurPage != NULL)
-				RotateImage(m_pCurPage, m_nRotate);
-		}
+			m_pCurPage = m_pSource->GetPage(m_nCurPage, NULL);
 
 		double fScreenMM = rcPage.Width()*10.0 / szPaper.cx;
 
@@ -446,16 +402,12 @@ void CPrintDlg::OnPaint()
 
 		if (!m_bTwoPages)
 		{
-			PrintPage(&dc, m_pCurPage, m_nMode, rcPage, fScreenMM, fScreenMM, m_settings, true);
+			PrintPage(&dc, m_pCurPage, m_nRotate, m_nMode, rcPage, fScreenMM, fScreenMM, m_settings, true);
 		}
 		else
 		{
-			if (m_pNextPage == NULL && m_nCurPage < m_pDoc->GetPageCount() - 1)
-			{
-				m_pNextPage = m_pDoc->GetPage(m_nCurPage + 1, false);
-				if (m_pNextPage != NULL)
-					RotateImage(m_pNextPage, m_nRotate);
-			}
+			if (m_pNextPage == NULL && m_nCurPage < m_pSource->GetPageCount() - 1)
+				m_pNextPage = m_pSource->GetPage(m_nCurPage + 1, NULL);
 
 			PreviewTwoPages(&dc, rcPage, szPaper, fScreenMM);
 		}
@@ -484,10 +436,10 @@ void CPrintDlg::PreviewTwoPages(CDC* pDC, const CRect& rcPage, const CSize& szPa
 		rcSecondHalf.top = rcFirstHalf.bottom;
 	}
 
-	PrintPage(pDC, m_pCurPage, m_nMode, rcFirstHalf, fScreenMM, fScreenMM, m_settings, true);
+	PrintPage(pDC, m_pCurPage, m_nRotate, m_nMode, rcFirstHalf, fScreenMM, fScreenMM, m_settings, true);
 
 	if (m_pNextPage != NULL)
-		PrintPage(pDC, m_pNextPage, m_nMode, rcSecondHalf, fScreenMM, fScreenMM, m_settings, true);
+		PrintPage(pDC, m_pNextPage, m_nRotate, m_nMode, rcSecondHalf, fScreenMM, fScreenMM, m_settings, true);
 }
 
 void CPrintDlg::OnChangePagesPerSheet()
@@ -792,6 +744,8 @@ void CPrintDlg::UpdateDevMode()
 {
 	if (m_pPrinter == NULL)
 		return;
+
+	m_pDevMode->dmFields |= DM_PAPERSIZE | DM_ORIENTATION | DM_COPIES | DM_COLLATE;
 
 	m_pDevMode->dmPaperSize = m_nPaperCode;
 	m_pDevMode->dmOrientation = (m_bLandscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT);

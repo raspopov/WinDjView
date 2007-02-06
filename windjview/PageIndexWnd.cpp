@@ -20,10 +20,7 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "PageIndexWnd.h"
-#include "DjVuDoc.h"
-#include "ChildFrm.h"
-#include "DjVuView.h"
-#include "MainFrm.h"
+#include "DjVuSource.h"
 
 
 static int s_nTextHeight = 11;
@@ -50,9 +47,7 @@ BEGIN_MESSAGE_MAP(CPageIndexWnd, CWnd)
 END_MESSAGE_MAP()
 
 CPageIndexWnd::CPageIndexWnd()
-	: m_pDoc(NULL)
 {
-	m_edtText.SetParent(this);
 }
 
 CPageIndexWnd::~CPageIndexWnd()
@@ -104,7 +99,14 @@ int CPageIndexWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-void TrimQuotes(wstring& s)
+inline wstring tolower(wstring str)
+{
+	for (wstring::iterator it = str.begin(); it != str.end(); ++it)
+		*it = towlower(*it);
+	return str;
+}
+
+inline void TrimQuotes(wstring& s)
 {
 	if (s.length() > 0 && s[0] == '\"')
 		s.erase(0, 1);
@@ -112,16 +114,21 @@ void TrimQuotes(wstring& s)
 		s.erase(s.length() - 1, 1);
 }
 
-bool CPageIndexWnd::InitPageIndex(CDjVuDoc* pDoc)
+bool CPageIndexWnd::InitPageIndex(DjVuSource* pSource)
 {
-	m_pDoc = pDoc;
-
 	wstring strPageIndex;
-	if (!MakeWString(pDoc->GetPageIndex(), strPageIndex))
+	if (!MakeWString(pSource->GetPageIndex(), strPageIndex))
 		return false;
+
+	m_list.BeginBatchUpdate();
 
 	size_t nNextPos;
 	size_t nLength = static_cast<int>(strPageIndex.length());
+
+	stack<HTREEITEM> parents;
+	parents.push(TVI_ROOT);
+	HTREEITEM hLast = NULL;
+	int nPrevLevel = 1;
 
 	for (size_t nPos = 0; nPos < nLength; nPos = nNextPos)
 	{
@@ -140,30 +147,67 @@ bool CPageIndexWnd::InitPageIndex(CDjVuDoc* pDoc)
 		int nComma2 = strLine.find(',', nComma1 + 1);
 		if (nComma2 == wstring::npos)
 			continue;
+		int nComma3 = strLine.find(',', nComma2 + 1);
+		if (nComma3 == wstring::npos)
+			continue;
 
 		m_entries.push_back(IndexEntry());
 		IndexEntry& entry = m_entries.back();
 
-		entry.strFirst = strLine.substr(0, nComma1);
-		entry.strLast = strLine.substr(nComma1 + 1, nComma2 - nComma1 - 1);
-		entry.strLink = strLine.substr(nComma2 + 1, nLength - nComma2 - 1);
+		int nLevel = _wtoi(strLine.substr(0, nComma1).c_str());
+		if (nLevel < 1 || nLevel > nPrevLevel + 1)
+			return false;
+
+		entry.strFirst = strLine.substr(nComma1 + 1, nComma2 - nComma1 - 1);
+		entry.strLast = strLine.substr(nComma2 + 1, nComma3 - nComma2 - 1);
+		entry.strLink = strLine.substr(nComma3 + 1, nLength - nComma3 - 1);
 
 		TrimQuotes(entry.strFirst);
 		TrimQuotes(entry.strLast);
 		TrimQuotes(entry.strLink);
 
-		CString strTitle = MakeCString(entry.strFirst) + _T(" - ") + MakeCString(entry.strLast);
-		HTREEITEM hItem = m_list.InsertItem(strTitle, 0, 1, TVI_ROOT);
+		CString strTitle = MakeCString(entry.strFirst);
+		if (!entry.strLast.empty())
+			strTitle += _T(" - ") + MakeCString(entry.strLast);
+
+		if (nLevel == nPrevLevel + 1)
+		{
+			if (hLast == NULL)
+				return false;
+
+			m_list.Expand(hLast, TVE_EXPAND);
+			parents.push(hLast);
+		}
+		else if (nLevel < nPrevLevel)
+		{
+			while (static_cast<int>(parents.size()) > nLevel)
+				parents.pop();
+		}
+
+		HTREEITEM hItem = m_list.InsertItem(strTitle, 0, 1, parents.top());
 
 		m_list.SetItemData(hItem, m_entries.size() - 1);
 		entry.hItem = hItem;
+
+		entry.strFirst = tolower(entry.strFirst);
+		entry.strLast = tolower(entry.strLast);
+
+		nPrevLevel = nLevel;
+		hLast = hItem;
 	}
 
 	m_sorted.resize(m_entries.size());
+
+	// Create a sorted list of items with nonempty links
+	size_t k = 0;
 	for (size_t i = 0; i < m_sorted.size(); ++i)
-		m_sorted[i] = &m_entries[i];
+		if (!m_entries[i].strLink.empty())
+			m_sorted[k++] = &m_entries[i];
+	m_sorted.resize(k);
 
 	sort(m_sorted.begin(), m_sorted.end(), CompareEntries);
+
+	m_list.EndBatchUpdate();
 
 	return !m_entries.empty();
 }
@@ -173,10 +217,9 @@ void CPageIndexWnd::GoToItem(HTREEITEM hItem)
 	size_t nEntry = m_list.GetItemData(hItem);
 	IndexEntry& entry = m_entries[nEntry];
 
-	if (entry.strLink.length() > 0)
+	if (!entry.strLink.empty())
 	{
-		CDjVuView* pView = ((CChildFrame*)GetParentFrame())->GetDjVuView();
-		pView->GoToURL(MakeUTF8String(entry.strLink));
+		UpdateObservers(BookmarkClicked(MakeUTF8String(entry.strLink)));
 	}
 }
 
@@ -247,6 +290,7 @@ void CPageIndexWnd::OnChangeText()
 
 	wstring text;
 	MakeWString(strText, text);
+	text = tolower(text);
 
 	int left = 0, right = m_sorted.size();
 	while (left < right - 1)
@@ -261,7 +305,10 @@ void CPageIndexWnd::OnChangeText()
 	if (left > 0 && m_sorted[left - 1]->strLast.compare(text) == 0)
 		--left;
 
-	m_list.SetSelectedItem(m_sorted[left]->hItem);
+	if (left >= 0 && left < static_cast<int>(m_sorted.size()))
+		m_list.SelectItem(m_sorted[left]->hItem);
+	else
+		m_list.SelectItem(NULL);
 }
 
 void CPageIndexWnd::PostNcDestroy()
@@ -345,22 +392,22 @@ void CPageIndexWnd::OnPaint()
 	dc.FrameRect(m_rcList, &brushShadow);
 }
 
-BOOL CPageIndexWnd::CIndexEdit::PreTranslateMessage(MSG* pMsg)
+BOOL CPageIndexWnd::PreTranslateMessage(MSG* pMsg)
 {
 	if (pMsg->message == WM_KEYDOWN)
 	{
 		if (pMsg->wParam == VK_RETURN)
 		{
-			HTREEITEM hItem = m_pParent->m_list.GetSelectedItem();
+			HTREEITEM hItem = m_list.GetSelectedItem();
 			if (hItem != NULL)
-				m_pParent->GoToItem(hItem);
+				GoToItem(hItem);
 
 			return true;
 		}
 		if (pMsg->wParam == VK_UP || pMsg->wParam == VK_DOWN ||
 			pMsg->wParam == VK_PRIOR || pMsg->wParam == VK_NEXT)
 		{
-			m_pParent->m_list.SendMessage(WM_KEYDOWN, pMsg->wParam, pMsg->lParam);
+			m_list.SendMessage(WM_KEYDOWN, pMsg->wParam, pMsg->lParam);
 			return true;
 		}
 	}
@@ -369,11 +416,11 @@ BOOL CPageIndexWnd::CIndexEdit::PreTranslateMessage(MSG* pMsg)
 		CPoint point(LOWORD(pMsg->lParam), HIWORD(pMsg->lParam));
 
 		CWnd* pWnd = WindowFromPoint(point);
-		if (pWnd != this && !IsChild(pWnd) && GetMainFrame()->IsChild(pWnd))
+		if (pWnd != this && !IsChild(pWnd) && IsFromCurrentProcess(pWnd))
 			pWnd->SendMessage(WM_MOUSEWHEEL, pMsg->wParam, pMsg->lParam);
 
 		return true;
 	}
 
-	return CEdit::PreTranslateMessage(pMsg);
+	return CWnd::PreTranslateMessage(pMsg);
 }

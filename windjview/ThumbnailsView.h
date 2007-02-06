@@ -19,10 +19,11 @@
 
 #pragma once
 
+#include "Global.h"
 #include "MyScrollView.h"
 #include "Drawing.h"
 #include "AppSettings.h"
-class CDjVuDoc;
+class DjVuSource;
 class CThumbnailsThread;
 
 
@@ -30,7 +31,7 @@ class CThumbnailsThread;
 
 // CThumbnailsView
 
-class CThumbnailsView : public CMyScrollView
+class CThumbnailsView : public CMyScrollView, public Observable, public Observer
 {
 	DECLARE_DYNAMIC(CThumbnailsView)
 
@@ -40,8 +41,8 @@ public:
 
 // Attributes
 public:
-	CDjVuDoc* GetDocument() const { return m_pDoc; }
-	void SetDocument(CDjVuDoc* pDoc) { m_pDoc = pDoc; }
+	DjVuSource* GetSource() const { return m_pSource; }
+	void SetSource(DjVuSource* pSource) { m_pSource = pSource; }
 
 	int GetCurrentPage() const { return m_nCurrentPage; }
 
@@ -57,7 +58,7 @@ public:
 	void RestartThreads();
 	void OnSettingsChanged();
 
-	void ThumbnailRendered(int nPage, CDIB* pDIB);
+	virtual void OnUpdate(const Observable* source, const Message* message);
 
 // Overrides
 public:
@@ -78,7 +79,7 @@ protected:
 	CThumbnailsThread* m_pThread;
 	CThumbnailsThread* m_pIdleThread;
 	int m_nPageCount;
-	CDjVuDoc* m_pDoc;
+	DjVuSource* m_pSource;
 	bool m_bInsideUpdateView;
 	CFont m_font;
 	int m_nSelectedPage, m_nCurrentPage;

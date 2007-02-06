@@ -165,34 +165,6 @@ void CBookmarkDlg::OnBrowseDjvu()
 	OpenDocument(strDjVuFile);
 }
 
-bool CBookmarkDlg::OpenDocument(const CString& strFileName)
-{
-	try
-	{
-		CWaitCursor wait;
-
-		GP<DjVuDocument> doc = DjVuDocument::create("file://" + GUTF8String((LPCTSTR) strFileName));
-		doc->wait_for_complete_init();
-
-		m_strDjVuFile = strFileName;
-		m_bHasDjVuFile = true;
-		m_pDjVuDoc = doc;
-		UpdateData(false);
-
-		return true;
-	}
-	catch (GException&)
-	{
-		AfxMessageBox(IDS_LOAD_ERROR);
-		return false;
-	}
-	catch (...)
-	{
-		AfxMessageBox(IDS_FATAL_ERROR);
-		return false;
-	}
-}
-
 GUTF8String MakeUTF8String(const CString& strText)
 {
 	int nSize;
@@ -217,6 +189,35 @@ GUTF8String MakeUTF8String(const CString& strText)
 #endif
 
 	return utf8String;
+}
+
+bool CBookmarkDlg::OpenDocument(const CString& strFileName)
+{
+	try
+	{
+		CWaitCursor wait;
+
+		GURL url = GURL::Filename::UTF8(MakeUTF8String(strFileName));
+		GP<DjVuDocument> doc = DjVuDocument::create(url);
+		doc->wait_for_complete_init();
+
+		m_strDjVuFile = strFileName;
+		m_bHasDjVuFile = true;
+		m_pDjVuDoc = doc;
+		UpdateData(false);
+
+		return true;
+	}
+	catch (GException&)
+	{
+		AfxMessageBox(IDS_LOAD_ERROR);
+		return false;
+	}
+	catch (...)
+	{
+		AfxMessageBox(IDS_FATAL_ERROR);
+		return false;
+	}
 }
 
 void CBookmarkDlg::CloseDocument(bool bUpdateData)

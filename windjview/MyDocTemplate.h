@@ -36,4 +36,5 @@ public:
 // Overrides
 public:
     virtual Confidence MatchDocType(LPCTSTR lpszPathName, CDocument*& rpDocMatch);
+	virtual void InitialUpdateFrame(CFrameWnd* pFrame, CDocument* pDoc, BOOL bMakeVisible = true);
 };

@@ -22,7 +22,7 @@
 #include "MyEdit.h"
 #include "Drawing.h"
 
-class CDjVuDoc;
+class DjVuSource;
 
 
 class CPrintDlg : public CDialog
@@ -30,7 +30,7 @@ class CPrintDlg : public CDialog
 	DECLARE_DYNAMIC(CPrintDlg)
 
 public:
-	CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, int nMode, CWnd* pParent = NULL);   // standard constructor
+	CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, int nMode, CWnd* pParent = NULL);
 	virtual ~CPrintDlg();
 
 // Dialog Data
@@ -107,6 +107,7 @@ protected:
 	CBitmap m_bitmap;
 
 	CDjVuDoc* m_pDoc;
+	DjVuSource* m_pSource;
 	GP<DjVuImage> m_pCurPage, m_pNextPage;
 	int m_nCurPage;
 	int m_nRotate;

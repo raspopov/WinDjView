@@ -31,7 +31,7 @@ struct CDisplaySettings
 
 	CDisplaySettings() :
 			bAdjustDisplay(false), nBrightness(0), nContrast(0),
-			fGamma(1.0), nScaleMethod(Default) {}
+			fGamma(1.0), nScaleMethod(Default), bInvertColors(false) {}
 
 	int GetBrightness() const { return bAdjustDisplay ? nBrightness : 0; }
 	int GetContrast() const { return bAdjustDisplay ? nContrast : 0; }
@@ -48,12 +48,13 @@ struct CDisplaySettings
 	bool operator==(const CDisplaySettings& rhs) const
 	{
 		return GetBrightness() == rhs.GetBrightness() && GetContrast() == rhs.GetContrast()
-				&& GetGamma() == rhs.GetGamma() && nScaleMethod == rhs.nScaleMethod;
+				&& GetGamma() == rhs.GetGamma() && nScaleMethod == rhs.nScaleMethod
+				&& bInvertColors == rhs.bInvertColors;
 	}
 
 	bool IsAdjusted() const
 	{
-		return bAdjustDisplay && (nBrightness != 0 || nContrast != 0 || fGamma != 1.0);
+		return bInvertColors || bAdjustDisplay && (nBrightness != 0 || nContrast != 0 || fGamma != 1.0);
 	}
 
 	bool bAdjustDisplay;
@@ -62,6 +63,7 @@ struct CDisplaySettings
 	int nContrast;
 
 	int nScaleMethod;
+	bool bInvertColors;
 };
 
 struct CAppSettings
@@ -94,6 +96,7 @@ struct CAppSettings
 	static bool bInvertWheelZoom;
 	static bool bCloseOnEsc;
 	static bool bWrapLongBookmarks;
+	static bool bRestoreView;
 
 	static CString strLanguage;
 

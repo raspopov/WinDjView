@@ -20,7 +20,6 @@
 #pragma once
 
 #include "MySplitterWnd.h"
-#include "DjVuDoc.h"
 class CDjVuView;
 class CNavPaneWnd;
 class CThumbnailsView;
@@ -67,6 +66,7 @@ protected:
 	bool m_bCreated;
 	bool m_bActivating;
 	CMySplitterWnd m_wndSplitter;
+	CSplitterWnd m_wndDynSplitter;
 	CThumbnailsView* m_pThumbnailsView;
 	CBookmarksWnd* m_pBookmarksWnd;
 	CSearchResultsView* m_pResultsView;
@@ -81,6 +81,5 @@ protected:
 	afx_msg void OnClose();
 	afx_msg void OnLanguageChanged();
 	afx_msg void OnNcPaint();
-	afx_msg void OnKillFocus(CWnd* pNewWnd);
 	DECLARE_MESSAGE_MAP()
 };

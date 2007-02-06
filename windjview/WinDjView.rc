@@ -417,7 +417,7 @@ FONT 8, "MS Shell Dlg"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2004-2006 Andrew Zhezherun",IDC_STATIC,40,
+    LTEXT           "Copyright (C) 2004-2007 Andrew Zhezherun",IDC_STATIC,40,
                     17,149,8
     DEFPUSHBUTTON   "Close",IDOK,194,7,50,14,WS_GROUP
     LTEXT           "Project homepage:",IDC_STATIC,40,35,64,8
@@ -426,7 +426,7 @@ BEGIN
                     35,139,8
     LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,114,45,
                     131,8
-    LTEXT           "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation.",
+    LTEXT           "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License version 2 as published by the Free Software Foundation.",
                     IDC_STATIC,40,62,204,26
     LTEXT           "You can support further development of this program by donating through PayPal",
                     IDC_STATIC,40,94,137,17
@@ -547,58 +547,34 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 219, 295
-STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Settings"
+IDD_SETTINGS_GENERAL DIALOG DISCARDABLE  0, 0, 222, 124
+STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "General"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,107,274,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,162,274,50,14
-    LTEXT           "Press to associate WinDjView with .djvu and .djv files:",
-                    IDC_STATIC,15,18,182,9
-    PUSHBUTTON      "&Associate",IDC_ASSOCIATE,15,30,50,14
-    CONTROL         "&Restore associations at program start",
-                    IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    15,49,188,10
-    CONTROL         "Generate &thumbnails for all pages in background",
-                    IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,95,188,10
-    CONTROL         "&Mouse clicks switch pages in fullscreen mode",
-                    IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,109,188,10
     CONTROL         "&Warn when closing multiple documents",
                     IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,81,188,10
-    CONTROL         "&Sharp scaling at low zoom levels (slower)",
-                    IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
-                    197,188,10
-    CONTROL         "A&djust settings:",IDC_ADJUST_DISPLAY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,211,97,9
-    LTEXT           "&Brightness: 0",IDC_BRIGHTNESS_TEXT,15,225,61,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,224,
-                    131,12
-    LTEXT           "&Contrast: 0",IDC_CONTRAST_TEXT,15,238,55,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,237,
-                    131,12
-    LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,15,251,45,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,250,131,
-                    12
-    GROUPBOX        "File associations",IDC_STATIC,7,7,205,58
-    GROUPBOX        "General",IDC_STATIC,7,69,205,112
-    GROUPBOX        "Display",IDC_STATIC,7,185,205,82
-    LTEXT           "WinDjView\nby Andrew Zhezherun",IDC_STATIC_ABOUT,7,274,
-                    92,18
+                    WS_TABSTOP,7,7,208,10
+    CONTROL         "Generate &thumbnails for all pages in background",
+                    IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,21,208,10
+    CONTROL         "&Mouse clicks switch pages in fullscreen mode",
+                    IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,35,208,10
     CONTROL         "Always &hide scrollbars in fullscreen mode",
                     IDC_FULLSCREEN_HIDESCROLL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,123,188,10
+                    WS_TABSTOP,7,49,208,10
     CONTROL         "&Invert Ctrl+Mouse Wheel zooming direction",
                     IDC_INVERT_WHEEL_ZOOM,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,137,188,10
+                    WS_TABSTOP,7,63,208,10
     CONTROL         "Close the program when &Escape key is pressed",
-                    IDC_CLOSE_ON_ESC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    15,151,188,10
+                    IDC_CLOSE_ON_ESC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
+                    77,208,10
     CONTROL         "Wrap &long bookmarks",IDC_WRAP_BOOKMARKS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,165,188,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,91,208,10
+    CONTROL         "Restore open &page and view settings when opening a file",
+                    IDC_RESTORE_VIEW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
+                    105,208,10
 END
 
 IDD_FIND DIALOG DISCARDABLE  0, 0, 287, 64
@@ -640,6 +616,41 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,64,27,50,14
 END
 
+IDD_SETTINGS_ASSOCS DIALOG DISCARDABLE  0, 0, 222, 124
+STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "File Associations"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "Press to associate WinDjView with .djvu and .djv files:",
+                    -1,7,7,182,9
+    PUSHBUTTON      "&Associate",IDC_ASSOCIATE,7,19,50,14
+    CONTROL         "&Restore associations at program start",
+                    IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    7,38,208,10
+END
+
+IDD_SETTINGS_DISPLAY DIALOG DISCARDABLE  0, 0, 222, 125
+STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Display"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    CONTROL         "&Sharp scaling at low zoom levels (slower)",
+                    IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,
+                    208,10
+    CONTROL         "A&djust settings:",IDC_ADJUST_DISPLAY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,35,208,9
+    LTEXT           "&Brightness: 0",IDC_BRIGHTNESS_TEXT,7,49,61,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,68,49,
+                    133,12
+    LTEXT           "&Contrast: 0",IDC_CONTRAST_TEXT,7,63,55,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,68,63,133,
+                    12
+    LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,7,77,45,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,68,77,133,12
+    CONTROL         "&Invert colors",IDC_INVERT_COLORS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
+END
+
 
 #ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
@@ -648,8 +659,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,4,3,0
- PRODUCTVERSION 0,4,3,0
+ FILEVERSION 0,4,4,0
+ PRODUCTVERSION 0,4,4,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -664,14 +675,18 @@ BEGIN
     BEGIN
         BLOCK "04090000"
         BEGIN
+            VALUE "Comments", "\0"
             VALUE "CompanyName", "Andrew Zhezherun\0"
             VALUE "FileDescription", "WinDjView\0"
-            VALUE "FileVersion", "0.4.3\0"
+            VALUE "FileVersion", "0.4.4\0"
             VALUE "InternalName", "WinDjView.exe\0"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2006 Andrew Zhezherun.  All rights reserved.\0"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2007 Andrew Zhezherun.  All rights reserved.\0"
+            VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "WinDjView.exe\0"
+            VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "WinDjView\0"
-            VALUE "ProductVersion", "0.4.3\0"
+            VALUE "ProductVersion", "0.4.4\0"
+            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -723,12 +738,12 @@ BEGIN
         BOTTOMMARGIN, 40
     END
 
-    IDD_SETTINGS, DIALOG
+    IDD_SETTINGS_GENERAL, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 212
+        RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 288
+        BOTTOMMARGIN, 117
     END
 
     IDD_FIND, DIALOG
@@ -753,6 +768,22 @@ BEGIN
         RIGHTMARGIN, 116
         TOPMARGIN, 7
         BOTTOMMARGIN, 41
+    END
+
+    IDD_SETTINGS_ASSOCS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 215
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 117
+    END
+
+    IDD_SETTINGS_DISPLAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 215
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 118
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -902,6 +933,7 @@ BEGIN
                             "Display first page alone in facing and continuous-facing layouts"
     IDS_OPENFILE            "Open"
     IDS_ALLFILTER           "All Files (*.*)"
+    IDS_SETTINGS            "Settings"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -987,7 +1019,7 @@ BEGIN
     IDS_CENTIMETER          "cm"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "0.4.3"
+    IDS_CURRENT_VERSION     "0.4.4"
     IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
     IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure you want to continue?"
 END

@@ -19,10 +19,10 @@
 
 #pragma once
 
+#include "Global.h"
 #include "MyToolBar.h"
 #include "MyStatusBar.h"
 #include "MyComboBox.h"
-#include "MyBitmapButton.h"
 #include "FindDlg.h"
 class CDjVuView;
 class CFullscreenWnd;
@@ -32,7 +32,7 @@ class CMagnifyWnd;
 #define WM_LANGUAGE_CHANGED (WM_APP + 5)
 
 
-class CMainFrame : public CMDIFrameWnd
+class CMainFrame : public CMDIFrameWnd, public Observer
 {
 	DECLARE_DYNAMIC(CMainFrame)
 public:
@@ -40,14 +40,11 @@ public:
 
 // Attributes
 public:
-	CMyComboBox m_cboPage, m_cboZoom;
 	CFindDlg* m_pFindDlg;
 
 // Operations
 public:
 	void HilightStatusMessage(LPCTSTR pszMessage);
-	void UpdatePageCombo();
-	void UpdateZoomCombo();
 
 	void AddToHistory(CDjVuView* pView, int nPage);
 	CFullscreenWnd* GetFullscreenWnd();
@@ -57,6 +54,8 @@ public:
 	void SetStartupLanguage();
 	
 	int GetDocumentCount();
+
+	virtual void OnUpdate(const Observable* source, const Message* message);
 
 // Overrides
 protected:
@@ -82,6 +81,10 @@ protected:
 
 	CFullscreenWnd* m_pFullscreenWnd;
 	CMagnifyWnd* m_pMagnifyWnd;
+
+	CMyComboBox m_cboPage, m_cboZoom;
+	void UpdatePageCombo(const CDjVuView* pView);
+	void UpdateZoomCombo(const CDjVuView* pView);
 
 	static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 	static HHOOK hHook;
