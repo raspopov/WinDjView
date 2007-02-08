@@ -51,7 +51,6 @@ public:
 	DEVMODE* m_pDevMode;
 	Paper* m_pPaper;
 	HANDLE m_hPrinter;
-	bool m_bTwoPages;
 
 	typedef vector<pair<int, int> > PageArr;
 	PageArr m_arrPages;
@@ -62,12 +61,9 @@ public:
 
 public:
 	CPrintSettings m_settings;
-	BOOL m_bLandscape;
 	BOOL m_bPrintToFile;
 
 protected:
-	BOOL m_bCollate;
-	DWORD m_nCopies;
 	CString m_strType;
 	CString m_strLocation;
 	CString m_strComment;
@@ -101,7 +97,6 @@ protected:
 	vector<BYTE> m_printerData;
 	vector<BYTE> m_devModeData;
 	vector<Paper> m_paperSizes;
-	WORD m_nPaperCode;
 
 	CRect m_rcPreview;
 	CBitmap m_bitmap;

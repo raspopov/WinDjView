@@ -56,7 +56,6 @@ public:
 	void Start();
 	void StopDecoding();
 	void RestartThreads();
-	void OnSettingsChanged();
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -91,6 +90,7 @@ protected:
 	list<CDIB*> m_bitmaps;
 
 	CDisplaySettings m_displaySetting;
+	void SettingsChanged();
 
 	enum UpdateType
 	{

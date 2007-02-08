@@ -46,7 +46,6 @@ BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 	ON_MESSAGE_VOID(ID_COLLAPSE_PANE, OnCollapsePane)
 	ON_WM_ERASEBKGND()
 	ON_WM_CLOSE()
-	ON_MESSAGE_VOID(WM_LANGUAGE_CHANGED, OnLanguageChanged)
 	ON_WM_NCPAINT()
 END_MESSAGE_MAP()
 
@@ -55,7 +54,8 @@ END_MESSAGE_MAP()
 
 CChildFrame::CChildFrame()
 	: m_bCreated(false), m_bActivating(false), m_pThumbnailsView(NULL),
-	  m_pBookmarksWnd(NULL), m_pResultsView(NULL)
+	  m_pBookmarksWnd(NULL), m_pResultsView(NULL), m_bFirstShow(true),
+	  m_nStartupPage(-1)
 {
 }
 
@@ -81,6 +81,17 @@ void CChildFrame::Dump(CDumpContext& dc) const
 
 
 // CChildFrame message handlers
+
+BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
+{
+	if (!CMDIChildWnd::PreCreateWindow(cs))
+		return false;
+
+	if (theApp.GetAppSettings()->bChildMaximized)
+		cs.style |= WS_MAXIMIZE;
+
+	return true;
+}
 
 void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeactivateWnd)
 {
@@ -115,7 +126,7 @@ void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 		GetMainFrame()->UnlockWindowUpdate();
 
 	if (pActive == this && IsWindowVisible() && !IsIconic())
-		CAppSettings::bChildMaximized = !!IsZoomed();
+		theApp.GetAppSettings()->bChildMaximized = !!IsZoomed();
 
 	if (m_bCreated)
 		m_wndSplitter.UpdateNavPane();
@@ -127,7 +138,9 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 {
 	m_bActivating = true;
 
-	if (CAppSettings::bChildMaximized)
+	CDjVuView* pView = GetDjVuView();
+
+	if (theApp.GetAppSettings()->bChildMaximized)
 	{
 		nCmdShow = SW_SHOWMAXIMIZED;
 
@@ -140,7 +153,24 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 
 	CMDIChildWnd::ActivateFrame(nCmdShow);
 
-	if (CAppSettings::bChildMaximized && theApp.m_bInitialized)
+	if (m_bFirstShow)
+	{
+		// Startup page is displayed AFTER ActivateFrame(), not during the
+		// OnInitialUpdate() call. In the latter, the client rectangle is INCORRECT
+		// (not maximized). Child frame is maximized only inside the ActivateFrame(),
+		// which is called after OnInitialUpdate() during the InitialUpdateFrame().
+		// So we restore the startup page here, to ensure correct positioning.
+
+		// This is also a good place to do it, because the main window is
+		// still locked here so there won't be any unnecessary redraws
+
+		if (theApp.GetAppSettings()->bRestoreView && m_nStartupPage >= 0 && m_nStartupPage < pView->GetPageCount())
+			pView->ScrollToPage(m_nStartupPage, m_ptStartupOffset);
+	}
+
+	pView->UpdateVisiblePages();
+
+	if (theApp.GetAppSettings()->bChildMaximized && theApp.m_bInitialized)
 	{
 		GetMainFrame()->UnlockWindowUpdate();
 		GetMainFrame()->SetRedraw(true);
@@ -149,9 +179,11 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 	}
 
 	m_bActivating = false;
-	GetDjVuView()->UpdateVisiblePages();
 
-	GetThumbnailsView()->Start();
+	if (m_bFirstShow)
+		GetThumbnailsView()->Start();
+
+	m_bFirstShow = false;
 }
 
 BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
@@ -174,7 +206,16 @@ BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 	GetDjVuView()->SetFocus();
 	m_wndSplitter.UpdateNavPane();
 
+	theApp.AddObserver(this);
+
 	return TRUE;
+}
+
+void CChildFrame::SaveStartupPage()
+{
+	DjVuSource* pSource = GetDjVuView()->GetDocument()->GetSource();
+	m_nStartupPage = pSource->GetUserData()->nPage;
+	m_ptStartupOffset = pSource->GetUserData()->ptOffset;
 }
 
 void CChildFrame::CreateNavPanes()
@@ -294,8 +335,8 @@ void CChildFrame::OnUpdateFrameMenu(
 	if (hMenuAlt == NULL)
 	{
 		hMenuAlt = m_hMenuShared;
-		if (CAppSettings::bLocalized)
-			hMenuAlt = CAppSettings::hDjVuMenu;
+		if (theApp.GetAppSettings()->bLocalized)
+			hMenuAlt = theApp.GetAppSettings()->hDjVuMenu;
 	}
 
 	if (hMenuAlt != NULL && bActivate)
@@ -308,8 +349,8 @@ void CChildFrame::OnUpdateFrameMenu(
 	else if (hMenuAlt != NULL && !bActivate && pActivateWnd == NULL)
 	{
 		HMENU hMainMenu = pFrame->m_hMenuDefault;
-		if (CAppSettings::bLocalized)
-			hMainMenu = CAppSettings::hDefaultMenu;
+		if (theApp.GetAppSettings()->bLocalized)
+			hMainMenu = theApp.GetAppSettings()->hDefaultMenu;
 
 		// destroying last child
 		::SendMessage(pFrame->m_hWndMDIClient, WM_MDISETMENU, (WPARAM)hMainMenu, NULL);
@@ -342,6 +383,8 @@ void CChildFrame::OnClose()
 	GetThumbnailsView()->StopDecoding();
 
 	CMDIChildWnd::OnClose();
+
+	theApp.SaveSettings();
 }
 
 CSearchResultsView* CChildFrame::GetResultsView()
@@ -367,21 +410,21 @@ CSearchResultsView* CChildFrame::GetResultsView()
 	return m_pResultsView;
 }
 
-void CChildFrame::OnLanguageChanged()
+void CChildFrame::OnUpdate(const Observable* source, const Message* message)
 {
-	CNavPaneWnd* pNavPane = GetNavPane();
+	if (message->code == APP_LANGUAGE_CHANGED)
+	{
+		CNavPaneWnd* pNavPane = GetNavPane();
 
-	if (m_pThumbnailsView != NULL)
-		pNavPane->SetTabName(m_pThumbnailsView, LoadString(IDS_THUMBNAILS_TAB));
+		if (m_pThumbnailsView != NULL)
+			pNavPane->SetTabName(m_pThumbnailsView, LoadString(IDS_THUMBNAILS_TAB));
 
-	if (m_pBookmarksWnd != NULL)
-		pNavPane->SetTabName(m_pBookmarksWnd, LoadString(IDS_BOOKMARKS_TAB));
+		if (m_pBookmarksWnd != NULL)
+			pNavPane->SetTabName(m_pBookmarksWnd, LoadString(IDS_BOOKMARKS_TAB));
 
-	if (m_pResultsView != NULL)
-		pNavPane->SetTabName(m_pResultsView, LoadString(IDS_SEARCH_RESULTS_TAB));
-
-	if (GetMainFrame()->MDIGetActive() == this)
-		OnMDIActivate(true, this, NULL);
+		if (m_pResultsView != NULL)
+			pNavPane->SetTabName(m_pResultsView, LoadString(IDS_SEARCH_RESULTS_TAB));
+	}
 }
 
 void CChildFrame::OnNcPaint()

@@ -43,8 +43,7 @@ void BuildBrightnessTable(int nBrightness, BYTE* table)
 	for (int i = 0; i < 256; ++i)
 	{
 		double color = table[i] * (100.0 + nBrightness) / 100.0;
-		color = max(0.0, min(color, 255.0));
-		table[i] = static_cast<BYTE>(floor(color + 0.5));
+		table[i] = max(0, min(255, static_cast<BYTE>(color + 0.5)));
 	}
 }
 
@@ -53,8 +52,7 @@ void BuildContrastTable(int nContrast, BYTE* table)
 	for (int i = 0; i < 256; ++i)
 	{
 		double color = 128.0 + (table[i] - 128.0) * (100 + nContrast) / 100.0;
-		color = max(0.0, min(color, 255.0));
-		table[i] = static_cast<BYTE>(floor(color + 0.5));
+		table[i] = max(0, min(255, static_cast<BYTE>(color + 0.5)));
 	}
 }
 
@@ -64,8 +62,16 @@ void BuildGammaTable(double fGamma, BYTE* table)
 	for (int i = 0; i < 256; ++i)
 	{
 		double color = pow(table[i] / 255.0, exponent) * 255.0;
-		color = max(0.0, min(color, 255.0));
-		table[i] = static_cast<BYTE>(floor(color + 0.5));
+		table[i] = max(0, min(255, static_cast<BYTE>(color + 0.5)));
+	}
+}
+
+void BuildTransparentcyTable(double fTransparency, BYTE c, BYTE* table)
+{
+	for (int i = 0; i < 256; ++i)
+	{
+		double color = table[i] * fTransparency + c * (1 - fTransparency);
+		table[i] = max(0, min(255, static_cast<BYTE>(color + 0.5)));
 	}
 }
 
@@ -424,6 +430,39 @@ CDIB* CDIB::ReduceColors()
 		return CDIB::CreateDIB(this, 4);
 
 	return NULL;
+}
+
+CDIB* CDIB::Crop(const CRect& rcCrop)
+{
+	ASSERT(m_pBits != NULL);
+
+	int nPaletteEntries = m_pBMI->bmiHeader.biClrUsed;
+
+	LPBITMAPINFO pBMI = (LPBITMAPINFO)malloc(
+		sizeof(BITMAPINFOHEADER) + nPaletteEntries*sizeof(RGBQUAD));
+	BITMAPINFOHEADER& bmih = pBMI->bmiHeader;
+
+	memcpy(pBMI, m_pBMI, sizeof(BITMAPINFOHEADER) + nPaletteEntries*sizeof(RGBQUAD));
+	bmih.biWidth = rcCrop.Width();
+	bmih.biHeight = rcCrop.Height();
+
+	CDIB* pDIB = CreateDIB(pBMI);
+	free(pBMI);
+
+	if (pDIB->m_hObject == NULL)
+		return pDIB;
+
+	CDC dcScreen;
+	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+
+	CDC dcDest;
+	dcDest.CreateCompatibleDC(&dcScreen);
+	CBitmap* pOldBmp = dcDest.SelectObject(pDIB);
+
+	DrawDC(&dcDest, CPoint(0, 0), rcCrop);
+
+	dcDest.SelectObject(pOldBmp);
+	return pDIB;
 }
 
 void CDIB::Draw(CDC* pDC, const CPoint& ptOffset)
@@ -812,7 +851,7 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRe
 			pm = pmStretched;
 		}
 
-		pBmpPage = RenderPixmap(*pm, CAppSettings::displaySettings);
+		pBmpPage = RenderPixmap(*pm, *theApp.GetDisplaySettings());
 	}
 	else if (bm != NULL)
 	{
@@ -836,7 +875,7 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRe
 			bm = bmStretched;
 		}
 
-		pBmpPage = RenderBitmap(*bm, CAppSettings::displaySettings);
+		pBmpPage = RenderBitmap(*bm, *theApp.GetDisplaySettings());
 
 		if (!bPreview)
 		{
@@ -875,11 +914,13 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 	CDjVuDoc* pDoc = dlg.GetDocument();
 	DjVuSource* pSource = pDoc->GetSource();
 
+	CPrintSettings& printSettings = dlg.m_settings;
+
 	size_t nPages = dlg.m_arrPages.size();
-	if (dlg.m_nCopies > 1 && dlg.m_bCollate && !dlg.m_bPrinterCanCollate)
+	if (printSettings.nCopies > 1 && printSettings.bCollate && !dlg.m_bPrinterCanCollate)
 	{
 		// We will do collation ourselves
-		nPages *= dlg.m_nCopies;
+		nPages *= printSettings.nCopies;
 		dlg.m_pDevMode->dmCopies = 1;
 	}
 
@@ -903,7 +944,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 	double fPrinterMMy = dcPrint.GetDeviceCaps(LOGPIXELSY) / 25.4;
 
 	int nPageWidth, nPageHeight;
-	if (dlg.m_settings.bIgnorePrinterMargins)
+	if (printSettings.bIgnorePrinterMargins)
 	{
 		nPageWidth = dcPrint.GetDeviceCaps(PHYSICALWIDTH);
 		nPageHeight = dcPrint.GetDeviceCaps(PHYSICALHEIGHT);
@@ -921,9 +962,9 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 	CSize szPaper(nPageWidth, nPageHeight);
 
 	CRect rcOddPage = CRect(CPoint(0, 0), szPaper), rcEvenPage = rcOddPage;
-	if (dlg.m_bTwoPages)
+	if (printSettings.bTwoPages)
 	{
-		if (dlg.m_bLandscape)
+		if (printSettings.bLandscape)
 		{
 			szPaper.cx = szPaper.cx / 2;
 			rcOddPage.right = szPaper.cx;
@@ -956,9 +997,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 
 	for (size_t i = 0; i < nPages; ++i)
 	{
-		CString strText;
-		strText.Format(IDS_PRINTING_PAGE, i + 1, nPages);
-		pProgress->SetStatus(strText);
+		pProgress->SetStatus(FormatString(IDS_PRINTING_PAGE, i + 1, nPages));
 		pProgress->SetPos(i);
 
 		if (pProgress->IsCancelled())
@@ -974,7 +1013,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 		int nSecondPage = dlg.m_arrPages[i % dlg.m_pages.size()].second - 1;
 
 		if ((nPage < 0 || nPage >= pSource->GetPageCount()) &&
-			(!dlg.m_bTwoPages || nSecondPage < 0 || nSecondPage >= pSource->GetPageCount()))
+				(!printSettings.bTwoPages || nSecondPage < 0 || nSecondPage >= pSource->GetPageCount()))
 			continue;
 
 		if (dcPrint.StartPage() <= 0)
@@ -989,15 +1028,15 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 			pImage = pSource->GetPage(nPage, NULL);
 		if (pImage != NULL)
 		{
-			PrintPage(&dcPrint, pImage, nRotate, nMode, rcOddPage, fPrinterMMx, fPrinterMMy, dlg.m_settings);
+			PrintPage(&dcPrint, pImage, nRotate, nMode, rcOddPage, fPrinterMMx, fPrinterMMy, printSettings);
 		}
 
 		pImage = NULL;
-		if (dlg.m_bTwoPages && nSecondPage >= 0 && nSecondPage < pSource->GetPageCount())
+		if (printSettings.bTwoPages && nSecondPage >= 0 && nSecondPage < pSource->GetPageCount())
 			pImage = pSource->GetPage(nSecondPage, NULL);
 		if (pImage != NULL)
 		{
-			PrintPage(&dcPrint, pImage, nRotate, nMode, rcEvenPage, fPrinterMMx, fPrinterMMy, dlg.m_settings);
+			PrintPage(&dcPrint, pImage, nRotate, nMode, rcEvenPage, fPrinterMMx, fPrinterMMy, printSettings);
 		}
 
 		if (dcPrint.EndPage() <= 0)
@@ -1029,7 +1068,20 @@ void FrameRect(CDC* pDC, const CRect& rect, COLORREF color)
 	pDC->FillSolidRect(rcVertLine, color);
 }
 
-void DrawDottedLine(CDC* pDC, COLORREF color, CPoint ptStart, CPoint ptEnd)
+void InvertFrame(CDC* pDC, const CRect& rect)
+{
+	CRect rcHorzLine(rect.TopLeft(), CSize(rect.Width(), 1));
+	pDC->InvertRect(rcHorzLine);
+	rcHorzLine.OffsetRect(0, rect.Height() - 1);
+	pDC->InvertRect(rcHorzLine);
+
+	CRect rcVertLine(CPoint(rect.left, rect.top + 1), CSize(1, rect.Height() - 2));
+	pDC->InvertRect(rcVertLine);
+	rcVertLine.OffsetRect(rect.Width() - 1, 0);
+	pDC->InvertRect(rcVertLine);
+}
+
+void DrawDottedLine(CDC* pDC, const CPoint& ptStart, const CPoint& ptEnd, COLORREF color)
 {
 	if (ptStart.x == ptEnd.x)
 	{
@@ -1047,4 +1099,65 @@ void DrawDottedLine(CDC* pDC, COLORREF color, CPoint ptStart, CPoint ptEnd)
 	{
 		ASSERT(false);
 	}
+}
+
+void DrawDottedRect(CDC* pDC, const CRect& rect, COLORREF color)
+{
+	DrawDottedLine(pDC, rect.TopLeft(), CPoint(rect.right, rect.top), color);
+	DrawDottedLine(pDC, CPoint(rect.right - 1, rect.top + (rect.Width() + 1) % 2),
+		CPoint(rect.right - 1, rect.bottom), color);
+	DrawDottedLine(pDC, rect.TopLeft(), CPoint(rect.left, rect.bottom), color);
+	DrawDottedLine(pDC, CPoint(rect.left + (rect.Height() + 1) % 2, rect.bottom - 1),
+		CPoint(rect.right, rect.bottom - 1), color);
+}
+
+void HighlightRect(CDC* pDC, const CRect& rect, COLORREF color, double fTransparency)
+{
+	CDIB* pDIB = CDIB::CreateDIB(rect.Width(), rect.Height(), 24);
+	CDC dc;
+	dc.CreateCompatibleDC(pDC);
+	CBitmap* pOldBitmap = dc.SelectObject(pDIB);
+
+	dc.BitBlt(0, 0, rect.Width(), rect.Height(), pDC, rect.left, rect.top, SRCCOPY);
+
+	int nRowLength = rect.Width()*3;
+	while (nRowLength % 4 != 0)
+		++nRowLength;
+
+	LPBYTE pBits = pDIB->GetBits();
+
+	BYTE tableRed[256], tableGreen[256], tableBlue[256];
+	for (int i = 0; i < 256; ++i)
+		tableRed[i] = tableGreen[i] = tableBlue[i] = i;
+
+	BuildTransparentcyTable(fTransparency, GetRValue(color), tableRed);
+	BuildTransparentcyTable(fTransparency, GetGValue(color), tableGreen);
+	BuildTransparentcyTable(fTransparency, GetBValue(color), tableBlue);
+
+	for (int y = 0; y < rect.Height(); ++y, pBits += nRowLength)
+	{
+		LPBYTE pPixel = pBits;
+		for (int x = 0; x < rect.Width(); ++x)
+		{
+			*pPixel = tableBlue[*pPixel];
+			++pPixel;
+			*pPixel = tableGreen[*pPixel];
+			++pPixel;
+			*pPixel = tableRed[*pPixel];
+			++pPixel;
+		}
+	}
+
+	pDC->BitBlt(rect.left, rect.top, rect.Width(), rect.Height(), &dc, 0, 0, SRCCOPY);
+
+	dc.SelectObject(pOldBitmap);
+	delete pDIB;
+}
+
+COLORREF ChangeBrightness(COLORREF color, double fFactor)
+{
+	int nRed = min(static_cast<int>(GetRValue(color)*fFactor + 0.5), 255);
+	int nGreen = min(static_cast<int>(GetGValue(color)*fFactor + 0.5), 255);
+	int nBlue = min(static_cast<int>(GetBValue(color)*fFactor + 0.5), 255);
+	return RGB(nRed, nGreen, nBlue);
 }

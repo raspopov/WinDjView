@@ -95,6 +95,7 @@ LINK_OBJS = \
 	"$(INTDIR)\ThumbnailsView.obj" \
 	"$(INTDIR)\UpdateDlg.obj" \
 	"$(INTDIR)\WinDjView.obj" \
+	"$(INTDIR)\XMLParser.obj" \
 	"$(INTDIR)\ZoomDlg.obj" \
 	"$(INTDIR)\WinDjView.res"
 
@@ -140,6 +141,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\ThumbnailsView.obj" : ThumbnailsView.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\UpdateDlg.obj" : UpdateDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\WinDjView.obj" : WinDjView.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\XMLParser.obj" : XMLParser.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\ZoomDlg.obj" : ZoomDlg.cpp "$(INTDIR)" $(PCH)
 
 "$(INTDIR)\stdafx.obj" $(PCH) : stdafx.cpp "$(INTDIR)"

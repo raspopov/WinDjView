@@ -26,7 +26,7 @@ class DjVuSource;
 
 // CBookmarksWnd view
 
-class CBookmarksWnd : public CMyTreeCtrl, public Observable
+class CBookmarksWnd : public CMyTreeCtrl, public Observable, public Observer
 {
 	DECLARE_DYNAMIC(CBookmarksWnd)
 
@@ -35,7 +35,7 @@ public:
 	virtual ~CBookmarksWnd();
 
 	void InitBookmarks(DjVuSource* pSource);
-	void OnSettingsChanged();
+	virtual void OnUpdate(const Observable* source, const Message* message);
 
 // Implementation
 protected:

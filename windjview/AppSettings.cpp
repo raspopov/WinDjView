@@ -27,56 +27,43 @@
 
 // CAppSettings
 
-int CAppSettings::nWindowPosX = 50;
-int CAppSettings::nWindowPosY = 50;
-int CAppSettings::nWindowWidth = 700;
-int CAppSettings::nWindowHeight = 500;
+CAppSettings::CAppSettings()
+{
+	nWindowPosX = 50;
+	nWindowPosY = 50;
+	nWindowWidth = 700;
+	nWindowHeight = 500;
 
-bool CAppSettings::bWindowMaximized = false;
-bool CAppSettings::bChildMaximized = true;
+	bWindowMaximized = false;
+	bChildMaximized = true;
 
-bool CAppSettings::bToolbar = true;
-bool CAppSettings::bStatusBar = true;
+	bToolbar = true;
+	bStatusBar = true;
 
-int CAppSettings::nDefaultZoomType = -3; // Fit page
-double CAppSettings::fDefaultZoom = 100.0;
-int CAppSettings::nDefaultLayout = 1; // Continuous
-bool CAppSettings::bFirstPageAlone = true;
-int CAppSettings::nDefaultMode = 0; // Drag
+	nDefaultZoomType = -3; // Fit page
+	fDefaultZoom = 100.0;
+	nDefaultLayout = 1; // Continuous
+	bFirstPageAlone = true;
+	nDefaultMode = 0; // Drag
 
-bool CAppSettings::bNavPaneCollapsed = false;
-int CAppSettings::nNavPaneWidth = 200;
+	bNavPaneCollapsed = false;
+	nNavPaneWidth = 200;
 
-bool CAppSettings::bRestoreAssocs = false;
-bool CAppSettings::bGenAllThumbnails = true;
-bool CAppSettings::bFullscreenClicks = true;
-bool CAppSettings::bFullscreenHideScroll = true;
-bool CAppSettings::bWarnCloseMultiple = false;
-bool CAppSettings::bInvertWheelZoom = false;
-bool CAppSettings::bCloseOnEsc = false;
-bool CAppSettings::bWrapLongBookmarks = true;
-bool CAppSettings::bRestoreView = true;
+	bRestoreAssocs = false;
+	bGenAllThumbnails = true;
+	bFullscreenClicks = true;
+	bFullscreenHideScroll = true;
+	bWarnCloseMultiple = false;
+	bInvertWheelZoom = false;
+	bCloseOnEsc = false;
+	bWrapLongBookmarks = true;
+	bRestoreView = true;
 
-CString CAppSettings::strLanguage;
+	nLanguage = 0x409;
 
-CDisplaySettings CAppSettings::displaySettings;
+	bLocalized = false;
+	hDjVuMenu = NULL;
+	hDefaultMenu = NULL;
 
-CPrintSettings CAppSettings::printSettings;
-
-int CAppSettings::nCopies = 1;
-bool CAppSettings::bCollate = false;
-
-bool CAppSettings::bLandscape = false;
-bool CAppSettings::bTwoPages = false;
-
-CString CAppSettings::strPrinter;
-WORD CAppSettings::nPaper = 0;
-
-CString CAppSettings::strVersion;
-
-bool CAppSettings::bLocalized = false;
-HMENU CAppSettings::hDjVuMenu = NULL;
-HMENU CAppSettings::hDefaultMenu = NULL;
-
-CString CAppSettings::strFind;
-bool CAppSettings::bMatchCase = false;
+	bMatchCase = false;
+}

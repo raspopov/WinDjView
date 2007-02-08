@@ -201,6 +201,7 @@
 #define ID_VIEW_LAYOUT                  32810
 #define ID_FILE_SETTINGS                32813
 #define ID_EXPORT_PAGE                  32815
+#define ID_EXPORT_SELECTION             32816
 #define ID_VIEW_BACK                    32819
 #define ID_VIEW_FORWARD                 32820
 #define ID_WINDOW_ACTIVATE_FIRST        32826
@@ -224,6 +225,7 @@
 #define ID_MODE_DRAG                    32844
 #define ID_MODE_SELECT                  32845
 #define ID_MODE_MAGNIFY                 32846
+#define ID_MODE_SELECT_RECT             32847
 #define ID_FILE_EXPORT_TEXT             32850
 #define ID_CHECK_FOR_UPDATE             32852
 #define ID_DISPLAY_COLOR                32854
@@ -242,13 +244,15 @@
 #define IDS_OPENFILE                    33121
 #define IDS_ALLFILTER                   33122
 #define IDS_SETTINGS                    33123
+#define ID_HIGHLIGHT_SEL                33124
+#define ID_REMOVE_HIGHLIGHT             33125
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        223
-#define _APS_NEXT_COMMAND_VALUE         33124
+#define _APS_NEXT_COMMAND_VALUE         33126
 #define _APS_NEXT_CONTROL_VALUE         1061
 #define _APS_NEXT_SYMED_VALUE           109
 #endif

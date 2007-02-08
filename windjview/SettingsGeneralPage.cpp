@@ -33,14 +33,14 @@ IMPLEMENT_DYNAMIC(CSettingsGeneralPage, CPropertyPage)
 CSettingsGeneralPage::CSettingsGeneralPage()
 	: CPropertyPage(CSettingsGeneralPage::IDD)
 {
-	m_bGenAllThumbnails = CAppSettings::bGenAllThumbnails;
-	m_bFullscreenClicks = CAppSettings::bFullscreenClicks;
-	m_bFullscreenHideScroll = CAppSettings::bFullscreenHideScroll;
-	m_bWarnCloseMultiple = CAppSettings::bWarnCloseMultiple;
-	m_bInvertWheelZoom = CAppSettings::bInvertWheelZoom;
-	m_bCloseOnEsc = CAppSettings::bCloseOnEsc;
-	m_bWrapLongBookmarks = CAppSettings::bWrapLongBookmarks;
-	m_bRestoreView = CAppSettings::bRestoreView;
+	m_bGenAllThumbnails = theApp.GetAppSettings()->bGenAllThumbnails;
+	m_bFullscreenClicks = theApp.GetAppSettings()->bFullscreenClicks;
+	m_bFullscreenHideScroll = theApp.GetAppSettings()->bFullscreenHideScroll;
+	m_bWarnCloseMultiple = theApp.GetAppSettings()->bWarnCloseMultiple;
+	m_bInvertWheelZoom = theApp.GetAppSettings()->bInvertWheelZoom;
+	m_bCloseOnEsc = theApp.GetAppSettings()->bCloseOnEsc;
+	m_bWrapLongBookmarks = theApp.GetAppSettings()->bWrapLongBookmarks;
+	m_bRestoreView = theApp.GetAppSettings()->bRestoreView;
 }
 
 CSettingsGeneralPage::~CSettingsGeneralPage()

@@ -29,7 +29,6 @@ class CFullscreenWnd;
 class CMagnifyWnd;
 
 #define WM_UPDATE_KEYBOARD (WM_APP + 4)
-#define WM_LANGUAGE_CHANGED (WM_APP + 5)
 
 
 class CMainFrame : public CMDIFrameWnd, public Observer
@@ -107,6 +106,7 @@ protected:
 
 	struct LanguageInfo
 	{
+		DWORD nLanguage;
 		CString strLanguage;
 		CString strLibraryPath;
 		HINSTANCE hInstance;
@@ -116,6 +116,7 @@ protected:
 	int m_nLanguage;
 	void LoadLanguages();
 	void SetLanguage(UINT nLanguage);
+	void LanguageChanged();
 
 protected:
 	// Generated message map functions
@@ -148,7 +149,6 @@ protected:
 	afx_msg void OnSetLanguage(UINT nID);
 	afx_msg void OnUpdateLanguageList(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateLanguage(CCmdUI *pCmdUI);
-	afx_msg void OnLanguageChanged();
 	afx_msg void OnClose();
 	afx_msg LRESULT OnAppCommand(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()

@@ -23,6 +23,7 @@
 
 
 class CDjVuSource;
+struct XMLNode;
 
 struct PageInfo
 {
@@ -30,97 +31,11 @@ struct PageInfo
 		: bDecoded(false), szPage(0, 0), nDPI(0), nInitialRotate(0),
 		  bHasText(false), bAnnoDecoded(false), bTextDecoded(false) {}
 
-	void Update(GP<DjVuImage> pImage, bool bNeedText = false)
-	{
-		if (pImage == NULL)
-			return;
+	void Update(GP<DjVuImage> pImage, bool bNeedText = false);
+	void Update(const PageInfo& info);
 
-		if (!bDecoded)
-		{
-			nInitialRotate = GetTotalRotate(pImage, 0);
-
-			szPage = CSize(pImage->get_width(), pImage->get_height());
-			if (nInitialRotate % 2 != 0)
-				swap(szPage.cx, szPage.cy);
-
-			nDPI = pImage->get_dpi();
-			if (szPage.cx <= 0 || szPage.cy <= 0)
-			{
-				szPage.cx = 100;
-				szPage.cy = 100;
-				nDPI = 100;
-			}
-
-			bHasText = !!(pImage->get_djvu_file()->text != NULL);
-			bDecoded = true;
-		}
-
-		try
-		{
-			if (!bTextDecoded && bNeedText)
-				DecodeText(pImage->get_djvu_file()->text);
-		}
-		catch (GException&)
-		{
-		}
-
-		try
-		{
-			if (!bAnnoDecoded)
-				DecodeAnno(pImage->get_anno());
-		}
-		catch (GException&)
-		{
-		}
-	}
-
-	void Update(const PageInfo& info)
-	{
-		if (!bDecoded && info.bDecoded)
-		{
-			nInitialRotate = info.nInitialRotate;
-			szPage = info.szPage;
-			nDPI = info.nDPI;
-			bHasText = info.bHasText;
-			bDecoded = true;
-		}
-
-		if (!bTextDecoded && info.bTextDecoded)
-		{
-			pText = info.pText;
-			bTextDecoded = true;
-		}
-
-		if (!bAnnoDecoded && info.bAnnoDecoded)
-		{
-			pAnt = info.pAnt;
-			bAnnoDecoded = true;
-		}
-	}
-
-	void DecodeAnno(GP<ByteStream> pAnnoStream)
-	{
-		if (pAnnoStream == NULL)
-			return;
-
-		pAnnoStream->seek(0);
-		GP<DjVuAnno> pDjVuAnno = DjVuAnno::create();
-		pDjVuAnno->decode(pAnnoStream);
-		pAnt = pDjVuAnno->ant;
-		bAnnoDecoded = true;
-	}
-
-	void DecodeText(GP<ByteStream> pTextStream)
-	{
-		if (pTextStream == NULL)
-			return;
-
-		pTextStream->seek(0);
-		GP<DjVuText> pDjVuText = DjVuText::create();
-		pDjVuText->decode(pTextStream);
-		pText = pDjVuText->txt;
-		bTextDecoded = true;
-	}
+	void DecodeAnno(GP<ByteStream> pAnnoStream);
+	void DecodeText(GP<ByteStream> pTextStream);
 
 	bool bDecoded;
 	CSize szPage;
@@ -131,6 +46,50 @@ struct PageInfo
 	GP<DjVuANT> pAnt;
 	bool bTextDecoded;
 	GP<DjVuTXT> pText;
+};
+
+
+typedef GList<DjVuTXT::Zone*> DjVuSelection;
+
+struct DjVuHighlight
+{
+	DjVuHighlight()
+		: nBorderType(BorderNone), crBorder(RGB(0, 0, 0)), nFillType(FillNone),
+		  crFill(RGB(255, 255, 255)), fTransparency(0.75) {}
+
+	void UpdateBounds();
+	GUTF8String GetXML() const;
+	void Load(const XMLNode& node);
+
+	enum BorderType
+	{
+		BorderNone = 0,
+		BorderSolid = 1,
+		BorderXOR = 2
+	};
+
+	enum FillType
+	{
+		FillNone = 0,
+		FillHighlight = 1,
+		FillXOR = 2
+	};
+
+	int nBorderType;
+	COLORREF crBorder;
+	int nFillType;
+	COLORREF crFill;
+	double fTransparency;
+	vector<GRect> rects;
+	GRect rectBounds;
+};
+
+struct DjVuPageData
+{
+	list<DjVuHighlight> highlights;
+
+	GUTF8String GetXML() const;
+	void Load(const XMLNode& node);
 };
 
 struct DjVuUserData
@@ -144,6 +103,11 @@ struct DjVuUserData
 	int nLayout;
 	bool bFirstPageAlone;
 	int nDisplayMode;
+
+	map<int, DjVuPageData> pageData;
+
+	GUTF8String GetXML() const;
+	void Load(const XMLNode& node);
 };
 
 class DjVuSource : public RefCount

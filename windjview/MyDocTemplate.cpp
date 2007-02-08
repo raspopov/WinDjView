@@ -98,9 +98,16 @@ void CMyDocTemplate::UpdateTemplate()
 void CMyDocTemplate::InitialUpdateFrame(CFrameWnd* pFrame, CDocument* pDoc, BOOL bMakeVisible)
 {
 	CChildFrame* pChildFrm = (CChildFrame*)pFrame;
-	pChildFrm->CreateNavPanes();
 
-	pChildFrm->GetDjVuView()->AddObserver(GetMainFrame());
+	// Save startup page and offset here, because it will be overwritten later
+	// by CDjVuView::OnInitialUpdate, and we want to preserve it until
+	// the first ActivateFrame call
+	pChildFrm->SaveStartupPage();
+
+	CDjVuView* pView = pChildFrm->GetDjVuView();
+
+	pChildFrm->CreateNavPanes();
+	pView->AddObserver(GetMainFrame());
 
 	CMultiDocTemplate::InitialUpdateFrame(pFrame, pDoc, bMakeVisible);
 }

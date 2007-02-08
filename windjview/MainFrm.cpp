@@ -220,6 +220,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	LoadLanguages();
 
+	theApp.AddObserver(this);
+
 	return 0;
 }
 
@@ -278,7 +280,7 @@ void CMainFrame::OnViewToolbar()
 
 	CControlBar* pBar = GetControlBar(ID_VIEW_TOOLBAR);
 	if (pBar)
-		CAppSettings::bToolbar = (pBar->GetStyle() & WS_VISIBLE) != 0;
+		theApp.GetAppSettings()->bToolbar = (pBar->GetStyle() & WS_VISIBLE) != 0;
 }
 
 void CMainFrame::OnViewStatusBar()
@@ -287,7 +289,7 @@ void CMainFrame::OnViewStatusBar()
 
 	CControlBar* pBar = GetControlBar(ID_VIEW_STATUS_BAR);
 	if (pBar)
-		CAppSettings::bStatusBar = (pBar->GetStyle() & WS_VISIBLE) != 0;
+		theApp.GetAppSettings()->bStatusBar = (pBar->GetStyle() & WS_VISIBLE) != 0;
 }
 
 void CMainFrame::UpdateSettings()
@@ -295,17 +297,18 @@ void CMainFrame::UpdateSettings()
 	CRect rect;
 	GetWindowRect(rect);
 
+	CAppSettings* pSettings = theApp.GetAppSettings();
 	if (IsZoomed())
 	{
-		CAppSettings::bWindowMaximized = true;
+		pSettings->bWindowMaximized = true;
 	}
 	else
 	{
-		CAppSettings::bWindowMaximized = false;
-		CAppSettings::nWindowPosX = rect.left;
-		CAppSettings::nWindowPosY = rect.top;
-		CAppSettings::nWindowWidth = rect.right - rect.left;
-		CAppSettings::nWindowHeight = rect.bottom - rect.top;
+		pSettings->bWindowMaximized = false;
+		pSettings->nWindowPosX = rect.left;
+		pSettings->nWindowPosY = rect.top;
+		pSettings->nWindowWidth = rect.right - rect.left;
+		pSettings->nWindowHeight = rect.bottom - rect.top;
 	}
 }
 
@@ -407,12 +410,8 @@ void CMainFrame::UpdatePageCombo(const CDjVuView* pView)
 	if (pView->GetPageCount() != m_cboPage.GetCount())
 	{
 		m_cboPage.ResetContent();
-		CString strTmp;
 		for (int i = 1; i <= pView->GetPageCount(); ++i)
-		{
-			strTmp.Format(_T("%d"), i);
-			m_cboPage.AddString(strTmp);
-		}
+			m_cboPage.AddString(FormatString(_T("%d"), i));
 	}
 
 	int nPage = pView->GetCurrentPage();
@@ -562,7 +561,7 @@ void CMainFrame::HilightStatusMessage(LPCTSTR pszMessage)
 	if (pBar)
 		ShowControlBar(pBar, TRUE, FALSE);
 
-	CAppSettings::bStatusBar = true;
+	theApp.GetAppSettings()->bStatusBar = true;
 
 	m_wndStatusBar.SetHilightMessage(pszMessage);
 }
@@ -747,7 +746,9 @@ void CMainFrame::OnUpdateStatusAdjust(CCmdUI* pCmdUI)
 	static CString strMessage, strTooltip;
 	CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
 
-	if (!CAppSettings::displaySettings.IsAdjusted() || MDIGetActive() == NULL)
+	CDisplaySettings* pDisplaySettings = theApp.GetDisplaySettings();
+
+	if (!pDisplaySettings->IsAdjusted() || MDIGetActive() == NULL)
 	{
 		m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_ADJUST, SBPS_DISABLED | SBPS_NOBORDERS, 0);
 		pCmdUI->Enable(false);
@@ -772,21 +773,21 @@ void CMainFrame::OnUpdateStatusAdjust(CCmdUI* pCmdUI)
 
 	CString strNewTooltip, strTemp;
 
-	int nBrightness = CAppSettings::displaySettings.GetBrightness();
+	int nBrightness = pDisplaySettings->GetBrightness();
 	if (nBrightness != 0)
 	{
 		strTemp.Format(IDS_TOOLTIP_BRIGHTNESS, nBrightness);
 		strNewTooltip += (!strNewTooltip.IsEmpty() ? _T(", ") : _T("")) + strTemp;
 	}
 
-	int nContrast = CAppSettings::displaySettings.GetContrast();
+	int nContrast = pDisplaySettings->GetContrast();
 	if (nContrast != 0)
 	{
 		strTemp.Format(IDS_TOOLTIP_CONTRAST, nContrast);
 		strNewTooltip += (!strNewTooltip.IsEmpty() ? _T(", ") : _T("")) + strTemp;
 	}
 
-	double fGamma = CAppSettings::displaySettings.GetGamma();
+	double fGamma = pDisplaySettings->GetGamma();
 	if (fGamma != 1.0)
 	{
 		strTemp.Format(IDS_TOOLTIP_GAMMA, fGamma);
@@ -1030,8 +1031,8 @@ void CMainFrame::OnUpdateFrameMenu(HMENU hMenuAlt)
 		if (hMenuAlt == NULL)
 		{
 			hMenuAlt = m_hMenuDefault;
-			if (CAppSettings::bLocalized)
-				hMenuAlt = CAppSettings::hDefaultMenu;
+			if (theApp.GetAppSettings()->bLocalized)
+				hMenuAlt = theApp.GetAppSettings()->hDefaultMenu;
 		}
 		::SendMessage(m_hWndMDIClient, WM_MDISETMENU, (WPARAM)hMenuAlt, NULL);
 	}
@@ -1059,44 +1060,29 @@ void CMainFrame::SetLanguage(UINT nLanguage)
 		}
 	}
 
-	CAppSettings::bLocalized = (nLanguage != 0);
-	AfxSetResourceHandle(info.hInstance);
 	m_nLanguage = nLanguage;
-	CAppSettings::strLanguage = info.strLanguage;
-
-	OnLanguageChanged();
+	theApp.SetLanguage(info.hInstance, info.nLanguage);
 }
 
-void CMainFrame::OnLanguageChanged()
+void CMainFrame::LanguageChanged()
 {
-	if (CAppSettings::hDjVuMenu != NULL)
-	{
-		::DestroyMenu(CAppSettings::hDjVuMenu);
-		::DestroyMenu(CAppSettings::hDefaultMenu);
-		CAppSettings::hDjVuMenu = NULL;
-		CAppSettings::hDefaultMenu = NULL;
-	}
-
-	if (CAppSettings::bLocalized)
-	{
-		CMenu menuDjVu, menuDefault;
-		menuDjVu.LoadMenu(IDR_DjVuTYPE);
-		menuDefault.LoadMenu(IDR_MAINFRAME);
-
-		CAppSettings::hDjVuMenu = menuDjVu.Detach();
-		CAppSettings::hDefaultMenu = menuDefault.Detach();
-	}
-
-	theApp.m_pDjVuTemplate->UpdateTemplate();
 	OnUpdateFrameMenu(NULL);
 	DrawMenuBar();
 
 	m_cboZoom.ResetContent();
+
+	CMDIChildWnd* pActive = MDIGetActive();
+	if (pActive != NULL)
+	{
+		CDjVuView* pView = (CDjVuView*)pActive->GetActiveView();
+		UpdateZoomCombo(pView);
+	}
+
 	if (m_pFindDlg != NULL)
 	{
 		m_pFindDlg->UpdateData();
-		CAppSettings::strFind = m_pFindDlg->m_strFind;
-		CAppSettings::bMatchCase = !!m_pFindDlg->m_bMatchCase;
+		theApp.GetAppSettings()->strFind = m_pFindDlg->m_strFind;
+		theApp.GetAppSettings()->bMatchCase = !!m_pFindDlg->m_bMatchCase;
 
 		bool bVisible = !!m_pFindDlg->IsWindowVisible();
 
@@ -1116,14 +1102,13 @@ void CMainFrame::OnLanguageChanged()
 		m_pFindDlg->ShowWindow(bVisible ? SW_SHOWNOACTIVATE : SW_HIDE);
 		SetFocus();
 	}
-
-	SendMessageToDescendants(WM_LANGUAGE_CHANGED, 0, 0, true, true);
 }
 
 void CMainFrame::LoadLanguages()
 {
 	LanguageInfo english;
-	english.strLanguage = _T("English");
+	english.nLanguage = 0x409;
+	english.strLanguage = _T("&English");
 	english.hInstance = AfxGetInstanceHandle();
 	m_languages.push_back(english);
 
@@ -1153,10 +1138,22 @@ void CMainFrame::LoadLanguages()
 				continue;
 			}
 
+			DWORD* pTranslations;
+			UINT cbTranslations;
+			if (::VerQueryValue(pVersionInfo, _T("\\VarFileInfo\\Translation"),
+					(void**)&pTranslations, &cbTranslations) == 0 || cbTranslations == 0)
+			{
+				delete[] pVersionInfo;
+				continue;
+			}
+
+			DWORD nLanguage = LOWORD(*pTranslations);
+			CString strTranslation = FormatString(_T("%04x%04x"), nLanguage, HIWORD(*pTranslations));
+
 			LPCTSTR pszBuffer;
-			UINT dwBytes;
-			if (VerQueryValue(pVersionInfo, _T("\\StringFileInfo\\04090000\\FileVersion"),
-					(void**)&pszBuffer, &dwBytes) == 0 || dwBytes == 0)
+			UINT dwLength;
+			if (::VerQueryValue(pVersionInfo, FormatString(_T("\\StringFileInfo\\%s\\FileVersion"), strTranslation).GetBuffer(0),
+					(void**)&pszBuffer, &dwLength) == 0 || dwLength == 0)
 			{
 				delete[] pVersionInfo;
 				continue;
@@ -1169,8 +1166,8 @@ void CMainFrame::LoadLanguages()
 				continue;
 			}
 
-			if (VerQueryValue(pVersionInfo, _T("\\StringFileInfo\\04090000\\Comments"),
-					(void**)&pszBuffer, &dwBytes) == 0 || dwBytes == 0)
+			if (::VerQueryValue(pVersionInfo, FormatString(_T("\\StringFileInfo\\%s\\Comments"), strTranslation).GetBuffer(0),
+					(void**)&pszBuffer, &dwLength) == 0 || dwLength == 0)
 			{
 				delete[] pVersionInfo;
 				continue;
@@ -1180,6 +1177,7 @@ void CMainFrame::LoadLanguages()
 			delete[] pVersionInfo;
 
 			LanguageInfo info;
+			info.nLanguage = nLanguage;
 			info.strLanguage = strLanguage;
 			info.strLibraryPath = szDrive + CString(szPath) + fd.cFileName;
 			info.hInstance = NULL;
@@ -1221,7 +1219,7 @@ void CMainFrame::SetStartupLanguage()
 {
 	for (size_t i = 0; i < m_languages.size(); ++i)
 	{
-		if (CAppSettings::strLanguage == m_languages[i].strLanguage)
+		if (theApp.GetAppSettings()->nLanguage == m_languages[i].nLanguage)
 		{
 			SetLanguage(i);
 			return;
@@ -1231,14 +1229,13 @@ void CMainFrame::SetStartupLanguage()
 
 void CMainFrame::OnClose()
 {
-	if (CAppSettings::bWarnCloseMultiple)
+	if (theApp.GetAppSettings()->bWarnCloseMultiple)
 	{
 		int nOpenDocuments = GetDocumentCount();
 		if (nOpenDocuments > 1)
 		{
-			CString strMessage;
-			strMessage.Format(IDS_WARN_CLOSE_MULTIPLE, nOpenDocuments);
-			if (AfxMessageBox(strMessage, MB_ICONEXCLAMATION | MB_YESNO) != IDYES)
+			if (AfxMessageBox(FormatString(IDS_WARN_CLOSE_MULTIPLE, nOpenDocuments),
+					MB_ICONEXCLAMATION | MB_YESNO) != IDYES)
 				return;
 		}
 	}
@@ -1260,8 +1257,8 @@ void CMainFrame::OnClose()
 	if (m_pFindDlg != NULL)
 	{
 		m_pFindDlg->UpdateData();
-		CAppSettings::strFind = m_pFindDlg->m_strFind;
-		CAppSettings::bMatchCase = !!m_pFindDlg->m_bMatchCase;
+		theApp.GetAppSettings()->strFind = m_pFindDlg->m_strFind;
+		theApp.GetAppSettings()->bMatchCase = !!m_pFindDlg->m_bMatchCase;
 
 		m_pFindDlg->DestroyWindow();
 		delete m_pFindDlg;
@@ -1304,7 +1301,7 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 	{
 		if (IsFullscreenMode())
 			m_pFullscreenWnd->Hide();
-		else if (CAppSettings::bCloseOnEsc)
+		else if (theApp.GetAppSettings()->bCloseOnEsc)
 			SendMessage(WM_CLOSE);
 		return true;
 	}
@@ -1377,5 +1374,9 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 			m_cboZoom.SetWindowText(_T(""));
 			m_cboZoom.EnableWindow(false);
 		}
+	}
+	else if (message->code == APP_LANGUAGE_CHANGED)
+	{
+		LanguageChanged();
 	}
 }

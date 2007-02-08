@@ -39,12 +39,10 @@ IMPLEMENT_DYNAMIC(CPrintDlg, CDialog)
 
 CPrintDlg::CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, int nMode, CWnd* pParent)
 	: CDialog(CPrintDlg::IDD, pParent),
-	  m_bCollate(FALSE), m_nCopies(1), m_strPages(_T("")), m_bPrintToFile(FALSE),
-	  m_strType(_T("")), m_strLocation(_T("")),
-	  m_strComment(_T("")), m_bLandscape(FALSE), m_nRangeType(0),
-	  m_pPrinter(NULL), m_hPrinter(NULL), m_pPaper(NULL), m_bReverse(false),
-	  m_pDoc(pDoc), m_pSource(pDoc->GetSource()), m_nCurPage(nPage), m_nRotate(nRotate),
-	  m_nMode(nMode), m_bTwoPages(false), m_bPrinterCanCollate(false)
+	  m_strPages(_T("")), m_bPrintToFile(FALSE), m_strType(_T("")), m_strLocation(_T("")),
+	  m_strComment(_T("")), m_nRangeType(0), m_pPrinter(NULL), m_hPrinter(NULL),
+	  m_pPaper(NULL), m_bReverse(false), m_pDoc(pDoc), m_pSource(pDoc->GetSource()),
+	  m_nCurPage(nPage), m_nRotate(nRotate), m_nMode(nMode), m_bPrinterCanCollate(false)
 {
 }
 
@@ -60,13 +58,13 @@ void CPrintDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_SHRINK_OVERSIZED, m_settings.bShrinkOversized);
 	DDX_Check(pDX, IDC_SCALE_TO_FIT, m_settings.bScaleToFit);
 	DDX_Check(pDX, IDC_IGNORE_MARGINS, m_settings.bIgnorePrinterMargins);
-	DDX_Check(pDX, IDC_COLLATE, m_bCollate);
+	DDX_Radio(pDX, IDC_PORTRAIT, m_settings.bLandscape);
+	DDX_Check(pDX, IDC_COLLATE, m_settings.bCollate);
 	DDX_Text(pDX, IDC_PAGE_RANGES, m_strPages);
 	DDX_Check(pDX, IDC_PRINT_TO_FILE, m_bPrintToFile);
 	DDX_Text(pDX, IDC_STATIC_TYPE, m_strType);
 	DDX_Text(pDX, IDC_STATIC_LOCATION, m_strLocation);
 	DDX_Text(pDX, IDC_STATIC_COMMENT, m_strComment);
-	DDX_Radio(pDX, IDC_PORTRAIT, m_bLandscape);
 	DDX_Radio(pDX, IDC_RANGE_ALL, m_nRangeType);
 	DDX_Check(pDX, IDC_REVERSE, m_bReverse);
 	DDX_Control(pDX, IDC_COMBO_PRINTER, m_cboPrinter);
@@ -89,7 +87,7 @@ void CPrintDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_MyText(pDX, IDC_MARGIN_TOP, m_settings.fMarginTop);
 	DDX_MyText(pDX, IDC_MARGIN_LEFT, m_settings.fMarginLeft);
 	DDX_MyText(pDX, IDC_MARGIN_RIGHT, m_settings.fMarginRight);
-	DDX_MyText(pDX, IDC_EDIT_COPIES, m_nCopies, 1);
+	DDX_MyText(pDX, IDC_EDIT_COPIES, m_settings.nCopies, 1);
 
 	if (!pDX->m_bSaveAndValidate)
 	{
@@ -97,7 +95,7 @@ void CPrintDlg::DoDataExchange(CDataExchange* pDX)
 		if (m_pPaper != NULL)
 		{
 			CSize szPaper = m_pPaper->size;
-			if (m_bLandscape)
+			if (m_settings.bLandscape)
 				swap(szPaper.cx, szPaper.cy);
 
 			strPaperSize.Format(IDS_PAPER_SIZE_MM,
@@ -207,7 +205,7 @@ BOOL CPrintDlg::OnInitDialog()
 	{
 		CString strPrinter;
 		m_cboPrinter.GetLBText(i, strPrinter);
-		if (CAppSettings::strPrinter == strPrinter)
+		if (m_settings.strPrinter == strPrinter)
 		{
 			m_cboPrinter.SetCurSel(i);
 			break;
@@ -231,12 +229,7 @@ BOOL CPrintDlg::OnInitDialog()
 	if (m_cboPrinter.GetCurSel() == -1)
 		m_cboPrinter.SetCurSel(0);
 
-	m_bLandscape = CAppSettings::bLandscape;
-	m_nCopies = CAppSettings::nCopies;
-	m_bCollate = CAppSettings::bCollate;
-	m_nPaperCode = CAppSettings::nPaper;
-	m_bTwoPages = CAppSettings::bTwoPages;
-	m_settings = CAppSettings::printSettings;
+	m_settings = *theApp.GetPrintSettings();
 
 	UpdateData(false);
 
@@ -249,7 +242,7 @@ BOOL CPrintDlg::OnInitDialog()
 
 	m_cboPagesPerSheet.AddString(LoadString(IDS_PRINT_ONE_PAGE));
 	m_cboPagesPerSheet.AddString(LoadString(IDS_PRINT_TWO_PAGES));
-	m_cboPagesPerSheet.SetCurSel(m_bTwoPages ? 1 : 0);
+	m_cboPagesPerSheet.SetCurSel(m_settings.bTwoPages ? 1 : 0);
 
 	return true;
 }
@@ -276,7 +269,7 @@ void CPrintDlg::OnOK()
 	else if (m_nRangeType == 1)
 	{
 		m_pages.push_back(m_nCurPage + 1);
-		if (m_bTwoPages && m_nCurPage < m_pSource->GetPageCount() - 1)
+		if (m_settings.bTwoPages && m_nCurPage < m_pSource->GetPageCount() - 1)
 			m_pages.push_back(m_nCurPage + 2);
 	}
 	else
@@ -289,12 +282,12 @@ void CPrintDlg::OnOK()
 	bool bOddPages = (m_cboPagesInRange.GetCurSel() == 1) && m_nRangeType != 1;
 	bool bEvenPages = (m_cboPagesInRange.GetCurSel() == 2) && m_nRangeType != 1;
 	int i = 1;
-	int inc = (m_bTwoPages ? 2 : 1);
+	int inc = (m_settings.bTwoPages ? 2 : 1);
 
 	for (size_t j = 0; j < m_pages.size(); j += inc, ++i)
 	{
 		int nFirst = m_pages[j];
-		if (!m_bTwoPages)
+		if (!m_settings.bTwoPages)
 		{
 			if (bAllPages || bOddPages && (nFirst % 2) == 1 || bEvenPages && (nFirst % 2) == 0)
 				m_arrPages.push_back(make_pair(nFirst, 0));
@@ -351,7 +344,7 @@ void CPrintDlg::OnPaint()
 	if (m_pPaper != NULL && m_pPaper->size.cx != 0 && m_pPaper->size.cy != 0)
 	{
 		CSize szPaper = m_pPaper->size;
-		if (m_bLandscape)
+		if (m_settings.bLandscape)
 			swap(szPaper.cx, szPaper.cy);
 
 		rcPreview.DeflateRect(1, 1, 6, 6);
@@ -400,7 +393,7 @@ void CPrintDlg::OnPaint()
 				nOffsetBottom * szPage.cy / nPhysicalHeight);
 		}
 
-		if (!m_bTwoPages)
+		if (!m_settings.bTwoPages)
 		{
 			PrintPage(&dc, m_pCurPage, m_nRotate, m_nMode, rcPage, fScreenMM, fScreenMM, m_settings, true);
 		}
@@ -423,7 +416,7 @@ void CPrintDlg::PreviewTwoPages(CDC* pDC, const CRect& rcPage, const CSize& szPa
 {
 	CSize szHalf = szPaper;
 	CRect rcFirstHalf = rcPage, rcSecondHalf = rcPage;
-	if (m_bLandscape)
+	if (m_settings.bLandscape)
 	{
 		szHalf.cx = szHalf.cx / 2;
 		rcFirstHalf.right = rcPage.CenterPoint().x;
@@ -446,12 +439,12 @@ void CPrintDlg::OnChangePagesPerSheet()
 {
 	UpdateData();
 
-	bool bTwoPages = m_cboPagesPerSheet.GetCurSel() == 1;
-	if (bTwoPages == m_bTwoPages)
+	BOOL bTwoPages = m_cboPagesPerSheet.GetCurSel() == 1;
+	if (bTwoPages == m_settings.bTwoPages)
 		return;
 
-	m_bTwoPages = bTwoPages;
-	m_bLandscape = !m_bLandscape;
+	m_settings.bTwoPages = bTwoPages;
+	m_settings.bLandscape = !m_settings.bLandscape;
 
 	UpdateData(false);
 	UpdateDevMode();
@@ -466,7 +459,7 @@ void CPrintDlg::OnChangePaper()
 	if (nItem == -1)
 		return;
 
-	m_nPaperCode = (WORD)m_cboPaper.GetItemData(nItem);
+	m_settings.nPaperCode = (WORD)m_cboPaper.GetItemData(nItem);
 	m_pPaper = &m_paperSizes[nItem];
 
 	UpdateData(false);
@@ -506,7 +499,7 @@ void CPrintDlg::OnChangePrinter()
 
 	CString strPrinter;
 	m_cboPrinter.GetLBText(nPrinter, strPrinter);
-	CAppSettings::strPrinter = strPrinter;
+	theApp.GetPrintSettings()->strPrinter = strPrinter;
 
 	PRINTER_DEFAULTS defaults;
 	defaults.pDatatype = NULL;
@@ -555,9 +548,9 @@ void CPrintDlg::OnChangePrinter()
 		m_nMaxCopies = 9999;
 
 	if ((m_pDevMode->dmFields & DM_COPIES) == 0)
-		m_nCopies = 1;
+		m_settings.nCopies = 1;
 	else
-		m_nCopies = min(m_nCopies, m_nMaxCopies);
+		m_settings.nCopies = min(m_settings.nCopies, m_nMaxCopies);
 
 	m_bPrinterCanCollate = ::DeviceCapabilities(m_pPrinter->pPrinterName, m_pPrinter->pPortName,
 		DC_COLLATE, NULL, m_pDevMode) > 0;
@@ -592,9 +585,9 @@ void CPrintDlg::LoadPaperTypes()
 	int i;
 	for (i = 0; i < nPapers && i < nSizeNames && i < nSizes; ++i)
 	{
-		if (size_names[i] == m_nPaperCode)
+		if (size_names[i] == m_settings.nPaperCode)
 		{
-			m_pDevMode->dmPaperSize = m_nPaperCode;
+			m_pDevMode->dmPaperSize = m_settings.nPaperCode;
 			break;
 		}
 	}
@@ -642,14 +635,14 @@ void CPrintDlg::OnCopiesUpDown(NMHDR* pNMHDR, LRESULT* pResult)
 	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
 
 	if (pNMUpDown->iDelta < 0)
-		++m_nCopies;
+		++m_settings.nCopies;
 	else
-		--m_nCopies;
+		--m_settings.nCopies;
 
-	if (m_nCopies < 1)
-		m_nCopies = 1;
-	else if (m_nCopies > m_nMaxCopies)
-		m_nCopies = m_nMaxCopies;
+	if (m_settings.nCopies < 1)
+		m_settings.nCopies = 1;
+	else if (m_settings.nCopies > m_nMaxCopies)
+		m_settings.nCopies = m_nMaxCopies;
 
 	UpdateData(false);
 	UpdateDevMode();
@@ -668,16 +661,16 @@ void CPrintDlg::OnProperties()
 			m_pDevMode, m_pDevMode,
 			DM_IN_PROMPT | DM_IN_BUFFER | DM_OUT_BUFFER);
 
-	m_bLandscape = (m_pDevMode->dmOrientation == DMORIENT_LANDSCAPE);
-	m_nCopies = m_pDevMode->dmCopies;
+	m_settings.bLandscape = (m_pDevMode->dmOrientation == DMORIENT_LANDSCAPE);
+	m_settings.nCopies = m_pDevMode->dmCopies;
 
 	if (m_bPrinterCanCollate)
-		m_bCollate = (m_pDevMode->dmCollate == DMCOLLATE_TRUE);
+		m_settings.bCollate = (m_pDevMode->dmCollate == DMCOLLATE_TRUE);
 
 	UpdateData(false);
 
 	m_pPaper = NULL;
-	m_nPaperCode = m_pDevMode->dmPaperSize;
+	m_settings.nPaperCode = m_pDevMode->dmPaperSize;
 	LoadPaperTypes();
 	OnChangePaper();
 }
@@ -692,7 +685,7 @@ void CPrintDlg::OnKickIdle()
 	GetDlgItem(IDC_EDIT_COPIES)->EnableWindow(bOk && (m_pDevMode->dmFields & DM_COPIES));
 	GetDlgItem(IDC_SPIN_COPIES)->EnableWindow(bOk && (m_pDevMode->dmFields & DM_COPIES));
 
-	GetDlgItem(IDC_COLLATE)->EnableWindow(bOk && m_nCopies >= 2);
+	GetDlgItem(IDC_COLLATE)->EnableWindow(bOk && m_settings.nCopies >= 2);
 
 	GetDlgItem(IDC_RANGE_ALL)->EnableWindow(bOk);
 	GetDlgItem(IDC_RANGE_CURRENT)->EnableWindow(bOk);
@@ -728,10 +721,10 @@ void CPrintDlg::OnUpdateDialogData()
 {
 	UpdateData();
 
-	if (m_nCopies > m_nMaxCopies)
-		m_nCopies = m_nMaxCopies;
-	else if (m_nCopies < 1)
-		m_nCopies = 1;
+	if (m_settings.nCopies > m_nMaxCopies)
+		m_settings.nCopies = m_nMaxCopies;
+	else if (m_settings.nCopies < 1)
+		m_settings.nCopies = 1;
 
 	UpdateData(false);
 	UpdateDevMode();
@@ -747,11 +740,11 @@ void CPrintDlg::UpdateDevMode()
 
 	m_pDevMode->dmFields |= DM_PAPERSIZE | DM_ORIENTATION | DM_COPIES | DM_COLLATE;
 
-	m_pDevMode->dmPaperSize = m_nPaperCode;
-	m_pDevMode->dmOrientation = (m_bLandscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT);
+	m_pDevMode->dmPaperSize = m_settings.nPaperCode;
+	m_pDevMode->dmOrientation = (m_settings.bLandscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT);
 
-	m_pDevMode->dmCollate = (m_bCollate && m_bPrinterCanCollate ? DMCOLLATE_TRUE : DMCOLLATE_FALSE);
-	m_pDevMode->dmCopies = (WORD)m_nCopies;
+	m_pDevMode->dmCollate = (m_settings.bCollate && m_bPrinterCanCollate ? DMCOLLATE_TRUE : DMCOLLATE_FALSE);
+	m_pDevMode->dmCopies = (WORD)m_settings.nCopies;
 
 	UpdateDevModeCache(m_pPrinter->pPrinterName, m_pDevMode, m_devModeData.size());
 }
@@ -761,14 +754,7 @@ void CPrintDlg::SaveSettings()
 	if (m_pPrinter == NULL)
 		return;
 
-	CAppSettings::strPrinter = m_pPrinter->pPrinterName;
-	CAppSettings::bTwoPages = m_bTwoPages;
-	CAppSettings::nPaper = m_nPaperCode;
-	CAppSettings::bLandscape = !!m_bLandscape;
-	CAppSettings::nCopies = m_nCopies;
-	CAppSettings::bCollate = !!m_bCollate;
-
-	CAppSettings::printSettings = m_settings;
+	*theApp.GetPrintSettings() = m_settings;
 }
 
 bool CPrintDlg::ParseRange()

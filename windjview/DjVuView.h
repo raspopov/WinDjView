@@ -35,8 +35,6 @@ inline bool IsStandardZoom(int nZoomType, double fZoom)
 			fZoom == 100.0 || fZoom == 200.0 || fZoom == 400.0);
 }
 
-typedef GList<DjVuTXT::Zone*> DjVuSelection;
-
 CString MakePreviewString(const GUTF8String& text, int nStart, int nEnd);
 
 
@@ -66,6 +64,7 @@ public:
 	void GoToURL(const GUTF8String& url, int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
 	void GoToSelection(int nPage, int nStartPos, int nEndPos,
 		int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
+	void ScrollToPage(int nPage, const CPoint& ptOffset);
 
 	int GetPageCount() const { return m_nPageCount; }
 	int GetCurrentPage() const { return m_nPage; }
@@ -85,12 +84,8 @@ public:
 	CSize GetPageSize(int nPage) const { return m_pages[nPage].GetSize(m_nRotate); }
 	int GetPageDPI(int nPage) const { return m_pages[nPage].info.nDPI; }
 
-	void OnSettingsChanged();
 	void UpdateKeyboard(UINT nKey, bool bDown);
 	void UpdateVisiblePages();
-
-	void PageRendered(int nPage, CDIB* pDIB);
-	void PageDecoded(int nPage);
 
 	enum ZoomType
 	{
@@ -127,7 +122,8 @@ public:
 		Drag = 0,
 		Select = 1,
 		MagnifyingGlass = 2,
-		NextPrev = 3
+		SelectRect = 3,
+		NextPrev = 4
 	};
 
 	int GetMode() const { return m_nMode; }
@@ -188,11 +184,12 @@ protected:
 	CSize m_szDisplay;
 	int CalcTopPage() const;
 	int CalcCurrentPage() const;
-	void RenderPage(int nPage, int nTimeout = -1);
+	void RenderPage(int nPage, int nTimeout = -1, bool bUpdateWindow = true);
 
 	bool InvalidatePage(int nPage);
 	void DrawPage(CDC* pDC, int nPage);
 	void DrawMapArea(CDC* pDC, GP<GMapArea> pArea, int nPage, bool bActive);
+	void DrawHighlight(CDC* pDC, DjVuHighlight& highlight, int nPage);
 
 	int m_nZoomType;
 	double m_fZoom;
@@ -271,6 +268,9 @@ protected:
 	int GetNextPage(int nPage) const;
 	void SetLayout(int nLayout, int nPage, int nOffset);
 	void UpdatePageNumber();
+	void PageRendered(int nPage, CDIB* pDIB);
+	void PageDecoded(int nPage);
+	void SettingsChanged();
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -295,17 +295,22 @@ protected:
 	bool IsSelectionVisible(int nPage, const DjVuSelection& selection);
 	void EnsureSelectionVisible(int nPage, const DjVuSelection& selection);
 	CRect GetSelectionRect(int nPage, const DjVuSelection& selection) const;
-	CRect TranslatePageRect(int nPage, GRect rect, bool bText = false) const;
+	CRect TranslatePageRect(int nPage, GRect rect, bool bAnno = false, bool bToDisplay = true) const;
 	bool m_bInsideUpdateLayout;
 
-	GP<GMapArea> m_pActiveLink;
-	int m_nLinkPage;
-	GP<GMapArea> GetHyperlinkFromPoint(CPoint point, int* pnPage = NULL);
-	void UpdateActiveHyperlink(CPoint point);
+	bool m_bHoverHighlight;
+	GP<GMapArea> m_pHoverArea;
+	DjVuHighlight* m_pHoverHighlight;
+	DjVuHighlight* m_pClickedHighlight;
+	int m_nHoverPage;
+	bool m_bIgnoreMouseLeave;
+	GP<GMapArea> GetAreaFromPoint(CPoint point, int* pnPage = NULL);
+	DjVuHighlight* GetHighlightFromPoint(CPoint point, int* pnPage = NULL);
+	void UpdateHoverHighlight(CPoint point);
 
 	int m_nMode, m_nType;
 	int m_nSelStartPos;
-	CPoint TranslateTextCoordToDjVu(int nPage, const CPoint& point);
+	CPoint ScreenToDjVu(int nPage, const CPoint& point) const;
 	void UpdateDragAction();
 	int GetTextPosFromPoint(int nPage, CPoint point);
 	void GetTextPosFromTop(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos);
@@ -314,9 +319,11 @@ protected:
 	void SelectTextRange(int nPage, int nStart, int nEnd, bool& bInfoLoaded, CWaitCursor*& pWaitCursor);
 	GUTF8String GetSelectedText();
 	bool m_bHasSelection;
+	int m_nSelectionPage;
+	GRect m_rcSelectionRect;
 
 	int m_nClickedPage;
-	bool m_bDragging, m_bDraggingPage, m_bDraggingText;
+	bool m_bDragging, m_bDraggingPage, m_bDraggingText, m_bDraggingRect;
 	bool m_bPanning;
 	void StopDragging();
 	CPoint m_ptStart, m_ptStartPos, m_ptPrevCursor;
@@ -332,6 +339,7 @@ protected:
 	static HCURSOR hCursorLink;
 	static HCURSOR hCursorText;
 	static HCURSOR hCursorMagnify;
+	static HCURSOR hCursorCross;
 	CImageList m_hourglass;
 
 	// Dummy invisible scrollbars
@@ -379,7 +387,7 @@ protected:
 	afx_msg LRESULT OnPageRendered(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnDestroy();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
-	afx_msg void OnExportPage();
+	afx_msg void OnExportPage(UINT nID);
 	afx_msg void OnFindString();
 	afx_msg void OnFindAll();
 	afx_msg BOOL OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult);
@@ -403,6 +411,9 @@ protected:
 	afx_msg void OnFirstPageAlone();
 	afx_msg void OnUpdateFirstPageAlone(CCmdUI* pCmdUI);
 	afx_msg void OnMouseLeave();
+	afx_msg void OnHighlightSelection();
+	afx_msg void OnUpdateHighlightSelection(CCmdUI* pCmdUI);
+	afx_msg void OnRemoveHighlight();
 	DECLARE_MESSAGE_MAP()
 };
 

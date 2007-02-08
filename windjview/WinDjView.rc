@@ -151,6 +151,7 @@ BEGIN
     SEPARATOR
     BUTTON      ID_MODE_DRAG
     BUTTON      ID_MODE_SELECT
+    BUTTON      ID_MODE_SELECT_RECT
     BUTTON      ID_MODE_MAGNIFY
     SEPARATOR
     BUTTON      ID_VIEW_FIRSTPAGE
@@ -328,9 +329,12 @@ BEGIN
     POPUP "Popup"
     BEGIN
         MENUITEM "&Copy Text",                  ID_EDIT_COPY
+        MENUITEM "&Highlight Selection...",     ID_HIGHLIGHT_SEL
+        MENUITEM "Remove &Highlight",           ID_REMOVE_HIGHLIGHT
         MENUITEM SEPARATOR
         MENUITEM "Page &Information...",        ID_PAGE_INFORMATION
         MENUITEM "&Export Page...",             ID_EXPORT_PAGE
+        MENUITEM "Export &Selection...",        ID_EXPORT_SELECTION
     END
 END
 
@@ -934,6 +938,41 @@ BEGIN
     IDS_OPENFILE            "Open"
     IDS_ALLFILTER           "All Files (*.*)"
     IDS_SETTINGS            "Settings"
+    ID_HIGHLIGHT_SEL        "Highlights current selection"
+    ID_REMOVE_HIGHLIGHT     "Removes currently selected highlight"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EXPORT_SELECTION     "Exports selected part of the page as bmp file"
+    ID_VIEW_BACK            "Go to previous view\nPrevious View"
+    ID_VIEW_FORWARD         "Go to next view\nNext View"
+    ID_WINDOW_ACTIVATE_FIRST "Activate this window"
+    ID_WINDOW_ACTIVATE_1    "Activate this window"
+    ID_WINDOW_ACTIVATE_2    "Activate this window"
+    ID_WINDOW_ACTIVATE_3    "Activate this window"
+    ID_WINDOW_ACTIVATE_4    "Activate this window"
+    ID_WINDOW_ACTIVATE_5    "Activate this window"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_WINDOW_ACTIVATE_6    "Activate this window"
+    ID_WINDOW_ACTIVATE_7    "Activate this window"
+    ID_WINDOW_ACTIVATE_8    "Activate this window"
+    ID_WINDOW_ACTIVATE_9    "Activate this window"
+    ID_WINDOW_ACTIVATE_10   "Activate this window"
+    ID_WINDOW_ACTIVATE_11   "Activate this window"
+    ID_WINDOW_ACTIVATE_12   "Activate this window"
+    ID_WINDOW_ACTIVATE_13   "Activate this window"
+    ID_WINDOW_ACTIVATE_14   "Activate this window"
+    ID_WINDOW_ACTIVATE_LAST "Activate this window"
+    ID_ZOOM_IN              "Zoom In\nZoom In"
+    ID_ZOOM_OUT             "Zoom Out\nZoom Out"
+    ID_MODE_DRAG            "Activate hand tool\nHand Tool"
+    ID_MODE_SELECT          "Activate select tool\nSelect Tool"
+    ID_MODE_MAGNIFY         "Activate magnifying glass\nMagnifying Glass"
+    ID_MODE_SELECT_RECT     "Activate rectangle selection tool\nRectangle Tool"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -1022,37 +1061,6 @@ BEGIN
     IDS_CURRENT_VERSION     "0.4.4"
     IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
     IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure you want to continue?"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_VIEW_BACK            "Go to previous view\nPrevious View"
-    ID_VIEW_FORWARD         "Go to next view\nNext View"
-    ID_WINDOW_ACTIVATE_FIRST "Activate this window"
-    ID_WINDOW_ACTIVATE_1    "Activate this window"
-    ID_WINDOW_ACTIVATE_2    "Activate this window"
-    ID_WINDOW_ACTIVATE_3    "Activate this window"
-    ID_WINDOW_ACTIVATE_4    "Activate this window"
-    ID_WINDOW_ACTIVATE_5    "Activate this window"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_WINDOW_ACTIVATE_6    "Activate this window"
-    ID_WINDOW_ACTIVATE_7    "Activate this window"
-    ID_WINDOW_ACTIVATE_8    "Activate this window"
-    ID_WINDOW_ACTIVATE_9    "Activate this window"
-    ID_WINDOW_ACTIVATE_10   "Activate this window"
-    ID_WINDOW_ACTIVATE_11   "Activate this window"
-    ID_WINDOW_ACTIVATE_12   "Activate this window"
-    ID_WINDOW_ACTIVATE_13   "Activate this window"
-    ID_WINDOW_ACTIVATE_14   "Activate this window"
-    ID_WINDOW_ACTIVATE_LAST "Activate this window"
-    ID_ZOOM_IN              "Zoom In\nZoom In"
-    ID_ZOOM_OUT             "Zoom Out\nZoom Out"
-    ID_MODE_DRAG            "Activate hand tool\nHand Tool"
-    ID_MODE_SELECT          "Activate select tool\nSelect Tool"
-    ID_MODE_MAGNIFY         "Activate magnifying glass\nMagnifying Glass"
 END
 
 STRINGTABLE DISCARDABLE 

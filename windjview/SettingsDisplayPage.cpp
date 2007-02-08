@@ -34,7 +34,7 @@ IMPLEMENT_DYNAMIC(CSettingsDisplayPage, CPropertyPage)
 CSettingsDisplayPage::CSettingsDisplayPage()
 	: CPropertyPage(CSettingsDisplayPage::IDD)
 {
-	m_displaySettings = CAppSettings::displaySettings;
+	m_displaySettings = *theApp.GetDisplaySettings();
 	m_bAdjustDisplay = m_displaySettings.bAdjustDisplay;
 	m_bHQScaling = (m_displaySettings.nScaleMethod != CDisplaySettings::Default);
 	m_bInvertColors = m_displaySettings.bInvertColors;

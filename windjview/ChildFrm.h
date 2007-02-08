@@ -30,7 +30,7 @@ class CPageIndexWnd;
 
 // CChildFrame
 
-class CChildFrame : public CMDIChildWnd
+class CChildFrame : public CMDIChildWnd, public Observer
 {
 	DECLARE_DYNCREATE(CChildFrame)
 public:
@@ -43,11 +43,14 @@ public:
 	CNavPaneWnd* GetNavPane();
 	virtual CDocument* GetActiveDocument();
 	void CreateNavPanes();
+	void SaveStartupPage();
 
 	CThumbnailsView* GetThumbnailsView() { return m_pThumbnailsView; }
 	CBookmarksWnd* GetBookmarksWnd() { return m_pBookmarksWnd; }
 	CPageIndexWnd* GetPageIndexWnd() { return m_pPageIndexWnd; }
 	CSearchResultsView* GetResultsView();
+
+	virtual void OnUpdate(const Observable* source, const Message* message);
 
 protected:
 	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
@@ -57,6 +60,8 @@ protected:
 // Implementation
 public:
 	virtual ~CChildFrame();
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
@@ -65,6 +70,9 @@ public:
 protected:
 	bool m_bCreated;
 	bool m_bActivating;
+	bool m_bFirstShow;
+	int m_nStartupPage;
+	CPoint m_ptStartupOffset;
 	CMySplitterWnd m_wndSplitter;
 	CSplitterWnd m_wndDynSplitter;
 	CThumbnailsView* m_pThumbnailsView;
@@ -72,14 +80,13 @@ protected:
 	CSearchResultsView* m_pResultsView;
 	CPageIndexWnd* m_pPageIndexWnd;
 
-// Generated message map functions
+	// Generated message map functions
 	afx_msg void OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeactivateWnd);
 	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
 	afx_msg void OnExpandPane();
 	afx_msg void OnCollapsePane();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnClose();
-	afx_msg void OnLanguageChanged();
 	afx_msg void OnNcPaint();
 	DECLARE_MESSAGE_MAP()
 };

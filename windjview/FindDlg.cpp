@@ -34,8 +34,8 @@ IMPLEMENT_DYNAMIC(CFindDlg, CDialog)
 CFindDlg::CFindDlg(CWnd* pParent)
 	: CDialog(CFindDlg::IDD, pParent)
 {
-	m_strFind = CAppSettings::strFind;
-	m_bMatchCase = CAppSettings::bMatchCase;
+	m_strFind = theApp.GetAppSettings()->strFind;
+	m_bMatchCase = theApp.GetAppSettings()->bMatchCase;
 }
 
 CFindDlg::~CFindDlg()

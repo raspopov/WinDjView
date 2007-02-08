@@ -75,6 +75,7 @@
 
 #include <process.h>
 #include <locale.h>
+#include <string>
 #include <vector>
 #include <set>
 #include <stack>
@@ -82,6 +83,7 @@
 #include <cmath>
 #include <list>
 #include <map>
+#include <sstream>
 using namespace std;
 
 #ifdef NDEBUG
@@ -115,6 +117,31 @@ inline CString LoadString(UINT nID)
 {
 	CString strResult;
 	strResult.LoadString(nID);
+	return strResult;
+}
+
+inline CString FormatString(LPCTSTR pszFormat, ...)
+{
+	CString strResult;
+
+	va_list argList;
+	va_start(argList, pszFormat);
+	strResult.FormatV(pszFormat, argList);
+	va_end(argList);
+
+	return strResult;
+}
+
+inline CString FormatString(UINT nFormatID, ...)
+{
+	CString strResult, strFormat;
+	VERIFY(strFormat.LoadString(nFormatID));
+
+	va_list argList;
+	va_start(argList, nFormatID);
+	strResult.FormatV(strFormat, argList);
+	va_end(argList);
+
 	return strResult;
 }
 

@@ -80,6 +80,7 @@ END_MESSAGE_MAP()
 CMyScrollView::CMyScrollView()
 	: m_pAnchorWnd(NULL)
 {
+	m_nMapMode = MM_TEXT;
 }
 
 CMyScrollView::~CMyScrollView()

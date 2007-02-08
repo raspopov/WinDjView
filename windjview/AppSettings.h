@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "Drawing.h"
-
 struct CDisplaySettings
 {
 	enum ScaleMethod
@@ -66,60 +64,83 @@ struct CDisplaySettings
 	bool bInvertColors;
 };
 
-struct CAppSettings
+struct CPrintSettings
 {
-	static int nWindowPosX;
-	static int nWindowPosY;
-	static int nWindowWidth;
-	static int nWindowHeight;
+	CPrintSettings() :
+		fMarginLeft(0.0), fMarginTop(0.0), fMarginRight(0.0), fMarginBottom(0.0),
+		fPosLeft(0.0), fPosTop(0.0), bCenterImage(true), bClipContent(false),
+		fScale(100.0), bShrinkOversized(true), bScaleToFit(false),
+		bIgnorePrinterMargins(false), nCopies(1), bCollate(false),
+		bLandscape(false), bTwoPages(false), nPaperCode(0) {}
 
-	static bool bWindowMaximized;
-	static bool bChildMaximized;
+	double fMarginLeft;
+	double fMarginTop;
+	double fMarginRight;
+	double fMarginBottom;
 
-	static bool bToolbar;
-	static bool bStatusBar;
+	double fPosLeft;
+	double fPosTop;
+	BOOL bCenterImage;
+	BOOL bClipContent;
 
-	static int nDefaultZoomType;
-	static double fDefaultZoom;
-	static int nDefaultLayout;
-	static bool bFirstPageAlone;
-	static int nDefaultMode;
-
-	static bool bNavPaneCollapsed;
-	static int nNavPaneWidth;
-
-	static bool bRestoreAssocs;
-	static bool bGenAllThumbnails;
-	static bool bFullscreenClicks;
-	static bool bFullscreenHideScroll;
-	static bool bWarnCloseMultiple;
-	static bool bInvertWheelZoom;
-	static bool bCloseOnEsc;
-	static bool bWrapLongBookmarks;
-	static bool bRestoreView;
-
-	static CString strLanguage;
-
-	static CDisplaySettings displaySettings;
-
-	static CPrintSettings printSettings;
+	double fScale;
+	BOOL bShrinkOversized;
+	BOOL bScaleToFit;
+	BOOL bIgnorePrinterMargins;
 
 	// The following settings are not stored in registry
-	static int nCopies;
-	static bool bCollate;
+	DWORD nCopies;
+	BOOL bCollate;
 
-	static bool bLandscape;
-	static bool bTwoPages;
+	BOOL bLandscape;
+	BOOL bTwoPages;
 
-	static CString strPrinter;
-	static WORD nPaper;
+	CString strPrinter;
+	WORD nPaperCode;
+};
 
-	static CString strVersion;
+struct CAppSettings
+{
+	CAppSettings();
 
-	static bool bLocalized;
-	static HMENU hDjVuMenu;
-	static HMENU hDefaultMenu;
+	int nWindowPosX;
+	int nWindowPosY;
+	int nWindowWidth;
+	int nWindowHeight;
 
-	static CString strFind;
-	static bool bMatchCase;
+	bool bWindowMaximized;
+	bool bChildMaximized;
+
+	bool bToolbar;
+	bool bStatusBar;
+
+	int nDefaultZoomType;
+	double fDefaultZoom;
+	int nDefaultLayout;
+	bool bFirstPageAlone;
+	int nDefaultMode;
+
+	bool bNavPaneCollapsed;
+	int nNavPaneWidth;
+
+	bool bRestoreAssocs;
+	bool bGenAllThumbnails;
+	bool bFullscreenClicks;
+	bool bFullscreenHideScroll;
+	bool bWarnCloseMultiple;
+	bool bInvertWheelZoom;
+	bool bCloseOnEsc;
+	bool bWrapLongBookmarks;
+	bool bRestoreView;
+
+	DWORD nLanguage;
+
+	CString strVersion;
+
+	bool bLocalized;
+	HMENU hDjVuMenu;
+	HMENU hDefaultMenu;
+
+	CString strFind;
+	bool bMatchCase;
 };

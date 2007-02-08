@@ -34,7 +34,7 @@ IMPLEMENT_DYNAMIC(CSettingsAssocsPage, CPropertyPage)
 CSettingsAssocsPage::CSettingsAssocsPage()
 	: CPropertyPage(CSettingsAssocsPage::IDD)
 {
-	m_bRestoreAssocs = CAppSettings::bRestoreAssocs;
+	m_bRestoreAssocs = theApp.GetAppSettings()->bRestoreAssocs;
 }
 
 CSettingsAssocsPage::~CSettingsAssocsPage()

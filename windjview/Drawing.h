@@ -21,6 +21,7 @@
 
 
 struct CDisplaySettings;
+struct CPrintSettings;
 
 class CDIB : public CBitmap
 {
@@ -45,6 +46,7 @@ public:
 	static CDIB* CreateDIB(int nWidth, int nHeight, int nBitCount);
 
 	CDIB* ReduceColors();
+	CDIB* Crop(const CRect& rcCrop);
 	void Save(LPCTSTR pszPathName) const;
 
 protected:
@@ -83,29 +85,6 @@ protected:
 	CLightweightDIB() {}
 };
 
-struct CPrintSettings
-{
-	CPrintSettings() :
-		fMarginLeft(0.0), fMarginTop(0.0), fMarginRight(0.0), fMarginBottom(0.0),
-		fPosLeft(0.0), fPosTop(0.0), bCenterImage(true), bClipContent(false),
-		fScale(100.0), bShrinkOversized(true), bScaleToFit(false),
-		bIgnorePrinterMargins(false) {}
-
-	double fMarginLeft;
-	double fMarginTop;
-	double fMarginRight;
-	double fMarginBottom;
-
-	double fPosLeft;
-	double fPosTop;
-	BOOL bCenterImage;
-	BOOL bClipContent;
-
-	double fScale;
-	BOOL bShrinkOversized;
-	BOOL bScaleToFit;
-	BOOL bIgnorePrinterMargins;
-};
 
 CDIB* RenderPixmap(GPixmap& pm, const CDisplaySettings& displaySettings);
 CDIB* RenderBitmap(GBitmap& bm, const CDisplaySettings& displaySettings);
@@ -119,4 +98,9 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRe
 unsigned int __stdcall PrintThreadProc(void* pvData);
 
 void FrameRect(CDC* pDC, const CRect& rect, COLORREF color);
-void DrawDottedLine(CDC* pDC, COLORREF color, CPoint ptStart, CPoint ptEnd);
+void InvertFrame(CDC* pDC, const CRect& rect);
+void DrawDottedLine(CDC* pDC, const CPoint& ptStart, const CPoint& ptEnd, COLORREF color);
+void DrawDottedRect(CDC* pDC, const CRect& rect, COLORREF color);
+void HighlightRect(CDC* pDC, const CRect& rect, COLORREF color, double fTransparency);
+
+COLORREF ChangeBrightness(COLORREF color, double fFactor);

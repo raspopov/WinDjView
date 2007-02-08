@@ -21,6 +21,7 @@
 #include "WinDjView.h"
 #include "NavPane.h"
 #include "MainFrm.h"
+#include "Drawing.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -65,19 +66,10 @@ BEGIN_MESSAGE_MAP(CNavPaneWnd, CWnd)
 	ON_WM_MOUSEMOVE()
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
-	ON_MESSAGE_VOID(WM_LANGUAGE_CHANGED, OnLanguageChanged)
 END_MESSAGE_MAP()
 
 
 // CNavPaneWnd message handlers
-
-COLORREF ChangeBrightness(COLORREF color, double fFactor)
-{
-	int nRed = min(static_cast<int>(GetRValue(color)*fFactor), 255);
-	int nGreen = min(static_cast<int>(GetGValue(color)*fFactor), 255);
-	int nBlue = min(static_cast<int>(GetBValue(color)*fFactor), 255);
-	return RGB(nRed, nGreen, nBlue);
-}
 
 void CNavPaneWnd::OnPaint() 
 {
@@ -456,6 +448,8 @@ int CNavPaneWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_imgClose.Create(IDB_CLOSE, 10, 0, RGB(192, 192, 192));
 
+	theApp.AddObserver(this);
+
 	return 0;
 }
 
@@ -578,10 +572,13 @@ void CNavPaneWnd::SetTabName(int nTab, const CString& strName)
 	}
 }
 
-void CNavPaneWnd::OnLanguageChanged()
+void CNavPaneWnd::OnUpdate(const Observable* source, const Message* message)
 {
-	m_toolTip.DelTool(this);
-	m_toolTip.AddTool(this, IDS_TOOLTIP_HIDE);
+	if (message->code == APP_LANGUAGE_CHANGED)
+	{
+		m_toolTip.DelTool(this);
+		m_toolTip.AddTool(this, IDS_TOOLTIP_HIDE);
+	}
 }
 
 void CNavPaneWnd::SetTabBorder(CWnd* pTabContent, bool bDrawBorder)

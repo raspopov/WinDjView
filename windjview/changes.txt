@@ -7,6 +7,7 @@ Changes in version 0.4.4 (2007-??-??):
 + Page number can be specified when opening files via command line or DDE.
 + Back/Forward keys on multimedia keyboards now work as Alt+arrows.
 + Added option to invert colors.
++ Added export of a page part to a bitmap file.
 * Fixed slow loading of large bookmark trees.
 * Reorganized Settings dialog.
 * Improvements for files with large shared dictionaries:

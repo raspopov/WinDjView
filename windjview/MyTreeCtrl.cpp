@@ -195,23 +195,7 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 			pDC->DrawText(pNode->strLabel, pNode->rcText - ptOffset, nFlags);
 
 			if (GetFocus() == this)
-			{
-				LOGBRUSH brush;
-				brush.lbColor = crSelText;
-				brush.lbStyle = BS_SOLID;
-
-				CPen pen(PS_COSMETIC | PS_ALTERNATE, 1, &brush, 0, NULL);
-				CPen* pOldPen = pDC->SelectObject(&pen);
-
-				pDC->MoveTo(rcSel.TopLeft() + (-ptOffset));
-				pDC->LineTo(CPoint(rcSel.right, rcSel.top) + (-ptOffset));
-				pDC->MoveTo(CPoint(rcSel.right - 1, rcSel.top + (rcSel.Width() + 1) % 2) + (-ptOffset));
-				pDC->LineTo(CPoint(rcSel.right - 1, rcSel.bottom) + (-ptOffset));
-				pDC->MoveTo(rcSel.TopLeft() + (-ptOffset));
-				pDC->LineTo(CPoint(rcSel.left, rcSel.bottom) + (-ptOffset));
-				pDC->MoveTo(CPoint(rcSel.left + 1, rcSel.bottom - 1) + (-ptOffset));
-				pDC->LineTo(CPoint(rcSel.right, rcSel.bottom - 1) + (-ptOffset));
-			}
+				DrawDottedRect(pDC, rcSel - ptOffset, crSelText);
 		}
 		else
 		{
@@ -239,30 +223,26 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 			if (m_pRoot->pChild != pNode)
 			{
 				// This node is not the first child of the root, so there should be a vertical top half-line here
-				DrawDottedLine(pDC, crLines,
-					CPoint(pNode->nLineX, pNode->rcNode.top) + (-ptOffset),
-					CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset));
+				DrawDottedLine(pDC, CPoint(pNode->nLineX, pNode->rcNode.top) + (-ptOffset),
+					CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset), crLines);
 			}
 
 			if (pNode->HasSibling())
 			{
 				// This node is not the last child, so there should be a vertical bottom half-line here
-				DrawDottedLine(pDC, crLines,
-					CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset),
-					CPoint(pNode->nLineX, pNode->rcNode.bottom) + (-ptOffset));
+				DrawDottedLine(pDC,	CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset),
+					CPoint(pNode->nLineX, pNode->rcNode.bottom) + (-ptOffset), crLines);
 			}
 
 			// Horizontal line
-			DrawDottedLine(pDC, crLines,
-				CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset),
-				CPoint(pNode->nLineStopX, pNode->nLineY) + (-ptOffset));
+			DrawDottedLine(pDC, CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset),
+				CPoint(pNode->nLineStopX, pNode->nLineY) + (-ptOffset), crLines);
 
 			if (pNode->HasChildren() && !pNode->bCollapsed)
 			{
 				// Vertical line to the first child
-				DrawDottedLine(pDC, crLines,
-					CPoint(pNode->pChild->nLineX, pNode->nLineY) + (-ptOffset),
-					CPoint(pNode->pChild->nLineX, pNode->rcNode.bottom) + (-ptOffset));
+				DrawDottedLine(pDC, CPoint(pNode->pChild->nLineX, pNode->nLineY) + (-ptOffset),
+					CPoint(pNode->pChild->nLineX, pNode->rcNode.bottom) + (-ptOffset), crLines);
 			}
 
 			TreeNode* pParent = pNode->pParent;
@@ -271,9 +251,8 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 				if (pParent->HasSibling())
 				{
 					// This node has a sibling node, so there should be a full vertical line here
-					DrawDottedLine(pDC, crLines,
-						CPoint(pParent->nLineX, pNode->rcNode.top) + (-ptOffset),
-						CPoint(pParent->nLineX, pNode->rcNode.bottom) + (-ptOffset));
+					DrawDottedLine(pDC, CPoint(pParent->nLineX, pNode->rcNode.top) + (-ptOffset),
+						CPoint(pParent->nLineX, pNode->rcNode.bottom) + (-ptOffset), crLines);
 				}
 
 				pParent = pParent->pParent;

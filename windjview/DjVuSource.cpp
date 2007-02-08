@@ -21,6 +21,7 @@
 #include "WinDjView.h"
 #include "DjVuSource.h"
 #include "AppSettings.h"
+#include "XMLParser.h"
 
 
 #ifdef _DEBUG
@@ -28,6 +29,335 @@
 #endif
 
 
+// PageInfo
+
+void PageInfo::Update(GP<DjVuImage> pImage, bool bNeedText)
+{
+	if (pImage == NULL)
+		return;
+
+	if (!bDecoded)
+	{
+		nInitialRotate = GetTotalRotate(pImage, 0);
+
+		szPage = CSize(pImage->get_width(), pImage->get_height());
+		if (nInitialRotate % 2 != 0)
+			swap(szPage.cx, szPage.cy);
+
+		nDPI = pImage->get_dpi();
+		if (szPage.cx <= 0 || szPage.cy <= 0)
+		{
+			szPage.cx = 100;
+			szPage.cy = 100;
+			nDPI = 100;
+		}
+
+		bHasText = !!(pImage->get_djvu_file()->text != NULL);
+		bDecoded = true;
+	}
+
+	try
+	{
+		if (!bTextDecoded && bNeedText)
+			DecodeText(pImage->get_djvu_file()->text);
+	}
+	catch (GException&)
+	{
+	}
+
+	try
+	{
+		if (!bAnnoDecoded)
+			DecodeAnno(pImage->get_anno());
+	}
+	catch (GException&)
+	{
+	}
+}
+
+void PageInfo::Update(const PageInfo& info)
+{
+	if (!bDecoded && info.bDecoded)
+	{
+		nInitialRotate = info.nInitialRotate;
+		szPage = info.szPage;
+		nDPI = info.nDPI;
+		bHasText = info.bHasText;
+		bDecoded = true;
+	}
+
+	if (!bTextDecoded && info.bTextDecoded)
+	{
+		pText = info.pText;
+		bTextDecoded = true;
+	}
+
+	if (!bAnnoDecoded && info.bAnnoDecoded)
+	{
+		pAnt = info.pAnt;
+		bAnnoDecoded = true;
+	}
+}
+
+void PageInfo::DecodeAnno(GP<ByteStream> pAnnoStream)
+{
+	if (pAnnoStream == NULL)
+		return;
+
+	pAnnoStream->seek(0);
+	GP<DjVuAnno> pDjVuAnno = DjVuAnno::create();
+	pDjVuAnno->decode(pAnnoStream);
+	pAnt = pDjVuAnno->ant;
+	bAnnoDecoded = true;
+}
+
+void PageInfo::DecodeText(GP<ByteStream> pTextStream)
+{
+	if (pTextStream == NULL)
+		return;
+
+	pTextStream->seek(0);
+	GP<DjVuText> pDjVuText = DjVuText::create();
+	pDjVuText->decode(pTextStream);
+	pText = pDjVuText->txt;
+	bTextDecoded = true;
+}
+
+
+// DjVuHighlight
+
+const TCHAR pszTagHighlight[] = _T("highlight");
+const TCHAR pszAttrBorder[] = _T("border");
+const TCHAR pszAttrBorderColor[] = _T("border-color");
+const TCHAR pszAttrFill[] = _T("fill");
+const TCHAR pszAttrFillColor[] = _T("fill-color");
+const TCHAR pszAttrFillTransparency[] = _T("fill-transparency");
+
+const TCHAR pszTagRect[] = _T("rect");
+const TCHAR pszAttrLeft[] = _T("left");
+const TCHAR pszAttrTop[] = _T("top");
+const TCHAR pszAttrRight[] = _T("right");
+const TCHAR pszAttrBottom[] = _T("bottom");
+
+void DjVuHighlight::UpdateBounds()
+{
+	if (rects.empty())
+		return;
+
+	rectBounds = rects[0];
+	for (size_t i = 1; i < rects.size(); ++i)
+		rectBounds.recthull(GRect(rectBounds), rects[i]);
+}
+
+GUTF8String DjVuHighlight::GetXML() const
+{
+	CString strRects;
+	for (size_t i = 0; i < rects.size(); ++i)
+	{
+		strRects += FormatString(_T("<%s %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" />\n"),
+				pszTagRect, pszAttrLeft, rects[i].xmin, pszAttrTop, rects[i].ymin,
+				pszAttrRight, rects[i].xmax, pszAttrBottom, rects[i].ymax);
+	}
+
+	CString strBorder;
+	strBorder.Format(_T("%s=\"%d\""), pszAttrBorder, nBorderType);
+	if (nBorderType == BorderSolid)
+		strBorder += FormatString(_T(" %s=\"#%06x\""), pszAttrBorderColor, crBorder);
+
+	CString strFill;
+	strFill.Format(_T("%s=\"%d\""), pszAttrFill, nFillType);
+	if (nFillType == FillHighlight)
+	{
+		strFill += FormatString(_T(" %s=\"#%06x\" %s=\"%d%%\""), pszAttrFillColor, crFill,
+				pszAttrFillTransparency, static_cast<int>(fTransparency*100 + 0.5));
+	}
+
+	CString strResult;
+	strResult.Format(_T("<%s %s %s >\n%s</%s>\n"), pszTagHighlight,
+			strBorder, strFill, strRects, pszTagHighlight);
+
+	return MakeUTF8String(strResult);
+}
+
+void DjVuHighlight::Load(const XMLNode& node)
+{
+	if (MakeCString(node.tagName) != pszTagHighlight)
+		return;
+
+	int borderType = -1;
+	if (node.GetIntAttribute(pszAttrBorder, borderType))
+	{
+		if (borderType >= BorderNone && borderType <= BorderXOR)
+			nBorderType = borderType;
+
+		if (borderType == BorderSolid)
+		{
+			COLORREF color;
+			if (node.GetColorAttribute(pszAttrBorderColor, color))
+				crBorder = color;
+		}
+	}
+
+	int fillType = -1;
+	if (node.GetIntAttribute(pszAttrFill, fillType))
+	{
+		if (fillType >= FillNone && fillType <= FillXOR)
+			nFillType = fillType;
+
+		if (fillType == FillHighlight)
+		{
+			COLORREF color;
+			if (node.GetColorAttribute(pszAttrFillColor, color))
+				crFill = color;
+
+			int nPercent;
+			if (node.GetIntAttribute(pszAttrFillTransparency, nPercent))
+			{
+				if (nPercent >= 0 && nPercent <= 100)
+					fTransparency = nPercent / 100.0;
+			}
+		}
+	}
+
+	rects.clear();
+	list<XMLNode>::const_iterator it;
+	for (it = node.childElements.begin(); it != node.childElements.end(); ++it)
+	{
+		const XMLNode& child = *it;
+		if (MakeCString(child.tagName) == pszTagRect)
+		{
+			GRect rect;
+			if (!child.GetIntAttribute(pszAttrLeft, rect.xmin)
+					|| !child.GetIntAttribute(pszAttrTop, rect.ymin)
+					|| !child.GetIntAttribute(pszAttrRight, rect.xmax)
+					|| !child.GetIntAttribute(pszAttrBottom, rect.ymax))
+				continue;
+
+			rects.push_back(rect);
+		}
+	}
+
+	UpdateBounds();
+}
+
+
+// DjVuPageData
+
+GUTF8String DjVuPageData::GetXML() const
+{
+	GUTF8String result;
+
+	list<DjVuHighlight>::const_iterator it;
+	for (it = highlights.begin(); it != highlights.end(); ++it)
+	{
+		const DjVuHighlight& highlight = *it;
+		result += highlight.GetXML();
+	}
+
+	return result;
+}
+
+void DjVuPageData::Load(const XMLNode& node)
+{
+	highlights.clear();
+	list<XMLNode>::const_iterator it;
+	for (it = node.childElements.begin(); it != node.childElements.end(); ++it)
+	{
+		const XMLNode& child = *it;
+		if (MakeCString(child.tagName) == pszTagHighlight)
+		{
+			highlights.push_back(DjVuHighlight());
+			DjVuHighlight& highlight = highlights.back();
+			highlight.Load(child);
+
+			if (highlight.rects.empty())
+				highlights.pop_back();
+		}
+	}
+}
+
+// DjVuUserData
+
+const TCHAR pszTagData[] = _T("data");
+const TCHAR pszAttrStartPage[] = _T("start-page");
+const TCHAR pszAttrOffsetX[] = _T("offset-x");
+const TCHAR pszAttrOffsetY[] = _T("offset-y");
+const TCHAR pszAttrZoomType[] = _T("zoom-type");
+const TCHAR pszAttrZoom[] = _T("zoom");
+const TCHAR pszAttrLayout[] = _T("layout");
+const TCHAR pszAttrFirstPage[] = _T("first-page");
+const TCHAR pszAttrDisplayMode[] = _T("display-mode");
+
+const TCHAR pszTagPage[] = _T("page");
+const TCHAR pszAttrNumber[] = _T("number");
+
+DjVuUserData::DjVuUserData()
+	: nPage(-1), ptOffset(0, 0), nZoomType(-10), fZoom(100.0), nLayout(-1),
+	  bFirstPageAlone(false), nDisplayMode(-1)
+{
+}
+
+GUTF8String DjVuUserData::GetXML() const
+{
+	GUTF8String result;
+
+	CString strHead;
+	strHead.Format(_T("<%s %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%.2lf%%\" %s=\"%d\" %s=\"%d\" %s=\"%d\" >\n"),
+		pszTagData, pszAttrStartPage, nPage, pszAttrOffsetX, ptOffset.x, pszAttrOffsetY, ptOffset.y,
+		pszAttrZoomType, nZoomType, pszAttrZoom, fZoom, pszAttrLayout, nLayout,
+		pszAttrFirstPage, static_cast<int>(bFirstPageAlone), pszAttrDisplayMode, nDisplayMode);
+
+	result += MakeUTF8String(strHead);
+
+	map<int, DjVuPageData>::const_iterator it;
+	for (it = pageData.begin(); it != pageData.end(); ++it)
+	{
+		int nPage = (*it).first + 1;
+		const DjVuPageData& data = (*it).second;
+		result += MakeUTF8String(FormatString(_T("<%s %s=\"%d\" >\n"), pszTagPage, pszAttrNumber, nPage));
+		result += data.GetXML();
+		result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagPage));
+	}
+
+	result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagData));
+
+	return result;
+}
+
+void DjVuUserData::Load(const XMLNode& node)
+{
+	if (MakeCString(node.tagName) != pszTagData)
+		return;
+
+	node.GetIntAttribute(pszAttrStartPage, nPage);
+	node.GetLongAttribute(pszAttrOffsetX, ptOffset.x);
+	node.GetLongAttribute(pszAttrOffsetY, ptOffset.y);
+	node.GetIntAttribute(pszAttrZoomType, nZoomType);
+	node.GetDoubleAttribute(pszAttrZoom, fZoom);
+	node.GetIntAttribute(pszAttrLayout, nLayout);
+	node.GetIntAttribute(pszAttrDisplayMode, nDisplayMode);
+
+	int nFirstPage;
+	if (node.GetIntAttribute(pszAttrStartPage, nFirstPage))
+		bFirstPageAlone = (nFirstPage != 0);
+
+	pageData.clear();
+	list<XMLNode>::const_iterator it;
+	for (it = node.childElements.begin(); it != node.childElements.end(); ++it)
+	{
+		const XMLNode& child = *it;
+		if (MakeCString(child.tagName) == pszTagPage)
+		{
+			int pageNo;
+			if (!child.GetIntAttribute(pszAttrNumber, pageNo))
+				continue;
+
+			DjVuPageData& data = pageData[pageNo - 1];
+			data.Load(child);
+		}
+	}
+}
+	
 // DjVuSource
 
 map<CString, DjVuSource*> DjVuSource::openDocuments;
@@ -491,10 +821,4 @@ bool DjVuSource::SaveAs(const CString& strFileName)
 	{
 		return false;
 	}
-}
-
-DjVuUserData::DjVuUserData()
-	: nPage(-1), ptOffset(0, 0), nZoomType(-10), fZoom(100.0), nLayout(-1),
-	  bFirstPageAlone(CAppSettings::bFirstPageAlone), nDisplayMode(-1)
-{
 }

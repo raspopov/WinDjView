@@ -90,10 +90,7 @@ BOOL CSettingsDlg::OnInitDialog()
 	ScreenToClient(rcPage);
 	GetClientRect(rcClient);
 
-	CString strVersion;
-	strVersion.Format(IDS_VERSION_INFO, CURRENT_VERSION);
-
-	m_ctlAbout.Create(strVersion, WS_CHILD | WS_VISIBLE,
+	m_ctlAbout.Create(FormatString(IDS_VERSION_INFO, CURRENT_VERSION), WS_CHILD | WS_VISIBLE,
 		CRect(rcPage.left, rcOk.top, rcOk.left - 5, rcClient.bottom - 5), this, IDC_STATIC_ABOUT);
 	m_ctlAbout.SetFont(&m_font);
 

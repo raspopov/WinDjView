@@ -52,6 +52,7 @@ HCURSOR CDjVuView::hCursorDrag = NULL;
 HCURSOR CDjVuView::hCursorLink = NULL;
 HCURSOR CDjVuView::hCursorText = NULL;
 HCURSOR CDjVuView::hCursorMagnify = NULL;
+HCURSOR CDjVuView::hCursorCross = NULL;
 
 const int c_nDefaultMargin = 4;
 const int c_nDefaultShadowMargin = 3;
@@ -121,9 +122,9 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_WM_MOUSEACTIVATE()
 	ON_WM_LBUTTONDBLCLK()
 	ON_COMMAND(ID_PAGE_INFORMATION, OnPageInformation)
-	ON_COMMAND(ID_EXPORT_PAGE, OnExportPage)
-	ON_COMMAND_RANGE(ID_MODE_DRAG, ID_MODE_MAGNIFY, OnChangeMode)
-	ON_UPDATE_COMMAND_UI_RANGE(ID_MODE_DRAG, ID_MODE_MAGNIFY, OnUpdateMode)
+	ON_COMMAND_RANGE(ID_EXPORT_PAGE, ID_EXPORT_SELECTION, OnExportPage)
+	ON_COMMAND_RANGE(ID_MODE_DRAG, ID_MODE_SELECT_RECT, OnChangeMode)
+	ON_UPDATE_COMMAND_UI_RANGE(ID_MODE_DRAG, ID_MODE_SELECT_RECT, OnUpdateMode)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
 	ON_COMMAND(ID_FILE_EXPORT_TEXT, OnFileExportText)
@@ -135,6 +136,9 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND(ID_LAYOUT_FIRSTPAGE_ALONE, OnFirstPageAlone)
 	ON_UPDATE_COMMAND_UI(ID_LAYOUT_FIRSTPAGE_ALONE, OnUpdateFirstPageAlone)
 	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+	ON_COMMAND(ID_HIGHLIGHT_SEL, OnHighlightSelection)
+	ON_UPDATE_COMMAND_UI(ID_HIGHLIGHT_SEL, OnUpdateHighlightSelection)
+	ON_COMMAND(ID_REMOVE_HIGHLIGHT, OnRemoveHighlight)
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -149,7 +153,9 @@ CDjVuView::CDjVuView()
 	  m_bNeedUpdate(false), m_bCursorHidden(false), m_bDraggingPage(false),
 	  m_bDraggingText(false), m_bFirstPageAlone(false), m_bInitialized(false),
 	  m_bDraggingMagnify(false), m_pHScrollBar(NULL), m_pVScrollBar(NULL),
-	  m_bControlDown(false), m_nType(Normal), m_bPanning(false)
+	  m_bControlDown(false), m_nType(Normal), m_bPanning(false),
+	  m_bDraggingRect(false), m_nSelectionPage(-1), m_bHoverHighlight(false),
+	  m_pHoverHighlight(NULL), m_bIgnoreMouseLeave(false), m_pClickedHighlight(NULL)
 {
 	m_nMargin = c_nDefaultMargin;
 	m_nShadowMargin = c_nDefaultShadowMargin;
@@ -235,7 +241,7 @@ void CDjVuView::OnDraw(CDC* pDC)
 
 	dcOffscreen.IntersectClipRect(rcClip);
 
-	CPoint ptScrollPos = GetDeviceScrollPosition();
+	CPoint ptScrollPos = GetScrollPosition();
 	rcClip.OffsetRect(ptScrollPos);
 
 	CRect rcIntersect;
@@ -279,19 +285,36 @@ void CDjVuView::OnDraw(CDC* pDC)
 			for (GPosition pos = page.info.pAnt->map_areas; pos; ++pos)
 			{
 				GP<GMapArea> pArea = page.info.pAnt->map_areas[pos];
-				DrawMapArea(&dcOffscreen, pArea, nPage, !!(pArea == m_pActiveLink) || m_bShiftDown);
+				DrawMapArea(&dcOffscreen, pArea, nPage, !!(pArea == m_pHoverArea) || m_bShiftDown);
 			}
+		}
+
+		// Draw highlights
+		map<int, DjVuPageData>::iterator it = m_pSource->GetUserData()->pageData.find(nPage);
+		if (it != m_pSource->GetUserData()->pageData.end())
+		{
+			DjVuPageData& pageData = (*it).second;
+			for (list<DjVuHighlight>::iterator hit = pageData.highlights.begin(); hit != pageData.highlights.end(); ++hit)
+				DrawHighlight(&dcOffscreen, *hit, nPage);
 		}
 
 		// Draw selection
 		for (GPosition pos = page.selection; pos; ++pos)
 		{
 			GRect rect = page.selection[pos]->rect;
-			CRect rcText = TranslatePageRect(nPage, rect, true);
+			CRect rcText = TranslatePageRect(nPage, rect);
 
 			rcText.OffsetRect(-ptScrollPos);
 			dcOffscreen.InvertRect(rcText);
 		}
+	}
+
+	// Draw rectangle selection
+	if (m_nSelectionPage != -1 && !m_rcSelectionRect.isempty())
+	{
+		CRect rcSel = TranslatePageRect(m_nSelectionPage, m_rcSelectionRect);
+		rcSel.OffsetRect(-ptScrollPos);
+		InvertFrame(&dcOffscreen, rcSel);
 	}
 
 	rcClip.OffsetRect(-ptScrollPos);
@@ -302,10 +325,8 @@ void CDjVuView::OnDraw(CDC* pDC)
 
 void CDjVuView::DrawMapArea(CDC* pDC, GP<GMapArea> pArea, int nPage, bool bActive)
 {
-	CRect rcArea = TranslatePageRect(nPage, pArea->get_bound_rect());
-	rcArea.OffsetRect(-GetDeviceScrollPosition());
-	CPoint points[] = { rcArea.TopLeft(), CPoint(rcArea.right, rcArea.top),
-		rcArea.BottomRight(), CPoint(rcArea.left, rcArea.bottom), rcArea.TopLeft() };
+	CRect rect = TranslatePageRect(nPage, pArea->get_bound_rect(), true);
+	rect.OffsetRect(-GetScrollPosition());
 
 	// Draw border
 	if (bActive || pArea->border_always_visible)
@@ -314,75 +335,62 @@ void CDjVuView::DrawMapArea(CDC* pDC, GP<GMapArea> pArea, int nPage, bool bActiv
 		{
 			DWORD dwColor = pArea->border_color;
 			COLORREF crBorder = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
-			CPen pen(PS_SOLID, 1, crBorder);
-			CPen* pOldPen = pDC->SelectObject(&pen);
-			pDC->Polyline((LPPOINT)points, 5);
-			pDC->SelectObject(pOldPen);
+			FrameRect(pDC, rect, crBorder);
+
+			rect.DeflateRect(1, 1);
 		}
 		else if (pArea->border_type != GMapArea::NO_BORDER)
 		{
-			// Draw XOR border
-			CRect rcHorz(rcArea.TopLeft(), CSize(rcArea.Width() + 1, 1));
-			pDC->InvertRect(rcHorz);
-			rcHorz.OffsetRect(0, rcArea.Height());
-			pDC->InvertRect(rcHorz);
-
-			CRect rcVert(rcArea.TopLeft() + CPoint(0, 1), CSize(1, rcArea.Height() - 1));
-			pDC->InvertRect(rcVert);
-			rcVert.OffsetRect(rcArea.Width(), 0);
-			pDC->InvertRect(rcVert);
+			// XOR border
+			InvertFrame(pDC, rect);
+			rect.DeflateRect(1, 1);
 		}
 	}
 
-	rcArea.DeflateRect(1, 1);
-
-	// Hilight area
+	// Fill
 	if (pArea->hilite_color == 0xff000000)
 	{
-		// XOR hilighting
-		pDC->InvertRect(rcArea);
+		pDC->InvertRect(rect);
 	}
 	else if (pArea->hilite_color != 0xffffffff)
 	{
-		// Color hilighting
-		CDIB* pDIB = CDIB::CreateDIB(rcArea.Width(), rcArea.Height(), 24);
-		CDC dc;
-		dc.CreateCompatibleDC(pDC);
-		CBitmap* pOldBitmap = dc.SelectObject(pDIB);
-
-		dc.BitBlt(0, 0, rcArea.Width(), rcArea.Height(), pDC, rcArea.left, rcArea.top, SRCCOPY);
-
-		int nRowLength = rcArea.Width()*3;
-		while (nRowLength % 4 != 0)
-			++nRowLength;
-
-		LPBYTE pBits = pDIB->GetBits();
-
-		int nRed = (pArea->hilite_color & 0xff0000) >> (16 + 2);
-		int nGreen = (pArea->hilite_color & 0xff00) >> (8 + 2);
-		int nBlue = (pArea->hilite_color & 0xff) >> 2;
-		for (int y = 0; y < rcArea.Height(); ++y, pBits += nRowLength)
-		{
-			LPBYTE pPixel = pBits;
-			for (int x = 0; x < rcArea.Width(); ++x)
-			{
-				*pPixel = ((((int) *pPixel << 1) + (int) *pPixel) >> 2) + nBlue;
-				++pPixel;
-				*pPixel = ((((int) *pPixel << 1) + (int) *pPixel) >> 2) + nGreen;
-				++pPixel;
-				*pPixel = ((((int) *pPixel << 1) + (int) *pPixel) >> 2) + nRed;
-				++pPixel;
-			}
-		}
-
-		pDC->BitBlt(rcArea.left, rcArea.top, rcArea.Width(), rcArea.Height(), &dc, 0, 0, SRCCOPY);
-
-		dc.SelectObject(pOldBitmap);
-		delete pDIB;
+		DWORD dwColor = pArea->hilite_color;
+		COLORREF crFill = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
+		HighlightRect(pDC, rect, crFill, 0.75);
 	}
 }
 
-COLORREF ChangeBrightness(COLORREF color, double fFactor);
+void CDjVuView::DrawHighlight(CDC* pDC, DjVuHighlight& highlight, int nPage)
+{
+	for (size_t i = 0; i < highlight.rects.size(); ++i)
+	{
+		CRect rect = TranslatePageRect(nPage, highlight.rects[i]);
+		rect.OffsetRect(-GetScrollPosition());
+
+		// Border
+		if (highlight.nBorderType == DjVuHighlight::BorderSolid)
+		{
+			FrameRect(pDC, rect, highlight.crBorder);
+			rect.DeflateRect(1, 1);
+		}
+		if (highlight.nBorderType == DjVuHighlight::BorderXOR)
+		{
+			InvertFrame(pDC, rect);
+			rect.DeflateRect(1, 1);
+		}
+
+		// Fill
+		if (highlight.nFillType == DjVuHighlight::FillHighlight)
+		{
+			HighlightRect(pDC, rect, highlight.crFill,
+				(&highlight == m_pHoverHighlight ? 0.75 : 1.0) * highlight.fTransparency);
+		}
+		if (highlight.nFillType == DjVuHighlight::FillXOR)
+		{
+			pDC->InvertRect(rect);
+		}
+	}
+}
 
 void CDjVuView::DrawPage(CDC* pDC, int nPage)
 {
@@ -398,7 +406,7 @@ void CDjVuView::DrawPage(CDC* pDC, int nPage)
 	if (m_nType == Fullscreen || m_nType == Magnify && GetMainFrame()->IsFullscreenMode())
 		clrBackground = RGB(0, 0, 0);
 
-	CPoint ptScrollPos = GetDeviceScrollPosition();
+	CPoint ptScrollPos = GetScrollPosition();
 
 	CRect rcClip;
 	pDC->GetClipBox(rcClip);
@@ -523,12 +531,15 @@ void CDjVuView::OnInitialUpdate()
 {
 	CMyScrollView::OnInitialUpdate();
 
+	theApp.AddObserver(this);
+
 	m_pSource = GetDocument()->GetSource();
 
+	CAppSettings* pSettings = theApp.GetAppSettings();
 	DjVuUserData* pData = m_pSource->GetUserData();
-	int nStartupPage = m_nPage;
-	int bStartupOffset = false;
-	CPoint ptStartupOffset = pData->ptOffset;
+
+	// Save m_nPage, because UpdateLayout, which is called before RenderPage, can change it
+	int nStartupPage = (m_nPage >= 0 && m_nPage < GetPageCount() ? m_nPage : 0);
 
 	CBitmap bitmap;
 	bitmap.LoadBitmap(IDB_HOURGLASS);
@@ -554,13 +565,11 @@ void CDjVuView::OnInitialUpdate()
 
 	if (m_nType == Normal)
 	{
-		bStartupOffset = true;
-
-		m_nMode = CAppSettings::nDefaultMode;
-		m_nLayout = CAppSettings::nDefaultLayout;
-		m_bFirstPageAlone = CAppSettings::bFirstPageAlone;
-		m_nZoomType = CAppSettings::nDefaultZoomType;
-		m_fZoom = CAppSettings::fDefaultZoom;
+		m_nMode = pSettings->nDefaultMode;
+		m_nLayout = pSettings->nDefaultLayout;
+		m_bFirstPageAlone = pSettings->bFirstPageAlone;
+		m_nZoomType = pSettings->nDefaultZoomType;
+		m_fZoom = pSettings->fDefaultZoom;
 		if (m_nZoomType == ZoomPercent)
 			m_fZoom = 100.0;
 
@@ -573,65 +582,42 @@ void CDjVuView::OnInitialUpdate()
 		}
 
 		// Restore zoom
-		if (CAppSettings::bRestoreView && pData->nZoomType >= ZoomStretch && pData->nZoomType <= ZoomPercent)
+		if (pSettings->bRestoreView && pData->nZoomType >= ZoomStretch && pData->nZoomType <= ZoomPercent)
 		{
 			m_nZoomType = pData->nZoomType;
 			m_fZoom = max(min(pData->fZoom, 800.0), 10.0);
 		}
-		else
-		{
-			bStartupOffset = false;
-		}
 
 		// Restore layout
-		if (CAppSettings::bRestoreView && pData->nLayout >= SinglePage && pData->nLayout <= ContinuousFacing)
+		if (pSettings->bRestoreView && pData->nLayout >= SinglePage && pData->nLayout <= ContinuousFacing)
 		{
 			m_nLayout = pData->nLayout;
 			m_bFirstPageAlone = pData->bFirstPageAlone;
 		}
 
 		// Restore mode
-		if (CAppSettings::bRestoreView && pData->nDisplayMode >= Color && pData->nDisplayMode <= Foreground)
+		if (pSettings->bRestoreView && pData->nDisplayMode >= Color && pData->nDisplayMode <= Foreground)
 		{
 			m_nDisplayMode = pData->nDisplayMode;
 		}
-
-		// Restore current page
-		if (CAppSettings::bRestoreView && pData->nPage >= 0 && pData->nPage < m_nPageCount)
-		{
-			nStartupPage = pData->nPage;
-		}
-		else
-		{
-			nStartupPage = 0;
-			bStartupOffset = false;
-		}
 	}
 
-	m_displaySettings = CAppSettings::displaySettings;
+	m_displaySettings = *theApp.GetDisplaySettings();
 
 	m_pRenderThread = new CRenderThread(m_pSource, this);
 
 	UpdateLayout(RECALC);
 	RenderPage(nStartupPage);
 
-	// Restore current scroll position
-	if (CAppSettings::bRestoreView && bStartupOffset)
+	if (m_nType == Normal)
 	{
-		CPoint ptOffset = m_pages[nStartupPage].ptOffset;
-		UpdatePageSizes(ptOffset.y, ptStartupOffset.y);
-
-		ScrollToPositionNoRepaint(ptOffset + ptStartupOffset);
-		Invalidate();
-		UpdateWindow();
+		pData->nZoomType = m_nZoomType;
+		pData->fZoom = m_fZoom;
+		pData->ptOffset = GetScrollPosition() - m_pages[m_nPage].ptOffset;
+		pData->nDisplayMode = m_nDisplayMode;
+		pData->nLayout = m_nLayout;
+		pData->bFirstPageAlone = m_bFirstPageAlone;
 	}
-
-	pData->nZoomType = m_nZoomType;
-	pData->fZoom = m_fZoom;
-	pData->ptOffset = GetScrollPosition() - m_pages[m_nPage].ptOffset;
-	pData->nDisplayMode = m_nDisplayMode;
-	pData->nLayout = m_nLayout;
-	pData->bFirstPageAlone = m_bFirstPageAlone;
 
 	m_nTimerID = SetTimer(1, 100, NULL);
 	ShowCursor();
@@ -690,7 +676,7 @@ BOOL CDjVuView::OnEraseBkgnd(CDC* pDC)
 	return true;
 }
 
-void CDjVuView::RenderPage(int nPage, int nTimeout)
+void CDjVuView::RenderPage(int nPage, int nTimeout, bool bUpdateWindow)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
 
@@ -735,6 +721,26 @@ void CDjVuView::RenderPage(int nPage, int nTimeout)
 	m_nPendingPage = -1;
 
 	UpdatePageNumber();
+
+	Invalidate();
+
+	if (bUpdateWindow)
+		UpdateWindow();
+}
+
+void CDjVuView::ScrollToPage(int nPage, const CPoint& ptOffset)
+{
+	RenderPage(nPage, -1, false);
+
+	CPoint ptPageOffset = m_pages[nPage].ptOffset;
+
+	if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
+	{
+		UpdatePageSizes(ptPageOffset.y, ptOffset.y);
+		ptPageOffset = m_pages[nPage].ptOffset;
+	}
+
+	ScrollToPositionNoRepaint(ptPageOffset + ptOffset);
 
 	Invalidate();
 	UpdateWindow();
@@ -831,7 +837,7 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 		// Save page and offset to restore after changes
 		int nAnchorPage;
 		CPoint ptAnchorOffset;
-		CPoint ptTop = GetDeviceScrollPosition();
+		CPoint ptTop = GetScrollPosition();
 
 		if (updateType == TOP)
 		{
@@ -940,7 +946,7 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 		// Save page and offset to restore after changes
 		int nAnchorPage;
 		CPoint ptAnchorOffset;
-		CPoint ptTop = GetDeviceScrollPosition();
+		CPoint ptTop = GetScrollPosition();
 
 		if (updateType == TOP)
 		{
@@ -2007,7 +2013,7 @@ void CDjVuView::OnViewLayout(UINT nID)
 		break;
 	}
 
-	CAppSettings::nDefaultLayout = m_nLayout;
+	theApp.GetAppSettings()->nDefaultLayout = m_nLayout;
 	m_pSource->GetUserData()->nLayout = m_nLayout;
 
 	if (m_nLayout != nPrevLayout)
@@ -2165,8 +2171,8 @@ void CDjVuView::ZoomTo(int nZoomType, double fZoom)
 
 	if (m_nType == Normal)
 	{
-		CAppSettings::nDefaultZoomType = nZoomType;
-		CAppSettings::fDefaultZoom = fZoom;
+		theApp.GetAppSettings()->nDefaultZoomType = nZoomType;
+		theApp.GetAppSettings()->fDefaultZoom = fZoom;
 	}
 
 	UpdateLayout();
@@ -2198,6 +2204,8 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 			hCursorText = ::LoadCursor(0, IDC_IBEAM);
 		if (hCursorMagnify == NULL)
 			hCursorMagnify = AfxGetApp()->LoadCursor(IDC_CURSOR_MAGNIFY);
+		if (hCursorCross == NULL)
+			hCursorCross = ::LoadCursor(0, IDC_CROSS);
 
 		CRect rcClient;
 		GetClientRect(rcClient);
@@ -2213,8 +2221,8 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 			for (GPosition pos = pAnt->map_areas; pos; ++pos)
 			{
 				GP<GMapArea> pArea = pAnt->map_areas[pos];
-				CRect rcArea = TranslatePageRect(nPage, pArea->get_bound_rect());
-				rcArea.OffsetRect(-GetDeviceScrollPosition());
+				CRect rcArea = TranslatePageRect(nPage, pArea->get_bound_rect(), true);
+				rcArea.OffsetRect(-GetScrollPosition());
 
 				if (rcArea.PtInRect(ptCursor) && pArea->url != "")
 				{
@@ -2238,13 +2246,18 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		else if (m_nMode == Select && nPage != -1)
 		{
 			const Page& page = m_pages[nPage];
-			CRect rcBitmap(CPoint(page.ptOffset - GetDeviceScrollPosition()), page.szDisplay);
+			CRect rcBitmap(CPoint(page.ptOffset - GetScrollPosition()), page.szDisplay);
 
 			if (rcBitmap.PtInRect(ptCursor) && m_pages[nPage].info.bHasText)
 			{
 				SetCursor(hCursorText);
 				return true;
 			}
+		}
+		else if (m_nMode == SelectRect)
+		{
+			SetCursor(hCursorCross);
+			return true;
 		}
 	}
 
@@ -2260,7 +2273,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 	++m_nClickCount;
 	::GetCursorPos(&m_ptClick);
 
-	if (m_pActiveLink != NULL && m_pActiveLink->url != "")
+	if (m_pHoverArea != NULL && m_pHoverArea->url != "")
 	{
 		ShowCursor();
 		SetCapture();
@@ -2270,7 +2283,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	if (m_bControlDown || (m_nMode == MagnifyingGlass && !m_bShiftDown))
 	{
-		UpdateActiveHyperlink(CPoint(-1, -1));
+		UpdateHoverHighlight(CPoint(-1, -1));
 
 		ShowCursor();
 		SetCapture();
@@ -2290,15 +2303,17 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 	else if ((m_bShiftDown || m_nMode == Drag)
 			&& (m_totalDev.cx > rcClient.Width() || m_totalDev.cy > rcClient.Height()))
 	{
-		UpdateActiveHyperlink(CPoint(-1, -1));
+		UpdateHoverHighlight(CPoint(-1, -1));
 
 		ShowCursor();
 		SetCapture();
 		m_bDragging = true;
 
 		m_nStartPage = GetPageNearPoint(point);
-		m_ptStartPos = GetScrollPosition() - m_pages[m_nStartPage].ptOffset;
+		if (m_nStartPage == -1)
+			return;
 
+		m_ptStartPos = GetScrollPosition() - m_pages[m_nStartPage].ptOffset;
 		::GetCursorPos(&m_ptStart);
 
 		if (hCursorDrag == NULL)
@@ -2309,7 +2324,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 	}
 	else if (m_nMode == Select)
 	{
-		UpdateActiveHyperlink(CPoint(-1, -1));
+		UpdateHoverHighlight(CPoint(-1, -1));
 		ClearSelection();
 
 		m_nStartPage = GetPageNearPoint(point);
@@ -2324,9 +2339,33 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 		m_nSelStartPos = GetTextPosFromPoint(m_nStartPage, point);
 		m_bDraggingText = true;
 	}
+	else if (m_nMode == SelectRect)
+	{
+		UpdateHoverHighlight(CPoint(-1, -1));
+		ClearSelection();
+
+		m_nStartPage = GetPageNearPoint(point);
+		if (m_nStartPage == -1)
+			return;
+
+		Page& page = m_pages[m_nStartPage];
+		CPoint pt = point + GetScrollPosition() - page.ptOffset;
+		pt.x = max(0, min(page.szDisplay.cx - 1, pt.x));
+		pt.y = max(0, min(page.szDisplay.cy - 1, pt.y));
+		m_ptStart = ScreenToDjVu(m_nStartPage, pt);
+
+		m_nSelectionPage = m_nStartPage;
+		m_rcSelectionRect.xmin = m_rcSelectionRect.xmax = m_ptStart.x;
+		m_rcSelectionRect.ymin = m_rcSelectionRect.ymax = m_ptStart.y;
+
+		ShowCursor();
+		SetCapture();
+		m_bDragging = true;
+		m_bDraggingRect = true;
+	}
 	else if (m_nMode == NextPrev && !m_bShiftDown)
 	{
-		UpdateActiveHyperlink(CPoint(-1, -1));
+		UpdateHoverHighlight(CPoint(-1, -1));
 		SetCapture();
 		m_bDragging = true;
 
@@ -2336,7 +2375,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 	CMyScrollView::OnLButtonDown(nFlags, point);
 }
 
-CPoint CDjVuView::TranslateTextCoordToDjVu(int nPage, const CPoint& point)
+CPoint CDjVuView::ScreenToDjVu(int nPage, const CPoint& point) const
 {
 	const Page& page = m_pages[nPage];
 	CSize szPage = page.GetSize(m_nRotate);
@@ -2344,8 +2383,8 @@ CPoint CDjVuView::TranslateTextCoordToDjVu(int nPage, const CPoint& point)
 	double fRatioX = szPage.cx / (1.0*page.szDisplay.cx);
 	double fRatioY = szPage.cy / (1.0*page.szDisplay.cy);
 
-	CPoint ptResult(static_cast<int>(point.x * fRatioX),
-			static_cast<int>(szPage.cy - point.y * fRatioY));
+	CPoint ptResult(static_cast<int>(point.x * fRatioX + 0.5),
+			static_cast<int>(szPage.cy - point.y * fRatioY + 0.5));
 
 	int nRotate = m_nRotate + page.info.nInitialRotate;
 	if (nRotate != 0)
@@ -2371,7 +2410,7 @@ CPoint CDjVuView::TranslateTextCoordToDjVu(int nPage, const CPoint& point)
 	return ptResult;
 }
 
-void CDjVuView::GetTextPosFromTop(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos)
+void CDjVuView::GetTextPosFromTop(DjVuTXT::Zone& zone, const CPoint& pt, int& nPos)
 {
 	if (zone.rect.xmin > pt.x || zone.rect.ymax < pt.y)
 		return;
@@ -2431,7 +2470,7 @@ int CDjVuView::GetTextPosFromPoint(int nPage, CPoint point)
 	point.x = max(0, min(page.szDisplay.cx - 1, point.x));
 	point.y = max(0, min(page.szDisplay.cy - 1, point.y));
 
-	CPoint pt = TranslateTextCoordToDjVu(nPage, point);
+	CPoint pt = ScreenToDjVu(nPage, point);
 
 	int nPos = -1;
 	GetTextPosFromTop(page.info.pText->page_zone, pt, nPos);
@@ -2453,20 +2492,20 @@ void CDjVuView::OnLButtonUp(UINT nFlags, CPoint point)
 		m_nCursorTime = ::GetTickCount();
 	}
 
-	if (m_pActiveLink != NULL)
+	if (m_pHoverArea != NULL)
 	{
-		GP<GMapArea> pClickedLink = m_pActiveLink;
-		UpdateActiveHyperlink(point);
+		GP<GMapArea> pClickedArea = m_pHoverArea;
+		UpdateHoverHighlight(point);
 
-		if (pClickedLink == m_pActiveLink)
+		if (pClickedArea == m_pHoverArea)
 		{
-			GUTF8String url = m_pActiveLink->url;
+			GUTF8String url = pClickedArea->url;
 			if (url.length() > 0)
-				GoToURL(url, m_nLinkPage);
+				GoToURL(url, m_nHoverPage);
 		}
 	}
 
-	UpdateActiveHyperlink(point);
+	UpdateHoverHighlight(point);
 
 	if (m_bClick)
 	{
@@ -2492,6 +2531,13 @@ void CDjVuView::StopDragging()
 			m_bDraggingMagnify = false;
 		}
 
+		if (m_bDraggingRect)
+		{
+			if (m_rcSelectionRect.isempty())
+				m_nSelectionPage = -1;
+			m_bDraggingRect = false;
+		}
+
 		ReleaseCapture();
 	}
 }
@@ -2514,7 +2560,7 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 
 	if (!m_bDragging)
 	{
-		UpdateActiveHyperlink(point);
+		UpdateHoverHighlight(point);
 		return;
 	}
 
@@ -2653,6 +2699,31 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 		if (pWaitCursor != NULL)
 			delete pWaitCursor;
 	}
+	else if (m_bDraggingRect)
+	{
+		Page& page = m_pages[m_nSelectionPage];
+		CPoint pt = point + GetScrollPosition() - page.ptOffset;
+		pt.x = max(0, min(page.szDisplay.cx - 1, pt.x));
+		pt.y = max(0, min(page.szDisplay.cy - 1, pt.y));
+		CPoint ptCurrent = ScreenToDjVu(m_nStartPage, pt);
+
+		CRect rcDisplay = TranslatePageRect(m_nSelectionPage, m_rcSelectionRect);
+		rcDisplay.OffsetRect(-GetScrollPosition());
+		rcDisplay.InflateRect(0, 0, 1, 1);
+		InvalidateRect(rcDisplay);
+
+		m_rcSelectionRect.xmin = min(ptCurrent.x, m_ptStart.x);
+		m_rcSelectionRect.xmax = max(ptCurrent.x, m_ptStart.x);
+		m_rcSelectionRect.ymin = min(ptCurrent.y, m_ptStart.y);
+		m_rcSelectionRect.ymax = max(ptCurrent.y, m_ptStart.y);
+
+		rcDisplay = TranslatePageRect(m_nSelectionPage, m_rcSelectionRect);
+		rcDisplay.OffsetRect(-GetScrollPosition());
+		rcDisplay.InflateRect(0, 0, 1, 1);
+		InvalidateRect(rcDisplay);
+
+		UpdateWindow();
+	}
 	else if (m_bDraggingMagnify)
 	{
 		UpdateMagnifyWnd();
@@ -2664,7 +2735,8 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 
 void CDjVuView::OnMouseLeave()
 {
-	UpdateActiveHyperlink(CPoint(-1, -1));
+	if (!m_bIgnoreMouseLeave)
+		UpdateHoverHighlight(CPoint(-1, -1));
 }
 
 void CDjVuView::SelectTextRange(int nPage, int nStart, int nEnd,
@@ -2848,9 +2920,37 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 	CMenu* pPopup = menu.GetSubMenu(0);
 	ASSERT(pPopup != NULL);
 
+	if (m_nSelectionPage == -1)
+		pPopup->DeleteMenu(ID_EXPORT_SELECTION, MF_BYCOMMAND);
+
+	if (m_pHoverHighlight == NULL)
+		pPopup->DeleteMenu(ID_REMOVE_HIGHLIGHT, MF_BYCOMMAND);
+
+	if (!m_bHasSelection && m_nSelectionPage == -1)
+	{
+		pPopup->DeleteMenu(ID_EDIT_COPY, MF_BYCOMMAND);
+		pPopup->DeleteMenu(ID_HIGHLIGHT_SEL, MF_BYCOMMAND);
+
+		if (m_pHoverHighlight == NULL)
+			pPopup->DeleteMenu(0, MF_BYPOSITION);
+	}
+	else if (!m_bHasSelection)
+	{
+		pPopup->DeleteMenu(ID_EDIT_COPY, MF_BYCOMMAND);
+	}
+
+	m_bIgnoreMouseLeave = true;
+	m_pClickedHighlight = m_pHoverHighlight;
+
 	ClientToScreen(&point);
 	pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON, point.x, point.y,
 		GetMainFrame());
+
+	CPoint ptCursor;
+	GetCursorPos(&ptCursor);
+	ScreenToClient(&ptCursor);
+
+	UpdateHoverHighlight(ptCursor);
 }
 
 void CDjVuView::OnPageInformation()
@@ -3541,7 +3641,7 @@ BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 	if ((nFlags & MK_CONTROL) != 0)
 	{
 		// Zoom in/out
-		if (CAppSettings::bInvertWheelZoom == (zDelta < 0))
+		if (theApp.GetAppSettings()->bInvertWheelZoom == (zDelta < 0))
 			OnViewZoomOut();
 		else if (zDelta != 0)
 			OnViewZoomIn();
@@ -3644,10 +3744,15 @@ bool CDjVuView::InvalidatePage(int nPage)
 	return false;
 }
 
-void CDjVuView::OnExportPage()
+void CDjVuView::OnExportPage(UINT nID)
 {
-	CString strFileName;
-	strFileName.Format(_T("p%04d.bmp"), m_nClickedPage + 1);
+	if (m_nSelectionPage == -1 && nID == ID_EXPORT_SELECTION)
+		return;
+
+	int nPage = (nID == ID_EXPORT_SELECTION ? m_nSelectionPage : m_nClickedPage);
+
+	CString strFileName = FormatString(_T("p%04d%s.bmp"), nPage + 1,
+		nID == ID_EXPORT_SELECTION ? _T("-sel") : _T(""));
 
 	CFileDialog dlg(false, _T("bmp"), strFileName, OFN_OVERWRITEPROMPT |
 		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
@@ -3665,11 +3770,11 @@ void CDjVuView::OnExportPage()
 	CWaitCursor wait;
 	strFileName = dlg.GetPathName();
 
-	Page& page = m_pages[m_nClickedPage];
+	Page& page = m_pages[nPage];
 	if (!page.info.bDecoded)
-		page.Init(m_pSource, m_nClickedPage);
+		page.Init(m_pSource, nPage);
 
-	GP<DjVuImage> pImage = m_pSource->GetPage(m_nClickedPage, NULL);
+	GP<DjVuImage> pImage = m_pSource->GetPage(nPage, NULL);
 	if (pImage == NULL)
 	{
 		AfxMessageBox(IDS_ERROR_DECODING_PAGE, MB_ICONERROR | MB_OK);
@@ -3678,6 +3783,14 @@ void CDjVuView::OnExportPage()
 
 	CSize size = page.GetSize(m_nRotate);
 	CDIB* pBitmap = CRenderThread::Render(pImage, size, m_displaySettings, m_nDisplayMode, m_nRotate);
+
+	if (nID == ID_EXPORT_SELECTION)
+	{
+		CRect rcCrop = TranslatePageRect(nPage, m_rcSelectionRect, false, false);
+		CDIB* pCropped = pBitmap->Crop(rcCrop);
+		delete pBitmap;
+		pBitmap = pCropped;
+	}
 
 	if (pBitmap != NULL && pBitmap->m_hObject != NULL)
 	{
@@ -3861,9 +3974,7 @@ void CDjVuView::OnFindAll()
 
 	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 	{
-		CString strStatus;
-		strStatus.Format(IDS_SEARCHING_PAGE, nPage + 1, m_nPageCount);
-		pDlg->SetStatusText(strStatus);
+		pDlg->SetStatusText(FormatString(IDS_SEARCHING_PAGE, nPage + 1, m_nPageCount));
 
 		Page& page = m_pages[nPage];
 		if (!page.info.bDecoded || page.info.bHasText && !page.info.bTextDecoded)
@@ -3915,9 +4026,7 @@ void CDjVuView::OnFindAll()
 
 	if (nResultCount > 0)
 	{
-		CString strMessage;
-		strMessage.Format(IDS_NUM_OCCURRENCES, nResultCount);
-		GetMainFrame()->SetMessageText(strMessage);
+		GetMainFrame()->SetMessageText(FormatString(IDS_NUM_OCCURRENCES, nResultCount));
 		pDlg->ShowWindow(SW_HIDE);
 	}
 	else
@@ -3985,7 +4094,7 @@ CRect CDjVuView::GetSelectionRect(int nPage, const DjVuSelection& selection) con
 	for (GPosition pos = selection; pos; ++pos)
 	{
 		GRect rect = selection[pos]->rect;
-		CRect rcText = TranslatePageRect(nPage, rect, true);
+		CRect rcText = TranslatePageRect(nPage, rect);
 
 		if (bFirst)
 		{
@@ -4129,18 +4238,18 @@ void CDjVuView::EnsureSelectionVisible(int nPage, const DjVuSelection& selection
 	}
 }
 
-CRect CDjVuView::TranslatePageRect(int nPage, GRect rect, bool bText) const
+CRect CDjVuView::TranslatePageRect(int nPage, GRect rect, bool bAnno, bool bToDisplay) const
 {
 	const Page& page = m_pages[nPage];
 	CSize szPage = page.GetSize(m_nRotate);
 
-	int nRotate = m_nRotate + (bText ? page.info.nInitialRotate : 0);
+	int nRotate = m_nRotate + (bAnno ? 0 : page.info.nInitialRotate);
 	if (nRotate != 0)
 	{
 		GRect input(0, 0, szPage.cx, szPage.cy);
 		GRect output(0, 0, page.info.szPage.cx, page.info.szPage.cy);
 
-		if (bText && (page.info.nInitialRotate & 1) != 0)
+		if (!bAnno && (page.info.nInitialRotate % 2) != 0)
 			swap(output.xmax, output.ymax);
 
 		GRectMapper mapper;
@@ -4151,20 +4260,33 @@ CRect CDjVuView::TranslatePageRect(int nPage, GRect rect, bool bText) const
 		mapper.unmap(rect);
 	}
 
-	double fRatioX = (1.0*page.szDisplay.cx) / szPage.cx;
-	double fRatioY = (1.0*page.szDisplay.cy) / szPage.cy;
+	CRect rcResult;
 
-	rect.xmin = max(rect.xmin, 0);
-	rect.xmax = min(rect.xmax, szPage.cx);
-	rect.ymin = max(rect.ymin, 0);
-	rect.ymax = min(rect.ymax, szPage.cy);
+	if (bToDisplay)
+	{
+		double fRatioX = (1.0*page.szDisplay.cx) / szPage.cx;
+		double fRatioY = (1.0*page.szDisplay.cy) / szPage.cy;
 
-	CRect rcResult(static_cast<int>(rect.xmin * fRatioX),
-		static_cast<int>((szPage.cy - rect.ymax) * fRatioY),
-		static_cast<int>(rect.xmax * fRatioX),
-		static_cast<int>((szPage.cy - rect.ymin) * fRatioY));
+		rcResult = CRect(static_cast<int>(rect.xmin * fRatioX + 0.5),
+			static_cast<int>((szPage.cy - rect.ymax) * fRatioY + 0.5),
+			static_cast<int>(rect.xmax * fRatioX + 0.5),
+			static_cast<int>((szPage.cy - rect.ymin) * fRatioY + 0.5));
 
-	rcResult.OffsetRect(page.ptOffset);
+		rcResult.left = max(rcResult.left, 0);
+		rcResult.top = max(rcResult.top, 0);
+		rcResult.right = min(rcResult.right, page.szDisplay.cx);
+		rcResult.bottom = min(rcResult.bottom, page.szDisplay.cy);
+
+		rcResult.OffsetRect(page.ptOffset);
+	}
+	else
+	{
+		rcResult.left = max(rect.xmin, 0);
+		rcResult.top = max(szPage.cy - rect.ymax, 0);
+		rcResult.right = min(rect.xmax, szPage.cx);
+		rcResult.bottom = min(szPage.cy - rect.ymin, szPage.cy);
+	}
+
 	return rcResult;
 }
 
@@ -4197,6 +4319,12 @@ void CDjVuView::ClearSelection(int nPage)
 			}
 		}
 
+		if (m_nSelectionPage != -1)
+		{
+			InvalidatePage(m_nSelectionPage);
+			m_nSelectionPage = -1;
+		}
+
 		m_bHasSelection = false;
 	}
 }
@@ -4217,36 +4345,52 @@ void CDjVuView::UpdateSelectionStatus()
 	}
 }
 
-void CDjVuView::UpdateActiveHyperlink(CPoint point)
+void CDjVuView::UpdateHoverHighlight(CPoint point)
 {
 	int nPage;
-	GP<GMapArea> pHyperlink = GetHyperlinkFromPoint(point, &nPage);
-	if (pHyperlink != m_pActiveLink)
+
+	DjVuHighlight* pHighlight = GetHighlightFromPoint(point, &nPage);
+	GP<GMapArea> pArea;
+	if (pHighlight == NULL)
+		pArea = GetAreaFromPoint(point, &nPage);
+
+	if (pHighlight != m_pHoverHighlight || pArea != m_pHoverArea)
 	{
-		if (m_pActiveLink != NULL)
+		if (m_pHoverArea != NULL || m_pHoverHighlight != NULL)
 		{
+			CRect rect;
+			if (m_pHoverArea != NULL)
+				rect = TranslatePageRect(m_nHoverPage, m_pHoverArea->get_bound_rect(), true);
+			else
+				rect = TranslatePageRect(m_nHoverPage, m_pHoverHighlight->rectBounds);
+
 			m_toolTip.Activate(false);
-			CRect rcArea = TranslatePageRect(m_nLinkPage, m_pActiveLink->get_bound_rect());
-			rcArea.InflateRect(0, 0, 1, 1);
-			rcArea.OffsetRect(-GetScrollPosition());
-			InvalidateRect(rcArea);
+			rect.OffsetRect(-GetScrollPosition());
+			InvalidateRect(rect);
 			GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
 		}
 
-		m_pActiveLink = pHyperlink;
-		m_nLinkPage = nPage;
+		m_pHoverArea = pArea;
+		m_pHoverHighlight = pHighlight;
+		m_nHoverPage = nPage;
+		m_bHoverHighlight = m_pHoverArea != NULL || m_pHoverHighlight != NULL;
 
-		if (m_pActiveLink != NULL)
+		if (m_pHoverArea != NULL || m_pHoverHighlight != NULL)
 		{
+			CRect rect;
+			if (m_pHoverArea != NULL)
+				rect = TranslatePageRect(m_nHoverPage, m_pHoverArea->get_bound_rect(), true);
+			else
+				rect = TranslatePageRect(m_nHoverPage, m_pHoverHighlight->rectBounds);
+
 			m_toolTip.Activate(true);
-			CRect rcArea = TranslatePageRect(nPage, m_pActiveLink->get_bound_rect());
-			rcArea.InflateRect(0, 0, 1, 1);
-			rcArea.OffsetRect(-GetScrollPosition());
-			InvalidateRect(rcArea);
+			rect.OffsetRect(-GetScrollPosition());
+			InvalidateRect(rect);
 
-			if (m_nType == Normal)
-				GetMainFrame()->SetMessageText(MakeCString(m_pActiveLink->url));
+			if (m_nType == Normal && m_pHoverArea != NULL)
+				GetMainFrame()->SetMessageText(MakeCString(m_pHoverArea->url));
 
+			m_bIgnoreMouseLeave = false;
 			TRACKMOUSEEVENT tme;
 
 			::ZeroMemory(&tme, sizeof(tme));
@@ -4260,7 +4404,7 @@ void CDjVuView::UpdateActiveHyperlink(CPoint point)
 	}
 }
 
-GP<GMapArea> CDjVuView::GetHyperlinkFromPoint(CPoint point, int* pnPage)
+GP<GMapArea> CDjVuView::GetAreaFromPoint(CPoint point, int* pnPage)
 {
 	if (pnPage != NULL)
 		*pnPage = -1;
@@ -4282,8 +4426,8 @@ GP<GMapArea> CDjVuView::GetHyperlinkFromPoint(CPoint point, int* pnPage)
 		for (GPosition pos = page.info.pAnt->map_areas; pos; ++pos)
 		{
 			GP<GMapArea> pArea = page.info.pAnt->map_areas[pos];
-			CRect rcArea = TranslatePageRect(nPage, pArea->get_bound_rect());
-			rcArea.OffsetRect(-GetDeviceScrollPosition());
+			CRect rcArea = TranslatePageRect(nPage, pArea->get_bound_rect(), true);
+			rcArea.OffsetRect(-GetScrollPosition());
 
 			if (rcArea.PtInRect(point))
 			{
@@ -4291,6 +4435,56 @@ GP<GMapArea> CDjVuView::GetHyperlinkFromPoint(CPoint point, int* pnPage)
 					*pnPage = nPage;
 
 				return pArea;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+DjVuHighlight* CDjVuView::GetHighlightFromPoint(CPoint point, int* pnPage)
+{
+	if (pnPage != NULL)
+		*pnPage = -1;
+
+	int nPage = GetPageFromPoint(point);
+	if (nPage == -1)
+		return NULL;
+
+	const Page& page = m_pages[nPage];
+
+	CRect rcClient;
+	GetClientRect(rcClient);
+
+	if (!rcClient.PtInRect(point))
+		return NULL;
+
+	map<int, DjVuPageData>::iterator it = m_pSource->GetUserData()->pageData.find(nPage);
+	if (it != m_pSource->GetUserData()->pageData.end())
+	{
+		DjVuPageData& pageData = (*it).second;
+		list<DjVuHighlight>::reverse_iterator rit;
+		for (rit = pageData.highlights.rbegin(); rit != pageData.highlights.rend(); ++rit)
+		{
+			DjVuHighlight& highlight = *rit;
+			CRect rectBounds = TranslatePageRect(nPage, highlight.rectBounds);
+			rectBounds.OffsetRect(-GetScrollPosition());
+
+			if (!rectBounds.PtInRect(point))
+				continue;
+
+			for (size_t i = 0; i < highlight.rects.size(); ++i)
+			{
+				CRect rect = TranslatePageRect(nPage, highlight.rects[i]);
+				rect.OffsetRect(-GetScrollPosition());
+
+				if (rect.PtInRect(point))
+				{
+					if (pnPage != NULL)
+						*pnPage = nPage;
+
+					return &highlight;
+				}
 			}
 		}
 	}
@@ -4314,11 +4508,11 @@ BOOL CDjVuView::OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult)
 	if (!rcClient.PtInRect(ptCursor))
 		return false;
 
-	if (m_pActiveLink != NULL)
+	if (m_pHoverArea != NULL)
 	{
-		m_strToolTip = MakeCString(m_pActiveLink->comment);
+		m_strToolTip = MakeCString(m_pHoverArea->comment);
 		if (m_strToolTip.IsEmpty())
-			m_strToolTip = MakeCString(m_pActiveLink->url);
+			m_strToolTip = MakeCString(m_pHoverArea->url);
 
 		pTTT->lpszText = m_strToolTip.GetBuffer(0);
 
@@ -4588,13 +4782,17 @@ void CDjVuView::OnChangeMode(UINT nID)
 		m_nMode = MagnifyingGlass;
 		break;
 
+	case ID_MODE_SELECT_RECT:
+		m_nMode = SelectRect;
+		break;
+
 	case ID_MODE_DRAG:
 	default:
 		m_nMode = Drag;
 		break;
 	}
 
-	CAppSettings::nDefaultMode = m_nMode;
+	theApp.GetAppSettings()->nDefaultMode = m_nMode;
 }
 
 void CDjVuView::OnUpdateMode(CCmdUI* pCmdUI)
@@ -4612,6 +4810,10 @@ void CDjVuView::OnUpdateMode(CCmdUI* pCmdUI)
 
 	case MagnifyingGlass:
 		nID = ID_MODE_MAGNIFY;
+		break;
+
+	case SelectRect:
+		nID = ID_MODE_SELECT_RECT;
 		break;
 	}
 
@@ -4760,11 +4962,11 @@ void CDjVuView::OnUpdateFileExportText(CCmdUI* pCmdUI)
 	pCmdUI->Enable(m_pSource->HasText());
 }
 
-void CDjVuView::OnSettingsChanged()
+void CDjVuView::SettingsChanged()
 {
-	if (m_displaySettings != CAppSettings::displaySettings)
+	if (m_displaySettings != *theApp.GetDisplaySettings())
 	{
-		m_displaySettings = CAppSettings::displaySettings;
+		m_displaySettings = *theApp.GetDisplaySettings();
 
 		DeleteBitmaps();
 		m_pRenderThread->RejectCurrentJob();
@@ -4897,7 +5099,7 @@ void CDjVuView::OnViewFullscreen()
 	pView->m_nPageShadow = c_nFullscreenPageShadow;
 
 	pView->m_nType = Fullscreen;
-	pView->m_nMode = (CAppSettings::bFullscreenClicks ? NextPrev : Drag);
+	pView->m_nMode = (theApp.GetAppSettings()->bFullscreenClicks ? NextPrev : Drag);
 	pView->m_nLayout = (m_nLayout == Facing || m_nLayout == ContinuousFacing ? Facing : SinglePage);
 	pView->m_bFirstPageAlone = m_bFirstPageAlone;
 	pView->m_nZoomType = ZoomFitPage;
@@ -4905,7 +5107,7 @@ void CDjVuView::OnViewFullscreen()
 	pView->m_nRotate = m_nRotate;
 	pView->m_nPage = m_nPage;
 
-	if (CAppSettings::bFullscreenHideScroll)
+	if (theApp.GetAppSettings()->bFullscreenHideScroll)
 	{
 		pView->ShowScrollBar(SB_BOTH, FALSE);
 		pView->CreateScrollbars();
@@ -5083,7 +5285,7 @@ void CDjVuView::OnTimer(UINT nIDEvent)
 		}
 	}
 
-	if (m_nMode == Select && m_bDraggingText)
+	if (m_bDraggingText || m_bDraggingRect)
 	{
 		// Autoscroll
 		CPoint ptCursor;
@@ -5132,7 +5334,7 @@ void CDjVuView::OnFirstPageAlone()
 	int nOffset = GetScrollPos(SB_VERT) - m_pages[nAnchorPage].ptOffset.y;
 
 	m_bFirstPageAlone = !m_bFirstPageAlone;
-	CAppSettings::bFirstPageAlone = m_bFirstPageAlone;
+	theApp.GetAppSettings()->bFirstPageAlone = m_bFirstPageAlone;
 	m_pSource->GetUserData()->bFirstPageAlone = m_bFirstPageAlone;
 
 	if (m_nLayout == Facing || m_nLayout == ContinuousFacing)
@@ -5240,7 +5442,7 @@ void CDjVuView::UpdateDragAction()
 
 CScrollBar* CDjVuView::GetScrollBarCtrl(int nBar) const
 {
-	if (m_nType == Magnify || m_nType == Fullscreen && CAppSettings::bFullscreenHideScroll)
+	if (m_nType == Magnify || m_nType == Fullscreen && theApp.GetAppSettings()->bFullscreenHideScroll)
 		return (nBar == SB_HORZ ? m_pHScrollBar : m_pVScrollBar);
 
 	return NULL;
@@ -5434,6 +5636,10 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 		const SearchResultClicked* msg = (const SearchResultClicked*) message;
 		GoToSelection(msg->nPage, msg->nSelStart, msg->nSelEnd);
 	}
+	else if (message->code == APP_SETTINGS_CHANGED)
+	{
+		SettingsChanged();
+	}
 }
 
 void CDjVuView::UpdatePageNumber()
@@ -5448,4 +5654,78 @@ void CDjVuView::UpdatePageNumber()
 	}
 
 	m_pSource->GetUserData()->ptOffset = GetScrollPosition() - m_pages[nCurrentPage].ptOffset;
+}
+
+void CDjVuView::OnHighlightSelection()
+{
+	if (m_nSelectionPage != -1)
+	{
+		DjVuHighlight highlight;
+		highlight.nFillType = DjVuHighlight::FillHighlight;
+		highlight.crFill = RGB(255, 255, 128);
+		highlight.rects.push_back(m_rcSelectionRect);
+		highlight.UpdateBounds();
+
+		DjVuPageData& pageData = m_pSource->GetUserData()->pageData[m_nSelectionPage];
+		pageData.highlights.push_back(highlight);
+
+		InvalidatePage(m_nSelectionPage);
+
+		ClearSelection();
+		UpdateWindow();
+	}
+	else if (m_bHasSelection)
+	{
+		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+		{
+			Page& page = m_pages[nPage];
+
+			if (!page.selection.isempty())
+			{
+				DjVuHighlight highlight;
+				highlight.nFillType = DjVuHighlight::FillHighlight;
+				highlight.crFill = RGB(255, 255, 128);
+
+				for (GPosition pos = page.selection; pos; ++pos)
+					highlight.rects.push_back(page.selection[pos]->rect);
+
+				highlight.UpdateBounds();
+
+				DjVuPageData& pageData = m_pSource->GetUserData()->pageData[nPage];
+				pageData.highlights.push_back(highlight);
+
+				InvalidatePage(nPage);
+			}
+		}
+
+		ClearSelection();
+		UpdateWindow();
+	}
+}
+
+void CDjVuView::OnUpdateHighlightSelection(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(m_bHasSelection || m_nSelectionPage != -1);
+}
+
+void CDjVuView::OnRemoveHighlight()
+{
+	if (m_pClickedHighlight == NULL || m_nClickedPage == -1)
+		return;
+
+	DjVuPageData& pageData = m_pSource->GetUserData()->pageData[m_nClickedPage];
+	list<DjVuHighlight>::iterator it;
+	for (it = pageData.highlights.begin(); it != pageData.highlights.end(); ++it)
+	{
+		if (&(*it) == m_pClickedHighlight)
+		{
+			CRect rect = TranslatePageRect(m_nClickedPage, m_pClickedHighlight->rectBounds);
+			rect.OffsetRect(-GetScrollPosition());
+			InvalidateRect(rect);
+
+			pageData.highlights.erase(it);
+			m_pClickedHighlight = NULL;
+			return;
+		}
+	}
 }

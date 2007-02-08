@@ -18,10 +18,10 @@
 // $Id$
 
 #include "stdafx.h"
+#include "WinDjView.h"
 #include "MySplitterWnd.h"
 #include "NavPane.h"
-#include "AppSettings.h"
-#include "resource.h"
+#include "Drawing.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -39,8 +39,8 @@ CMySplitterWnd::CMySplitterWnd()
 	m_cyOrigSplitter = m_cySplitter;
 	m_cyOrigSplitterGap = m_cySplitterGap;
 
-	m_nNavPaneWidth = CAppSettings::nNavPaneWidth;
-	m_bCollapsed = CAppSettings::bNavPaneCollapsed;
+	m_nNavPaneWidth = theApp.GetAppSettings()->nNavPaneWidth;
+	m_bCollapsed = theApp.GetAppSettings()->bNavPaneCollapsed;
 }
 
 CMySplitterWnd::~CMySplitterWnd()
@@ -66,15 +66,15 @@ void CMySplitterWnd::StopTracking(BOOL bAccept)
 		if (cxCur > CNavPaneWnd::s_nMinExpandedWidth)
 		{
 			m_nNavPaneWidth = cxCur;
-			CAppSettings::nNavPaneWidth = m_nNavPaneWidth;
+			theApp.GetAppSettings()->nNavPaneWidth = m_nNavPaneWidth;
 
 			m_bCollapsed = false;
-			CAppSettings::bNavPaneCollapsed = m_bCollapsed;
+			theApp.GetAppSettings()->bNavPaneCollapsed = m_bCollapsed;
 		}
 		else
 		{
 			m_bCollapsed = true;
-			CAppSettings::bNavPaneCollapsed = m_bCollapsed;
+			theApp.GetAppSettings()->bNavPaneCollapsed = m_bCollapsed;
 		}
 
 		UpdateNavPaneWidth(cxCur);
@@ -290,7 +290,7 @@ void CMySplitterWnd::UpdateNavPaneWidth(int nWidth)
 void CMySplitterWnd::CollapseNavPane(bool bCollapse)
 {
 	m_bCollapsed = bCollapse;
-	CAppSettings::bNavPaneCollapsed = m_bCollapsed;
+	theApp.GetAppSettings()->bNavPaneCollapsed = m_bCollapsed;
 
 	UpdateNavPane();
 }

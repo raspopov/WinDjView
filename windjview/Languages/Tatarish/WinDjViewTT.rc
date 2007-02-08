@@ -632,7 +632,7 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "04090000"
+        BLOCK "0C1F0000"
         BEGIN
             VALUE "Comments", "Tatarça\0"
             VALUE "CompanyName", "Andrew Zhezherun\0"
@@ -647,7 +647,7 @@ BEGIN
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x409, 0
+        VALUE "Translation", 0xC1F, 0
     END
 END
 

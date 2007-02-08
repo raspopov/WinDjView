@@ -238,12 +238,10 @@ void CThumbnailsView::DrawPage(CDC* pDC, int nPage)
 	COLORREF color = (nPage == m_nCurrentPage ? clrHilight : clrWindow);
 	pDC->FillSolidRect(rcNumber - ptScrollPos, color);
 
-	CString strPageNumber;
-	strPageNumber.Format(_T("%d"), nPage + 1);
 	CFont* pOldFont = pDC->SelectObject(&m_font);
 	pDC->SetBkMode(TRANSPARENT);
 	pDC->SetTextColor(nPage == m_nCurrentPage ? clrWindow : clrFrame);
-	pDC->DrawText(strPageNumber, rcNumber - ptScrollPos,
+	pDC->DrawText(FormatString(_T("%d"), nPage + 1), rcNumber - ptScrollPos,
 		DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 	pDC->SelectObject(pOldFont);
 
@@ -291,10 +289,12 @@ void CThumbnailsView::OnInitialUpdate()
 {
 	CMyScrollView::OnInitialUpdate();
 
+	theApp.AddObserver(this);
+
 	m_nPageCount = m_pSource->GetPageCount();
 	m_pages.resize(m_nPageCount);
 
-	m_displaySetting = CAppSettings::displaySettings;
+	m_displaySetting = *theApp.GetDisplaySettings();
 	m_displaySetting.nScaleMethod = CDisplaySettings::Default;
 
 	m_pThread = new CThumbnailsThread(m_pSource, this);
@@ -781,7 +781,7 @@ void CThumbnailsView::UpdateVisiblePages()
 				m_pages[nBottomPage].rcDisplay.top < nTop + rcClient.Height())
 			++nBottomPage;
 
-		if (CAppSettings::bGenAllThumbnails)
+		if (theApp.GetAppSettings()->bGenAllThumbnails)
 		{
 			for (int nDiff = m_nPageCount; nDiff >= 1; --nDiff)
 			{
@@ -877,6 +877,10 @@ void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 		if (GetRotate() != msg->nRotate)
 			SetRotate(msg->nRotate);
 	}
+	else if (message->code == APP_SETTINGS_CHANGED)
+	{
+		SettingsChanged();
+	}
 }
 
 void CThumbnailsView::RecalcPageRects(int nPage)
@@ -965,9 +969,9 @@ void CThumbnailsView::RestartThreads()
 	UpdateView(TOP);
 }
 
-void CThumbnailsView::OnSettingsChanged()
+void CThumbnailsView::SettingsChanged()
 {
-	CDisplaySettings appSettings = CAppSettings::displaySettings;
+	CDisplaySettings appSettings = *theApp.GetDisplaySettings();
 	appSettings.nScaleMethod = CDisplaySettings::Default;
 
 	if (m_displaySetting != appSettings)

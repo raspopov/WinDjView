@@ -57,7 +57,9 @@ int CBookmarksWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	SetImageList(&m_imageList, TVSIL_NORMAL);
 
 	SetItemHeight(20);
-	SetWrapLabels(CAppSettings::bWrapLongBookmarks);
+	SetWrapLabels(theApp.GetAppSettings()->bWrapLongBookmarks);
+
+	theApp.AddObserver(this);
 
 	return 0;
 }
@@ -150,7 +152,10 @@ void CBookmarksWnd::PostNcDestroy()
 	delete this;
 }
 
-void CBookmarksWnd::OnSettingsChanged()
+void CBookmarksWnd::OnUpdate(const Observable* source, const Message* message)
 {
-	SetWrapLabels(CAppSettings::bWrapLongBookmarks);
+	if (message->code == APP_SETTINGS_CHANGED)
+	{
+		SetWrapLabels(theApp.GetAppSettings()->bWrapLongBookmarks);
+	}
 }

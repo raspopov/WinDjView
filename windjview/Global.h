@@ -79,16 +79,18 @@ CString MakeCString(const GUTF8String& text);
 GUTF8String MakeUTF8String(const CString& strText);
 GUTF8String MakeUTF8String(const wstring& strText);
 
-#define PAGE_RENDERED 10
-#define PAGE_DECODED 20
-#define BOOKMARK_CLICKED 30
-#define SEARCH_RESULT_CLICKED 40
-#define THUMBNAIL_RENDERED 50
-#define THUMBNAIL_CLICKED 60
-#define CURRENT_PAGE_CHANGED 70
-#define ROTATE_CHANGED 80
-#define VIEW_ACTIVATED 90
-#define ZOOM_CHANGED 100
+#define PAGE_RENDERED 1
+#define PAGE_DECODED 2
+#define BOOKMARK_CLICKED 3
+#define SEARCH_RESULT_CLICKED 4
+#define THUMBNAIL_RENDERED 5
+#define THUMBNAIL_CLICKED 6
+#define CURRENT_PAGE_CHANGED 7
+#define ROTATE_CHANGED 8
+#define VIEW_ACTIVATED 9
+#define ZOOM_CHANGED 10
+#define APP_SETTINGS_CHANGED 11
+#define APP_LANGUAGE_CHANGED 12
 
 struct ThumbnailClicked : public Message
 {
@@ -168,6 +170,18 @@ struct ZoomChanged : public Message
 {
 	ZoomChanged()
 		: Message(ZOOM_CHANGED) {}
+};
+
+struct AppSettingsChanged : public Message
+{
+	AppSettingsChanged()
+		: Message(APP_SETTINGS_CHANGED) {}
+};
+
+struct AppLanguageChanged : public Message
+{
+	AppLanguageChanged()
+		: Message(APP_LANGUAGE_CHANGED) {}
 };
 
 struct MD5

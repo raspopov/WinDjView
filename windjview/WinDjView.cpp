@@ -32,6 +32,7 @@
 #include "UpdateDlg.h"
 #include "ThumbnailsView.h"
 #include "BookmarksWnd.h"
+#include "XMLParser.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -91,8 +92,8 @@ const TCHAR* s_pszIgnoreMargins = _T("no-margins");
 const TCHAR* s_pszShrinkOversized = _T("shrink");
 
 const TCHAR* s_pszDocumentsSettings = _T("Documents");
-const TCHAR* s_pszStartupPage = _T("page");
-const TCHAR* s_pszDisplayMode = _T("display");
+//const TCHAR* s_pszStartupPage = _T("page");
+//const TCHAR* s_pszDisplayMode = _T("display");
 
 
 // CDjViewApp
@@ -162,14 +163,14 @@ BOOL CDjViewApp::InitInstance()
 
 	CControlBar* pBar = pMainFrame->GetControlBar(ID_VIEW_TOOLBAR);
 	if (pBar)
-		pMainFrame->ShowControlBar(pBar, CAppSettings::bToolbar, FALSE);
+		pMainFrame->ShowControlBar(pBar, m_appSettings.bToolbar, FALSE);
 
 	pBar = pMainFrame->GetControlBar(ID_VIEW_STATUS_BAR);
 	if (pBar)
-		pMainFrame->ShowControlBar(pBar, CAppSettings::bStatusBar, FALSE);
+		pMainFrame->ShowControlBar(pBar, m_appSettings.bStatusBar, FALSE);
 
-	pMainFrame->SetWindowPos(NULL, CAppSettings::nWindowPosX, CAppSettings::nWindowPosY,
-				CAppSettings::nWindowWidth, CAppSettings::nWindowHeight,
+	pMainFrame->SetWindowPos(NULL, m_appSettings.nWindowPosX, m_appSettings.nWindowPosY,
+				m_appSettings.nWindowWidth, m_appSettings.nWindowHeight,
 				SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
 
 	// Enable drag/drop open
@@ -178,7 +179,7 @@ BOOL CDjViewApp::InitInstance()
 	// Enable DDE Execute open
 	EnableShellOpen();
 
-	if (CAppSettings::bRestoreAssocs)
+	if (m_appSettings.bRestoreAssocs)
 		RegisterShellFileTypes();
 
 	// Parse command line for standard shell commands, DDE, file open
@@ -187,13 +188,13 @@ BOOL CDjViewApp::InitInstance()
 	if (cmdInfo.m_nShellCommand == CCommandLineInfo::FileNew)
 		cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
 
-	if (CAppSettings::bWindowMaximized && (m_nCmdShow == -1 || m_nCmdShow == SW_SHOWNORMAL))
+	if (m_appSettings.bWindowMaximized && (m_nCmdShow == -1 || m_nCmdShow == SW_SHOWNORMAL))
 		m_nCmdShow = SW_SHOWMAXIMIZED;
 
 	// Dispatch commands specified on the command line.  Will return FALSE if
 	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
 	if (!ProcessShellCommand(cmdInfo))
-		return FALSE;
+		return false;
 
 	// The main window has been initialized, so show and update it
 	pMainFrame->ShowWindow(m_nCmdShow);
@@ -207,10 +208,10 @@ BOOL CDjViewApp::InitInstance()
 	if (pChildFrame != NULL)
 		pChildFrame->GetDjVuView()->UpdateVisiblePages();
 
-	if (CAppSettings::strVersion != CURRENT_VERSION)
+	if (m_appSettings.strVersion != CURRENT_VERSION)
 		OnAppAbout();
 
-	return TRUE;
+	return true;
 }
 
 void CDjViewApp::EnableShellOpen()
@@ -238,6 +239,7 @@ public:
 // Overrides
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+
 public:
 	virtual BOOL OnInitDialog();
 
@@ -252,7 +254,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 };
 
-CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
+CAboutDlg::CAboutDlg()
+	: CDialog(CAboutDlg::IDD)
 {
 }
 
@@ -263,8 +266,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_STATIC_LIB_LINK, m_weblinkLibrary);
 	DDX_Control(pDX, IDC_DONATE, m_btnDonate);
 
-	CString strVersion;
-	strVersion.Format(IDS_VERSION_ABOUT, CURRENT_VERSION);
+	CString strVersion = FormatString(IDS_VERSION_ABOUT, CURRENT_VERSION);
 	DDX_Text(pDX, IDC_STATIC_VERSION, strVersion);
 }
 
@@ -413,136 +415,173 @@ double CDjViewApp::GetProfileDouble(LPCTSTR pszSection, LPCTSTR pszEntry, double
 
 void CDjViewApp::LoadSettings()
 {
-	CAppSettings::nWindowPosX = GetProfileInt(s_pszDisplaySettings, s_pszPosX, CAppSettings::nWindowPosX);
-	CAppSettings::nWindowPosY = GetProfileInt(s_pszDisplaySettings, s_pszPosY, CAppSettings::nWindowPosY);
-	CAppSettings::nWindowWidth = GetProfileInt(s_pszDisplaySettings, s_pszWidth, CAppSettings::nWindowWidth);
-	CAppSettings::nWindowHeight = GetProfileInt(s_pszDisplaySettings, s_pszHeight, CAppSettings::nWindowHeight);
-	CAppSettings::bWindowMaximized = !!GetProfileInt(s_pszDisplaySettings, s_pszMaximized, CAppSettings::bWindowMaximized);
-	CAppSettings::bChildMaximized = !!GetProfileInt(s_pszDisplaySettings, s_pszChildMaximized, CAppSettings::bChildMaximized);
-	CAppSettings::bToolbar = !!GetProfileInt(s_pszDisplaySettings, s_pszToolbar, CAppSettings::bToolbar);
-	CAppSettings::bStatusBar = !!GetProfileInt(s_pszDisplaySettings, s_pszStatusBar, CAppSettings::bStatusBar);
-	CAppSettings::nDefaultZoomType = GetProfileInt(s_pszDisplaySettings, s_pszZoom, CAppSettings::nDefaultZoomType);
-	CAppSettings::fDefaultZoom = GetProfileDouble(s_pszDisplaySettings, s_pszZoomPercent, CAppSettings::fDefaultZoom);
-	CAppSettings::nDefaultLayout = GetProfileInt(s_pszDisplaySettings, s_pszLayout, CAppSettings::nDefaultLayout);
-	CAppSettings::bFirstPageAlone = !!GetProfileInt(s_pszDisplaySettings, s_pszFirstPage, CAppSettings::bFirstPageAlone);
-	CAppSettings::nDefaultMode = GetProfileInt(s_pszDisplaySettings, s_pszMode, CAppSettings::nDefaultMode);
-	CAppSettings::bNavPaneCollapsed = !!GetProfileInt(s_pszDisplaySettings, s_pszNavCollapsed, CAppSettings::bNavPaneCollapsed);
-	CAppSettings::nNavPaneWidth = GetProfileInt(s_pszDisplaySettings, s_pszNavWidth, CAppSettings::nNavPaneWidth);
+	m_appSettings.nWindowPosX = GetProfileInt(s_pszDisplaySettings, s_pszPosX, m_appSettings.nWindowPosX);
+	m_appSettings.nWindowPosY = GetProfileInt(s_pszDisplaySettings, s_pszPosY, m_appSettings.nWindowPosY);
+	m_appSettings.nWindowWidth = GetProfileInt(s_pszDisplaySettings, s_pszWidth, m_appSettings.nWindowWidth);
+	m_appSettings.nWindowHeight = GetProfileInt(s_pszDisplaySettings, s_pszHeight, m_appSettings.nWindowHeight);
+	m_appSettings.bWindowMaximized = !!GetProfileInt(s_pszDisplaySettings, s_pszMaximized, m_appSettings.bWindowMaximized);
+	m_appSettings.bChildMaximized = !!GetProfileInt(s_pszDisplaySettings, s_pszChildMaximized, m_appSettings.bChildMaximized);
+	m_appSettings.bToolbar = !!GetProfileInt(s_pszDisplaySettings, s_pszToolbar, m_appSettings.bToolbar);
+	m_appSettings.bStatusBar = !!GetProfileInt(s_pszDisplaySettings, s_pszStatusBar, m_appSettings.bStatusBar);
+	m_appSettings.nDefaultZoomType = GetProfileInt(s_pszDisplaySettings, s_pszZoom, m_appSettings.nDefaultZoomType);
+	m_appSettings.fDefaultZoom = GetProfileDouble(s_pszDisplaySettings, s_pszZoomPercent, m_appSettings.fDefaultZoom);
+	m_appSettings.nDefaultLayout = GetProfileInt(s_pszDisplaySettings, s_pszLayout, m_appSettings.nDefaultLayout);
+	m_appSettings.bFirstPageAlone = !!GetProfileInt(s_pszDisplaySettings, s_pszFirstPage, m_appSettings.bFirstPageAlone);
+	m_appSettings.nDefaultMode = GetProfileInt(s_pszDisplaySettings, s_pszMode, m_appSettings.nDefaultMode);
+	m_appSettings.bNavPaneCollapsed = !!GetProfileInt(s_pszDisplaySettings, s_pszNavCollapsed, m_appSettings.bNavPaneCollapsed);
+	m_appSettings.nNavPaneWidth = GetProfileInt(s_pszDisplaySettings, s_pszNavWidth, m_appSettings.nNavPaneWidth);
 
-	CAppSettings::bRestoreAssocs = !!GetProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, CAppSettings::bRestoreAssocs);
-	CAppSettings::bGenAllThumbnails = !!GetProfileInt(s_pszGlobalSettings, s_pszGenAllThumbnails, CAppSettings::bGenAllThumbnails);
-	CAppSettings::bFullscreenClicks = !!GetProfileInt(s_pszGlobalSettings, s_pszFullscreenClicks, CAppSettings::bFullscreenClicks);
-	CAppSettings::bFullscreenHideScroll = !!GetProfileInt(s_pszGlobalSettings, s_pszFullscreenHideScroll, CAppSettings::bFullscreenHideScroll);
-	CAppSettings::bWarnCloseMultiple = !!GetProfileInt(s_pszGlobalSettings, s_pszWarnCloseMultiple, CAppSettings::bWarnCloseMultiple);
-	CAppSettings::bInvertWheelZoom = !!GetProfileInt(s_pszGlobalSettings, s_pszInvertWheelZoom, CAppSettings::bInvertWheelZoom);
-	CAppSettings::bCloseOnEsc = !!GetProfileInt(s_pszGlobalSettings, s_pszCloseOnEsc, CAppSettings::bCloseOnEsc);
-	CAppSettings::bWrapLongBookmarks = !!GetProfileInt(s_pszGlobalSettings, s_pszWrapLongBookmarks, CAppSettings::bWrapLongBookmarks);
-	CAppSettings::bRestoreView = !!GetProfileInt(s_pszGlobalSettings, s_pszRestoreView, CAppSettings::bRestoreView);
-	CAppSettings::strVersion = GetProfileString(s_pszGlobalSettings, s_pszVersion, CAppSettings::strVersion);
-	CAppSettings::strLanguage = GetProfileString(s_pszGlobalSettings, s_pszLanguage, CAppSettings::strLanguage);
-	CAppSettings::strFind = GetProfileString(s_pszGlobalSettings, s_pszFind, CAppSettings::strFind);
-	CAppSettings::bMatchCase = !!GetProfileInt(s_pszGlobalSettings, s_pszMatchCase, CAppSettings::bMatchCase);
+	m_appSettings.bRestoreAssocs = !!GetProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, m_appSettings.bRestoreAssocs);
+	m_appSettings.bGenAllThumbnails = !!GetProfileInt(s_pszGlobalSettings, s_pszGenAllThumbnails, m_appSettings.bGenAllThumbnails);
+	m_appSettings.bFullscreenClicks = !!GetProfileInt(s_pszGlobalSettings, s_pszFullscreenClicks, m_appSettings.bFullscreenClicks);
+	m_appSettings.bFullscreenHideScroll = !!GetProfileInt(s_pszGlobalSettings, s_pszFullscreenHideScroll, m_appSettings.bFullscreenHideScroll);
+	m_appSettings.bWarnCloseMultiple = !!GetProfileInt(s_pszGlobalSettings, s_pszWarnCloseMultiple, m_appSettings.bWarnCloseMultiple);
+	m_appSettings.bInvertWheelZoom = !!GetProfileInt(s_pszGlobalSettings, s_pszInvertWheelZoom, m_appSettings.bInvertWheelZoom);
+	m_appSettings.bCloseOnEsc = !!GetProfileInt(s_pszGlobalSettings, s_pszCloseOnEsc, m_appSettings.bCloseOnEsc);
+	m_appSettings.bWrapLongBookmarks = !!GetProfileInt(s_pszGlobalSettings, s_pszWrapLongBookmarks, m_appSettings.bWrapLongBookmarks);
+	m_appSettings.bRestoreView = !!GetProfileInt(s_pszGlobalSettings, s_pszRestoreView, m_appSettings.bRestoreView);
+	m_appSettings.nLanguage = GetProfileInt(s_pszGlobalSettings, s_pszLanguage, m_appSettings.nLanguage);
+	m_appSettings.strFind = GetProfileString(s_pszGlobalSettings, s_pszFind, m_appSettings.strFind);
+	m_appSettings.bMatchCase = !!GetProfileInt(s_pszGlobalSettings, s_pszMatchCase, m_appSettings.bMatchCase);
+	m_appSettings.strVersion = GetProfileString(s_pszGlobalSettings, s_pszVersion, CURRENT_VERSION);
 
-	CDisplaySettings& ds = CAppSettings::displaySettings;
-	ds.nScaleMethod = GetProfileInt(s_pszDisplaySettings, s_pszScaleMethod, ds.nScaleMethod);
-	ds.bInvertColors = !!GetProfileInt(s_pszDisplaySettings, s_pszInvertColors, ds.bInvertColors);
-	ds.bAdjustDisplay = !!GetProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, ds.bAdjustDisplay);
-	ds.fGamma = GetProfileDouble(s_pszDisplaySettings, s_pszGamma, ds.fGamma);
-	ds.nBrightness = GetProfileInt(s_pszDisplaySettings, s_pszBrightness, ds.nBrightness);
-	ds.nContrast = GetProfileInt(s_pszDisplaySettings, s_pszContrast, ds.nContrast);
-	ds.Fix();
+	m_displaySettings.nScaleMethod = GetProfileInt(s_pszDisplaySettings, s_pszScaleMethod, m_displaySettings.nScaleMethod);
+	m_displaySettings.bInvertColors = !!GetProfileInt(s_pszDisplaySettings, s_pszInvertColors, m_displaySettings.bInvertColors);
+	m_displaySettings.bAdjustDisplay = !!GetProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, m_displaySettings.bAdjustDisplay);
+	m_displaySettings.fGamma = GetProfileDouble(s_pszDisplaySettings, s_pszGamma, m_displaySettings.fGamma);
+	m_displaySettings.nBrightness = GetProfileInt(s_pszDisplaySettings, s_pszBrightness, m_displaySettings.nBrightness);
+	m_displaySettings.nContrast = GetProfileInt(s_pszDisplaySettings, s_pszContrast, m_displaySettings.nContrast);
+	m_displaySettings.Fix();
 
-	CPrintSettings& ps = CAppSettings::printSettings;
-	ps.fMarginLeft = GetProfileDouble(s_pszPrintSettings, s_pszMarginLeft, ps.fMarginLeft);
-	ps.fMarginTop = GetProfileDouble(s_pszPrintSettings, s_pszMarginTop, ps.fMarginTop);
-	ps.fMarginRight = GetProfileDouble(s_pszPrintSettings, s_pszMarginRight, ps.fMarginRight);
-	ps.fMarginBottom = GetProfileDouble(s_pszPrintSettings, s_pszMarginBottom, ps.fMarginBottom);
-	ps.fPosLeft = GetProfileDouble(s_pszPrintSettings, s_pszPosLeft, ps.fPosLeft);
-	ps.fPosTop = GetProfileDouble(s_pszPrintSettings, s_pszPosTop, ps.fPosTop);
-	ps.bCenterImage = !!GetProfileInt(s_pszPrintSettings, s_pszCenterImage, ps.bCenterImage);
-	ps.bIgnorePrinterMargins = !!GetProfileInt(s_pszPrintSettings, s_pszIgnoreMargins, ps.bIgnorePrinterMargins);
-	ps.bShrinkOversized = !!GetProfileInt(s_pszPrintSettings, s_pszShrinkOversized, ps.bShrinkOversized);
+	m_printSettings.fMarginLeft = GetProfileDouble(s_pszPrintSettings, s_pszMarginLeft, m_printSettings.fMarginLeft);
+	m_printSettings.fMarginTop = GetProfileDouble(s_pszPrintSettings, s_pszMarginTop, m_printSettings.fMarginTop);
+	m_printSettings.fMarginRight = GetProfileDouble(s_pszPrintSettings, s_pszMarginRight, m_printSettings.fMarginRight);
+	m_printSettings.fMarginBottom = GetProfileDouble(s_pszPrintSettings, s_pszMarginBottom, m_printSettings.fMarginBottom);
+	m_printSettings.fPosLeft = GetProfileDouble(s_pszPrintSettings, s_pszPosLeft, m_printSettings.fPosLeft);
+	m_printSettings.fPosTop = GetProfileDouble(s_pszPrintSettings, s_pszPosTop, m_printSettings.fPosTop);
+	m_printSettings.bCenterImage = !!GetProfileInt(s_pszPrintSettings, s_pszCenterImage, m_printSettings.bCenterImage);
+	m_printSettings.bIgnorePrinterMargins = !!GetProfileInt(s_pszPrintSettings, s_pszIgnoreMargins, m_printSettings.bIgnorePrinterMargins);
+	m_printSettings.bShrinkOversized = !!GetProfileInt(s_pszPrintSettings, s_pszShrinkOversized, m_printSettings.bShrinkOversized);
 }
 
 void CDjViewApp::LoadDjVuUserData(const CString& strKey, DjVuUserData* pData)
 {
-	CString strDocumentKey = s_pszDocumentsSettings + CString(_T("\\")) + strKey;
+	LPBYTE pBuf;
+	UINT nSize;
 
-	pData->nPage = GetProfileInt(strDocumentKey, s_pszStartupPage, pData->nPage);
-	pData->nZoomType = GetProfileInt(strDocumentKey, s_pszZoom, pData->nZoomType);
-	pData->fZoom = GetProfileDouble(strDocumentKey, s_pszZoomPercent, pData->fZoom);
-	pData->ptOffset.x = GetProfileInt(strDocumentKey, s_pszPosX, pData->ptOffset.x);
-	pData->ptOffset.y = GetProfileInt(strDocumentKey, s_pszPosY, pData->ptOffset.y);
-	pData->nLayout = GetProfileInt(strDocumentKey, s_pszLayout, pData->nLayout);
-	pData->bFirstPageAlone = !!GetProfileInt(strDocumentKey, s_pszFirstPage, pData->bFirstPageAlone);
-	pData->nDisplayMode = GetProfileInt(strDocumentKey, s_pszDisplayMode, pData->nDisplayMode);
+	if (GetProfileBinary(s_pszDocumentsSettings, strKey, &pBuf, &nSize))
+	{
+		GP<ByteStream> raw = ByteStream::create(pBuf, nSize);
+		GP<ByteStream> compressed = BSByteStream::create(raw);
+
+		GUTF8String text;
+		char szTemp[1024];
+		int nRead;
+		while ((nRead = compressed->read(szTemp, 1024)) != 0)
+			text += GUTF8String(szTemp, nRead);
+
+		stringstream sin((const char*) text);
+		XMLParser parser;
+		if (parser.Parse(sin))
+			pData->Load(*parser.GetRoot());
+
+		delete[] pBuf;
+	}
 }
 
 void CDjViewApp::SaveSettings()
 {
-	WriteProfileInt(s_pszDisplaySettings, s_pszPosX, CAppSettings::nWindowPosX);
-	WriteProfileInt(s_pszDisplaySettings, s_pszPosY, CAppSettings::nWindowPosY);
-	WriteProfileInt(s_pszDisplaySettings, s_pszWidth, CAppSettings::nWindowWidth);
-	WriteProfileInt(s_pszDisplaySettings, s_pszHeight, CAppSettings::nWindowHeight);
-	WriteProfileInt(s_pszDisplaySettings, s_pszMaximized, CAppSettings::bWindowMaximized);
-	WriteProfileInt(s_pszDisplaySettings, s_pszChildMaximized, CAppSettings::bChildMaximized);
-	WriteProfileInt(s_pszDisplaySettings, s_pszToolbar, CAppSettings::bToolbar);
-	WriteProfileInt(s_pszDisplaySettings, s_pszStatusBar, CAppSettings::bStatusBar);
-	WriteProfileInt(s_pszDisplaySettings, s_pszZoom, CAppSettings::nDefaultZoomType);
-	WriteProfileDouble(s_pszDisplaySettings, s_pszZoomPercent, CAppSettings::fDefaultZoom);
-	WriteProfileInt(s_pszDisplaySettings, s_pszLayout, CAppSettings::nDefaultLayout);
-	WriteProfileInt(s_pszDisplaySettings, s_pszFirstPage, CAppSettings::bFirstPageAlone);
-	WriteProfileInt(s_pszDisplaySettings, s_pszMode, CAppSettings::nDefaultMode);
-	WriteProfileInt(s_pszDisplaySettings, s_pszNavCollapsed, CAppSettings::bNavPaneCollapsed);
-	WriteProfileInt(s_pszDisplaySettings, s_pszNavWidth, CAppSettings::nNavPaneWidth);
+	WriteProfileInt(s_pszDisplaySettings, s_pszPosX, m_appSettings.nWindowPosX);
+	WriteProfileInt(s_pszDisplaySettings, s_pszPosY, m_appSettings.nWindowPosY);
+	WriteProfileInt(s_pszDisplaySettings, s_pszWidth, m_appSettings.nWindowWidth);
+	WriteProfileInt(s_pszDisplaySettings, s_pszHeight, m_appSettings.nWindowHeight);
+	WriteProfileInt(s_pszDisplaySettings, s_pszMaximized, m_appSettings.bWindowMaximized);
+	WriteProfileInt(s_pszDisplaySettings, s_pszChildMaximized, m_appSettings.bChildMaximized);
+	WriteProfileInt(s_pszDisplaySettings, s_pszToolbar, m_appSettings.bToolbar);
+	WriteProfileInt(s_pszDisplaySettings, s_pszStatusBar, m_appSettings.bStatusBar);
+	WriteProfileInt(s_pszDisplaySettings, s_pszZoom, m_appSettings.nDefaultZoomType);
+	WriteProfileDouble(s_pszDisplaySettings, s_pszZoomPercent, m_appSettings.fDefaultZoom);
+	WriteProfileInt(s_pszDisplaySettings, s_pszLayout, m_appSettings.nDefaultLayout);
+	WriteProfileInt(s_pszDisplaySettings, s_pszFirstPage, m_appSettings.bFirstPageAlone);
+	WriteProfileInt(s_pszDisplaySettings, s_pszMode, m_appSettings.nDefaultMode);
+	WriteProfileInt(s_pszDisplaySettings, s_pszNavCollapsed, m_appSettings.bNavPaneCollapsed);
+	WriteProfileInt(s_pszDisplaySettings, s_pszNavWidth, m_appSettings.nNavPaneWidth);
 
-	WriteProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, CAppSettings::bRestoreAssocs);
-	WriteProfileInt(s_pszGlobalSettings, s_pszGenAllThumbnails, CAppSettings::bGenAllThumbnails);
-	WriteProfileInt(s_pszGlobalSettings, s_pszFullscreenClicks, CAppSettings::bFullscreenClicks);
-	WriteProfileInt(s_pszGlobalSettings, s_pszFullscreenHideScroll, CAppSettings::bFullscreenHideScroll);
-	WriteProfileInt(s_pszGlobalSettings, s_pszWarnCloseMultiple, CAppSettings::bWarnCloseMultiple);
-	WriteProfileInt(s_pszGlobalSettings, s_pszInvertWheelZoom, CAppSettings::bInvertWheelZoom);
-	WriteProfileInt(s_pszGlobalSettings, s_pszCloseOnEsc, CAppSettings::bCloseOnEsc);
-	WriteProfileInt(s_pszGlobalSettings, s_pszWrapLongBookmarks, CAppSettings::bWrapLongBookmarks);
-	WriteProfileInt(s_pszGlobalSettings, s_pszRestoreView, CAppSettings::bRestoreView);
+	WriteProfileInt(s_pszGlobalSettings, s_pszRestoreAssocs, m_appSettings.bRestoreAssocs);
+	WriteProfileInt(s_pszGlobalSettings, s_pszGenAllThumbnails, m_appSettings.bGenAllThumbnails);
+	WriteProfileInt(s_pszGlobalSettings, s_pszFullscreenClicks, m_appSettings.bFullscreenClicks);
+	WriteProfileInt(s_pszGlobalSettings, s_pszFullscreenHideScroll, m_appSettings.bFullscreenHideScroll);
+	WriteProfileInt(s_pszGlobalSettings, s_pszWarnCloseMultiple, m_appSettings.bWarnCloseMultiple);
+	WriteProfileInt(s_pszGlobalSettings, s_pszInvertWheelZoom, m_appSettings.bInvertWheelZoom);
+	WriteProfileInt(s_pszGlobalSettings, s_pszCloseOnEsc, m_appSettings.bCloseOnEsc);
+	WriteProfileInt(s_pszGlobalSettings, s_pszWrapLongBookmarks, m_appSettings.bWrapLongBookmarks);
+	WriteProfileInt(s_pszGlobalSettings, s_pszRestoreView, m_appSettings.bRestoreView);
 	WriteProfileString(s_pszGlobalSettings, s_pszVersion, CURRENT_VERSION);
-	WriteProfileString(s_pszGlobalSettings, s_pszLanguage, CAppSettings::strLanguage);
-	WriteProfileString(s_pszGlobalSettings, s_pszFind, CAppSettings::strFind);
-	WriteProfileInt(s_pszGlobalSettings, s_pszMatchCase, CAppSettings::bMatchCase);
+	WriteProfileInt(s_pszGlobalSettings, s_pszLanguage, m_appSettings.nLanguage);
+	WriteProfileString(s_pszGlobalSettings, s_pszFind, m_appSettings.strFind);
+	WriteProfileInt(s_pszGlobalSettings, s_pszMatchCase, m_appSettings.bMatchCase);
 
-	CDisplaySettings& ds = CAppSettings::displaySettings;
-	WriteProfileInt(s_pszDisplaySettings, s_pszScaleMethod, ds.nScaleMethod);
-	WriteProfileInt(s_pszDisplaySettings, s_pszInvertColors, ds.bInvertColors);
-	WriteProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, ds.bAdjustDisplay);
-	WriteProfileDouble(s_pszDisplaySettings, s_pszGamma, ds.fGamma);
-	WriteProfileInt(s_pszDisplaySettings, s_pszBrightness, ds.nBrightness);
-	WriteProfileInt(s_pszDisplaySettings, s_pszContrast, ds.nContrast);
+	WriteProfileInt(s_pszDisplaySettings, s_pszScaleMethod, m_displaySettings.nScaleMethod);
+	WriteProfileInt(s_pszDisplaySettings, s_pszInvertColors, m_displaySettings.bInvertColors);
+	WriteProfileInt(s_pszDisplaySettings, s_pszAdjustDisplay, m_displaySettings.bAdjustDisplay);
+	WriteProfileDouble(s_pszDisplaySettings, s_pszGamma, m_displaySettings.fGamma);
+	WriteProfileInt(s_pszDisplaySettings, s_pszBrightness, m_displaySettings.nBrightness);
+	WriteProfileInt(s_pszDisplaySettings, s_pszContrast, m_displaySettings.nContrast);
 
-	CPrintSettings& ps = CAppSettings::printSettings;
-	WriteProfileDouble(s_pszPrintSettings, s_pszMarginLeft, ps.fMarginLeft);
-	WriteProfileDouble(s_pszPrintSettings, s_pszMarginTop, ps.fMarginTop);
-	WriteProfileDouble(s_pszPrintSettings, s_pszMarginRight, ps.fMarginRight);
-	WriteProfileDouble(s_pszPrintSettings, s_pszMarginBottom, ps.fMarginBottom);
-	WriteProfileDouble(s_pszPrintSettings, s_pszPosLeft, ps.fPosLeft);
-	WriteProfileDouble(s_pszPrintSettings, s_pszPosTop, ps.fPosTop);
-	WriteProfileInt(s_pszPrintSettings, s_pszCenterImage, ps.bCenterImage);
-	WriteProfileInt(s_pszPrintSettings, s_pszIgnoreMargins, ps.bIgnorePrinterMargins);
-	WriteProfileInt(s_pszPrintSettings, s_pszShrinkOversized, ps.bShrinkOversized);
+	WriteProfileDouble(s_pszPrintSettings, s_pszMarginLeft, m_printSettings.fMarginLeft);
+	WriteProfileDouble(s_pszPrintSettings, s_pszMarginTop, m_printSettings.fMarginTop);
+	WriteProfileDouble(s_pszPrintSettings, s_pszMarginRight, m_printSettings.fMarginRight);
+	WriteProfileDouble(s_pszPrintSettings, s_pszMarginBottom, m_printSettings.fMarginBottom);
+	WriteProfileDouble(s_pszPrintSettings, s_pszPosLeft, m_printSettings.fPosLeft);
+	WriteProfileDouble(s_pszPrintSettings, s_pszPosTop, m_printSettings.fPosTop);
+	WriteProfileInt(s_pszPrintSettings, s_pszCenterImage, m_printSettings.bCenterImage);
+	WriteProfileInt(s_pszPrintSettings, s_pszIgnoreMargins, m_printSettings.bIgnorePrinterMargins);
+	WriteProfileInt(s_pszPrintSettings, s_pszShrinkOversized, m_printSettings.bShrinkOversized);
 
 	const map<MD5, DjVuUserData>& userData = DjVuSource::GetAllUserData();
 	for (map<MD5, DjVuUserData>::const_iterator it = userData.begin(); it != userData.end(); ++it)
 	{
-		CString strDocumentKey = s_pszDocumentsSettings + CString(_T("\\")) + (*it).first.ToString();
-		const DjVuUserData& data = (*it).second;
+		CString strDocumentKey = (*it).first.ToString();
 
-		WriteProfileInt(strDocumentKey, s_pszStartupPage, data.nPage);
-		WriteProfileInt(strDocumentKey, s_pszZoom, data.nZoomType);
-		WriteProfileDouble(strDocumentKey, s_pszZoomPercent, data.fZoom);
-		WriteProfileInt(strDocumentKey, s_pszPosX, data.ptOffset.x);
-		WriteProfileInt(strDocumentKey, s_pszPosY, data.ptOffset.y);
-		WriteProfileInt(strDocumentKey, s_pszLayout, data.nLayout);
-		WriteProfileInt(strDocumentKey, s_pszFirstPage, data.bFirstPageAlone);
-		WriteProfileInt(strDocumentKey, s_pszDisplayMode, data.nDisplayMode);
+		const DjVuUserData& data = (*it).second;
+		GUTF8String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + data.GetXML();
+
+		GP<ByteStream> raw = ByteStream::create();
+
+		GP<ByteStream> compressed = BSByteStream::create(raw, 128);
+		compressed->writall((const char*) xml, xml.length());
+		compressed = NULL;
+
+		UINT nSize = raw->size();
+		if (nSize > 0)
+		{
+			LPBYTE pBuf = new BYTE[nSize];
+			raw->readat(pBuf, nSize, 0);
+
+			WriteProfileBinary(s_pszDocumentsSettings, strDocumentKey, pBuf, nSize);
+			delete[] pBuf;
+		}
+/*
+		OutputDebugString(data.GetXML());
+		stringstream sin((const char*) data.GetXML());
+		XMLParser parser;
+		if (!parser.Parse(sin))
+		{
+			OutputDebugString("Error!");
+		}
+		else
+		{
+			DjVuUserData newData;
+			newData.Load(*parser.GetRoot());
+			if (data.GetXML() != newData.GetXML())
+			{
+				OutputDebugString("Strings differ!\n");
+				OutputDebugString(newData.GetXML());
+			}
+			else
+				OutputDebugString("OK!\n");
+		}
+*/
 	}
 }
 
@@ -682,43 +721,22 @@ void CDjViewApp::OnFileSettings()
 	CSettingsDlg dlg;
 	if (dlg.DoModal() == IDOK)
 	{
-		CAppSettings::bRestoreAssocs = !!dlg.m_pageAssocs.m_bRestoreAssocs;
+		m_appSettings.bRestoreAssocs = !!dlg.m_pageAssocs.m_bRestoreAssocs;
 
-		CAppSettings::bGenAllThumbnails = !!dlg.m_pageGeneral.m_bGenAllThumbnails;
-		CAppSettings::bFullscreenClicks = !!dlg.m_pageGeneral.m_bFullscreenClicks;
-		CAppSettings::bFullscreenHideScroll = !!dlg.m_pageGeneral.m_bFullscreenHideScroll;
-		CAppSettings::bWarnCloseMultiple = !!dlg.m_pageGeneral.m_bWarnCloseMultiple;
-		CAppSettings::bInvertWheelZoom = !!dlg.m_pageGeneral.m_bInvertWheelZoom;
-		CAppSettings::bCloseOnEsc = !!dlg.m_pageGeneral.m_bCloseOnEsc;
-		CAppSettings::bWrapLongBookmarks = !!dlg.m_pageGeneral.m_bWrapLongBookmarks;
-		CAppSettings::bRestoreView = !!dlg.m_pageGeneral.m_bRestoreView;
+		m_appSettings.bGenAllThumbnails = !!dlg.m_pageGeneral.m_bGenAllThumbnails;
+		m_appSettings.bFullscreenClicks = !!dlg.m_pageGeneral.m_bFullscreenClicks;
+		m_appSettings.bFullscreenHideScroll = !!dlg.m_pageGeneral.m_bFullscreenHideScroll;
+		m_appSettings.bWarnCloseMultiple = !!dlg.m_pageGeneral.m_bWarnCloseMultiple;
+		m_appSettings.bInvertWheelZoom = !!dlg.m_pageGeneral.m_bInvertWheelZoom;
+		m_appSettings.bCloseOnEsc = !!dlg.m_pageGeneral.m_bCloseOnEsc;
+		m_appSettings.bWrapLongBookmarks = !!dlg.m_pageGeneral.m_bWrapLongBookmarks;
+		m_appSettings.bRestoreView = !!dlg.m_pageGeneral.m_bRestoreView;
 
-		CAppSettings::displaySettings = dlg.m_pageDisplay.m_displaySettings;
+		m_displaySettings = dlg.m_pageDisplay.m_displaySettings;
 
 		SaveSettings();
 
-		// Thumbnails settings may have changed, let all thumbnail views know
-		// Also let all views know about new gamma settings
-		POSITION pos = GetFirstDocTemplatePosition();
-		while (pos != NULL)
-		{
-			CDocTemplate* pTemplate = GetNextDocTemplate(pos);
-			ASSERT_KINDOF(CDocTemplate, pTemplate);
-
-			POSITION posDoc = pTemplate->GetFirstDocPosition();
-			while (posDoc != NULL)
-			{
-				CDocument* pDoc = pTemplate->GetNextDoc(posDoc);
-				CDjVuView* pView = ((CDjVuDoc*)pDoc)->GetDjVuView();
-				CChildFrame* pFrame = (CChildFrame*)pView->GetParentFrame();
-
-				pFrame->GetDjVuView()->OnSettingsChanged();
-				pFrame->GetThumbnailsView()->OnSettingsChanged();
-
-				if (pFrame->GetBookmarksWnd() != NULL)
-					pFrame->GetBookmarksWnd()->OnSettingsChanged();
-			}
-		}
+		UpdateObservers(AppSettingsChanged());
 	}
 }
 
@@ -793,6 +811,36 @@ void CDjViewApp::OnCheckForUpdate()
 	dlg.DoModal();
 }
 
+void CDjViewApp::SetLanguage(HINSTANCE hResources, DWORD nLanguage)
+{
+	m_appSettings.bLocalized = (hResources == AfxGetInstanceHandle());
+	m_appSettings.nLanguage = nLanguage;
+
+	AfxSetResourceHandle(hResources);
+
+	if (m_appSettings.hDjVuMenu != NULL)
+	{
+		::DestroyMenu(m_appSettings.hDjVuMenu);
+		::DestroyMenu(m_appSettings.hDefaultMenu);
+		m_appSettings.hDjVuMenu = NULL;
+		m_appSettings.hDefaultMenu = NULL;
+	}
+
+	if (m_appSettings.bLocalized)
+	{
+		CMenu menuDjVu, menuDefault;
+		menuDjVu.LoadMenu(IDR_DjVuTYPE);
+		menuDefault.LoadMenu(IDR_MAINFRAME);
+
+		m_appSettings.hDjVuMenu = menuDjVu.Detach();
+		m_appSettings.hDefaultMenu = menuDefault.Detach();
+	}
+
+	m_pDjVuTemplate->UpdateTemplate();
+
+	UpdateObservers(AppLanguageChanged());
+}
+	
 BOOL CDjViewApp::OnOpenRecentFile(UINT nID)
 {
 	// Fixed MFC's CWinApp::OnOpenRecentFile
@@ -840,8 +888,7 @@ CString FormatDouble(double fValue)
 {
 	char nDecimalPoint = localeconv()->decimal_point[0];
 
-	CString strResult;
-	strResult.Format(_T("%.6f"), fValue);
+	CString strResult = FormatString(_T("%.6f"), fValue);
 	while (!strResult.IsEmpty() && strResult[strResult.GetLength() - 1] == '0')
 		strResult = strResult.Left(strResult.GetLength() - 1);
 
@@ -868,8 +915,7 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, double& value, double def, 
 
 void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def, LPCTSTR pszSuffix)
 {
-	CString strText;
-	strText.Format(_T("%u%s"), value, (LPCTSTR)CString(pszSuffix));
+	CString strText = FormatString(_T("%u%s"), value, (LPCTSTR)CString(pszSuffix));
 	DDX_Text(pDX, nIDC, strText);
 
 	if (pDX->m_bSaveAndValidate)

@@ -24,6 +24,8 @@
 #endif
 
 #include "resource.h"       // main symbols
+#include "AppSettings.h"
+#include "Global.h"
 
 extern CString CURRENT_VERSION;
 
@@ -47,7 +49,7 @@ bool IsFromCurrentProcess(CWnd* pWnd);
 
 // CDjViewApp
 
-class CDjViewApp : public CWinApp
+class CDjViewApp : public CWinApp, public Observable
 {
 public:
 	CDjViewApp();
@@ -55,6 +57,13 @@ public:
 	BOOL WriteProfileDouble(LPCTSTR pszSection, LPCTSTR pszEntry, double fValue);
 	double GetProfileDouble(LPCTSTR pszSection, LPCTSTR pszEntry, double fDefault);
 	void LoadDjVuUserData(const CString& strKey, DjVuUserData* pData);
+
+	CAppSettings* GetAppSettings() { return &m_appSettings; }
+	CDisplaySettings* GetDisplaySettings() { return &m_displaySettings; }
+	CPrintSettings* GetPrintSettings() { return &m_printSettings; }
+
+	void SetLanguage(HINSTANCE hResources, DWORD nLanguage);
+	void SaveSettings();
 
 // Overrides
 public:
@@ -69,12 +78,15 @@ public:
 
 // Implementation
 protected:
+	CAppSettings m_appSettings;
+	CDisplaySettings m_displaySettings;
+	CPrintSettings m_printSettings;
+
 	void LoadSettings();
-	void SaveSettings();
 	void EnableShellOpen();
 	CDocument* FindOpenDocument(LPCTSTR lpszFileName);
 
-// Generated message map functions
+	// Generated message map functions
 	afx_msg void OnAppAbout();
 	afx_msg void OnFileSettings();
 	afx_msg void OnCheckForUpdate();

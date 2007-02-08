@@ -124,9 +124,8 @@ unsigned int __stdcall CUpdateDlg::UpdateThreadProc(void* pvData)
 		}
 		else if (strVersion.GetLength() < 16 && strVersion.Find('<') == -1)
 		{
-			CString strMessage;
-			strMessage.Format(IDS_NEW_VERSION_AVAILABLE, strVersion);
-			if (AfxMessageBox(strMessage, MB_ICONQUESTION | MB_YESNO) == IDYES)
+			if (AfxMessageBox(FormatString(IDS_NEW_VERSION_AVAILABLE, strVersion),
+					MB_ICONQUESTION | MB_YESNO) == IDYES)
 			{
 				::ShellExecute(NULL, _T("open"), LoadString(IDS_WEBSITE_URL),
 					NULL, NULL, SW_SHOWNORMAL);

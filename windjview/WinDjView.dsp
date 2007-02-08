@@ -312,6 +312,10 @@ SOURCE=.\WinDjView.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\XMLParser.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ZoomDlg.cpp
 # End Source File
 # End Group
@@ -477,6 +481,10 @@ SOURCE=.\UpdateDlg.h
 # Begin Source File
 
 SOURCE=.\WinDjView.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\XMLParser.h
 # End Source File
 # Begin Source File
 
