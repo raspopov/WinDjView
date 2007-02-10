@@ -103,7 +103,7 @@ HBRUSH CSettingsDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 	if (pWnd->GetDlgCtrlID() == IDC_STATIC_ABOUT)
 	{
-		pDC->SetTextColor(::GetSysColor(COLOR_3DSHADOW));
+		pDC->SetTextColor(::GetSysColor(COLOR_GRAYTEXT));
 	}
 
 	return brush;

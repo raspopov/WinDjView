@@ -33,7 +33,7 @@ public:
 	void DrawDC(CDC* pDC, const CPoint& ptOffset, const CRect& rcPart);
 
 	int GetWidth() const { return m_pBMI->bmiHeader.biWidth; }
-	int GetHeight() const { return m_pBMI->bmiHeader.biHeight; }
+	int GetHeight() const { return abs(m_pBMI->bmiHeader.biHeight); }
 	CSize GetSize() const { return CSize(GetWidth(), GetHeight()); }
 	LPBYTE GetBits() { return m_pBits; }
 	int GetBitsPerPixel() const { return m_pBMI->bmiHeader.biBitCount; }
@@ -85,6 +85,23 @@ protected:
 	CLightweightDIB() {}
 };
 
+class COffscreenDC : public CDC
+{
+public:
+	COffscreenDC();
+	virtual ~COffscreenDC();
+
+	bool Create(CDC* pDC, CSize size);
+	void Release();
+
+	CDIB* GetDIB() { return m_pBitmap; }
+
+private:
+	CDIB* m_pBitmap;
+	CBitmap* m_pOldBitmap;
+	CSize m_szBitmap;
+};
+
 
 CDIB* RenderPixmap(GPixmap& pm, const CDisplaySettings& displaySettings);
 CDIB* RenderBitmap(GBitmap& bm, const CDisplaySettings& displaySettings);
@@ -102,5 +119,7 @@ void InvertFrame(CDC* pDC, const CRect& rect);
 void DrawDottedLine(CDC* pDC, const CPoint& ptStart, const CPoint& ptEnd, COLORREF color);
 void DrawDottedRect(CDC* pDC, const CRect& rect, COLORREF color);
 void HighlightRect(CDC* pDC, const CRect& rect, COLORREF color, double fTransparency);
+void DrawDownArrow(CDC* pDC, const CRect& rect, COLORREF color);
 
 COLORREF ChangeBrightness(COLORREF color, double fFactor);
+COLORREF AlphaCombine(COLORREF crFirst, COLORREF crSecond, BYTE nAlpha);

@@ -129,9 +129,12 @@ void PageInfo::DecodeText(GP<ByteStream> pTextStream)
 const TCHAR pszTagHighlight[] = _T("highlight");
 const TCHAR pszAttrBorder[] = _T("border");
 const TCHAR pszAttrBorderColor[] = _T("border-color");
+const TCHAR pszAttrBorderHideInactive[] = _T("border-hide-inactive");
 const TCHAR pszAttrFill[] = _T("fill");
 const TCHAR pszAttrFillColor[] = _T("fill-color");
 const TCHAR pszAttrFillTransparency[] = _T("fill-transparency");
+const TCHAR pszAttrComment[] = _T("comment");
+const TCHAR pszAttrURL[] = _T("url");
 
 const TCHAR pszTagRect[] = _T("rect");
 const TCHAR pszAttrLeft[] = _T("left");
@@ -160,23 +163,24 @@ GUTF8String DjVuHighlight::GetXML() const
 	}
 
 	CString strBorder;
-	strBorder.Format(_T("%s=\"%d\""), pszAttrBorder, nBorderType);
-	if (nBorderType == BorderSolid)
-		strBorder += FormatString(_T(" %s=\"#%06x\""), pszAttrBorderColor, crBorder);
+	strBorder.Format(_T("%s=\"%d\" %s=\"#%06x\" %s=\"%d\""),
+			pszAttrBorder, nBorderType, pszAttrBorderColor, crBorder,
+			pszAttrBorderHideInactive, static_cast<int>(bHideInactiveBorder));
 
 	CString strFill;
-	strFill.Format(_T("%s=\"%d\""), pszAttrFill, nFillType);
-	if (nFillType == FillHighlight)
-	{
-		strFill += FormatString(_T(" %s=\"#%06x\" %s=\"%d%%\""), pszAttrFillColor, crFill,
-				pszAttrFillTransparency, static_cast<int>(fTransparency*100 + 0.5));
-	}
+	strFill.Format(_T("%s=\"%d\" %s=\"#%06x\" %s=\"%d%%\""),
+			pszAttrFill, nFillType, pszAttrFillColor, crFill,
+			pszAttrFillTransparency, static_cast<int>(fTransparency*100 + 0.5));
 
-	CString strResult;
-	strResult.Format(_T("<%s %s %s >\n%s</%s>\n"), pszTagHighlight,
-			strBorder, strFill, strRects, pszTagHighlight);
+	CString strBegin;
+	strBegin.Format(_T("<%s %s\n%s\n%s=\""), pszTagHighlight,
+			strBorder, strFill, pszAttrComment);
+			
+	CString strEnd;
+	strEnd.Format(_T("\" >\n%s</%s>\n"), strRects, pszTagHighlight);
 
-	return MakeUTF8String(strResult);
+	return MakeUTF8String(strBegin) + strComment.toEscaped() + "\" "
+		+ GUTF8String(pszAttrURL) + "=\"" + strURL.toEscaped() + MakeUTF8String(strEnd);
 }
 
 void DjVuHighlight::Load(const XMLNode& node)
@@ -184,40 +188,44 @@ void DjVuHighlight::Load(const XMLNode& node)
 	if (MakeCString(node.tagName) != pszTagHighlight)
 		return;
 
-	int borderType = -1;
+	int borderType;
 	if (node.GetIntAttribute(pszAttrBorder, borderType))
 	{
 		if (borderType >= BorderNone && borderType <= BorderXOR)
 			nBorderType = borderType;
-
-		if (borderType == BorderSolid)
-		{
-			COLORREF color;
-			if (node.GetColorAttribute(pszAttrBorderColor, color))
-				crBorder = color;
-		}
 	}
 
-	int fillType = -1;
+	COLORREF color;
+	if (node.GetColorAttribute(pszAttrBorderColor, color))
+		crBorder = color;
+
+	int nHideInactive;
+	if (node.GetIntAttribute(pszAttrBorderHideInactive, nHideInactive))
+		bHideInactiveBorder = !!nHideInactive;
+
+	int fillType;
 	if (node.GetIntAttribute(pszAttrFill, fillType))
 	{
 		if (fillType >= FillNone && fillType <= FillXOR)
 			nFillType = fillType;
-
-		if (fillType == FillHighlight)
-		{
-			COLORREF color;
-			if (node.GetColorAttribute(pszAttrFillColor, color))
-				crFill = color;
-
-			int nPercent;
-			if (node.GetIntAttribute(pszAttrFillTransparency, nPercent))
-			{
-				if (nPercent >= 0 && nPercent <= 100)
-					fTransparency = nPercent / 100.0;
-			}
-		}
 	}
+
+	if (node.GetColorAttribute(pszAttrFillColor, color))
+		crFill = color;
+
+	int nPercent;
+	if (node.GetIntAttribute(pszAttrFillTransparency, nPercent))
+	{
+		if (nPercent >= 0 && nPercent <= 100)
+			fTransparency = nPercent / 100.0;
+	}
+
+	wstring str;
+	if (node.GetAttribute(pszAttrComment, str))
+		strComment = MakeUTF8String(str);
+
+	if (node.GetAttribute(pszAttrURL, str))
+		strURL = MakeUTF8String(str);
 
 	rects.clear();
 	list<XMLNode>::const_iterator it;

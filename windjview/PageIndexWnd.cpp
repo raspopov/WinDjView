@@ -62,8 +62,7 @@ BOOL CPageIndexWnd::PreCreateWindow(CREATESTRUCT& cs)
 	if (!CWnd::PreCreateWindow(cs))
 		return false;
 
-	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
-		::LoadCursor(NULL, IDC_ARROW));
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS);
 	cs.lpszClass = strWndClass;
 
 	return true;
@@ -413,7 +412,7 @@ BOOL CPageIndexWnd::PreTranslateMessage(MSG* pMsg)
 	}
 	else if (pMsg->message == WM_MOUSEWHEEL)
 	{
-		CPoint point(LOWORD(pMsg->lParam), HIWORD(pMsg->lParam));
+		CPoint point((DWORD) pMsg->lParam);
 
 		CWnd* pWnd = WindowFromPoint(point);
 		if (pWnd != this && !IsChild(pWnd) && IsFromCurrentProcess(pWnd))

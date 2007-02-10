@@ -33,7 +33,7 @@
 IMPLEMENT_DYNCREATE(CNavPaneWnd, CWnd)
 CNavPaneWnd::CNavPaneWnd()
 	: m_nActiveTab(-1), m_bCloseActive(false), m_bClosePressed(false),
-	  m_bDragging(false), m_pBitmapTabs(NULL)
+	  m_bDragging(false)
 {
 	CFont systemFont;
 	CreateSystemDialogFont(systemFont);
@@ -52,8 +52,6 @@ CNavPaneWnd::CNavPaneWnd()
 
 CNavPaneWnd::~CNavPaneWnd()
 {
-	delete m_pBitmapTabs;
-	m_pBitmapTabs = NULL;
 }
 
 
@@ -91,19 +89,9 @@ void CNavPaneWnd::OnPaint()
 	}
 
 	// Draw tabs offscreen
-	if (m_pBitmapTabs == NULL || m_szBitmap.cx != s_nTabsWidth + 2
-			|| m_szBitmap.cy < rcClient.Height())
-	{
-		delete m_pBitmapTabs;
-		m_pBitmapTabs = new CBitmap();
-		m_pBitmapTabs->CreateCompatibleBitmap(&dc, s_nTabsWidth + 2, rcClient.Height());
-		m_szBitmap = CSize(s_nTabsWidth + 2, rcClient.Height());
-	}
-
-	CDC dcOffscreen;
-	dcOffscreen.CreateCompatibleDC(&dc);
-	CBitmap* pOldOffscreenBmp = dcOffscreen.SelectObject(m_pBitmapTabs);
-	CDC* pDC = &dcOffscreen;
+	CSize szTabs(s_nTabsWidth + 2, rcClient.Height());
+	m_offscreenDC.Create(&dc, szTabs);
+	CDC* pDC = &m_offscreenDC;
 
 	CRect rcTabs(rcClient);
 	rcTabs.right = rcTabs.left + s_nTabsWidth;
@@ -125,8 +113,8 @@ void CNavPaneWnd::OnPaint()
 	DrawTab(pDC, m_nActiveTab, true);
 
 	// Flush bitmap to screen dc
-	dc.BitBlt(0, 0, m_szBitmap.cx, m_szBitmap.cy, pDC, 0, 0, SRCCOPY);
-	pDC->SelectObject(pOldOffscreenBmp);
+	dc.BitBlt(0, 0, szTabs.cx, szTabs.cy, pDC, 0, 0, SRCCOPY);
+	m_offscreenDC.Release();
 
 	// Left space
 	rcTabs.left = rcTabs.right + 2;

@@ -108,6 +108,8 @@ struct TMSCHEMAINFO
 #define WM_THEMECHANGED     0x031A
 #endif
 
+bool IsThemed();
+
 HTHEME XPOpenThemeData(HWND hwnd, LPCWSTR pszClassList);
 HRESULT XPCloseThemeData(HTHEME hTheme);
 HRESULT XPDrawThemeBackground(HTHEME hTheme, HDC hdc,

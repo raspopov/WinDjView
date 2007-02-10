@@ -20,6 +20,7 @@
 #pragma once
 
 #include "MyTheme.h"
+#include "Drawing.h"
 
 #define TVN_ITEMCLICKED (WM_USER + 30)
 
@@ -127,9 +128,9 @@ protected:
 	bool m_bHasGlyphs;
 	CFont m_font, m_fontHover;
 	CSize m_szDisplay;
-	CBitmap* m_pOffscreenBitmap;
-	CSize m_szOffscreen;
 	bool m_bBatchUpdate;
+
+	COffscreenDC m_offscreenDC;
 
 	TreeNode* m_pSelection;
 	TreeNode* m_pHoverNode;
@@ -167,7 +168,7 @@ protected:
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-	afx_msg LRESULT OnThemeChanged(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnThemeChanged();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnKillFocus(CWnd* pNewWnd);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);

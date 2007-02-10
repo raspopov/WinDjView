@@ -66,9 +66,11 @@ LINK_OBJS = \
 	"$(INTDIR)\FullscreenWnd.obj" \
 	"$(INTDIR)\Global.obj" \
 	"$(INTDIR)\GotoPageDlg.obj" \
+	"$(INTDIR)\HighlightDlg.obj" \
 	"$(INTDIR)\MainFrm.obj" \
 	"$(INTDIR)\MagnifyWnd.obj" \
 	"$(INTDIR)\MyBitmapButton.obj" \
+	"$(INTDIR)\MyColorPicker.obj" \
 	"$(INTDIR)\MyComboBox.obj" \
 	"$(INTDIR)\MyDocManager.obj" \
 	"$(INTDIR)\MyDocTemplate.obj" \
@@ -113,9 +115,11 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\FullscreenWnd.obj" : FullscreenWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\Global.obj" : Global.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\GotoPageDlg.obj" : GotoPageDlg.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\HighlightDlg.obj" : HighlightDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MainFrm.obj" : MainFrm.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MagnifyWnd.obj" : MagnifyWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyBitmapButton.obj" : MyBitmapButton.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MyColorPicker.obj" : MyColorPicker.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyComboBox.obj" : MyComboBox.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDocManager.obj" : MyDocManager.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDocTemplate.obj" : MyDocTemplate.cpp "$(INTDIR)" $(PCH)

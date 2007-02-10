@@ -41,7 +41,7 @@ CMyToolBar::~CMyToolBar()
 BEGIN_MESSAGE_MAP(CMyToolBar, CToolBar)
 	ON_WM_CREATE()
 	ON_WM_NCPAINT()
-	ON_MESSAGE(WM_THEMECHANGED, OnThemeChanged)
+	ON_MESSAGE_VOID(WM_THEMECHANGED, OnThemeChanged)
 	ON_WM_RBUTTONDOWN()
 	ON_WM_RBUTTONUP()
 END_MESSAGE_MAP()
@@ -54,7 +54,7 @@ int CMyToolBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CToolBar::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	if (XPIsAppThemed() && XPIsThemeActive())
+	if (IsThemed())
 		m_hTheme = XPOpenThemeData(m_hWnd, L"TOOLBAR");
 
 	return 0;
@@ -219,17 +219,15 @@ void CMyToolBar::OnNcPaint()
 	EraseNonClient();
 }
 
-LRESULT CMyToolBar::OnThemeChanged(WPARAM wParam, LPARAM lParam)
+void CMyToolBar::OnThemeChanged()
 {
 	if (m_hTheme != NULL)
 		XPCloseThemeData(m_hTheme);
 
 	m_hTheme = NULL;
 
-	if (XPIsAppThemed() && XPIsThemeActive())
+	if (IsThemed())
 		m_hTheme = XPOpenThemeData(m_hWnd, L"TOOLBAR");
-
-	return 0;
 }
 
 void CMyToolBar::OnRButtonDown(UINT nFlags, CPoint point)

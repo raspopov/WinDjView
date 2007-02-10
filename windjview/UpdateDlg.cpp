@@ -62,13 +62,6 @@ void CUpdateDlg::OnCancel()
 {
 }
 
-BOOL CUpdateDlg::OnInitDialog()
-{
-	CDialog::OnInitDialog();
-
-	return TRUE;
-}
-
 void CUpdateDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	CDialog::OnShowWindow(bShow, nStatus);

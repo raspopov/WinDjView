@@ -24,6 +24,10 @@
 #include <streambuf>
 #include <string>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 
 inline bool IsNameStart(int c)
 {
@@ -46,6 +50,16 @@ const wstring* XMLNode::GetAttribute(const CString& name) const
 		return NULL;
 
 	return &((*it).second);
+}
+
+bool XMLNode::GetAttribute(const CString& name, wstring& value) const
+{
+	const wstring* attr = GetAttribute(name);
+	if (attr == NULL)
+		return false;
+
+	value = attr->c_str();
+	return true;
 }
 
 bool XMLNode::GetIntAttribute(const CString& name, int& value) const
@@ -107,6 +121,21 @@ bool XMLNode::GetColorAttribute(const CString& name, COLORREF& value) const
 
 // XMLParser
 
+const int errIllegalCharacter = 1;
+const int errNameExpected = 2;
+const int errAttrValueExpected = 3;
+const int errEqualsExpected = 4;
+const int errTagExpected = 5;
+const int errUnexpectedEOF = 6;
+const int errMissingClosingTag = 7;
+const int errInvalidTrailer = 8;
+const int errInvalidCharEntity = 9;
+const int errInvalidClosingTag = 10;
+const int errInvalidComment = 11;
+const int errInvalidTag = 12;
+const int errInvalidPI = 13;
+const int errInvalidAttrValue = 14;
+
 bool XMLParser::Parse(istream& in_)
 {
 	in = &in_;
@@ -129,7 +158,7 @@ bool XMLParser::Parse(istream& in_)
 		while (cur != EOF)
 		{
 			if (!skipPI() && !skipComment())
-				throw 3;
+				throw errInvalidTrailer;
 			skipWhitespace();
 		}
 
@@ -173,14 +202,14 @@ int XMLParser::nextChar()
 	}
 	
 	if (cur < 0x20)
-		throw 1; // Illegal character
+		throw errIllegalCharacter;
 
 	if (cur < 0xe0)
 	{
 		if ((ch = in->rdbuf()->sbumpc()) == EOF)
-			throw 1; // Illegal character
+			throw errIllegalCharacter;
 		if (!((ch ^ 0x80) < 0x40))
-			throw -1;
+			throw errIllegalCharacter;
 
 		cur = ((cur & 0x1F) << 6) + (ch & 0x7F);
 		ch = in->rdbuf()->sbumpc();
@@ -191,16 +220,16 @@ int XMLParser::nextChar()
 	{
 		int next = in->rdbuf()->sbumpc();
 		if (next == EOF || (ch = in->rdbuf()->sbumpc()) == EOF)
-			throw 1; // Illegal character
+			throw errIllegalCharacter;
 		if (!((next ^ 0x80) < 0x40 && (ch ^ 0x80) < 0x40
 				&& (cur >= 0xe1 || next >= 0xa0)))
-			return -1; // Illegal character
+			throw errIllegalCharacter;
 		cur = ((cur & 0xF) << 12) + ((next & 0x7F) << 6) + (ch & 0x7F);
 		ch = in->rdbuf()->sbumpc();
 		return cur;
 	}
 
-	throw 1; // Illegal character
+	throw errIllegalCharacter;
 }
 
 void XMLParser::skipWhitespace()
@@ -212,7 +241,7 @@ void XMLParser::skipWhitespace()
 void XMLParser::readName(wstring& name)
 {
 	if (!IsNameStart(cur))
-		throw 2;
+		throw errNameExpected;
 
 	name.reserve(10);
 	name.insert(name.end(), static_cast<wchar_t>(cur));
@@ -223,21 +252,27 @@ void XMLParser::readName(wstring& name)
 void XMLParser::readText(wstring& text)
 {
 	if (cur != '\'' && cur != '\"')
-		throw 3;
+		throw errAttrValueExpected;
 
 	int quote = cur;
-	while (nextChar() != quote)
+	nextChar();
+	while (cur != quote)
 	{
 		if (cur == EOF)
-			throw 4;
+			throw errUnexpectedEOF;
 
 		if (cur == '<')
-			throw 5;
+			throw errInvalidAttrValue;
 
 		if (cur == '&')
+		{
 			text.insert(text.end(), static_cast<wchar_t>(readCharEntity()));
+		}
 		else
+		{
 			text.insert(text.end(), static_cast<wchar_t>(cur));
+			nextChar();
+		}
 	}
 
 	nextChar();
@@ -246,7 +281,7 @@ void XMLParser::readText(wstring& text)
 int XMLParser::readCharEntity()
 {
 	if (cur != '&')
-		throw 2;
+		throw errInvalidCharEntity;
 
 	if (nextChar() == '#')
 	{
@@ -268,7 +303,7 @@ int XMLParser::readCharEntity()
 			}
 
 			if (cur != ';' || c > 0xFFFF || c == 0)
-				throw 6;
+				throw errInvalidCharEntity;
 
 			nextChar();
 			return c;
@@ -283,7 +318,7 @@ int XMLParser::readCharEntity()
 			}
 
 			if (cur != ';' || c > 0xFFFF || c == 0)
-				throw 6;
+				throw errInvalidCharEntity;
 
 			nextChar();
 			return c;
@@ -309,7 +344,7 @@ int XMLParser::readCharEntity()
 		else if (strncmp(buf, "apos", length) == 0)
 			return '\'';
 		else
-			throw 6;
+			throw errInvalidCharEntity;
 	}
 }
 
@@ -335,7 +370,7 @@ bool XMLParser::skipPI()
 	{
 		if (cur == EOF)
 		{
-			throw 4;
+			throw errUnexpectedEOF;
 		}
 		else if (cur == '>')
 		{
@@ -345,7 +380,7 @@ bool XMLParser::skipPI()
 		else if (cur == '<')
 		{
 			if (!skipPI() && !skipComment())
-				throw 7;
+				throw errInvalidPI;
 		}
 		else
 		{
@@ -386,7 +421,7 @@ bool XMLParser::skipComment()
 				return true;
 			}
 			else
-				throw 8;
+				throw errInvalidComment;
 		}
 
 		buf[count++ % 2] = cur;
@@ -399,7 +434,7 @@ bool XMLParser::skipComment()
 void XMLParser::readTag(XMLNode& node)
 {
 	if (cur != '<')
-		throw 3;
+		throw errTagExpected;
 
 	nextChar();
 	readName(node.tagName);
@@ -411,7 +446,7 @@ void XMLParser::readTag(XMLNode& node)
 		readName(attr);
 		skipWhitespace();
 		if (cur != '=')
-			throw 10;
+			throw errEqualsExpected;
 		nextChar();
 		skipWhitespace();
 		readText(node.attributes[attr]);
@@ -425,9 +460,9 @@ void XMLParser::readTag(XMLNode& node)
 		skipWhitespace();
 
 		if (cur != '<')
-			throw 9;
+			throw errMissingClosingTag;
 		if (nextChar() != '/')
-			throw 9;
+			throw errMissingClosingTag;
 		nextChar();
 
 		wstring nclose;
@@ -435,22 +470,22 @@ void XMLParser::readTag(XMLNode& node)
 		skipWhitespace();
 
 		if (cur != '>')
-			throw 9;
+			throw errInvalidClosingTag;
 		if (nclose != node.tagName)
-			throw 9;
+			throw errInvalidClosingTag;
 
 		nextChar();
 	}
 	else if (cur == '/')
 	{
 		if (nextChar() != '>')
-			throw 9;
+			throw errInvalidTag;
 
 		nextChar();
 	}
 	else
 	{
-		throw 9;
+		throw errInvalidTag;
 	}
 }
 
@@ -477,10 +512,16 @@ void XMLParser::readContents(XMLNode& node)
 			readTag(childNode);
 			continue;
 		}
-
-		node.text.insert(node.text.end(), static_cast<wchar_t>(cur));
-		nextChar();
+		else if (cur == '&')
+		{
+			node.text.insert(node.text.end(), static_cast<wchar_t>(readCharEntity()));
+		}
+		else
+		{
+			node.text.insert(node.text.end(), static_cast<wchar_t>(cur));
+			nextChar();
+		}
 	}
 
-	throw 11;
+	throw errUnexpectedEOF;
 }

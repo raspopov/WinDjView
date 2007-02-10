@@ -330,7 +330,8 @@ BEGIN
     BEGIN
         MENUITEM "&Copy Text",                  ID_EDIT_COPY
         MENUITEM "&Highlight Selection...",     ID_HIGHLIGHT_SEL
-        MENUITEM "Remove &Highlight",           ID_REMOVE_HIGHLIGHT
+        MENUITEM "E&dit Highlight...",          ID_HIGHLIGHT_EDIT
+        MENUITEM "Remove &Highlight",           ID_HIGHLIGHT_REMOVE
         MENUITEM SEPARATOR
         MENUITEM "Page &Information...",        ID_PAGE_INFORMATION
         MENUITEM "&Export Page...",             ID_EXPORT_PAGE
@@ -655,6 +656,45 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
 END
 
+IDD_HIGHLIGHT DIALOGEX 0, 0, 200, 195
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Edit Highlight"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,30,11,163,1,
+                    WS_EX_STATICEDGE
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,19,59,174,1,
+                    WS_EX_STATICEDGE
+    LTEXT           "Border",IDC_STATIC,7,7,24,9
+    LTEXT           "Type:",IDC_STATIC,18,19,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_BORDER_TYPE,43,19,79,64,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Color:",IDC_STATIC,130,19,20,12,SS_CENTERIMAGE
+    PUSHBUTTON      "",IDC_BORDER_COLOR,152,18,41,15
+    CONTROL         "Show only when hovered by mouse",IDC_HIDE_INACTIVE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,37,129,11
+    LTEXT           "Fill",IDC_STATIC,7,55,11,9
+    LTEXT           "Type:",IDC_STATIC,19,67,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_FILL_TYPE,43,67,79,64,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Color:",IDC_STATIC,130,67,20,12,SS_CENTERIMAGE
+    PUSHBUTTON      "",IDC_FILL_COLOR,152,66,41,15
+    LTEXT           "Transparency:",IDC_STATIC,19,85,47,12,SS_CENTERIMAGE
+    CONTROL         "Slider1",IDC_FILL_TRANSPARENCY,"msctls_trackbar32",
+                    WS_TABSTOP,70,86,101,12
+    RTEXT           "100%",IDC_FILL_TRANSPARENCY_TEXT,172,85,20,12,
+                    SS_CENTERIMAGE
+    DEFPUSHBUTTON   "OK",IDOK,89,174,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,143,174,50,14
+    LTEXT           "Link:",IDC_STATIC,7,112,33,13,SS_CENTERIMAGE
+    LTEXT           "Comment:",IDC_STATIC,7,129,33,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_URL,43,112,150,13,ES_AUTOHSCROLL
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,7,105,186,1,
+                    WS_EX_STATICEDGE
+    EDITTEXT        IDC_COMMENT,43,129,150,39,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_WANTRETURN | WS_VSCROLL
+END
+
 
 #ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
@@ -789,6 +829,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 118
     END
+
+    IDD_HIGHLIGHT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 193
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 188
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -802,6 +850,10 @@ STRINGTABLE DISCARDABLE
 BEGIN
     IDR_MAINFRAME           "WinDjView"
     IDR_DjVuTYPE            "\nDjVu\nDjVu\nDjVu Documents (*.djvu;*.djv)\n.djvu;.djv\nDjVu.Document\n"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
     IDS_BOOKMARKS_TAB       "Bookmarks"
     IDS_ASSOCIATE_SUCCESSFUL 
                             "Now you will be able to open .djvu and .djv files with WinDjView\nby double-clicking them in the Explorer."
@@ -811,12 +863,12 @@ BEGIN
     IDS_SEARCH_RESULTS_TAB  "Search Results"
     IDS_SAVE_COPY_AS        "Save Copy As"
     IDS_DJVU_FILTER         "DjVu Documents (*.djvu)|*.djvu|All Files (*.*)|*.*||"
-    IDS_CANNOT_SAVE_TO_ORIG "Cannot save the document to its original location"
-    IDS_SAVE_ERROR          "An error occurred while saving the document"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    IDS_CANNOT_SAVE_TO_ORIG "Cannot save the document to its original location"
+    IDS_SAVE_ERROR          "An error occurred while saving the document"
     IDS_ERROR_DECODING_PAGE "Error decoding page"
     IDS_BMP_FILTER          "Bitmap Files (*.bmp)|*.bmp|All Files (*.*)|*.*||"
     IDS_EXPORT_PAGE         "Export Page"
@@ -828,6 +880,11 @@ BEGIN
     IDS_VERSION_URL         "http://windjview.sourceforge.net/version.txt"
     IDS_WEBSITE_URL         "http://windjview.sourceforge.net"
     IDS_DJVULIBRE_URL       "http://djvu.sourceforge.net"
+    IDS_DONATE_URL          "https://sourceforge.net/donate/index.php?group_id=114927"
+    IDS_STRING_NOT_FOUND    "Search string not found"
+    IDS_PRINTING            "Printing, please wait..."
+    IDS_ERROR_RENDERING_PAGE "Error rendering page"
+    IDS_SEARCHING_PAGE      "Searching page %d of %d"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -935,11 +992,29 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_LAYOUT_FIRSTPAGE_ALONE 
                             "Display first page alone in facing and continuous-facing layouts"
+    ID_HIGHLIGHT_SEL        "Highlights current selection"
+    ID_HIGHLIGHT_EDIT       "Edit properties of currently selected highlight"
+    ID_HIGHLIGHT_REMOVE     "Removes currently selected highlight"
+    ID_INDICATOR_PAGE       "  Page %d of %d  "
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_NOT_VALID_DOCUMENT  "\nThis is not a valid DjVu document."
+    IDS_PRINTING_FAILED     "Failed to print the document. There could be a problem\nwith the printer or with the printer driver."
+    IDS_PAPER_SIZE_MM       "%s x %s mm"
+    IDS_CENTIMETER          "cm"
+    IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
+    IDS_VERSION_ABOUT       "WinDjView %s"
+    IDS_CURRENT_VERSION     "0.4.4"
+    IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
+    IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure you want to continue?"
     IDS_OPENFILE            "Open"
     IDS_ALLFILTER           "All Files (*.*)"
     IDS_SETTINGS            "Settings"
-    ID_HIGHLIGHT_SEL        "Highlights current selection"
-    ID_REMOVE_HIGHLIGHT     "Removes currently selected highlight"
+    IDS_BORDER_TYPES        "None,Solid,Invert"
+    IDS_FILL_TYPES          "None,Solid,Invert"
+    IDS_MORE_COLORS         "More Colors..."
 END
 
 STRINGTABLE DISCARDABLE 
@@ -1026,12 +1101,26 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    IDS_NUM_OCCURRENCES     "%d occurrences found"
+    IDS_EXPORT_TEXT         "Export Text"
+    IDS_TEXT_FILTER         "Text Documents (*.txt)|*.txt|All Files (*.*)|*.*||"
+    IDS_PRINTING_PAGE       "Printing page %d of %d, please wait..."
+    IDS_SEARCHING           "Searching"
+    IDS_OF_PAGE_COUNT       "of %d"
+    IDS_FIT_WIDTH           "Fit Width"
+    IDS_FIT_HEIGHT          "Fit Height"
+    IDS_FIT_PAGE            "Fit Page"
+    IDS_ACTUAL_SIZE         "Actual Size"
     IDS_STRETCH             "Stretch"
     IDS_TOOLTIP_BRIGHTNESS  "Brightness: %+d"
     IDS_TOOLTIP_CONTRAST    "Contrast: %+d"
     IDS_TOOLTIP_GAMMA       "Gamma: %1.1f"
     IDS_STATUS_BLACKANDWHITE "  Black & White  "
     IDS_STATUS_FOREGROUND   "  Foreground  "
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
     IDS_STATUS_BACKGROUND   "  Background  "
     IDS_PRINT_ALL_PAGES     "All Pages In Range"
     IDS_PRINT_ODD_PAGES     "Odd Pages"
@@ -1042,25 +1131,12 @@ BEGIN
     IDS_PAGE_NO_TOOLTIP     "p# %d"
     IDS_BRIGHTNESS_TEXT_ZERO "&Brightness: %d"
     IDS_BRIGHTNESS_TEXT     "&Brightness: %+d"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
     IDS_CONTRAST_TEXT_ZERO  "&Contrast: %d"
     IDS_CONTRAST_TEXT       "&Contrast: %+d"
     IDS_GAMMA_TEXT          "&Gamma: %1.1f"
     IDS_FAILED_TO_OPEN      "Failed to open document\n"
     IDS_TOOLBAR_TITLE       "Toolbar"
     IDS_TOOLTIP_HIDE        "Hide"
-    IDS_NOT_VALID_DOCUMENT  "\nThis is not a valid DjVu document."
-    IDS_PRINTING_FAILED     "Failed to print the document. There could be a problem\nwith the printer or with the printer driver."
-    IDS_PAPER_SIZE_MM       "%s x %s mm"
-    IDS_CENTIMETER          "cm"
-    IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
-    IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "0.4.4"
-    IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
-    IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure you want to continue?"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -1077,29 +1153,9 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_INDICATOR_PAGE       "  Page %d of %d  "
     ID_INDICATOR_SIZE       "  %s x %s %s  "
     ID_INDICATOR_ADJUST     "  Adjusted  "
     ID_INDICATOR_MODE       "  Display Mode  "
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    IDS_DONATE_URL          "https://sourceforge.net/donate/index.php?group_id=114927"
-    IDS_STRING_NOT_FOUND    "Search string not found"
-    IDS_PRINTING            "Printing, please wait..."
-    IDS_ERROR_RENDERING_PAGE "Error rendering page"
-    IDS_SEARCHING_PAGE      "Searching page %d of %d"
-    IDS_NUM_OCCURRENCES     "%d occurrences found"
-    IDS_EXPORT_TEXT         "Export Text"
-    IDS_TEXT_FILTER         "Text Documents (*.txt)|*.txt|All Files (*.*)|*.*||"
-    IDS_PRINTING_PAGE       "Printing page %d of %d, please wait..."
-    IDS_SEARCHING           "Searching"
-    IDS_OF_PAGE_COUNT       "of %d"
-    IDS_FIT_WIDTH           "Fit Width"
-    IDS_FIT_HEIGHT          "Fit Height"
-    IDS_FIT_PAGE            "Fit Page"
-    IDS_ACTUAL_SIZE         "Actual Size"
 END
 
 #endif    // English (U.S.) resources

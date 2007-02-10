@@ -924,3 +924,46 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def, LP
 			value = def;
 	}
 }
+
+CRect GetMonitorWorkArea(const CPoint& point)
+{
+	CRect rcWorkArea;
+
+	if (!::SystemParametersInfo(SPI_GETWORKAREA, 0, (PVOID)&rcWorkArea, false))
+	{
+		CSize szScreen(::GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN));
+		rcWorkArea = CRect(CPoint(0, 0), szScreen);
+	}
+
+	HMODULE hUser32 = ::GetModuleHandle(_T("USER32.DLL"));
+	if (hUser32 != NULL)
+	{
+		struct MonitorInfo
+		{
+			DWORD cbSize;
+			RECT rcMonitor;
+			RECT rcWork;
+			DWORD dwFlags;
+		};
+
+		typedef HANDLE (WINAPI* pfnMonitorFromPoint)(POINT pt, DWORD dwFlags);
+		typedef BOOL (WINAPI* pfnGetMonitorInfo)(HANDLE hMonitor, MonitorInfo* pmi);
+
+		pfnMonitorFromPoint pMonitorFromPoint =
+				(pfnMonitorFromPoint) ::GetProcAddress(hUser32, "MonitorFromPoint");
+		pfnGetMonitorInfo pGetMonitorInfo =
+				(pfnGetMonitorInfo) ::GetProcAddress(hUser32, "GetMonitorInfoA");
+
+		if (pMonitorFromPoint != NULL && pGetMonitorInfo != NULL)
+		{
+			MonitorInfo mi;
+			mi.cbSize = sizeof(mi);
+
+			HANDLE hMonitor = pMonitorFromPoint(point, 1); // MONITOR_DEFAULTTONEAREST
+			if (hMonitor != NULL && pGetMonitorInfo(hMonitor, &mi))
+				rcWorkArea = mi.rcWork;
+		}
+	}
+
+	return rcWorkArea;
+}

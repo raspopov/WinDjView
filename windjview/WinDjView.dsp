@@ -195,6 +195,10 @@ SOURCE=.\GotoPageDlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\HighlightDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MagnifyWnd.cpp
 # End Source File
 # Begin Source File
@@ -204,6 +208,10 @@ SOURCE=.\MainFrm.cpp
 # Begin Source File
 
 SOURCE=.\MyBitmapButton.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MyColorPicker.cpp
 # End Source File
 # Begin Source File
 
@@ -368,6 +376,10 @@ SOURCE=.\GotoPageDlg.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\HighlightDlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\MagnifyWnd.h
 # End Source File
 # Begin Source File
@@ -377,6 +389,10 @@ SOURCE=.\MainFrm.h
 # Begin Source File
 
 SOURCE=.\MyBitmapButton.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MyColorPicker.h
 # End Source File
 # Begin Source File
 

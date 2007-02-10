@@ -68,10 +68,11 @@ void BuildGammaTable(double fGamma, BYTE* table)
 
 void BuildTransparentcyTable(double fTransparency, BYTE c, BYTE* table)
 {
+	DWORD nAlpha = max(0, min(255, static_cast<DWORD>(fTransparency * 255.0 + 0.5)));
 	for (int i = 0; i < 256; ++i)
 	{
-		double color = table[i] * fTransparency + c * (1 - fTransparency);
-		table[i] = max(0, min(255, static_cast<BYTE>(color + 0.5)));
+		BYTE color = static_cast<BYTE>((table[i] * nAlpha + c * (255 - nAlpha)) >> 8);
+		table[i] = max(0, min(255, color));
 	}
 }
 
@@ -1113,14 +1114,25 @@ void DrawDottedRect(CDC* pDC, const CRect& rect, COLORREF color)
 
 void HighlightRect(CDC* pDC, const CRect& rect, COLORREF color, double fTransparency)
 {
-	CDIB* pDIB = CDIB::CreateDIB(rect.Width(), rect.Height(), 24);
-	CDC dc;
-	dc.CreateCompatibleDC(pDC);
-	CBitmap* pOldBitmap = dc.SelectObject(pDIB);
+	CRect rcClip;
+	pDC->GetClipBox(rcClip);
+	rcClip.IntersectRect(CRect(rcClip), rect);
 
-	dc.BitBlt(0, 0, rect.Width(), rect.Height(), pDC, rect.left, rect.top, SRCCOPY);
+	static COffscreenDC offscreenDC;
 
-	int nRowLength = rect.Width()*3;
+	offscreenDC.Create(pDC, rcClip.Size());
+	CDIB* pDIB = offscreenDC.GetDIB();
+	if (pDIB == NULL || pDIB->m_hObject == NULL)
+	{
+		offscreenDC.Release();
+		return;
+	}
+
+	ASSERT(pDIB->GetBitsPerPixel() == 24);
+
+	offscreenDC.BitBlt(0, 0, rcClip.Width(), rcClip.Height(), pDC, rcClip.left, rcClip.top, SRCCOPY);
+
+	int nRowLength = pDIB->GetWidth()*3;
 	while (nRowLength % 4 != 0)
 		++nRowLength;
 
@@ -1134,10 +1146,10 @@ void HighlightRect(CDC* pDC, const CRect& rect, COLORREF color, double fTranspar
 	BuildTransparentcyTable(fTransparency, GetGValue(color), tableGreen);
 	BuildTransparentcyTable(fTransparency, GetBValue(color), tableBlue);
 
-	for (int y = 0; y < rect.Height(); ++y, pBits += nRowLength)
+	for (int y = 0; y < rcClip.Height(); ++y, pBits += nRowLength)
 	{
 		LPBYTE pPixel = pBits;
-		for (int x = 0; x < rect.Width(); ++x)
+		for (int x = 0; x < rcClip.Width(); ++x)
 		{
 			*pPixel = tableBlue[*pPixel];
 			++pPixel;
@@ -1148,10 +1160,33 @@ void HighlightRect(CDC* pDC, const CRect& rect, COLORREF color, double fTranspar
 		}
 	}
 
-	pDC->BitBlt(rect.left, rect.top, rect.Width(), rect.Height(), &dc, 0, 0, SRCCOPY);
+	pDC->BitBlt(rcClip.left, rcClip.top, rcClip.Width(), rcClip.Height(), &offscreenDC, 0, 0, SRCCOPY);
+	offscreenDC.Release();
+}
 
-	dc.SelectObject(pOldBitmap);
-	delete pDIB;
+void DrawDownArrow(CDC* pDC, const CRect& rect, COLORREF color)
+{
+	POINT points[3];
+
+	points[0].x = rect.left;
+	points[0].y = rect.top;
+	points[1].x = rect.right;
+	points[1].y = rect.top;
+	points[2].x = rect.CenterPoint().x;
+	points[2].y = rect.bottom;
+	
+	CBrush brush(color);
+	CPen pen(PS_SOLID, 1, color);
+
+	CBrush* pOldBrush = pDC->SelectObject(&brush);
+	CPen* pOldPen = pDC->SelectObject(&pen);
+	int nPolyFillMode = pDC->SetPolyFillMode(WINDING);
+
+	pDC->Polygon(points, 3);
+
+	pDC->SetPolyFillMode(nPolyFillMode);
+	pDC->SelectObject(pOldPen);
+	pDC->SelectObject(pOldBrush);
 }
 
 COLORREF ChangeBrightness(COLORREF color, double fFactor)
@@ -1160,4 +1195,63 @@ COLORREF ChangeBrightness(COLORREF color, double fFactor)
 	int nGreen = min(static_cast<int>(GetGValue(color)*fFactor + 0.5), 255);
 	int nBlue = min(static_cast<int>(GetBValue(color)*fFactor + 0.5), 255);
 	return RGB(nRed, nGreen, nBlue);
+}
+
+COLORREF AlphaCombine(COLORREF crFirst, COLORREF crSecond, BYTE nAlpha)
+{
+	return RGB((GetRValue(crFirst) * (255L - nAlpha) + GetRValue(crSecond) * (0L + nAlpha)) >> 8,
+			(GetGValue(crFirst) * (255L - nAlpha) + GetGValue(crSecond) * (0L + nAlpha)) >> 8,
+			(GetBValue(crFirst) * (255L - nAlpha) + GetBValue(crSecond) * (0L + nAlpha)) >> 8);
+}
+
+// COffscreenDC
+
+COffscreenDC::COffscreenDC()
+	: m_pBitmap(NULL), m_pOldBitmap(NULL), m_szBitmap(0, 0)
+{
+}
+
+COffscreenDC::~COffscreenDC()
+{
+	if (m_hDC != NULL)
+		Release();
+
+	delete m_pBitmap;
+}
+
+bool COffscreenDC::Create(CDC* pDC, CSize size)
+{
+	if (m_pBitmap == NULL || m_szBitmap.cx < size.cx || m_szBitmap.cy < size.cy)
+	{
+		m_szBitmap.cx = max(m_szBitmap.cx, static_cast<int>(size.cx*1.1 + 0.5));
+		m_szBitmap.cy = max(m_szBitmap.cy, static_cast<int>(size.cy*1.1 + 0.5));
+
+		delete m_pBitmap;
+		m_pBitmap = CDIB::CreateDIB(m_szBitmap.cx, -m_szBitmap.cy, 24); // Top-down DIB
+	}
+
+	ASSERT(m_hDC == NULL);
+	if (m_hDC != NULL)
+		Release();
+
+	if (!CreateCompatibleDC(pDC))
+		return false;
+
+	SetViewportOrg(CPoint(0, 0));
+
+	m_pOldBitmap = SelectObject(m_pBitmap);
+	return true;
+}
+
+void COffscreenDC::Release()
+{
+	ASSERT(m_hDC != NULL);
+
+	if (m_hDC != NULL)
+	{
+		SelectObject(m_pOldBitmap);
+		m_pOldBitmap = NULL;
+
+		DeleteDC();
+	}
 }

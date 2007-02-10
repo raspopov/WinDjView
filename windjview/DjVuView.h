@@ -173,8 +173,7 @@ protected:
 	UINT m_nTimerID;
 	bool m_bInitialized;
 
-	CBitmap* m_pOffscreenBitmap;
-	CSize m_szOffscreen;
+	COffscreenDC m_offscreenDC;
 
 	CCriticalSection m_dataLock;
 	list<CDIB*> m_bitmaps;
@@ -189,7 +188,7 @@ protected:
 	bool InvalidatePage(int nPage);
 	void DrawPage(CDC* pDC, int nPage);
 	void DrawMapArea(CDC* pDC, GP<GMapArea> pArea, int nPage, bool bActive);
-	void DrawHighlight(CDC* pDC, DjVuHighlight& highlight, int nPage);
+	void DrawHighlight(CDC* pDC, DjVuHighlight& highlight, int nPage, bool bActive);
 
 	int m_nZoomType;
 	double m_fZoom;
@@ -307,6 +306,7 @@ protected:
 	GP<GMapArea> GetAreaFromPoint(CPoint point, int* pnPage = NULL);
 	DjVuHighlight* GetHighlightFromPoint(CPoint point, int* pnPage = NULL);
 	void UpdateHoverHighlight(CPoint point);
+	void UpdateHoverHighlight();
 
 	int m_nMode, m_nType;
 	int m_nSelStartPos;
@@ -323,7 +323,7 @@ protected:
 	GRect m_rcSelectionRect;
 
 	int m_nClickedPage;
-	bool m_bDragging, m_bDraggingPage, m_bDraggingText, m_bDraggingRect;
+	bool m_bDragging, m_bDraggingPage, m_bDraggingText, m_bDraggingRect, m_bDraggingLink;
 	bool m_bPanning;
 	void StopDragging();
 	CPoint m_ptStart, m_ptStartPos, m_ptPrevCursor;
@@ -413,7 +413,8 @@ protected:
 	afx_msg void OnMouseLeave();
 	afx_msg void OnHighlightSelection();
 	afx_msg void OnUpdateHighlightSelection(CCmdUI* pCmdUI);
-	afx_msg void OnRemoveHighlight();
+	afx_msg void OnHighlightRemove();
+	afx_msg void OnHighlightEdit();
 	DECLARE_MESSAGE_MAP()
 };
 

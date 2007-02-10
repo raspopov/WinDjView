@@ -161,8 +161,8 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 		// which is called after OnInitialUpdate() during the InitialUpdateFrame().
 		// So we restore the startup page here, to ensure correct positioning.
 
-		// This is also a good place to do it, because the main window is
-		// still locked here so there won't be any unnecessary redraws
+		// Another reason for doing it here is that the main window is
+		// still locked so there won't be any unnecessary redraws
 
 		if (theApp.GetAppSettings()->bRestoreView && m_nStartupPage >= 0 && m_nStartupPage < pView->GetPageCount())
 			pView->ScrollToPage(m_nStartupPage, m_ptStartupOffset);

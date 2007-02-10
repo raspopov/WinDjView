@@ -40,7 +40,6 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual void OnOK();
 	virtual void OnCancel();
-	virtual BOOL OnInitDialog();
 
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg void OnEndDialog();

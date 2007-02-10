@@ -62,7 +62,7 @@ void CreateSystemIconFont(CFont& font)
 {
 	LOGFONT lf;
 
-	if (XPIsAppThemed() && XPIsThemeActive())
+	if (IsThemed())
 	{
 		LOGFONTW lfw;
 		HRESULT hr = XPGetThemeSysFont(NULL, TMT_ICONTITLEFONT, &lfw);
@@ -86,6 +86,38 @@ void CreateSystemIconFont(CFont& font)
 	}
 
 	font.CreateFontIndirect(&lf);
+}
+
+void CreateSystemMenuFont(CFont& font)
+{
+	LOGFONT lf;
+
+	if (IsThemed())
+	{
+		LOGFONTW lfw;
+		HRESULT hr = XPGetThemeSysFont(NULL, TMT_MENUFONT, &lfw);
+		if (SUCCEEDED(hr))
+		{
+#ifdef UNICODE
+			memcpy(&lf, &lfw, sizeof(LOGFONT));
+#else
+			memcpy(&lf, &lfw, (char*)&lfw.lfFaceName - (char*)&lfw);
+			_tcscpy(lf.lfFaceName, CString(lfw.lfFaceName));
+#endif
+			font.CreateFontIndirect(&lf);
+			return;
+		}
+	}
+
+	NONCLIENTMETRICS ncm;
+	ncm.cbSize = sizeof(NONCLIENTMETRICS);
+	if (!SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0))
+	{
+		CreateSystemDialogFont(font);
+		return;
+	}
+
+	font.CreateFontIndirect(&ncm.lfMenuFont);
 }
 
 // AppCommand constants from winuser.h

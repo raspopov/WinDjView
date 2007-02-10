@@ -169,6 +169,7 @@ void LoadThemeAPI()
 		pCloseThemeData = (pfCloseThemeData)::GetProcAddress(hThemesDLL, "CloseThemeData");
 		pDrawThemeBackground = (pfDrawThemeBackground)::GetProcAddress(hThemesDLL, "DrawThemeBackground");
 		pDrawThemeText = (pfDrawThemeText)::GetProcAddress(hThemesDLL, "DrawThemeText");
+		pGetThemeBackgroundContentRect = (pfGetThemeBackgroundContentRect)::GetProcAddress(hThemesDLL, "GetThemeBackgroundContentRect");
 		pGetThemeTextExtent = (pfGetThemeTextExtent)::GetProcAddress(hThemesDLL, "GetThemeTextExtent");
 		pGetThemeTextMetrics = (pfGetThemeTextMetrics)::GetProcAddress(hThemesDLL, "GetThemeTextMetrics");
 		pIsThemeBackgroundPartiallyTransparent = (pfIsThemeBackgroundPartiallyTransparent)::GetProcAddress(hThemesDLL, "IsThemeBackgroundPartiallyTransparent");
@@ -181,7 +182,6 @@ void LoadThemeAPI()
 		pGetThemeColor = (pfGetThemeColor)::GetProcAddress(hThemesDLL, "GetThemeColor");
 		pGetThemeSysColor = (pfGetThemeSysColor)::GetProcAddress(hThemesDLL, "GetThemeSysColor");
 /*
-		pfGetThemeBackgroundContentRect pGetThemeBackgroundContentRect = NULL;
 		pfGetThemeBackgroundExtent pGetThemeBackgroundExtent = NULL;
 		pfGetThemeBackgroundRegion pGetThemeBackgroundRegion = NULL;
 		pfHitTestThemeBackground pHitTestThemeBackground = NULL;
@@ -221,6 +221,7 @@ void LoadThemeAPI()
 		&& pCloseThemeData != NULL
 		&& pDrawThemeBackground != NULL
 		&& pDrawThemeText != NULL
+		&& pGetThemeBackgroundContentRect != NULL
 		&& pGetThemeTextExtent != NULL
 		&& pGetThemeTextMetrics != NULL
 		&& pIsThemeBackgroundPartiallyTransparent != NULL
@@ -286,6 +287,15 @@ HRESULT XPDrawThemeText(HTHEME hTheme, HDC hdc, int iPartId,
 		return E_FAIL;
 
 	return pDrawThemeText(hTheme, hdc, iPartId, iStateId, pszText, iCharCount, dwTextFlags, dwTextFlags2, pRect);
+}
+
+HRESULT XPGetThemeBackgroundContentRect(HTHEME hTheme, HDC hdc,
+    int iPartId, int iStateId, const RECT* pBoundingRect, RECT* pContentRect)
+{
+	if (!bThemeAPILoaded)
+		return E_FAIL;
+
+	return pGetThemeBackgroundContentRect(hTheme, hdc, iPartId, iStateId, pBoundingRect, pContentRect);
 }
 
 HRESULT XPGetThemeTextExtent(HTHEME hTheme, HDC hdc, int iPartId,
@@ -379,6 +389,55 @@ COLORREF XPGetThemeSysColor(HTHEME hTheme, int iColorId)
 		return RGB(0, 0, 0);
 
 	return pGetThemeSysColor(hTheme, iColorId);
+}
+
+bool IsThemed()
+{
+	static int nIsXP = -1;
+	if (nIsXP == -1)
+	{
+		OSVERSIONINFO vi;
+		vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+		nIsXP = (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
+			(vi.dwMajorVersion > 5 || vi.dwMajorVersion == 5 && vi.dwMinorVersion >= 1));
+	}
+
+	if (!nIsXP)
+		return false;
+
+	if (!XPIsAppThemed() && !XPIsThemeActive())
+		return false;
+
+	static int nComCtl32 = -1;
+	if (nComCtl32 == -1)
+	{
+		nComCtl32 = 0;
+
+		HMODULE hModComCtl = GetModuleHandle(_T("COMCTL32.DLL"));
+		if (hModComCtl != NULL)
+		{
+			struct VersionInfo
+			{
+				DWORD cbSize;
+				DWORD dwMajorVersion;
+				DWORD dwMinorVersion;
+				DWORD dwBuildNumber;
+				DWORD dwPlatformID;
+			};
+
+			typedef HRESULT (CALLBACK *pfnDllGetVersion)(VersionInfo*);
+			pfnDllGetVersion pDllGetVersion = (pfnDllGetVersion) ::GetProcAddress(hModComCtl, "DllGetVersion");
+			if (pDllGetVersion != NULL)
+			{
+				VersionInfo vi = {0};
+				vi.cbSize = sizeof(VersionInfo);
+				if (pDllGetVersion(&vi) == 0)
+					nComCtl32 = vi.dwMajorVersion;
+            }
+        }
+    }    
+
+	return nComCtl32 >= 6;
 }
 
 struct XPThemeAPI

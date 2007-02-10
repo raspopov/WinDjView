@@ -42,7 +42,9 @@ void ReportFatalError();
 
 void CreateSystemDialogFont(CFont& font);
 void CreateSystemIconFont(CFont& font);
+void CreateSystemMenuFont(CFont& font);
 UINT GetMouseScrollLines();
+CRect GetMonitorWorkArea(const CPoint& point);
 
 bool IsFromCurrentProcess(CWnd* pWnd);
 

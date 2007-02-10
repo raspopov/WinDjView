@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "Drawing.h"
+
 
 // CNavPaneWnd
 
@@ -76,8 +78,7 @@ protected:
 	CToolTipCtrl m_toolTip;
 	CImageList m_imgClose;
 
-	CBitmap* m_pBitmapTabs;
-	CSize m_szBitmap;
+	COffscreenDC m_offscreenDC;
 
 	bool m_bCloseActive;
 	bool m_bClosePressed;

@@ -40,10 +40,9 @@ IMPLEMENT_DYNAMIC(CMyTreeCtrl, CWnd)
 
 CMyTreeCtrl::CMyTreeCtrl()
 	: m_nItemHeight(20), m_pImageList(NULL), m_bWrapLabels(true), m_hTheme(NULL),
-	  m_pOffscreenBitmap(NULL), m_szOffscreen(0, 0), m_pSelection(NULL), m_pHoverNode(NULL),
-	  m_ptScrollOffset(0, 0), m_szDisplay(0, 0), m_szLine(15, 15), m_szPage(0, 0),
-	  m_bMouseInTooltip(false), m_bRedirectWheel(true), m_bLinesAtRoot(false),
-	  m_bHasLines(false), m_bHasGlyphs(false), m_bBatchUpdate(false)
+	  m_pSelection(NULL), m_pHoverNode(NULL), m_ptScrollOffset(0, 0), m_szDisplay(0, 0),
+	  m_szLine(15, 15), m_szPage(0, 0), m_bMouseInTooltip(false), m_bRedirectWheel(true),
+	  m_bLinesAtRoot(false), m_bHasLines(false), m_bHasGlyphs(false), m_bBatchUpdate(false)
 {
 	m_pRoot = new TreeNode(NULL, -1, -1, NULL);
 	m_pRoot->bCollapsed = false;
@@ -62,7 +61,6 @@ CMyTreeCtrl::CMyTreeCtrl()
 CMyTreeCtrl::~CMyTreeCtrl()
 {
 	delete m_pRoot;
-	delete m_pOffscreenBitmap;
 }
 
 CMyTreeCtrl::TreeNode::~TreeNode()
@@ -82,7 +80,7 @@ BEGIN_MESSAGE_MAP(CMyTreeCtrl, CWnd)
 	ON_WM_DESTROY()
 	ON_WM_SIZE()
 	ON_WM_ERASEBKGND()
-	ON_MESSAGE(WM_THEMECHANGED, OnThemeChanged)
+	ON_MESSAGE_VOID(WM_THEMECHANGED, OnThemeChanged)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_MOUSEMOVE()
 	ON_WM_SETFOCUS()
@@ -106,8 +104,7 @@ BOOL CMyTreeCtrl::PreCreateWindow(CREATESTRUCT& cs)
 	if (!CWnd::PreCreateWindow(cs))
 		return false;
 
-	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
-		::LoadCursor(NULL, IDC_ARROW));
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS);
 
 	cs.style |= WS_HSCROLL | WS_VSCROLL;
 	cs.lpszClass = strWndClass;
@@ -118,47 +115,39 @@ BOOL CMyTreeCtrl::PreCreateWindow(CREATESTRUCT& cs)
 void CMyTreeCtrl::OnPaint()
 {
 	CPaintDC dcPaint(this);
-	CPoint ptOffset = GetScrollPosition();
+	dcPaint.SetViewportOrg(CPoint(0, 0));
 
 	CRect rcClient;
 	GetClientRect(rcClient);
-	if (m_pOffscreenBitmap == NULL
-			|| m_szOffscreen.cx < rcClient.Width() || m_szOffscreen.cy < rcClient.Height())
-	{
-		m_szOffscreen.cx = max(m_szOffscreen.cx, static_cast<int>(rcClient.Width()*1.1));
-		m_szOffscreen.cy = max(m_szOffscreen.cy, static_cast<int>(rcClient.Height()*1.1));
-
-		delete m_pOffscreenBitmap;
-		m_pOffscreenBitmap = new CBitmap();
-		m_pOffscreenBitmap->CreateCompatibleBitmap(&dcPaint, m_szOffscreen.cx, m_szOffscreen.cy);
-	}
-
-	CDC dc;
-	dc.CreateCompatibleDC(&dcPaint);
-	CBitmap* pOldBitmap = dc.SelectObject(m_pOffscreenBitmap);
 
 	CRect rcClip;
 	dcPaint.GetClipBox(rcClip);
 	rcClip.IntersectRect(rcClip, rcClient);
-	dc.IntersectClipRect(rcClip);
 
-	CFont* pOldFont = dc.SelectObject(&m_font);
+	m_offscreenDC.Create(&dcPaint, rcClip.Size());
+	m_offscreenDC.SetViewportOrg(-rcClip.TopLeft());
+	m_offscreenDC.IntersectClipRect(rcClip);
+
+	CPoint ptOffset = GetScrollPosition();
+
+	CFont* pOldFont = m_offscreenDC.SelectObject(&m_font);
 	COLORREF crBackground = ::GetSysColor(COLOR_WINDOW);
-	dc.SetBkColor(crBackground);
+	m_offscreenDC.SetBkColor(crBackground);
 
-	int nBottom = PaintNode(&dc, m_pRoot, rcClip);
+	int nBottom = PaintNode(&m_offscreenDC, m_pRoot, rcClip);
 
 	if (nBottom < m_szDisplay.cy)
 	{
 		CRect rcBottom(0, nBottom, m_szDisplay.cx, m_szDisplay.cy);
-		dc.FillSolidRect(rcBottom - ptOffset, crBackground);
+		m_offscreenDC.FillSolidRect(rcBottom - ptOffset, crBackground);
 	}
 
-	dc.SelectObject(pOldFont);
+	m_offscreenDC.SelectObject(pOldFont);
 
 	dcPaint.BitBlt(rcClip.left, rcClip.top, rcClip.Width(), rcClip.Height(),
-			&dc, rcClip.left, rcClip.top, SRCCOPY);
-	dc.SelectObject(pOldBitmap);
+			&m_offscreenDC, rcClip.left, rcClip.top, SRCCOPY);
+
+	m_offscreenDC.Release();
 }
 
 int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
@@ -601,7 +590,7 @@ int CMyTreeCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	if (XPIsAppThemed() && XPIsThemeActive())
+	if (IsThemed())
 		m_hTheme = XPOpenThemeData(m_hWnd, L"TREEVIEW");
 
 	return 0;
@@ -630,14 +619,14 @@ BOOL CMyTreeCtrl::OnEraseBkgnd(CDC* pDC)
 	return true;
 }
 
-LRESULT CMyTreeCtrl::OnThemeChanged(WPARAM wParam, LPARAM lParam)
+void CMyTreeCtrl::OnThemeChanged()
 {
 	if (m_hTheme != NULL)
 		XPCloseThemeData(m_hTheme);
 
 	m_hTheme = NULL;
 
-	if (XPIsAppThemed() && XPIsThemeActive())
+	if (IsThemed())
 		m_hTheme = XPOpenThemeData(m_hWnd, L"TREEVIEW");
 
 	m_font.DeleteObject();
@@ -645,8 +634,6 @@ LRESULT CMyTreeCtrl::OnThemeChanged(WPARAM wParam, LPARAM lParam)
 
 	RecalcLayout();
 	Invalidate();
-
-	return 0;
 }
 
 void CMyTreeCtrl::OnSysColorChange()
@@ -1429,8 +1416,7 @@ void CMyTreeCtrl::OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct)
 
 BOOL CMyTreeCtrl::CTreeToolTip::Create(CMyTreeCtrl* pTree)
 {
-	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
-		::LoadCursor(NULL, IDC_ARROW));
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS);
 
 	m_pTree = pTree;
 
@@ -1524,7 +1510,7 @@ BOOL CMyTreeCtrl::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lPa
 	{
 		UINT nFlags = LOWORD(wParam);
 		short zDelta = (short) HIWORD(wParam);
-		CPoint point(LOWORD(lParam), HIWORD(lParam));
+		CPoint point((DWORD) lParam);
 
 		LRESULT lResult = (LRESULT) m_pTree->OnMouseWheel(nFlags, zDelta, point);
 		if (pResult != NULL)

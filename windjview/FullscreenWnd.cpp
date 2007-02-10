@@ -51,8 +51,7 @@ END_MESSAGE_MAP()
 
 BOOL CFullscreenWnd::Create()
 {
-	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
-		::LoadCursor(NULL, IDC_ARROW));
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS);
 
 	CDC dcScreen;
 	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);

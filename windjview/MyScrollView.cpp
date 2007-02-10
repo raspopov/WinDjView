@@ -502,8 +502,7 @@ void CMyAnchorWnd::OnTimer(UINT nIDEvent)
 
 BOOL CMyAnchorWnd::Create()
 {
-	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
-		::LoadCursor(NULL, IDC_ARROW));
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS);
 
 	CWnd* pParent = NULL;
 	OSVERSIONINFO vi;

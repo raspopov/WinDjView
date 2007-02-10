@@ -19,31 +19,43 @@
 
 #pragma once
 
+#include "MyColorPicker.h"
 
-#include "MyTheme.h"
 
-// CMyToolBar
+// CHighlightDlg dialog
 
-class CMyToolBar : public CToolBar
+class CHighlightDlg : public CDialog
 {
-	DECLARE_DYNAMIC(CMyToolBar)
+	DECLARE_DYNAMIC(CHighlightDlg)
 
 public:
-	CMyToolBar();
-	virtual ~CMyToolBar();
+	CHighlightDlg(CWnd* pParent = NULL);
+	virtual ~CHighlightDlg();
 
-	void SetSizes(SIZE sizeButton, SIZE sizeImage);
-	virtual void DrawBorders(CDC* pDC, CRect& rect);
-	void EraseNonClient();
-	virtual void DoPaint(CDC* pDC);
+// Dialog Data
+	enum { IDD = IDD_HIGHLIGHT };
+	CMyColorPicker m_colorBorder;
+	CMyColorPicker m_colorFill;
+	CSliderCtrl m_sliderTransparency;
+	CComboBox m_cboBorderType;
+	CComboBox m_cboFillType;
+	BOOL m_bHideInactive;
+	int m_nBorderType;
+	int m_nFillType;
+	COLORREF m_crBorder;
+	COLORREF m_crFill;
+	int m_nTransparency;
+	CString m_strURL;
+	CString m_strComment;
 
 protected:
-	HTHEME m_hTheme;
-	afx_msg void OnNcPaint();
-	afx_msg void OnDestroy();
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnThemeChanged();
-	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
-	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
+	void UpdateControls();
+
+	virtual BOOL OnInitDialog();
+	virtual void DoDataExchange(CDataExchange* pDX);
+	virtual void OnOK();
+	virtual void OnCancel();
+	afx_msg void OnChangeCombo();
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	DECLARE_MESSAGE_MAP()
 };

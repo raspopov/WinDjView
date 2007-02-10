@@ -54,8 +54,8 @@ typedef GList<DjVuTXT::Zone*> DjVuSelection;
 struct DjVuHighlight
 {
 	DjVuHighlight()
-		: nBorderType(BorderNone), crBorder(RGB(0, 0, 0)), nFillType(FillNone),
-		  crFill(RGB(255, 255, 255)), fTransparency(0.75) {}
+		: bHideInactiveBorder(false), nBorderType(BorderNone), crBorder(RGB(0, 0, 0)),
+		  nFillType(FillNone), crFill(RGB(255, 255, 255)), fTransparency(0.75) {}
 
 	void UpdateBounds();
 	GUTF8String GetXML() const;
@@ -71,15 +71,19 @@ struct DjVuHighlight
 	enum FillType
 	{
 		FillNone = 0,
-		FillHighlight = 1,
+		FillSolid = 1,
 		FillXOR = 2
 	};
 
+	bool bHideInactiveBorder;
 	int nBorderType;
 	COLORREF crBorder;
 	int nFillType;
 	COLORREF crFill;
 	double fTransparency;
+	GUTF8String strComment;
+	GUTF8String strURL;
+
 	vector<GRect> rects;
 	GRect rectBounds;
 };
