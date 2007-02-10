@@ -1116,7 +1116,8 @@ void HighlightRect(CDC* pDC, const CRect& rect, COLORREF color, double fTranspar
 {
 	CRect rcClip;
 	pDC->GetClipBox(rcClip);
-	rcClip.IntersectRect(CRect(rcClip), rect);
+	if (!rcClip.IntersectRect(CRect(rcClip), rect))
+		return;
 
 	static COffscreenDC offscreenDC;
 
