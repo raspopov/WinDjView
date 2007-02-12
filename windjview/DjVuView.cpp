@@ -100,6 +100,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIRSTPAGE, OnUpdateViewPreviouspage)
 	ON_WM_SETFOCUS()
 	ON_WM_KILLFOCUS()
+	ON_WM_CANCELMODE()
 	ON_WM_SETCURSOR()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
@@ -302,7 +303,7 @@ void CDjVuView::OnDraw(CDC* pDC)
 	m_offscreenDC.Release();
 }
 
-void CDjVuView::DrawAnnotation(CDC* pDC, Annotation& anno, int nPage, bool bActive)
+void CDjVuView::DrawAnnotation(CDC* pDC, const Annotation& anno, int nPage, bool bActive)
 {
 	CRect rcBounds = TranslatePageRect(nPage, anno.rectBounds);
 	rcBounds.OffsetRect(-GetScrollPosition());
@@ -546,9 +547,11 @@ void CDjVuView::OnInitialUpdate()
 
 		// Restore mode
 		if (pAppSettings->bRestoreView && pDocSettings->nDisplayMode >= Color && pDocSettings->nDisplayMode <= Foreground)
-		{
 			m_nDisplayMode = pDocSettings->nDisplayMode;
-		}
+
+		// Restore rotate
+		if (pAppSettings->bRestoreView)
+			m_nRotate = pDocSettings->nRotate;
 	}
 
 	m_displaySettings = *theApp.GetDisplaySettings();
@@ -566,6 +569,7 @@ void CDjVuView::OnInitialUpdate()
 		pDocSettings->nDisplayMode = m_nDisplayMode;
 		pDocSettings->nLayout = m_nLayout;
 		pDocSettings->bFirstPageAlone = m_bFirstPageAlone;
+		pDocSettings->nRotate = m_nRotate;
 	}
 
 	m_nTimerID = SetTimer(1, 100, NULL);
@@ -2004,6 +2008,8 @@ void CDjVuView::OnUpdateViewLayout(CCmdUI* pCmdUI)
 void CDjVuView::OnRotateLeft()
 {
 	m_nRotate = (m_nRotate + 1) % 4;
+	if (m_nType == Normal)
+		m_pSource->GetSettings()->nRotate = m_nRotate;
 
 	DeleteBitmaps();
 	m_pRenderThread->RejectCurrentJob();
@@ -2023,6 +2029,8 @@ void CDjVuView::OnRotateLeft()
 void CDjVuView::OnRotateRight()
 {
 	m_nRotate = (m_nRotate + 3) % 4;
+	if (m_nType == Normal)
+		m_pSource->GetSettings()->nRotate = m_nRotate;
 
 	DeleteBitmaps();
 	m_pRenderThread->RejectCurrentJob();
@@ -2042,6 +2050,8 @@ void CDjVuView::OnRotateRight()
 void CDjVuView::OnRotate180()
 {
 	m_nRotate = (m_nRotate + 2) % 4;
+	if (m_nType == Normal)
+		m_pSource->GetSettings()->nRotate = m_nRotate;
 
 	DeleteBitmaps();
 	m_pRenderThread->RejectCurrentJob();
@@ -2106,6 +2116,13 @@ void CDjVuView::OnSetFocus(CWnd* pOldWnd)
 void CDjVuView::OnKillFocus(CWnd* pNewWnd)
 {
 	CMyScrollView::OnKillFocus(pNewWnd);
+
+	StopDragging();
+}
+
+void CDjVuView::OnCancelMode()
+{
+	CMyScrollView::OnCancelMode();
 
 	StopDragging();
 }
@@ -3525,60 +3542,6 @@ int CDjVuView::CalcCurrentPage() const
 	}
 
 	return nPage;
-}
-
-UINT GetMouseScrollLines()
-{
-	static UINT uCachedScrollLines;
-	static bool bGotScrollLines = false;
-
-	// If we've already got it and we're not refreshing,
-	// return what we've already got
-
-	if (bGotScrollLines)
-		return uCachedScrollLines;
-
-	// see if we can find the mouse window
-
-	bGotScrollLines = true;
-
-	static UINT msgGetScrollLines;
-	static WORD nRegisteredMessage;
-
-	if (afxData.bWin95)
-	{
-		if (nRegisteredMessage == 0)
-		{
-			msgGetScrollLines = ::RegisterWindowMessage(MSH_SCROLL_LINES);
-			if (msgGetScrollLines == 0)
-				nRegisteredMessage = 1;     // couldn't register!  never try again
-			else
-				nRegisteredMessage = 2;     // it worked: use it
-		}
-
-		if (nRegisteredMessage == 2)
-		{
-			HWND hwMouseWheel = NULL;
-			hwMouseWheel = FindWindow(MSH_WHEELMODULE_CLASS, MSH_WHEELMODULE_TITLE);
-			if (hwMouseWheel && msgGetScrollLines)
-			{
-				uCachedScrollLines = (UINT)::SendMessage(hwMouseWheel, msgGetScrollLines, 0, 0);
-			}
-		}
-	}
-
-	if (uCachedScrollLines == 0)
-	{
-		::SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &uCachedScrollLines, 0);
-
-		if (uCachedScrollLines == 0)
-		{
-			// couldn't use the window -- try system settings
-			uCachedScrollLines = 3; // reasonable default
-		}
-	}
-
-	return uCachedScrollLines;
 }
 
 BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)

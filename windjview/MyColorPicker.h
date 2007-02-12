@@ -215,6 +215,6 @@ protected:
 	afx_msg UINT OnGetDlgCode();
 	afx_msg LRESULT OnSetStyle(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnKillFocus(CWnd* pNewWnd);
-	afx_msg LRESULT OnActivateApp(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnCancelMode();
 	DECLARE_MESSAGE_MAP()
 };

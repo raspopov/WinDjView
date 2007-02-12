@@ -620,7 +620,7 @@ void CMyTreeCtrl::RecalcLayout()
 	CPoint ptCursor;
 	::GetCursorPos(&ptCursor);
 	ScreenToClient(&ptCursor);
-	OnMouseMove(0, ptCursor);
+	UpdateHoverNode(ptCursor);
 
 	Invalidate();
 }
@@ -721,7 +721,7 @@ void CMyTreeCtrl::OnRButtonDown(UINT nFlags, CPoint point)
 	{
 		if (nArea == HT_IMAGE || nArea == HT_LABEL)
 		{
-			SelectNode(pNode, TVC_BYMOUSE);
+			SelectNode(pNode, TVC_UNKNOWN);
 		}
 	}
 
@@ -772,6 +772,23 @@ void CMyTreeCtrl::InvalidateNode(TreeNode* pNode)
 
 void CMyTreeCtrl::OnMouseMove(UINT nFlags, CPoint point)
 {
+	bool bDragging = (nFlags & (MK_MBUTTON | MK_LBUTTON | MK_RBUTTON)) != 0;
+	if (bDragging)
+		return;
+
+	UpdateHoverNode(point);
+
+	CWnd::OnMouseMove(nFlags, point);
+}
+
+void CMyTreeCtrl::OnMouseLeave()
+{
+	if (!m_bMouseInTooltip)
+		SetHoverNode(NULL);
+}
+
+void CMyTreeCtrl::UpdateHoverNode(const CPoint& point)
+{
 	CRect rcClient;
 	GetClientRect(rcClient);
 
@@ -802,14 +819,6 @@ void CMyTreeCtrl::OnMouseMove(UINT nFlags, CPoint point)
 
 		::TrackMouseEvent(&tme);
 	}
-
-	CWnd::OnMouseMove(nFlags, point);
-}
-
-void CMyTreeCtrl::OnMouseLeave()
-{
-	if (!m_bMouseInTooltip)
-		SetHoverNode(NULL);
 }
 
 void CMyTreeCtrl::SetHoverNode(TreeNode* pNode)
@@ -1055,7 +1064,7 @@ bool CMyTreeCtrl::OnScrollBy(CSize sz)
 		CPoint ptCursor;
 		::GetCursorPos(&ptCursor);
 		ScreenToClient(&ptCursor);
-		OnMouseMove(0, ptCursor);
+		UpdateHoverNode(ptCursor);
 
 		UpdateWindow();
 		return true;
@@ -1519,85 +1528,113 @@ void CMyTreeCtrl::CTreeToolTip::Hide()
 
 BOOL CMyTreeCtrl::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 {
-	if (message == WM_MOUSEMOVE)
+	switch (message)
 	{
-		TRACKMOUSEEVENT tme;
+	case WM_MOUSEMOVE:
+		{
+			TRACKMOUSEEVENT tme;
 
-		::ZeroMemory(&tme, sizeof(tme));
-		tme.cbSize = sizeof(tme);
-		tme.dwFlags = TME_LEAVE;
-		tme.hwndTrack = m_hWnd;
-		tme.dwHoverTime = HOVER_DEFAULT;
+			::ZeroMemory(&tme, sizeof(tme));
+			tme.cbSize = sizeof(tme);
+			tme.dwFlags = TME_LEAVE;
+			tme.hwndTrack = m_hWnd;
+			tme.dwHoverTime = HOVER_DEFAULT;
 
-		m_nMouseLeaveCode = m_nNextCode;
-		::TrackMouseEvent(&tme);
-	}
-	else if (message == WM_MOUSEACTIVATE)
-	{
+			m_nMouseLeaveCode = m_nNextCode;
+			::TrackMouseEvent(&tme);
+		}
+		break;
+
+	case WM_MOUSEACTIVATE:
 		if (pResult != NULL)
-			*pResult = MA_NOACTIVATEANDEAT;
-
-		UINT nMsg = (UINT) HIWORD(lParam);
-		if (nMsg == WM_LBUTTONDOWN)
-			m_pTree->SelectNode(m_pTree->m_pHoverNode, TVC_BYMOUSE);
-
+			*pResult = MA_NOACTIVATE;
 		return true;
-	}
-	else if (message == WM_MOUSELEAVE)
-	{
+
+	case WM_MOUSELEAVE:
 		if (m_nNextCode == m_nMouseLeaveCode)
 		{
 			m_pTree->m_bMouseInTooltip = false;
+			Hide();
 
 			CPoint ptCursor;
 			::GetCursorPos(&ptCursor);
 			m_pTree->ScreenToClient(&ptCursor);
 
-			m_pTree->OnMouseMove(0, ptCursor);
+			// GetAsyncKeyState always returns state of physical buttons, even
+			// if they are reversed. We only want to check if any of the mouse
+			// buttons is pressed, so there are no extra checks here
+			bool bLeftDown = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
+			bool bRightDown = (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0;
+			bool bMiddleDown = (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0;
+
+			if (!bLeftDown && !bRightDown && !bMiddleDown)
+				m_pTree->UpdateHoverNode(ptCursor);
 		}
-	}
-	else if (message == WM_SETCURSOR)
-	{
-		if (hCursorLink == NULL)
-			hCursorLink = ::LoadCursor(0, IDC_HAND);
-		if (hCursorLink == NULL)
-			hCursorLink = AfxGetApp()->LoadCursor(IDC_CURSOR_LINK);
+		break;
 
-		SetCursor(hCursorLink);
+	case WM_MOUSEWHEEL:
+		{
+			UINT nFlags = LOWORD(wParam);
+			short zDelta = (short) HIWORD(wParam);
+			CPoint point((DWORD) lParam);
 
-		if (pResult != NULL)
-			*pResult = true;
+			LRESULT lResult = (LRESULT) m_pTree->OnMouseWheel(nFlags, zDelta, point);
+			if (pResult != NULL)
+				*pResult = lResult;
+		}
 		return true;
-	}
-	else if (message == WM_MOUSEWHEEL)
-	{
-		UINT nFlags = LOWORD(wParam);
-		short zDelta = (short) HIWORD(wParam);
-		CPoint point((DWORD) lParam);
 
-		LRESULT lResult = (LRESULT) m_pTree->OnMouseWheel(nFlags, zDelta, point);
-		if (pResult != NULL)
-			*pResult = lResult;
+	case WM_LBUTTONDOWN:
+		m_pTree->SelectNode(m_pTree->m_pHoverNode, TVC_BYMOUSE);
 		return true;
-	}
-	else if (message == WM_PAINT)
-	{
-		CPaintDC dcPaint(this);
-		CFont* pOldFont = dcPaint.SelectObject(&m_pTree->m_font);
 
-		CRect rcClient;
-		GetClientRect(rcClient);
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONUP:
+	case WM_RBUTTONDBLCLK:
+		{
+			m_pTree->m_bMouseInTooltip = false;
+			Hide();
 
-		FrameRect(&dcPaint, rcClient, ::GetSysColor(COLOR_INFOTEXT));
+			CPoint point((DWORD) lParam);
+			ClientToScreen(&point);
+			m_pTree->ScreenToClient(&point);
+			m_pTree->SendMessage(message, wParam, MAKELPARAM(point.x, point.y));
+		}
+		return true;
 
-		rcClient.DeflateRect(1, 1);
-		dcPaint.FillSolidRect(rcClient, ::GetSysColor(COLOR_INFOBK));
+	case WM_SETCURSOR:
+		{
+			if (hCursorLink == NULL)
+				hCursorLink = ::LoadCursor(0, IDC_HAND);
+			if (hCursorLink == NULL)
+				hCursorLink = AfxGetApp()->LoadCursor(IDC_CURSOR_LINK);
 
-		UINT nFlags = DT_LEFT | DT_NOPREFIX | DT_TOP | (m_bWrap ? DT_WORDBREAK : DT_SINGLELINE);
-		dcPaint.SetTextColor(::GetSysColor(COLOR_INFOTEXT));
-		dcPaint.DrawText(m_strText, m_rcText, nFlags);
+			SetCursor(hCursorLink);
 
-		dcPaint.SelectObject(pOldFont);
+			if (pResult != NULL)
+				*pResult = true;
+		}
+		return true;
+
+	case WM_PAINT:
+		{
+			CPaintDC dcPaint(this);
+			CFont* pOldFont = dcPaint.SelectObject(&m_pTree->m_font);
+
+			CRect rcClient;
+			GetClientRect(rcClient);
+
+			FrameRect(&dcPaint, rcClient, ::GetSysColor(COLOR_INFOTEXT));
+
+			rcClient.DeflateRect(1, 1);
+			dcPaint.FillSolidRect(rcClient, ::GetSysColor(COLOR_INFOBK));
+
+			UINT nFlags = DT_LEFT | DT_NOPREFIX | DT_TOP | (m_bWrap ? DT_WORDBREAK : DT_SINGLELINE);
+			dcPaint.SetTextColor(::GetSysColor(COLOR_INFOTEXT));
+			dcPaint.DrawText(m_strText, m_rcText, nFlags);
+
+			dcPaint.SelectObject(pOldFont);
+		}
 		return true;
 	}
 

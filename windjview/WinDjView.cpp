@@ -884,6 +884,56 @@ bool IsFromCurrentProcess(CWnd* pWnd)
 	return (dwProcessId == ::GetCurrentProcessId());
 }
 
+UINT GetMouseScrollLines()
+{
+	static UINT uCachedScrollLines;
+	static bool bGotScrollLines = false;
+
+	// If we've already got it and we're not refreshing,
+	// return what we've already got
+
+	if (bGotScrollLines)
+		return uCachedScrollLines;
+
+	// see if we can find the mouse window
+
+	bGotScrollLines = true;
+
+	static UINT msgGetScrollLines;
+	static WORD nRegisteredMessage;
+
+	if (afxData.bWin95)
+	{
+		if (nRegisteredMessage == 0)
+		{
+			msgGetScrollLines = ::RegisterWindowMessage(MSH_SCROLL_LINES);
+			if (msgGetScrollLines == 0)
+				nRegisteredMessage = 1;     // couldn't register!  never try again
+			else
+				nRegisteredMessage = 2;     // it worked: use it
+		}
+
+		if (nRegisteredMessage == 2)
+		{
+			HWND hwMouseWheel = NULL;
+			hwMouseWheel = FindWindow(MSH_WHEELMODULE_CLASS, MSH_WHEELMODULE_TITLE);
+			if (hwMouseWheel && msgGetScrollLines)
+			{
+				uCachedScrollLines = (UINT)::SendMessage(hwMouseWheel, msgGetScrollLines, 0, 0);
+			}
+		}
+	}
+
+	if (uCachedScrollLines == 0)
+	{
+		::SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &uCachedScrollLines, false);
+		if (uCachedScrollLines == 0)
+			uCachedScrollLines = 3; // reasonable default
+	}
+
+	return uCachedScrollLines;
+}
+
 CString FormatDouble(double fValue)
 {
 	char nDecimalPoint = localeconv()->decimal_point[0];

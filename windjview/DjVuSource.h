@@ -111,6 +111,7 @@ struct DocSettings : public Observable
 	int nLayout;
 	bool bFirstPageAlone;
 	int nDisplayMode;
+	int nRotate;
 
 	map<int, PageSettings> pageSettings;
 	list<Bookmark> bookmarks;

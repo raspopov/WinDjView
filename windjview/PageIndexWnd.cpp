@@ -365,7 +365,7 @@ void CPageIndexWnd::UpdateControls()
 	m_rcList = CRect(ptList, szList);
 	m_rcList.InflateRect(1, 1);
 
-	m_rcGap = CRect(0, ptText.y, rcClient.Width(), ptList.y - 1);
+	m_rcGap = CRect(0, m_rcText.bottom, rcClient.Width(), m_rcList.top);
 }
 
 BOOL CPageIndexWnd::OnEraseBkgnd(CDC* pDC)

@@ -140,6 +140,7 @@ protected:
 	CSize m_szLine, m_szPage;
 
 	void SetHoverNode(TreeNode* pNode);
+	void UpdateHoverNode(const CPoint& point);
 	void SelectNode(TreeNode* pNode, UINT nAction = TVC_UNKNOWN);
 	void ToggleNode(TreeNode* pNode);
 	void ExpandNode(TreeNode* pNode, bool bExpand = true);

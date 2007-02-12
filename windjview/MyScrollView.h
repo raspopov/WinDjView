@@ -51,6 +51,7 @@ protected:
 protected:
 	// Generated message map functions
 	afx_msg void OnDestroy();
+	afx_msg void OnCancelMode();
 	afx_msg LRESULT OnMButtonDown(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };

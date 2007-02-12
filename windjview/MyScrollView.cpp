@@ -72,6 +72,7 @@ IMPLEMENT_DYNAMIC(CMyScrollView, CScrollView)
 BEGIN_MESSAGE_MAP(CMyScrollView, CScrollView)
 	ON_WM_DESTROY()
 	ON_MESSAGE(WM_MBUTTONDOWN, OnMButtonDown)
+	ON_WM_CANCELMODE()
 END_MESSAGE_MAP()
 
 // CMyScrollView construction/destruction
@@ -330,6 +331,14 @@ void CMyScrollView::OnPan(CSize szScroll)
 
 void CMyScrollView::OnEndPan()
 {
+}
+
+void CMyScrollView::OnCancelMode()
+{
+	CScrollView::OnCancelMode();
+
+	if (m_pAnchorWnd != NULL && m_pAnchorWnd->IsWindowVisible())
+		m_pAnchorWnd->Hide();
 }
 
 

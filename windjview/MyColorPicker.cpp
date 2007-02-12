@@ -279,7 +279,7 @@ BEGIN_MESSAGE_MAP(CMyColorPicker, CButton)
 	ON_WM_GETDLGCODE()
 	ON_MESSAGE(BM_SETSTYLE, OnSetStyle)
 	ON_WM_KILLFOCUS()
-	ON_WM_ACTIVATEAPP()
+	ON_WM_CANCELMODE()
 END_MESSAGE_MAP()
 
 
@@ -359,6 +359,12 @@ void CMyColorPicker::OnDestroy()
 
 BOOL CMyColorPicker::OnClicked()
 {
+	if (m_bPopupActive)
+	{
+		m_popup.EndSelection(CPN_SELENDCANCEL);
+		return true;
+	}
+
 	m_bPopupActive = true;
 
 	CRect rcWindow;
@@ -373,7 +379,7 @@ BOOL CMyColorPicker::OnClicked()
 	if (pParent)
 		pParent->SendMessage(CPN_DROPDOWN, (WPARAM) m_color, (LPARAM) GetDlgCtrlID());
 
-	return TRUE;
+	return true;
 }
 
 void CMyColorPicker::OnThemeChanged()
@@ -682,17 +688,30 @@ BOOL CMyColorPicker::PreTranslateMessage(MSG* pMsg)
 	{
 		if (m_bPopupActive)
 		{
-			m_popup.SendMessage(pMsg->message, pMsg->wParam, pMsg->lParam);
-			return true;
+			switch (pMsg->wParam)
+			{
+			case VK_UP:
+			case VK_DOWN:
+			case VK_LEFT:
+			case VK_RIGHT:
+			case VK_ESCAPE:
+			case VK_RETURN:
+			case VK_SPACE:
+			case VK_F4:
+				m_popup.SendMessage(pMsg->message, pMsg->wParam, pMsg->lParam);
+				return true;
+			}
 		}
-
-		switch (pMsg->wParam)
+		else
 		{
-		case VK_UP:
-		case VK_DOWN:
-		case VK_F4:
-			OnClicked();
-			return true;
+			switch (pMsg->wParam)
+			{
+			case VK_UP:
+			case VK_DOWN:
+			case VK_F4:
+				OnClicked();
+				return true;
+			}
 		}
 	}
 
@@ -726,7 +745,7 @@ LRESULT CMyColorPicker::OnSetStyle(WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(BM_SETSTYLE, (wParam & ~BS_TYPEMASK) | BS_OWNERDRAW, lParam);
 }
 
-void CMyColorPicker::OnKillFocus(CWnd* pNewWnd) 
+void CMyColorPicker::OnKillFocus(CWnd* pNewWnd)
 {
 	CButton::OnKillFocus(pNewWnd);
 
@@ -734,16 +753,14 @@ void CMyColorPicker::OnKillFocus(CWnd* pNewWnd)
 		m_popup.EndSelection(CPN_SELENDCANCEL);
 }
 
-LRESULT CMyColorPicker::OnActivateApp(WPARAM wParam, LPARAM lParam)
+void CMyColorPicker::OnCancelMode()
 {
-	BOOL bActive = wParam;
-	Default();
+	CButton::OnCancelMode();
 
-	if (!bActive && m_bPopupActive)
+	if (m_bPopupActive)
 		m_popup.EndSelection(CPN_SELENDCANCEL);
-
-	return 0;
 }
+
 
 // CMyColorPopup
 
@@ -760,13 +777,11 @@ const CSize s_szBoxMargin(0, 0);
 
 
 CMyColorPopup::CMyColorPopup()
+	: m_bFlatMenus(false), m_nColumns(0), m_nRows(0), m_nCurSel(INVALID_COLOR),
+	  m_nOrigSel(INVALID_COLOR)
 {
-	m_nColumns = 0;
-	m_nRows = 0;
 	m_nBoxSize = 18;
 	m_nMargin = ::GetSystemMetrics(SM_CXEDGE);
-	m_nCurSel = INVALID_COLOR;
-	m_nOrigSel = INVALID_COLOR;
 	m_color = m_colorOrig = RGB(0, 0, 0);
 
 	// Make sure the color square is at least 5 x 5
@@ -990,6 +1005,7 @@ void CMyColorPopup::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		break;
 
 	case VK_ESCAPE:
+	case VK_F4:
 		EndSelection(CPN_SELENDCANCEL);
         return;
 

@@ -413,11 +413,12 @@ const TCHAR pszAttrZoom[] = _T("zoom");
 const TCHAR pszAttrLayout[] = _T("layout");
 const TCHAR pszAttrFirstPage[] = _T("first-page");
 const TCHAR pszAttrDisplayMode[] = _T("display-mode");
+const TCHAR pszAttrRotate[] = _T("rotate");
 const TCHAR pszTagBookmarks[] = _T("bookmarks");
 
 DocSettings::DocSettings()
 	: nPage(-1), ptOffset(0, 0), nZoomType(-10), fZoom(100.0), nLayout(-1),
-	  bFirstPageAlone(false), nDisplayMode(-1)
+	  bFirstPageAlone(false), nDisplayMode(-1), nRotate(0)
 {
 }
 
@@ -426,10 +427,12 @@ GUTF8String DocSettings::GetXML() const
 	GUTF8String result;
 
 	CString strHead;
-	strHead.Format(_T("<%s %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%.2lf%%\" %s=\"%d\" %s=\"%d\" %s=\"%d\" >\n"),
-		pszTagSettings, pszAttrStartPage, nPage, pszAttrOffsetX, ptOffset.x, pszAttrOffsetY, ptOffset.y,
-		pszAttrZoomType, nZoomType, pszAttrZoom, fZoom, pszAttrLayout, nLayout,
-		pszAttrFirstPage, static_cast<int>(bFirstPageAlone), pszAttrDisplayMode, nDisplayMode);
+	strHead.Format(_T("<%s %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%.2lf%%\"")
+		_T(" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" >\n"),
+		pszTagSettings, pszAttrStartPage, nPage, pszAttrOffsetX, ptOffset.x,
+		pszAttrOffsetY, ptOffset.y, pszAttrZoomType, nZoomType, pszAttrZoom, fZoom,
+		pszAttrLayout, nLayout, pszAttrFirstPage, static_cast<int>(bFirstPageAlone),
+		pszAttrDisplayMode, nDisplayMode, pszAttrRotate, nRotate);
 
 	result += MakeUTF8String(strHead);
 
@@ -474,6 +477,7 @@ void DocSettings::Load(const XMLNode& node)
 	node.GetDoubleAttribute(pszAttrZoom, fZoom);
 	node.GetIntAttribute(pszAttrLayout, nLayout);
 	node.GetIntAttribute(pszAttrDisplayMode, nDisplayMode);
+	node.GetIntAttribute(pszAttrRotate, nRotate);
 
 	int nFirstPage;
 	if (node.GetIntAttribute(pszAttrStartPage, nFirstPage))

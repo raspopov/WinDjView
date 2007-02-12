@@ -187,8 +187,7 @@ protected:
 
 	bool InvalidatePage(int nPage);
 	void DrawPage(CDC* pDC, int nPage);
-	void DrawMapArea(CDC* pDC, GP<GMapArea> pArea, int nPage, bool bActive);
-	void DrawAnnotation(CDC* pDC, Annotation& anno, int nPage, bool bActive);
+	void DrawAnnotation(CDC* pDC, const Annotation& anno, int nPage, bool bActive);
 
 	int m_nZoomType;
 	double m_fZoom;
@@ -376,6 +375,7 @@ protected:
 	afx_msg void OnViewLastpage();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnKillFocus(CWnd* pNewWnd);
+	afx_msg void OnCancelMode();
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
