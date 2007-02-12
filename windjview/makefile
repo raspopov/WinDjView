@@ -55,6 +55,7 @@ clean:
 	@$(CPP) $(CPP_FLAGS) $(CPP_PCH) $<
 
 LINK_OBJS = \
+	"$(INTDIR)\AnnotationDlg.obj" \
 	"$(INTDIR)\AppSettings.obj" \
 	"$(INTDIR)\BookmarksWnd.obj" \
 	"$(INTDIR)\ChildFrm.obj" \
@@ -66,7 +67,6 @@ LINK_OBJS = \
 	"$(INTDIR)\FullscreenWnd.obj" \
 	"$(INTDIR)\Global.obj" \
 	"$(INTDIR)\GotoPageDlg.obj" \
-	"$(INTDIR)\HighlightDlg.obj" \
 	"$(INTDIR)\MainFrm.obj" \
 	"$(INTDIR)\MagnifyWnd.obj" \
 	"$(INTDIR)\MyBitmapButton.obj" \
@@ -104,6 +104,7 @@ LINK_OBJS = \
 $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 	@$(LINK) $(LINK_FLAGS) $(LINK_OBJS)
 
+"$(INTDIR)\AnnotationDlg.obj" : AnnotationDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\AppSettings.obj" : AppSettings.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\BookmarksWnd.obj" : BookmarksWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\ChildFrm.obj" : ChildFrm.cpp "$(INTDIR)" $(PCH)
@@ -115,7 +116,6 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\FullscreenWnd.obj" : FullscreenWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\Global.obj" : Global.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\GotoPageDlg.obj" : GotoPageDlg.cpp "$(INTDIR)" $(PCH)
-"$(INTDIR)\HighlightDlg.obj" : HighlightDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MainFrm.obj" : MainFrm.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MagnifyWnd.obj" : MagnifyWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyBitmapButton.obj" : MyBitmapButton.cpp "$(INTDIR)" $(PCH)
