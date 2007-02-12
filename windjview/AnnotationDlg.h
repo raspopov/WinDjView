@@ -22,18 +22,18 @@
 #include "MyColorPicker.h"
 
 
-// CHighlightDlg dialog
+// CAnnotationDlg dialog
 
-class CHighlightDlg : public CDialog
+class CAnnotationDlg : public CDialog
 {
-	DECLARE_DYNAMIC(CHighlightDlg)
+	DECLARE_DYNAMIC(CAnnotationDlg)
 
 public:
-	CHighlightDlg(CWnd* pParent = NULL);
-	virtual ~CHighlightDlg();
+	CAnnotationDlg(CWnd* pParent = NULL);
+	virtual ~CAnnotationDlg();
 
 // Dialog Data
-	enum { IDD = IDD_HIGHLIGHT };
+	enum { IDD = IDD_ANNOTATION };
 	CMyColorPicker m_colorBorder;
 	CMyColorPicker m_colorFill;
 	CSliderCtrl m_sliderTransparency;

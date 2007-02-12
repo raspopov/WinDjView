@@ -27,6 +27,8 @@
 
 // CAppSettings
 
+double CAppSettings::unitsPerInch[] = { 2.54, 25.4, 1.0 };
+
 CAppSettings::CAppSettings()
 {
 	nWindowPosX = 50;
@@ -66,4 +68,11 @@ CAppSettings::CAppSettings()
 	hDefaultMenu = NULL;
 
 	bMatchCase = false;
+
+	nUnits = Centimeters;
+
+	DWORD dwMeasureSys;
+	if (::GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IMEASURE | LOCALE_RETURN_NUMBER,
+			(LPTSTR) &dwMeasureSys, sizeof(DWORD)))
+		nUnits = (dwMeasureSys == 1 ? Inches : Centimeters);
 }

@@ -19,7 +19,7 @@
 
 #include "stdafx.h"
 #include "WinDjView.h"
-#include "HighlightDlg.h"
+#include "AnnotationDlg.h"
 #include "DjVuSource.h"
 
 #ifdef _DEBUG
@@ -30,12 +30,12 @@
 const TCHAR* s_pszCustomColors = _T("Colors");
 
 
-// CHighlightDlg dialog
+// CAnnotationDlg dialog
 
-IMPLEMENT_DYNAMIC(CHighlightDlg, CDialog)
+IMPLEMENT_DYNAMIC(CAnnotationDlg, CDialog)
 
-CHighlightDlg::CHighlightDlg(CWnd* pParent)
-	: CDialog(CHighlightDlg::IDD, pParent)
+CAnnotationDlg::CAnnotationDlg(CWnd* pParent)
+	: CDialog(CAnnotationDlg::IDD, pParent)
 {
 	m_nBorderType = Annotation::BorderNone;
 	m_nFillType = Annotation::FillSolid;
@@ -47,11 +47,11 @@ CHighlightDlg::CHighlightDlg(CWnd* pParent)
 	m_bEnableBookmark = true;
 }
 
-CHighlightDlg::~CHighlightDlg()
+CAnnotationDlg::~CAnnotationDlg()
 {
 }
 
-void CHighlightDlg::DoDataExchange(CDataExchange* pDX)
+void CAnnotationDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_BORDER_COLOR, m_colorBorder);
@@ -72,7 +72,7 @@ void CHighlightDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(CHighlightDlg, CDialog)
+BEGIN_MESSAGE_MAP(CAnnotationDlg, CDialog)
 	ON_CBN_SELCHANGE(IDC_BORDER_TYPE, OnChangeCombo)
 	ON_CBN_SELCHANGE(IDC_FILL_TYPE, OnChangeCombo)
 	ON_WM_HSCROLL()
@@ -80,9 +80,9 @@ BEGIN_MESSAGE_MAP(CHighlightDlg, CDialog)
 END_MESSAGE_MAP()
 
 
-// CHighlightDlg message handlers
+// CAnnotationDlg message handlers
 
-BOOL CHighlightDlg::OnInitDialog()
+BOOL CAnnotationDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
@@ -136,7 +136,7 @@ BOOL CHighlightDlg::OnInitDialog()
 	return true;
 }
 
-void CHighlightDlg::ToggleDialog(bool bExpand, bool bCenterWindow)
+void CAnnotationDlg::ToggleDialog(bool bExpand, bool bCenterWindow)
 {
 	CRect rcWindow;
 	GetWindowRect(rcWindow);
@@ -155,7 +155,7 @@ void CHighlightDlg::ToggleDialog(bool bExpand, bool bCenterWindow)
 	GetDlgItem(IDC_BOOKMARK_TITLE)->ShowWindow(bExpand ? SW_SHOW : SW_HIDE);
 }
 
-void CHighlightDlg::UpdateControls()
+void CAnnotationDlg::UpdateControls()
 {
 	m_colorBorder.EnableWindow(m_nBorderType == Annotation::BorderSolid);
 	GetDlgItem(IDC_HIDE_INACTIVE)->EnableWindow(m_nBorderType != Annotation::BorderNone);
@@ -168,7 +168,7 @@ void CHighlightDlg::UpdateControls()
 			|| m_nFillType != Annotation::FillNone);
 }
 
-void CHighlightDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+void CAnnotationDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	CSliderCtrl* pSlider = (CSliderCtrl*)pScrollBar;
 	if (pSlider == &m_sliderTransparency)
@@ -178,7 +178,7 @@ void CHighlightDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	}
 }
 
-void CHighlightDlg::OnChangeCombo()
+void CAnnotationDlg::OnChangeCombo()
 {
 	UpdateData();
 	m_nBorderType = m_cboBorderType.GetCurSel();
@@ -187,7 +187,7 @@ void CHighlightDlg::OnChangeCombo()
 	UpdateControls();
 }
 
-void CHighlightDlg::OnAddBookmark()
+void CAnnotationDlg::OnAddBookmark()
 {
 	UpdateData();
 

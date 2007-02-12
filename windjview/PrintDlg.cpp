@@ -98,9 +98,16 @@ void CPrintDlg::DoDataExchange(CDataExchange* pDX)
 			if (m_settings.bLandscape)
 				swap(szPaper.cx, szPaper.cy);
 
-			strPaperSize.Format(IDS_PAPER_SIZE_MM,
-				(LPCTSTR)FormatDouble(szPaper.cx / 10.0),
-				(LPCTSTR)FormatDouble(szPaper.cy / 10.0));
+			int nUnits = theApp.GetAppSettings()->nUnits;
+			double fUnits = CAppSettings::unitsPerInch[nUnits] / 254.0;
+
+			CString strUnits;
+			AfxExtractSubString(strUnits, LoadString(IDS_UNITS_SHORT), nUnits, ',');
+
+			strPaperSize.Format(IDS_PAPER_SIZE,
+				FormatDouble(static_cast<int>(szPaper.cx * fUnits * 100.0 + 0.5) * 0.01),
+				FormatDouble(static_cast<int>(szPaper.cy * fUnits * 100.0 + 0.5) * 0.01),
+				strUnits);
 		}
 
 		DDX_Text(pDX, IDC_STATIC_PAPER, strPaperSize);

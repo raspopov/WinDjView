@@ -321,8 +321,8 @@ GUTF8String PageSettings::GetXML() const
 	list<Annotation>::const_iterator it;
 	for (it = anno.begin(); it != anno.end(); ++it)
 	{
-		const Annotation& highlight = *it;
-		result += highlight.GetXML();
+		const Annotation& annotation = *it;
+		result += annotation.GetXML();
 	}
 
 	return result;
@@ -340,10 +340,10 @@ void PageSettings::Load(const XMLNode& node)
 		if (MakeCString(child.tagName) == pszTagAnnotation)
 		{
 			anno.push_back(Annotation());
-			Annotation& highlight = anno.back();
-			highlight.Load(child);
+			Annotation& annotation = anno.back();
+			annotation.Load(child);
 
-			if (highlight.rects.empty())
+			if (annotation.rects.empty())
 				anno.pop_back();
 		}
 	}
@@ -514,6 +514,15 @@ void DocSettings::Load(const XMLNode& node)
 			}
 		}
 	}
+}
+
+void DocSettings::AddAnnotation(const Annotation& anno, int nPage)
+{
+	PageSettings& settings = pageSettings[nPage];
+	settings.anno.push_back(anno);
+
+	Annotation* pNewAnno = &(settings.anno.back());
+	UpdateObservers(AnnotationAdded(pNewAnno, nPage));
 }
 
 bool DocSettings::DeleteBookmark(const Bookmark* pBookmark)

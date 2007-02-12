@@ -37,7 +37,7 @@
 #include "FullscreenWnd.h"
 #include "ThumbnailsView.h"
 #include "MagnifyWnd.h"
-#include "HighlightDlg.h"
+#include "AnnotationDlg.h"
 
 #include "RenderThread.h"
 
@@ -138,10 +138,10 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND(ID_LAYOUT_FIRSTPAGE_ALONE, OnFirstPageAlone)
 	ON_UPDATE_COMMAND_UI(ID_LAYOUT_FIRSTPAGE_ALONE, OnUpdateFirstPageAlone)
 	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
-	ON_COMMAND(ID_HIGHLIGHT_SEL, OnHighlightSelection)
-	ON_UPDATE_COMMAND_UI(ID_HIGHLIGHT_SEL, OnUpdateHighlightSelection)
-	ON_COMMAND(ID_HIGHLIGHT_DELETE, OnHighlightDelete)
-	ON_COMMAND(ID_HIGHLIGHT_EDIT, OnHighlightEdit)
+	ON_COMMAND(ID_HIGHLIGHT_SELECTION, OnHighlightSelection)
+	ON_UPDATE_COMMAND_UI(ID_HIGHLIGHT_SELECTION, OnUpdateHighlightSelection)
+	ON_COMMAND(ID_ANNOTATION_DELETE, OnDeleteAnnotation)
+	ON_COMMAND(ID_ANNOTATION_EDIT, OnEditAnnotation)
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -2881,26 +2881,28 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 	CMenu* pPopup = menu.GetSubMenu(0);
 	ASSERT(pPopup != NULL);
 
-	if (m_nSelectionPage == -1)
+	if (m_bHasSelection || m_nSelectionPage != -1)
+	{
+		pPopup->DeleteMenu(ID_ANNOTATION_DELETE, MF_BYCOMMAND);
+		pPopup->DeleteMenu(ID_ANNOTATION_EDIT, MF_BYCOMMAND);
+
+		if (!m_bHasSelection)
+			pPopup->DeleteMenu(ID_EDIT_COPY, MF_BYCOMMAND);
+		else
+			pPopup->DeleteMenu(ID_EXPORT_SELECTION, MF_BYCOMMAND);
+	}
+	else
+	{
+		pPopup->DeleteMenu(ID_EDIT_COPY, MF_BYCOMMAND);
+		pPopup->DeleteMenu(ID_HIGHLIGHT_SELECTION, MF_BYCOMMAND);
 		pPopup->DeleteMenu(ID_EXPORT_SELECTION, MF_BYCOMMAND);
 
-	if (m_pHoverAnno == NULL || !m_bHoverIsCustom)
-	{
-		pPopup->DeleteMenu(ID_HIGHLIGHT_DELETE, MF_BYCOMMAND);
-		pPopup->DeleteMenu(ID_HIGHLIGHT_EDIT, MF_BYCOMMAND);
-	}
-
-	if (!m_bHasSelection && m_nSelectionPage == -1)
-	{
-		pPopup->DeleteMenu(ID_EDIT_COPY, MF_BYCOMMAND);
-		pPopup->DeleteMenu(ID_HIGHLIGHT_SEL, MF_BYCOMMAND);
-
 		if (m_pHoverAnno == NULL || !m_bHoverIsCustom)
+		{
+			pPopup->DeleteMenu(ID_ANNOTATION_DELETE, MF_BYCOMMAND);
+			pPopup->DeleteMenu(ID_ANNOTATION_EDIT, MF_BYCOMMAND);
 			pPopup->DeleteMenu(0, MF_BYPOSITION);
-	}
-	else if (!m_bHasSelection)
-	{
-		pPopup->DeleteMenu(ID_EDIT_COPY, MF_BYCOMMAND);
+		}
 	}
 
 	m_bIgnoreMouseLeave = true;
@@ -5577,6 +5579,13 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 
 		UpdateHoverAnnotation();
 	}
+	else if (message->code == ANNOTATION_ADDED)
+	{
+		const AnnotationDeleted* msg = (const AnnotationDeleted*) message;
+		InvalidateAnno(msg->pAnno, msg->nPage);
+
+		UpdateHoverAnnotation();
+	}
 }
 
 void CDjVuView::UpdatePageNumber()
@@ -5600,7 +5609,7 @@ void CDjVuView::OnHighlightSelection()
 	if (m_nSelectionPage == -1 && !m_bHasSelection)
 		return;
 
-	CHighlightDlg dlg;
+	CAnnotationDlg dlg;
 	if (dlg.DoModal() != IDOK)
 		return;
 
@@ -5619,18 +5628,14 @@ void CDjVuView::OnHighlightSelection()
 
 	if (m_nSelectionPage != -1)
 	{
-		nLinkPage = m_nSelectionPage;
-		rectLink = m_rcSelectionRect;
-
 		Annotation anno = annoTemplate;
 		anno.rects.push_back(m_rcSelectionRect);
 		anno.UpdateBounds();
 
-		PageSettings& pageSettings = m_pSource->GetSettings()->pageSettings[m_nSelectionPage];
-		pageSettings.anno.push_back(anno);
+		nLinkPage = m_nSelectionPage;
+		rectLink = m_rcSelectionRect;
 
-		InvalidateAnno(&anno, m_nSelectionPage);
-		ClearSelection();
+		m_pSource->GetSettings()->AddAnnotation(anno, m_nSelectionPage);
 	}
 	else if (m_bHasSelection)
 	{
@@ -5641,28 +5646,22 @@ void CDjVuView::OnHighlightSelection()
 			if (!page.selection.isempty())
 			{
 				Annotation anno = annoTemplate;
-
 				for (GPosition pos = page.selection; pos; ++pos)
 					anno.rects.push_back(page.selection[pos]->rect);
-
 				anno.UpdateBounds();
-
-				PageSettings& pageSettings = m_pSource->GetSettings()->pageSettings[nPage];
-				pageSettings.anno.push_back(anno);
-
-				InvalidateAnno(&anno, nPage);
 
 				if (nLinkPage == -1)
 				{
 					nLinkPage = nPage;
 					rectLink = anno.rectBounds;
 				}
+
+				m_pSource->GetSettings()->AddAnnotation(anno, nPage);
 			}
 		}
-
-		ClearSelection();
-		UpdateWindow();
 	}
+
+	ClearSelection();
 
 	if (nLinkPage != -1 && dlg.m_bAddBookmark)
 	{
@@ -5682,7 +5681,7 @@ void CDjVuView::OnUpdateHighlightSelection(CCmdUI* pCmdUI)
 	pCmdUI->Enable(m_bHasSelection || m_nSelectionPage != -1);
 }
 
-void CDjVuView::OnHighlightDelete()
+void CDjVuView::OnDeleteAnnotation()
 {
 	if (m_pClickedAnno == NULL || m_nClickedPage == -1)
 		return;
@@ -5690,12 +5689,12 @@ void CDjVuView::OnHighlightDelete()
 	m_pSource->GetSettings()->DeleteAnnotation(m_pClickedAnno, m_nClickedPage);
 }
 
-void CDjVuView::OnHighlightEdit()
+void CDjVuView::OnEditAnnotation()
 {
 	if (m_pClickedAnno == NULL || m_nClickedPage == -1)
 		return;
 
-	CHighlightDlg dlg;
+	CAnnotationDlg dlg;
 
 	dlg.m_bEnableBookmark = false;
 	dlg.m_nBorderType = m_pClickedAnno->nBorderType;

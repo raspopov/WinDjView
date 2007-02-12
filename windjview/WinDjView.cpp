@@ -64,6 +64,7 @@ const TCHAR* s_pszBrightness = _T("brightness");
 const TCHAR* s_pszContrast = _T("contrast");
 const TCHAR* s_pszScaleMethod = _T("scale-method");
 const TCHAR* s_pszInvertColors = _T("invert");
+const TCHAR* s_pszUnits = _T("units");
 
 const TCHAR* s_pszGlobalSettings = _T("Settings");
 const TCHAR* s_pszRestoreAssocs = _T("assocs");
@@ -453,6 +454,10 @@ void CDjViewApp::LoadSettings()
 	m_displaySettings.nContrast = GetProfileInt(s_pszDisplaySettings, s_pszContrast, m_displaySettings.nContrast);
 	m_displaySettings.Fix();
 
+	m_appSettings.nUnits = GetProfileInt(s_pszDisplaySettings, s_pszUnits, m_appSettings.nUnits);
+	if (m_appSettings.nUnits < CAppSettings::Centimeters || m_appSettings.nUnits > CAppSettings::Inches)
+		m_appSettings.nUnits = CAppSettings::Centimeters;
+
 	m_printSettings.fMarginLeft = GetProfileDouble(s_pszPrintSettings, s_pszMarginLeft, m_printSettings.fMarginLeft);
 	m_printSettings.fMarginTop = GetProfileDouble(s_pszPrintSettings, s_pszMarginTop, m_printSettings.fMarginTop);
 	m_printSettings.fMarginRight = GetProfileDouble(s_pszPrintSettings, s_pszMarginRight, m_printSettings.fMarginRight);
@@ -527,6 +532,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileDouble(s_pszDisplaySettings, s_pszGamma, m_displaySettings.fGamma);
 	WriteProfileInt(s_pszDisplaySettings, s_pszBrightness, m_displaySettings.nBrightness);
 	WriteProfileInt(s_pszDisplaySettings, s_pszContrast, m_displaySettings.nContrast);
+	WriteProfileInt(s_pszDisplaySettings, s_pszUnits, m_appSettings.nUnits);
 
 	WriteProfileDouble(s_pszPrintSettings, s_pszMarginLeft, m_printSettings.fMarginLeft);
 	WriteProfileDouble(s_pszPrintSettings, s_pszMarginTop, m_printSettings.fMarginTop);
@@ -732,6 +738,7 @@ void CDjViewApp::OnFileSettings()
 		m_appSettings.bWrapLongBookmarks = !!dlg.m_pageGeneral.m_bWrapLongBookmarks;
 		m_appSettings.bRestoreView = !!dlg.m_pageGeneral.m_bRestoreView;
 
+		m_appSettings.nUnits = dlg.m_pageDisplay.m_nUnits;
 		m_displaySettings = dlg.m_pageDisplay.m_displaySettings;
 
 		SaveSettings();

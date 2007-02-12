@@ -414,8 +414,8 @@ protected:
 	afx_msg void OnMouseLeave();
 	afx_msg void OnHighlightSelection();
 	afx_msg void OnUpdateHighlightSelection(CCmdUI* pCmdUI);
-	afx_msg void OnHighlightDelete();
-	afx_msg void OnHighlightEdit();
+	afx_msg void OnDeleteAnnotation();
+	afx_msg void OnEditAnnotation();
 	DECLARE_MESSAGE_MAP()
 };
 

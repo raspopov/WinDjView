@@ -233,6 +233,9 @@ BEGIN
     BEGIN
         MENUITEM "&Copy Text\tCtrl+C",          ID_EDIT_COPY
         MENUITEM SEPARATOR
+        MENUITEM "&Highlight Selection...\tCtrl+H", ID_HIGHLIGHT_SELECTION
+        MENUITEM "Export &Selection...",        ID_EXPORT_SELECTION
+        MENUITEM SEPARATOR
         MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
     END
     POPUP "&View"
@@ -306,6 +309,7 @@ BEGIN
     BEGIN
         MENUITEM "&Hand Tool",                  ID_MODE_DRAG
         MENUITEM "&Select Tool",                ID_MODE_SELECT
+        MENUITEM "&Rectangle Tool",             ID_MODE_SELECT_RECT
         MENUITEM "&Magnifying Glass",           ID_MODE_MAGNIFY
     END
     POPUP "&Window"
@@ -314,6 +318,8 @@ BEGIN
         MENUITEM "&Tile Horizontal",            ID_WINDOW_TILE_HORZ
         MENUITEM "Tile &Vertical",              ID_WINDOW_TILE_VERT
         MENUITEM "&Arrange Icons",              ID_WINDOW_ARRANGE
+        MENUITEM SEPARATOR
+        MENUITEM "F&ullscreen\tCtrl+L",         ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
         MENUITEM "Open this window",            ID_WINDOW_ACTIVATE_FIRST
     END
@@ -329,13 +335,13 @@ BEGIN
     POPUP "Page"
     BEGIN
         MENUITEM "&Copy Text",                  ID_EDIT_COPY
-        MENUITEM "&Highlight Selection...",     ID_HIGHLIGHT_SEL
-        MENUITEM "E&dit Highlight...",          ID_HIGHLIGHT_EDIT
-        MENUITEM "Delete &Highlight",           ID_HIGHLIGHT_DELETE
+        MENUITEM "&Highlight Selection...",     ID_HIGHLIGHT_SELECTION
+        MENUITEM "Export &Selection...",        ID_EXPORT_SELECTION
+        MENUITEM "E&dit Annotation...",         ID_ANNOTATION_EDIT
+        MENUITEM "Delete &Annotation",          ID_ANNOTATION_DELETE
         MENUITEM SEPARATOR
         MENUITEM "Page &Information...",        ID_PAGE_INFORMATION
         MENUITEM "&Export Page...",             ID_EXPORT_PAGE
-        MENUITEM "Export &Selection...",        ID_EXPORT_SELECTION
     END
     POPUP "Bookmark"
     BEGIN
@@ -351,66 +357,67 @@ END
 
 IDR_MAINFRAME ACCELERATORS MOVEABLE PURE 
 BEGIN
-    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
-    "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, 
+    "0",            ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_ZOOM_100,            VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_LAYOUT_SINGLEPAGE,   VIRTKEY, CONTROL, ALT, NOINVERT
+    "1",            ID_DISPLAY_COLOR,       VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
+    187,            ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    187,            ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    188,            ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
+    189,            ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    189,            ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_LAYOUT_CONTINUOUS,   VIRTKEY, CONTROL, ALT, NOINVERT
     "2",            ID_DISPLAY_BW,          VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
-    "1",            ID_DISPLAY_COLOR,       VIRTKEY, SHIFT, CONTROL, 
+    "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_LAYOUT_FACING,       VIRTKEY, CONTROL, ALT, NOINVERT
+    "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "4",            ID_ZOOM_ACTUALSIZE,     VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_LAYOUT_CONTINUOUS_FACING, VIRTKEY, CONTROL, ALT, 
                                                     NOINVERT
     "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
-    "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
-    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
-    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
-    "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
-    188,            ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
-    "2",            ID_LAYOUT_CONTINUOUS,   VIRTKEY, CONTROL, ALT, NOINVERT
-    "4",            ID_LAYOUT_CONTINUOUS_FACING, VIRTKEY, CONTROL, ALT, 
-                                                    NOINVERT
-    "3",            ID_LAYOUT_FACING,       VIRTKEY, CONTROL, ALT, NOINVERT
-    "1",            ID_LAYOUT_SINGLEPAGE,   VIRTKEY, CONTROL, ALT, NOINVERT
-    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
-    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
-    VK_DOWN,        ID_ROTATE_180,          VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
-    VK_LEFT,        ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
-    189,            ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
-    VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
-    VK_ADD,         ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
-    187,            ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
-    VK_RIGHT,       ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
-    VK_LEFT,        ID_VIEW_BACK,           VIRTKEY, ALT, NOINVERT
-    VK_HOME,        ID_VIEW_FIRSTPAGE,      VIRTKEY, CONTROL, NOINVERT
-    VK_RIGHT,       ID_VIEW_FORWARD,        VIRTKEY, ALT, NOINVERT
-    "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
-    VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
     "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_HIGHLIGHT_SELECTION, VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
     "N",            ID_VIEW_GOTO_PAGE,      VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
+    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    VK_DOWN,        ID_ROTATE_180,          VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, CONTROL, NOINVERT
+    VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_HOME,        ID_VIEW_FIRSTPAGE,      VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_LEFT,        ID_VIEW_BACK,           VIRTKEY, ALT, NOINVERT
+    VK_LEFT,        ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
     VK_NEXT,        ID_VIEW_NEXTPAGE,       VIRTKEY, CONTROL, NOINVERT
     VK_PRIOR,       ID_VIEW_PREVIOUSPAGE,   VIRTKEY, CONTROL, NOINVERT
-    "1",            ID_ZOOM_100,            VIRTKEY, CONTROL, NOINVERT
-    "4",            ID_ZOOM_ACTUALSIZE,     VIRTKEY, CONTROL, NOINVERT
-    "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
-    "0",            ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
-    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
-    "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
-    VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
-    187,            ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
-    189,            ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    VK_RIGHT,       ID_VIEW_FORWARD,        VIRTKEY, ALT, NOINVERT
+    VK_RIGHT,       ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
-    "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
 END
 
 
@@ -646,6 +653,8 @@ BEGIN
     CONTROL         "&Sharp scaling at low zoom levels (slower)",
                     IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,
                     208,10
+    CONTROL         "&Invert colors",IDC_INVERT_COLORS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
     CONTROL         "A&djust settings:",IDC_ADJUST_DISPLAY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,35,208,9
     LTEXT           "&Brightness: 0",IDC_BRIGHTNESS_TEXT,7,49,61,9
@@ -656,14 +665,16 @@ BEGIN
                     12
     LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,7,77,45,9
     CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,68,77,133,12
-    CONTROL         "&Invert colors",IDC_INVERT_COLORS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,98,208,1
+    LTEXT           "&Units:",IDC_STATIC,7,108,23,10
+    COMBOBOX        IDC_COMBO_UNITS,32,106,87,60,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_HIGHLIGHT DIALOGEX 0, 0, 200, 259
+IDD_ANNOTATION DIALOGEX 0, 0, 200, 259
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Edit Highlight"
-FONT 8, "MS Sans Serif"
+CAPTION "Edit Annotation"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,30,11,163,1,
                     WS_EX_STATICEDGE
@@ -842,7 +853,7 @@ BEGIN
         BOTTOMMARGIN, 118
     END
 
-    IDD_HIGHLIGHT, DIALOG
+    IDD_ANNOTATION, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 193
@@ -1004,9 +1015,9 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_LAYOUT_FIRSTPAGE_ALONE 
                             "Display first page alone in facing and continuous-facing layouts"
-    ID_HIGHLIGHT_SEL        "Highlights current selection"
-    ID_HIGHLIGHT_EDIT       "Edit properties of currently selected highlight"
-    ID_HIGHLIGHT_DELETE     "Removes currently selected highlight"
+    ID_HIGHLIGHT_SELECTION  "Highlight current selection"
+    ID_ANNOTATION_EDIT      "Edit properties of this annotation"
+    ID_ANNOTATION_DELETE    "Remove this annotation"
     ID_INDICATOR_PAGE       "  Page %d of %d  "
 END
 
@@ -1014,8 +1025,7 @@ STRINGTABLE DISCARDABLE
 BEGIN
     IDS_NOT_VALID_DOCUMENT  "\nThis is not a valid DjVu document."
     IDS_PRINTING_FAILED     "Failed to print the document. There could be a problem\nwith the printer or with the printer driver."
-    IDS_PAPER_SIZE_MM       "%s x %s mm"
-    IDS_CENTIMETER          "cm"
+    IDS_PAPER_SIZE          "%s x %s %s"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
     IDS_CURRENT_VERSION     "0.4.4"
@@ -1031,7 +1041,16 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_EXPORT_SELECTION     "Exports selected part of the page as bmp file"
+    IDS_CUSTOM_BOOKMARKS_TAB "Bookmarks"
+    IDS_BOOKMARK_MORE       "Book&mark >>"
+    IDS_BOOKMARK_LESS       "Book&mark <<"
+    IDS_UNITS_FULL          "Centimeters,Millimeters,Inches"
+    IDS_UNITS_SHORT         "cm,mm,in"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EXPORT_SELECTION     "Export selected part of the page as bmp file"
     ID_VIEW_BACK            "Go to previous view\nPrevious View"
     ID_VIEW_FORWARD         "Go to next view\nNext View"
     ID_WINDOW_ACTIVATE_FIRST "Activate this window"
@@ -1057,7 +1076,7 @@ BEGIN
     ID_ZOOM_IN              "Zoom In\nZoom In"
     ID_ZOOM_OUT             "Zoom Out\nZoom Out"
     ID_MODE_DRAG            "Activate hand tool\nHand Tool"
-    ID_MODE_SELECT          "Activate select tool\nSelect Tool"
+    ID_MODE_SELECT          "Activate text selection tool\nSelect Tool"
     ID_MODE_MAGNIFY         "Activate magnifying glass\nMagnifying Glass"
     ID_MODE_SELECT_RECT     "Activate rectangle selection tool\nRectangle Tool"
 END
@@ -1101,9 +1120,9 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_PAGE_INFORMATION     "Displays page information"
+    ID_PAGE_INFORMATION     "Display page information"
     ID_FILE_SETTINGS        "Change application settings\nSettings"
-    ID_EXPORT_PAGE          "Exports current page as bmp file"
+    ID_EXPORT_PAGE          "Export current page as bmp file"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -1158,7 +1177,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_FILE_EXPORT_TEXT     "Extract text from the active document and save it into a file\nExport Text"
-    ID_CHECK_FOR_UPDATE     "Checks program website for available updates\nCheck for update"
+    ID_CHECK_FOR_UPDATE     "Check program website for available updates\nCheck for update"
     ID_DISPLAY_COLOR        "Display document in original color"
     ID_DISPLAY_BW           "Display document in black and white"
     ID_DISPLAY_BACKGROUND   "Display document background"
@@ -1173,13 +1192,6 @@ BEGIN
     ID_INDICATOR_ADJUST     "  Adjusted  "
     ID_INDICATOR_MODE       "  Display Mode  "
     ID_BOOKMARK_DELETE      "Delete this bookmark"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    IDS_CUSTOM_BOOKMARKS_TAB "Bookmarks"
-    IDS_BOOKMARK_MORE       "Book&mark >>"
-    IDS_BOOKMARK_LESS       "Book&mark <<"
 END
 
 #endif    // English (U.S.) resources

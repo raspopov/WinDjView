@@ -119,6 +119,7 @@ struct DocSettings : public Observable
 	GUTF8String GetXML() const;
 	void Load(const XMLNode& node);
 
+	void AddAnnotation(const Annotation& anno, int nPage);
 	bool DeleteBookmark(const Bookmark* pBookmark);
 	bool DeleteAnnotation(const Annotation* pAnno, int nPage);
 };

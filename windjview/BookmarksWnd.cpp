@@ -213,17 +213,14 @@ void CBookmarksWnd::OnContextMenu(CWnd* pWnd, CPoint point)
 	TreeNode* pNode = m_pSelection;
 	if (m_bEnableEditing && pNode != NULL)
 	{
-		if (point.x < 0 || point.y < 0)
-			point = CPoint(0, 0);
-
 		CRect rcClient;
 		GetClientRect(rcClient);
 		ClientToScreen(rcClient);
 
 		if (!rcClient.PtInRect(point))
 		{
-			CMyTreeCtrl::OnContextMenu(pWnd, point);
-			return;
+			point = CPoint(pNode->rcLabel.left + 2, pNode->rcLabel.bottom)
+					+ rcClient.TopLeft() - GetScrollPosition();
 		}
 
 		CMenu menu;

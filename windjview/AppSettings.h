@@ -143,4 +143,14 @@ struct CAppSettings
 
 	CString strFind;
 	bool bMatchCase;
+
+	enum UnitType
+	{
+		Centimeters = 0,
+		Millimeters = 1,
+		Inches = 2
+	};
+
+	int nUnits;
+	static double unitsPerInch[];
 };

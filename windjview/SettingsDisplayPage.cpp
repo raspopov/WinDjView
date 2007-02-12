@@ -32,12 +32,14 @@
 IMPLEMENT_DYNAMIC(CSettingsDisplayPage, CPropertyPage)
 
 CSettingsDisplayPage::CSettingsDisplayPage()
-	: CPropertyPage(CSettingsDisplayPage::IDD)
+	: CPropertyPage(CSettingsDisplayPage::IDD), m_bSlidersInitialized(false)
 {
 	m_displaySettings = *theApp.GetDisplaySettings();
 	m_bAdjustDisplay = m_displaySettings.bAdjustDisplay;
 	m_bHQScaling = (m_displaySettings.nScaleMethod != CDisplaySettings::Default);
 	m_bInvertColors = m_displaySettings.bInvertColors;
+
+	m_nUnits = theApp.GetAppSettings()->nUnits;
 }
 
 CSettingsDisplayPage::~CSettingsDisplayPage()
@@ -54,6 +56,29 @@ void CSettingsDisplayPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BRIGHTNESS, m_sliderBrightness);
 	DDX_Control(pDX, IDC_CONTRAST, m_sliderContrast);
 	DDX_Control(pDX, IDC_GAMMA, m_sliderGamma);
+
+	if (m_bSlidersInitialized)
+	{
+		// Two strange effects here: First, negative min/max limits don't work properly
+		// Second: If position is set before SetRange is called, slider is not updated
+		// until position changes. That's why all this mess.
+
+		int nBrightness = m_displaySettings.nBrightness + 100;
+		int nContrast = m_displaySettings.nContrast + 100;
+		int nGamma = static_cast<int>(m_displaySettings.fGamma * 10 + 0.5);
+		DDX_Slider(pDX, IDC_BRIGHTNESS, nBrightness);
+		DDX_Slider(pDX, IDC_CONTRAST, nContrast);
+		DDX_Slider(pDX, IDC_GAMMA, nGamma);
+		if (pDX->m_bSaveAndValidate)
+		{
+			m_displaySettings.nBrightness = nBrightness - 100;
+			m_displaySettings.nContrast = nContrast - 100;
+			m_displaySettings.fGamma = nGamma / 10.0;
+		}
+	}
+
+	DDX_Control(pDX, IDC_COMBO_UNITS, m_cboUnits);
+	DDX_CBIndex(pDX, IDC_COMBO_UNITS, m_nUnits);
 
 	m_strBrightnessValue.Format(m_displaySettings.nBrightness == 0 ?
 		IDS_BRIGHTNESS_TEXT_ZERO : IDS_BRIGHTNESS_TEXT, m_displaySettings.nBrightness);
@@ -90,8 +115,23 @@ BOOL CSettingsDisplayPage::OnInitDialog()
 {
 	CPropertyPage::OnInitDialog();
 
+	m_sliderBrightness.SetRange(0, 200);
+	m_sliderBrightness.SetLineSize(1);
+	m_sliderBrightness.SetPageSize(5);
+
+	m_sliderContrast.SetRange(0, 200);
+	m_sliderContrast.SetLineSize(1);
+	m_sliderContrast.SetPageSize(5);
+
+	m_sliderBrightness.ClearTics();
+	m_sliderContrast.ClearTics();
+	for (int j = 0; j <= 10; ++j)
+	{
+		m_sliderBrightness.SetTic(20*j);
+		m_sliderContrast.SetTic(20*j);
+	}
+
 	m_sliderGamma.SetRange(1, 50);
-	m_sliderGamma.SetPos(static_cast<int>(m_displaySettings.fGamma * 10));
 	m_sliderGamma.SetLineSize(1);
 	m_sliderGamma.SetPageSize(5);
 
@@ -100,38 +140,28 @@ BOOL CSettingsDisplayPage::OnInitDialog()
 	for (int i = 1; i <= 10; ++i)
 		m_sliderGamma.SetTic(5*i);
 
-	m_sliderBrightness.SetRange(0, 200);
-	m_sliderBrightness.SetPos(m_displaySettings.nBrightness + 100);
-	m_sliderBrightness.SetLineSize(1);
-	m_sliderBrightness.SetPageSize(5);
+	CString strAllUnits;
+	strAllUnits.LoadString(IDS_UNITS_FULL);
 
-	m_sliderBrightness.ClearTics();
-	for (int j = 0; j <= 10; ++j)
-		m_sliderBrightness.SetTic(20*j);
+	for (int nUnits = CAppSettings::Centimeters; nUnits <= CAppSettings::Inches; ++nUnits)
+	{
+		CString strUnits;
+		AfxExtractSubString(strUnits, strAllUnits, nUnits, ',');
+		m_cboUnits.AddString(strUnits);
+	}
 
-	m_sliderContrast.SetRange(0, 200);
-	m_sliderContrast.SetPos(m_displaySettings.nContrast + 100);
-	m_sliderContrast.SetLineSize(1);
-	m_sliderContrast.SetPageSize(5);
-
-	m_sliderContrast.ClearTics();
-	for (int k = 0; k <= 10; ++k)
-		m_sliderContrast.SetTic(20*k);
+	m_bSlidersInitialized = true;
+	UpdateData(false);
 
 	return true;
 }
 
 void CSettingsDisplayPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
-	CSliderCtrl* pSlider = (CSliderCtrl*)pScrollBar;
-	if (pSlider == &m_sliderGamma || pSlider == &m_sliderBrightness || pSlider == &m_sliderContrast)
-	{
-		m_displaySettings.nBrightness = m_sliderBrightness.GetPos() - 100;
-		m_displaySettings.nContrast = m_sliderContrast.GetPos() - 100;
-		m_displaySettings.fGamma = m_sliderGamma.GetPos() * 0.1;
+	UpdateData();
 
-		UpdateData(false);
-	}
+	// Update static text
+	UpdateData(false);
 }
 
 void CSettingsDisplayPage::OnAdjustDisplay()

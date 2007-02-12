@@ -91,8 +91,10 @@ GUTF8String MakeUTF8String(const wstring& strText);
 #define ZOOM_CHANGED 10
 #define APP_SETTINGS_CHANGED 11
 #define APP_LANGUAGE_CHANGED 12
-#define BOOKMARK_DELETED 13
-#define ANNOTATION_DELETED 14
+#define BOOKMARK_ADDED 13
+#define ANNOTATION_ADDED 14
+#define BOOKMARK_DELETED 15
+#define ANNOTATION_DELETED 16
 
 struct ThumbnailClicked : public Message
 {
@@ -188,6 +190,15 @@ struct AppLanguageChanged : public Message
 
 struct Bookmark;
 struct Annotation;
+
+struct AnnotationAdded : public Message
+{
+	AnnotationAdded(Annotation* pAnno_, int nPage_)
+		: Message(ANNOTATION_ADDED), pAnno(pAnno_), nPage(nPage_) {}
+
+	Annotation* pAnno;
+	int nPage;
+};
 
 struct BookmarkDeleted : public Message
 {

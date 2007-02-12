@@ -43,10 +43,14 @@ public:
 	CString m_strBrightnessValue;
 	CString m_strContrastValue;
 	CString m_strGammaValue;
+	int m_nUnits;
+	CComboBox m_cboUnits;
 
 	CDisplaySettings m_displaySettings;
 
 protected:
+	bool m_bSlidersInitialized;
+
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual BOOL OnInitDialog();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);

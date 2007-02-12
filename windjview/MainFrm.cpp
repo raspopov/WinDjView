@@ -933,15 +933,20 @@ void CMainFrame::OnUpdateStatusSize(CCmdUI* pCmdUI)
 	ASSERT(pView);
 	int nCurrentPage = pView->GetCurrentPage();
 
+	int nUnits = theApp.GetAppSettings()->nUnits;
+	double fUnitsPerInch = CAppSettings::unitsPerInch[nUnits];
+
 	CString strNewMessage;
 	CSize szPage = pView->GetPageSize(nCurrentPage);
 	int nDPI = pView->GetPageDPI(nCurrentPage);
-	double fWidth = static_cast<int>(25.4 * szPage.cx / nDPI) * 0.1;
-	double fHeight = static_cast<int>(25.4 * szPage.cy / nDPI) * 0.1;
+	double fWidth = static_cast<int>(fUnitsPerInch * 100.0 * szPage.cx / nDPI + 0.5) * 0.01;
+	double fHeight = static_cast<int>(fUnitsPerInch * 100.0 * szPage.cy / nDPI + 0.5) * 0.01;
+
+	CString strUnits;
+	AfxExtractSubString(strUnits, LoadString(IDS_UNITS_SHORT), nUnits, ',');
 
 	strNewMessage.Format(ID_INDICATOR_SIZE, 
-			(LPCTSTR)FormatDouble(fWidth), (LPCTSTR)FormatDouble(fHeight),
-			LoadString(IDS_CENTIMETER));
+			(LPCTSTR)FormatDouble(fWidth), (LPCTSTR)FormatDouble(fHeight), strUnits);
 
 	if (strMessage != strNewMessage)
 	{

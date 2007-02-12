@@ -14,7 +14,7 @@
 #define IDD_SETTINGS_GENERAL            108
 #define IDD_SETTINGS_DISPLAY            109
 #define IDD_SETTINGS_ASSOCS             110
-#define IDD_HIGHLIGHT                   111
+#define IDD_ANNOTATION                  111
 #define IDR_MAINFRAME                   128
 #define IDR_DjVuTYPE                    129
 #define IDR_POPUP                       130
@@ -96,8 +96,7 @@
 #define IDS_TOOLTIP_HIDE                255
 #define IDS_NOT_VALID_DOCUMENT          256
 #define IDS_PRINTING_FAILED             257
-#define IDS_PAPER_SIZE_MM               258
-#define IDS_CENTIMETER                  259
+#define IDS_PAPER_SIZE                  258
 #define IDS_VERSION_INFO                260
 #define IDS_VERSION_ABOUT               261
 #define IDS_CURRENT_VERSION             262
@@ -113,6 +112,8 @@
 #define IDS_CUSTOM_BOOKMARKS_TAB        272
 #define IDS_BOOKMARK_MORE               273
 #define IDS_BOOKMARK_LESS               274
+#define IDS_UNITS_FULL                  275
+#define IDS_UNITS_SHORT                 276
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -194,6 +195,7 @@
 #define IDC_STATIC_LESS                 1077
 #define IDC_STATIC_MORE                 1078
 #define IDC_ADD_BOOKMARK                1079
+#define IDC_COMBO_UNITS                 1080
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_ZOOM_50                      32777
@@ -257,9 +259,9 @@
 #define ID_LAYOUT_FACING                33118
 #define ID_LAYOUT_CONTINUOUS_FACING     33119
 #define ID_LAYOUT_FIRSTPAGE_ALONE       33120
-#define ID_HIGHLIGHT_SEL                33124
-#define ID_HIGHLIGHT_EDIT               33130
-#define ID_HIGHLIGHT_DELETE             33131
+#define ID_HIGHLIGHT_SELECTION          33124
+#define ID_ANNOTATION_EDIT              33130
+#define ID_ANNOTATION_DELETE            33131
 #define ID_FIND_STRING                  33132
 #define ID_EXPAND_PANE                  33133
 #define ID_COLLAPSE_PANE                33134
@@ -274,9 +276,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        273
-#define _APS_NEXT_COMMAND_VALUE         33143
-#define _APS_NEXT_CONTROL_VALUE         1080
+#define _APS_NEXT_RESOURCE_VALUE        277
+#define _APS_NEXT_COMMAND_VALUE         33144
+#define _APS_NEXT_CONTROL_VALUE         1081
 #define _APS_NEXT_SYMED_VALUE           112
 #endif
 #endif
