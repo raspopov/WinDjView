@@ -22,7 +22,6 @@
 #include "FullscreenWnd.h"
 #include "DjVuView.h"
 #include "ThumbnailsView.h"
-#include "MainFrm.h"
 #include "ChildFrm.h"
 
 
@@ -51,7 +50,9 @@ END_MESSAGE_MAP()
 
 BOOL CFullscreenWnd::Create()
 {
-	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS);
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
+			::LoadCursor(NULL, IDC_ARROW), NULL,
+			::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME)));
 
 	CDC dcScreen;
 	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
@@ -59,17 +60,8 @@ BOOL CFullscreenWnd::Create()
 	m_nWidth = dcScreen.GetDeviceCaps(HORZRES);
 	m_nHeight = dcScreen.GetDeviceCaps(VERTRES);
 
-	CWnd* pParent = NULL;
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-			vi.dwMajorVersion >= 5)
-	{
-		pParent = GetTopLevelParent();
-	}
-
-	return CreateEx(WS_EX_LEFT | WS_EX_TOOLWINDOW, strWndClass, NULL,
-		WS_POPUP, CRect(0, 0, m_nWidth, m_nHeight), pParent, 0);
+	return CreateEx(0, strWndClass, NULL,
+		WS_POPUP, CRect(0, 0, m_nWidth, m_nHeight), NULL, 0);
 }
 
 void CFullscreenWnd::Show(CDjVuView* pOwner, CDjVuView* pContents)
@@ -79,24 +71,29 @@ void CFullscreenWnd::Show(CDjVuView* pOwner, CDjVuView* pContents)
 	m_pOwner = pOwner;
 	m_pView = pContents;
 
-	CDC dcScreen;
-	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+	CRect rcMonitor = GetMonitorRect(pOwner);
+	m_nWidth = rcMonitor.Width();
+	m_nHeight = rcMonitor.Height();
 
-	m_nWidth = dcScreen.GetDeviceCaps(HORZRES);
-	m_nHeight = dcScreen.GetDeviceCaps(VERTRES);
-
-	MoveWindow(0, 0, m_nWidth, m_nHeight);
+	MoveWindow(rcMonitor.left, rcMonitor.top, m_nWidth, m_nHeight);
 	m_pView->MoveWindow(0, 0, m_nWidth, m_nHeight);
 
+	CString strText;
+	pOwner->GetTopLevelParent()->GetWindowText(strText);
+	SetWindowText(strText);
+
 	ShowWindow(SW_SHOW);
+	pOwner->GetTopLevelParent()->ShowWindow(SW_HIDE);
 }
 
 void CFullscreenWnd::Hide()
 {
 	ShowWindow(SW_HIDE);
 
-	if (m_pView != NULL)
+	if (m_pOwner != NULL)
 	{
+		m_pOwner->GetTopLevelParent()->ShowWindow(SW_SHOW);
+
 		int nPage = m_pView->GetCurrentPage();
 		m_pOwner->UpdatePageInfoFrom(m_pView);
 		m_pOwner->CopyBitmapsFrom(m_pView, true);
@@ -111,10 +108,9 @@ void CFullscreenWnd::Hide()
 		// Detach view from the document before destroying
 		m_pView->SetDocument(NULL);
 		m_pView->DestroyWindow();
-	}
 
-	if (m_pOwner != NULL)
 		m_pOwner->SetFocus();
+	}
 
 	m_pView = NULL;
 	m_pOwner = NULL;

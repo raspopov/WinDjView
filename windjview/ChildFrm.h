@@ -33,6 +33,7 @@ class CPageIndexWnd;
 class CChildFrame : public CMDIChildWnd, public Observer
 {
 	DECLARE_DYNCREATE(CChildFrame)
+
 public:
 	CChildFrame();
 
@@ -46,9 +47,10 @@ public:
 	void SaveStartupPage();
 
 	CThumbnailsView* GetThumbnailsView() { return m_pThumbnailsView; }
-	CBookmarksWnd* GetBookmarksWnd() { return m_pBookmarksWnd; }
-	CPageIndexWnd* GetPageIndexWnd() { return m_pPageIndexWnd; }
-	CSearchResultsView* GetResultsView();
+	CBookmarksWnd* GetBookmarks() { return m_pBookmarksWnd; }
+	CPageIndexWnd* GetPageIndex() { return m_pPageIndexWnd; }
+	CBookmarksWnd* GetCustomBookmarks(bool bActivate = true);
+	CSearchResultsView* GetSearchResults(bool bActivate = true);
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -77,6 +79,7 @@ protected:
 	CSplitterWnd m_wndDynSplitter;
 	CThumbnailsView* m_pThumbnailsView;
 	CBookmarksWnd* m_pBookmarksWnd;
+	CBookmarksWnd* m_pCustomBookmarksWnd;
 	CSearchResultsView* m_pResultsView;
 	CPageIndexWnd* m_pPageIndexWnd;
 
@@ -86,6 +89,7 @@ protected:
 	afx_msg void OnExpandPane();
 	afx_msg void OnCollapsePane();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnDestroy();
 	afx_msg void OnClose();
 	afx_msg void OnNcPaint();
 	DECLARE_MESSAGE_MAP()

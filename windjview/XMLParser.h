@@ -31,7 +31,8 @@ public:
 	XMLNode()
 		: pchildren(new list<XMLNode>()), childElements(*pchildren) {}
 	XMLNode(const XMLNode& node)
-		: pchildren(new list<XMLNode>(node.childElements)), childElements(*pchildren) {}
+		: pchildren(new list<XMLNode>(node.childElements)), childElements(*pchildren),
+		  tagName(node.tagName), text(node.text), attributes(node.attributes) {}
 	~XMLNode()
 		{ delete pchildren; }
 

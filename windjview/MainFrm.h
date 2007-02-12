@@ -34,8 +34,10 @@ class CMagnifyWnd;
 class CMainFrame : public CMDIFrameWnd, public Observer
 {
 	DECLARE_DYNAMIC(CMainFrame)
+
 public:
 	CMainFrame();
+	virtual ~CMainFrame();
 
 // Attributes
 public:
@@ -51,7 +53,6 @@ public:
 	CMagnifyWnd* GetMagnifyWnd();
 
 	void SetStartupLanguage();
-	
 	int GetDocumentCount();
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
@@ -67,7 +68,6 @@ protected:
 
 // Implementation
 public:
-	virtual ~CMainFrame();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;

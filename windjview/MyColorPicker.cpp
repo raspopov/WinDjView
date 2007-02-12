@@ -815,10 +815,11 @@ bool CMyColorPopup::Create(CWnd* pParent)
 			nClassStyle |= CS_DROPSHADOW;
 	}
 
-	static CString strWndClass = AfxRegisterWndClass(
-		nClassStyle, 0, (HBRUSH) (COLOR_MENU + 1));
+	static CString strWndClass = AfxRegisterWndClass(nClassStyle,
+			::LoadCursor(NULL, IDC_ARROW), (HBRUSH) (COLOR_MENU + 1));
 
-	if (!CreateEx(0, strWndClass, _T(""), WS_POPUP, 0, 0, 100, 100, pParent->m_hWnd, 0))
+	if (!CreateEx(WS_EX_TOPMOST | WS_EX_TOOLWINDOW, strWndClass, _T(""),
+			WS_POPUP, CRect(0, 0, 100, 100), pParent, 0))
 		return false;
 
 	SetOwner(pParent);

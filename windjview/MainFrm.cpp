@@ -1016,6 +1016,7 @@ LRESULT CALLBACK CMainFrame::KeyboardProc(int nCode, WPARAM wParam, LPARAM lPara
 
 void CMainFrame::OnDestroy()
 {
+	theApp.RemoveObserver(this);
 	::UnhookWindowsHookEx(hHook);
 
 	CMDIFrameWnd::OnDestroy();

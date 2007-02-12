@@ -62,7 +62,8 @@ BOOL CPageIndexWnd::PreCreateWindow(CREATESTRUCT& cs)
 	if (!CWnd::PreCreateWindow(cs))
 		return false;
 
-	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS);
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
+			::LoadCursor(NULL, IDC_ARROW));
 	cs.lpszClass = strWndClass;
 
 	return true;

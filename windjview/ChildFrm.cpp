@@ -47,6 +47,7 @@ BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 	ON_WM_ERASEBKGND()
 	ON_WM_CLOSE()
 	ON_WM_NCPAINT()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -55,7 +56,7 @@ END_MESSAGE_MAP()
 CChildFrame::CChildFrame()
 	: m_bCreated(false), m_bActivating(false), m_pThumbnailsView(NULL),
 	  m_pBookmarksWnd(NULL), m_pResultsView(NULL), m_bFirstShow(true),
-	  m_nStartupPage(-1)
+	  m_pCustomBookmarksWnd(NULL), m_nStartupPage(-1)
 {
 }
 
@@ -104,26 +105,26 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 		if (!m_bActivating)
 			pView->UpdateVisiblePages();
 
-		GetMainFrame()->OnUpdate(pView, &ViewActivated());
+		((CMainFrame*) GetMDIFrame())->OnUpdate(pView, &ViewActivated());
 	}
 	else if (pActivateWnd == NULL)
 	{
-		GetMainFrame()->OnUpdate(NULL, &ViewActivated());
+		((CMainFrame*) GetMDIFrame())->OnUpdate(NULL, &ViewActivated());
 	}
 }
 
 void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 {
 	BOOL bMaximized = false;
-	CMDIChildWnd* pActive = GetMainFrame()->MDIGetActive(&bMaximized);
+	CMDIChildWnd* pActive = GetMDIFrame()->MDIGetActive(&bMaximized);
 
 	if (!m_bActivating && bMaximized && theApp.m_bInitialized)
-		GetMainFrame()->LockWindowUpdate();
+		GetMDIFrame()->LockWindowUpdate();
 
 	CMDIChildWnd::OnWindowPosChanged(lpwndpos);
 
 	if (!m_bActivating && bMaximized && theApp.m_bInitialized)
-		GetMainFrame()->UnlockWindowUpdate();
+		GetMDIFrame()->UnlockWindowUpdate();
 
 	if (pActive == this && IsWindowVisible() && !IsIconic())
 		theApp.GetAppSettings()->bChildMaximized = !!IsZoomed();
@@ -146,8 +147,8 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 
 		if (theApp.m_bInitialized)
 		{
-			GetMainFrame()->SetRedraw(false);
-			GetMainFrame()->LockWindowUpdate();
+			GetMDIFrame()->SetRedraw(false);
+			GetMDIFrame()->LockWindowUpdate();
 		}
 	}
 
@@ -172,10 +173,10 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 
 	if (theApp.GetAppSettings()->bChildMaximized && theApp.m_bInitialized)
 	{
-		GetMainFrame()->UnlockWindowUpdate();
-		GetMainFrame()->SetRedraw(true);
+		GetMDIFrame()->UnlockWindowUpdate();
+		GetMDIFrame()->SetRedraw(true);
 
-		GetMainFrame()->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME | RDW_ALLCHILDREN); 
+		GetMDIFrame()->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME | RDW_ALLCHILDREN); 
 	}
 
 	m_bActivating = false;
@@ -211,27 +212,34 @@ BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 	return TRUE;
 }
 
+void CChildFrame::OnDestroy()
+{
+	theApp.RemoveObserver(this);
+
+	CFrameWnd::OnDestroy();
+}
+
 void CChildFrame::SaveStartupPage()
 {
 	DjVuSource* pSource = GetDjVuView()->GetDocument()->GetSource();
-	m_nStartupPage = pSource->GetUserData()->nPage;
-	m_ptStartupOffset = pSource->GetUserData()->ptOffset;
+	m_nStartupPage = pSource->GetSettings()->nPage;
+	m_ptStartupOffset = pSource->GetSettings()->ptOffset;
 }
 
 void CChildFrame::CreateNavPanes()
 {
 	CNavPaneWnd* pNavPane = GetNavPane();
-	DjVuSource* pSource = ((CDjVuDoc*)GetActiveDocument())->GetSource();
 	CDjVuView* pDjVuView = GetDjVuView();
+	DjVuSource* pSource = pDjVuView->GetDocument()->GetSource();
 
 	if (pSource->GetBookmarks() != NULL)
 	{
-		m_pBookmarksWnd = new CBookmarksWnd();
+		m_pBookmarksWnd = new CBookmarksWnd(pSource);
 		m_pBookmarksWnd->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 			| TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP
 			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 1);
 		pNavPane->AddTab(LoadString(IDS_BOOKMARKS_TAB), m_pBookmarksWnd);
-		m_pBookmarksWnd->InitBookmarks(pSource);
+		m_pBookmarksWnd->InitBookmarks();
 		m_pBookmarksWnd->AddObserver(pDjVuView);
 	}
 
@@ -260,6 +268,12 @@ void CChildFrame::CreateNavPanes()
 	m_pThumbnailsView->SetSource(pSource);
 	m_pThumbnailsView->AddObserver(pDjVuView);
 	pDjVuView->AddObserver(m_pThumbnailsView);
+
+	if (!pSource->GetSettings()->bookmarks.empty())
+	{
+		CBookmarksWnd* pBookmarks = GetCustomBookmarks(false);
+		pBookmarks->InitCustomBookmarks();
+	}
 }
 
 void CChildFrame::OnCollapsePane()
@@ -387,7 +401,7 @@ void CChildFrame::OnClose()
 	theApp.SaveSettings();
 }
 
-CSearchResultsView* CChildFrame::GetResultsView()
+CSearchResultsView* CChildFrame::GetSearchResults(bool bActivate)
 {
 	CNavPaneWnd* pNavPane = GetNavPane();
 
@@ -404,10 +418,40 @@ CSearchResultsView* CChildFrame::GetResultsView()
 		m_pResultsView->AddObserver(pDjVuView);
 	}
 
-	pNavPane->ActivateTab(m_pResultsView);
-	pNavPane->UpdateWindow();
+	if (bActivate)
+	{
+		pNavPane->ActivateTab(m_pResultsView);
+		pNavPane->UpdateWindow();
+	}
 
 	return m_pResultsView;
+}
+
+CBookmarksWnd* CChildFrame::GetCustomBookmarks(bool bActivate)
+{
+	CNavPaneWnd* pNavPane = GetNavPane();
+
+	if (m_pCustomBookmarksWnd == NULL)
+	{
+		CDjVuView* pDjVuView = GetDjVuView();
+		DjVuSource* pSource = pDjVuView->GetDocument()->GetSource();
+
+		m_pCustomBookmarksWnd = new CBookmarksWnd(pSource);
+		m_pCustomBookmarksWnd->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
+			| TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP
+			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 5);
+		pNavPane->AddTab(LoadString(IDS_CUSTOM_BOOKMARKS_TAB), m_pCustomBookmarksWnd);
+		m_pCustomBookmarksWnd->AddObserver(pDjVuView);
+		m_pCustomBookmarksWnd->EnableEditing();
+	}
+
+	if (bActivate)
+	{
+		pNavPane->ActivateTab(m_pCustomBookmarksWnd);
+		pNavPane->UpdateWindow();
+	}
+
+	return m_pCustomBookmarksWnd;
 }
 
 void CChildFrame::OnUpdate(const Observable* source, const Message* message)
@@ -430,7 +474,7 @@ void CChildFrame::OnUpdate(const Observable* source, const Message* message)
 void CChildFrame::OnNcPaint()
 {
 	BOOL bMaximized = false;
-	GetMainFrame()->MDIGetActive(&bMaximized);
+	GetMDIFrame()->MDIGetActive(&bMaximized);
 	if (bMaximized)
 		return;
 

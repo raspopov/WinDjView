@@ -20,7 +20,6 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "MyScrollView.h"
-#include "MainFrm.h"
 #include "FullscreenWnd.h"
 
 #ifdef _DEBUG
@@ -38,8 +37,8 @@ public:
 	CMyAnchorWnd();
 	~CMyAnchorWnd();
 
-	BOOL Create();
-	void Show(CMyScrollView* pView, const CPoint& ptAnchor, bool bVertScroll, bool bHorzScroll);
+	BOOL Create(CMyScrollView* pView);
+	void Show(const CPoint& ptAnchor, bool bVertScroll, bool bHorzScroll);
 	void Hide();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
@@ -286,7 +285,7 @@ LRESULT CMyScrollView::OnMButtonDown(WPARAM wParam, LPARAM lParam)
 	if (m_pAnchorWnd == NULL)
 	{
 		m_pAnchorWnd = new CMyAnchorWnd();
-		m_pAnchorWnd->Create();
+		m_pAnchorWnd->Create(this);
 	}
 
 	if (!m_pAnchorWnd->IsWindowVisible())
@@ -296,7 +295,7 @@ LRESULT CMyScrollView::OnMButtonDown(WPARAM wParam, LPARAM lParam)
 		CheckScrollBars(bHorzBar, bVertBar);
 
 		if (bHorzBar || bVertBar)
-			m_pAnchorWnd->Show(this, point, !!bVertBar, !!bHorzBar);
+			m_pAnchorWnd->Show(point, !!bVertBar, !!bHorzBar);
 	}
 	else
 	{
@@ -500,21 +499,15 @@ void CMyAnchorWnd::OnTimer(UINT nIDEvent)
 	}
 }
 
-BOOL CMyAnchorWnd::Create()
+BOOL CMyAnchorWnd::Create(CMyScrollView* pView)
 {
-	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS);
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
+			::LoadCursor(NULL, IDC_ARROW));
 
-	CWnd* pParent = NULL;
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-			vi.dwMajorVersion >= 5)
-	{
-		pParent = GetMainFrame();
-	}
+	m_pView = pView;
 
-	BOOL bRetVal = CreateEx(WS_EX_LEFT | WS_EX_TOPMOST, strWndClass, NULL, WS_POPUP,
-		CRect(0, 0, s_nAnchorSize, s_nAnchorSize), pParent, 0);
+	BOOL bRetVal = CreateEx(WS_EX_TOPMOST | WS_EX_TOOLWINDOW, strWndClass, NULL, WS_POPUP,
+		CRect(0, 0, s_nAnchorSize, s_nAnchorSize), m_pView, 0);
 
 	if (bRetVal)
 	{
@@ -555,11 +548,10 @@ BOOL CMyAnchorWnd::Create()
 	return bRetVal;
 }
 
-void CMyAnchorWnd::Show(CMyScrollView* pView, const CPoint& ptAnchor, bool bVertScroll, bool bHorzScroll)
+void CMyAnchorWnd::Show(const CPoint& ptAnchor, bool bVertScroll, bool bHorzScroll)
 {
-	ASSERT(m_pView == NULL);
+	ASSERT(m_pView != NULL);
 
-	m_pView = pView;
 	m_ptAnchor = ptAnchor;
 	m_pView->ClientToScreen(&m_ptAnchor);
 
@@ -602,13 +594,9 @@ void CMyAnchorWnd::Hide()
 	ReleaseCapture();
 	ShowWindow(SW_HIDE);
 
-	if (GetMainFrame()->IsFullscreenMode())
-		GetMainFrame()->GetFullscreenWnd()->UpdateWindow();
-	else
-		GetMainFrame()->UpdateWindow();
+	m_pView->GetTopLevelParent()->UpdateWindow();
 
 	m_pView->OnEndPan();
-	m_pView = NULL;
 }
 
 void CMyAnchorWnd::OnPaint()

@@ -20,8 +20,6 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "MagnifyWnd.h"
-#include "MainFrm.h"
-#include "FullscreenWnd.h"
 #include "DjVuView.h"
 
 
@@ -48,22 +46,14 @@ END_MESSAGE_MAP()
 
 BOOL CMagnifyWnd::Create()
 {
-	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS);
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
+			::LoadCursor(NULL, IDC_ARROW));
 
 	m_nWidth = 480;
 	m_nHeight = 320;
 
-	CWnd* pParent = NULL;
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-			vi.dwMajorVersion >= 5)
-	{
-		pParent = GetTopLevelParent();
-	}
-
-	return CreateEx(WS_EX_LEFT | WS_EX_TOPMOST, strWndClass, NULL, WS_POPUP,
-		CRect(0, 0, m_nWidth, m_nHeight), pParent, 0);
+	return CreateEx(WS_EX_TOPMOST | WS_EX_TOOLWINDOW, strWndClass, NULL, WS_POPUP,
+		CRect(0, 0, m_nWidth, m_nHeight), NULL, 0);
 }
 
 void CMagnifyWnd::Show(CDjVuView* pOwner, CDjVuView* pContents, const CPoint& ptCenter)
@@ -79,17 +69,17 @@ void CMagnifyWnd::Show(CDjVuView* pOwner, CDjVuView* pContents, const CPoint& pt
 	m_pView->MoveWindow(1, 1, m_nWidth - 2, m_nHeight - 2);
 	CenterOnPoint(ptCenter);
 
-	ShowWindow(SW_SHOWNOACTIVATE);
+	ShowWindow(SW_SHOWNA);
 }
 
 void CMagnifyWnd::Hide()
 {
 	ShowWindow(SW_HIDE);
 
-	if (GetMainFrame()->IsFullscreenMode())
-		GetMainFrame()->GetFullscreenWnd()->UpdateWindow();
-	else
-		GetMainFrame()->UpdateWindow();
+	if (m_pOwner != NULL)
+	{
+		m_pOwner->GetTopLevelParent()->UpdateWindow();
+	}
 
 	// Detach view from the document before destroying
 	if (m_pView != NULL)

@@ -21,8 +21,6 @@
 #include "WinDjView.h"
 #include "SettingsDlg.h"
 
-#include "MainFrm.h"
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif

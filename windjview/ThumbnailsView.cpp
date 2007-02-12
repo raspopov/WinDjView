@@ -515,8 +515,8 @@ void CThumbnailsView::OnContextMenu(CWnd* pWnd, CPoint point)
 	ASSERT(pPopup != NULL);
 
 	ClientToScreen(&point);
-	pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON, point.x, point.y,
-		GetMainFrame());
+	pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
+			point.x, point.y, this);
 */
 }
 
@@ -750,6 +750,8 @@ void CThumbnailsView::OnDestroy()
 		m_pIdleThread->Delete();
 		m_pIdleThread = NULL;
 	}
+
+	theApp.RemoveObserver(this);
 
 	CMyScrollView::OnDestroy();
 }

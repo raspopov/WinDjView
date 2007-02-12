@@ -43,6 +43,7 @@ public:
 
 	HTREEITEM InsertItem(LPCTSTR pszItem, HTREEITEM hParent = TVI_ROOT, HTREEITEM hInsertAfter = TVI_LAST);
 	HTREEITEM InsertItem(LPCTSTR pszItem, int nImage, int nSelectedImage, HTREEITEM hParent = TVI_ROOT, HTREEITEM hInsertAfter = TVI_LAST);
+	bool DeleteItem(HTREEITEM hItem);
 
 	void SetItemData(HTREEITEM hItem, DWORD_PTR dwData);
 	DWORD_PTR GetItemData(HTREEITEM hItem);
@@ -167,6 +168,7 @@ protected:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnThemeChanged();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);

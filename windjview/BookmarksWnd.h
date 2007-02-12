@@ -22,6 +22,7 @@
 #include "Global.h"
 #include "MyTreeCtrl.h"
 class DjVuSource;
+struct Bookmark;
 
 
 // CBookmarksWnd view
@@ -31,27 +32,44 @@ class CBookmarksWnd : public CMyTreeCtrl, public Observable, public Observer
 	DECLARE_DYNAMIC(CBookmarksWnd)
 
 public:
-	CBookmarksWnd();
+	CBookmarksWnd(DjVuSource* pSource);
 	virtual ~CBookmarksWnd();
 
-	void InitBookmarks(DjVuSource* pSource);
+	void InitBookmarks();
+	void InitCustomBookmarks();
+	void AddBookmark(const Bookmark& bookmark);
+	void EnableEditing(bool bEnable = true) { m_bEnableEditing = bEnable; }
+
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
 // Implementation
 protected:
+	DjVuSource* m_pSource;
 	CImageList m_imageList;
+	bool m_bEnableEditing;
 
 	void GoToBookmark(HTREEITEM hItem);
 	void InitBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks,
 		HTREEITEM hParent, GPosition& pos, int nCount);
+	void AddBookmark(const Bookmark& bookmark, HTREEITEM hParent);
+	void DeleteBookmark(TreeNode* pNode);
 
-	list<GUTF8String> m_links;
+	struct BookmarkInfo
+	{
+		GUTF8String strURL;
+		const Bookmark* pBookmark;
+	};
+	list<BookmarkInfo> m_links;
 
 // Generated message map functions
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnDestroy();
 	afx_msg void OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnItemClicked(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
+	afx_msg void OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu);
+	afx_msg void OnEnterIdle(UINT nWhy, CWnd* pWho);
 	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()
 };

@@ -25,35 +25,11 @@
 class CDjVuSource;
 struct XMLNode;
 
-struct PageInfo
-{
-	PageInfo()
-		: bDecoded(false), szPage(0, 0), nDPI(0), nInitialRotate(0),
-		  bHasText(false), bAnnoDecoded(false), bTextDecoded(false) {}
-
-	void Update(GP<DjVuImage> pImage, bool bNeedText = false);
-	void Update(const PageInfo& info);
-
-	void DecodeAnno(GP<ByteStream> pAnnoStream);
-	void DecodeText(GP<ByteStream> pTextStream);
-
-	bool bDecoded;
-	CSize szPage;
-	int nInitialRotate;
-	int nDPI;
-	bool bHasText;
-	bool bAnnoDecoded;
-	GP<DjVuANT> pAnt;
-	bool bTextDecoded;
-	GP<DjVuTXT> pText;
-};
-
-
 typedef GList<DjVuTXT::Zone*> DjVuSelection;
 
-struct DjVuHighlight
+struct Annotation
 {
-	DjVuHighlight()
+	Annotation()
 		: bHideInactiveBorder(false), nBorderType(BorderNone), crBorder(RGB(0, 0, 0)),
 		  nFillType(FillNone), crFill(RGB(255, 255, 255)), fTransparency(0.75) {}
 
@@ -86,19 +62,47 @@ struct DjVuHighlight
 
 	vector<GRect> rects;
 	GRect rectBounds;
+
+	void Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate);
+	GP<GMapArea> sourceArea;
 };
 
-struct DjVuPageData
+struct PageSettings
 {
-	list<DjVuHighlight> highlights;
+	list<Annotation> anno;
 
 	GUTF8String GetXML() const;
 	void Load(const XMLNode& node);
 };
 
-struct DjVuUserData
+struct Bookmark
 {
-	DjVuUserData();
+private:
+	// Trick to pacify the VC6 compiler
+	list<Bookmark>* pchildren;
+
+public:
+	Bookmark()
+		: pchildren(new list<Bookmark>()), children(*pchildren), pParent(NULL) {}
+	Bookmark(const Bookmark& bm)
+		: pchildren(new list<Bookmark>(bm.children)), children(*pchildren),
+		  strURL(bm.strURL), strTitle(bm.strTitle), pParent(bm.pParent) {}
+	~Bookmark()
+		{ delete pchildren; }
+
+	GUTF8String strURL;
+	GUTF8String strTitle;
+	Bookmark* pParent;
+
+	list<Bookmark>& children;
+
+	GUTF8String GetXML() const;
+	void Load(const XMLNode& node);
+};
+
+struct DocSettings : public Observable
+{
+	DocSettings();
 
 	int nPage;
 	CPoint ptOffset;
@@ -108,10 +112,38 @@ struct DjVuUserData
 	bool bFirstPageAlone;
 	int nDisplayMode;
 
-	map<int, DjVuPageData> pageData;
+	map<int, PageSettings> pageSettings;
+	list<Bookmark> bookmarks;
 
 	GUTF8String GetXML() const;
 	void Load(const XMLNode& node);
+
+	bool DeleteBookmark(const Bookmark* pBookmark);
+	bool DeleteAnnotation(const Annotation* pAnno, int nPage);
+};
+
+struct PageInfo
+{
+	PageInfo()
+		: bDecoded(false), szPage(0, 0), nDPI(0), nInitialRotate(0),
+		  bHasText(false), bAnnoDecoded(false), bTextDecoded(false) {}
+
+	void Update(GP<DjVuImage> pImage);
+	void Update(const PageInfo& info);
+
+	void DecodeAnno(GP<ByteStream> pAnnoStream);
+	void DecodeText(GP<ByteStream> pTextStream);
+
+	bool bDecoded;
+	CSize szPage;
+	int nInitialRotate;
+	int nDPI;
+	bool bHasText;
+	bool bAnnoDecoded;
+	list<Annotation> anno;
+	GP<DjVuANT> pAnt;
+	bool bTextDecoded;
+	GP<DjVuTXT> pText;
 };
 
 class DjVuSource : public RefCount
@@ -138,9 +170,9 @@ public:
 	CString GetFileName() const { return m_strFileName; }
 	bool SaveAs(const CString& strFileName);
 
-	DjVuUserData* GetUserData() { return m_pUserData; }
+	DocSettings* GetSettings() { return m_pSettings; }
 
-	static map<MD5, DjVuUserData>& GetAllUserData() { return userData; }
+	static map<MD5, DocSettings>& GetAllSettings() { return settings; }
 
 protected:
 	struct PageRequest
@@ -163,21 +195,22 @@ protected:
 		vector<PageRequest*> requests;
 	};
 
-	DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DjVuUserData* pData);
+	DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DocSettings* pSettings);
 	PageInfo ReadPageInfo(int nPage, bool bNeedText = false, bool bNeedAnno = false);
 	void ReadAnnotations(GP<ByteStream> pInclStream, set<GUTF8String>& processed, GP<ByteStream> pAnnoStream);
 
-	DjVuUserData* m_pUserData;
 	GP<DjVuDocument> m_pDjVuDoc;
 	CString m_strFileName;
-	vector<PageData> m_pages;
 	int m_nPageCount;
 	CCriticalSection m_lock;
 	bool m_bHasText;
 	GUTF8String m_strPageIndex;
 
+	vector<PageData> m_pages;
+	DocSettings* m_pSettings;
+
 	static map<CString, DjVuSource*> openDocuments;
-	static map<MD5, DjVuUserData> userData;
+	static map<MD5, DocSettings> settings;
 
 private:
 	DjVuSource() {}

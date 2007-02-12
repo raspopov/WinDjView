@@ -47,15 +47,18 @@ public:
 	int m_nTransparency;
 	CString m_strURL;
 	CString m_strComment;
+	bool m_bAddBookmark;
+	bool m_bEnableBookmark;
+	CString m_strBookmark;
 
 protected:
 	void UpdateControls();
+	void ToggleDialog(bool bExpand, bool bCenterWindow = false);
 
 	virtual BOOL OnInitDialog();
 	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual void OnOK();
-	virtual void OnCancel();
 	afx_msg void OnChangeCombo();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnAddBookmark();
 	DECLARE_MESSAGE_MAP()
 };

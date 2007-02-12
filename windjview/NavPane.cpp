@@ -20,7 +20,6 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "NavPane.h"
-#include "MainFrm.h"
 #include "Drawing.h"
 
 #ifdef _DEBUG
@@ -439,6 +438,13 @@ int CNavPaneWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	theApp.AddObserver(this);
 
 	return 0;
+}
+
+void CNavPaneWnd::OnDestroy()
+{
+	theApp.RemoveObserver(this);
+
+	CWnd::OnDestroy();
 }
 
 BOOL CNavPaneWnd::PreTranslateMessage(MSG* pMsg)

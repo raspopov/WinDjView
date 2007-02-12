@@ -32,9 +32,14 @@ BEGIN_MESSAGE_MAP(CBookmarksWnd, CMyTreeCtrl)
 	ON_NOTIFY_REFLECT(TVN_ITEMCLICKED, OnItemClicked)
 	ON_NOTIFY_REFLECT(TVN_KEYDOWN, OnKeyDown)
 	ON_WM_CREATE()
+	ON_WM_DESTROY()
+	ON_WM_CONTEXTMENU()
+	ON_WM_MENUSELECT()
+	ON_WM_ENTERIDLE()
 END_MESSAGE_MAP()
 
-CBookmarksWnd::CBookmarksWnd()
+CBookmarksWnd::CBookmarksWnd(DjVuSource* pSource)
+	: m_bEnableEditing(false), m_pSource(pSource)
 {
 }
 
@@ -64,13 +69,33 @@ int CBookmarksWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-void CBookmarksWnd::InitBookmarks(DjVuSource* pSource)
+void CBookmarksWnd::OnDestroy()
+{
+	theApp.RemoveObserver(this);
+
+	CMyTreeCtrl::OnDestroy();
+}
+
+void CBookmarksWnd::InitBookmarks()
 {
 	BeginBatchUpdate();
 
-	const GPList<DjVmNav::DjVuBookMark>& bookmarks = pSource->GetBookmarks()->getBookMarkList();
+	const GPList<DjVmNav::DjVuBookMark>& bookmarks = m_pSource->GetBookmarks()->getBookMarkList();
 	GPosition pos = bookmarks;
 	InitBookmarks(bookmarks, TVI_ROOT, pos, bookmarks.size());
+
+	EndBatchUpdate();
+}
+
+void CBookmarksWnd::InitCustomBookmarks()
+{
+	BeginBatchUpdate();
+
+	DocSettings* pSettings = m_pSource->GetSettings();
+
+	list<Bookmark>::const_iterator it;
+	for (it = pSettings->bookmarks.begin(); it != pSettings->bookmarks.end(); ++it)
+		AddBookmark(*it, TVI_ROOT);
 
 	EndBatchUpdate();
 }
@@ -85,21 +110,44 @@ void CBookmarksWnd::InitBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks
 		CString strTitle = MakeCString(bm->displayname);
 		HTREEITEM hItem = InsertItem(strTitle, 0, 1, hParent);
 
-		m_links.push_back(bm->url);
-		SetItemData(hItem, (DWORD_PTR)&m_links.back());
+		m_links.push_back(BookmarkInfo());
+		BookmarkInfo& info = m_links.back();
+		info.strURL = bm->url;
+		info.pBookmark = NULL;
+
+		SetItemData(hItem, (DWORD_PTR)&info);
 
 		InitBookmarks(bookmarks, hItem, ++pos, bm->count);
 	}
 }
 
+void CBookmarksWnd::AddBookmark(const Bookmark& bookmark)
+{
+	AddBookmark(bookmark, TVI_ROOT);
+}
+
+void CBookmarksWnd::AddBookmark(const Bookmark& bookmark, HTREEITEM hParent)
+{
+	CString strTitle = MakeCString(bookmark.strTitle);
+	HTREEITEM hItem = InsertItem(strTitle, 0, 1, hParent);
+
+	m_links.push_back(BookmarkInfo());
+	BookmarkInfo& info = m_links.back();
+	info.strURL = bookmark.strURL;
+	info.pBookmark = &bookmark;
+
+	SetItemData(hItem, (DWORD_PTR)&info);
+
+	list<Bookmark>::const_iterator it;
+	for (it = bookmark.children.begin(); it != bookmark.children.end(); ++it)
+		AddBookmark(*it, hItem);
+}
+
 void CBookmarksWnd::GoToBookmark(HTREEITEM hItem)
 {
-	GUTF8String* url = (GUTF8String*)GetItemData(hItem);
-
-	if (url->length() > 0)
-	{
-		UpdateObservers(BookmarkClicked(*url));
-	}
+	BookmarkInfo* pInfo = (BookmarkInfo*) GetItemData(hItem);
+	if (pInfo->strURL.length() > 0)
+		UpdateObservers(BookmarkClicked(pInfo->strURL));
 }
 
 void CBookmarksWnd::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
@@ -158,4 +206,73 @@ void CBookmarksWnd::OnUpdate(const Observable* source, const Message* message)
 	{
 		SetWrapLabels(theApp.GetAppSettings()->bWrapLongBookmarks);
 	}
+}
+
+void CBookmarksWnd::OnContextMenu(CWnd* pWnd, CPoint point)
+{
+	TreeNode* pNode = m_pSelection;
+	if (m_bEnableEditing && pNode != NULL)
+	{
+		if (point.x < 0 || point.y < 0)
+			point = CPoint(0, 0);
+
+		CRect rcClient;
+		GetClientRect(rcClient);
+		ClientToScreen(rcClient);
+
+		if (!rcClient.PtInRect(point))
+		{
+			CMyTreeCtrl::OnContextMenu(pWnd, point);
+			return;
+		}
+
+		CMenu menu;
+		menu.LoadMenu(IDR_POPUP);
+
+		CMenu* pPopup = menu.GetSubMenu(1);
+		ASSERT(pPopup != NULL);
+
+		int nCommand = pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
+				point.x, point.y, this);
+		if (nCommand == ID_BOOKMARK_DELETE)
+			DeleteBookmark(pNode);
+	}
+}
+
+void CBookmarksWnd::DeleteBookmark(TreeNode* pNode)
+{
+	if (pNode == NULL)
+		return;
+
+	BookmarkInfo* pInfo = (BookmarkInfo*) pNode->dwUserData;
+	if (pInfo->pBookmark == NULL)
+		return;
+
+	list<Bookmark>& bookmarks = (pInfo->pBookmark->pParent != NULL ?
+		pInfo->pBookmark->pParent->children : m_pSource->GetSettings()->bookmarks);
+
+	for (list<Bookmark>::iterator it = bookmarks.begin(); it != bookmarks.end(); ++it)
+	{
+		if (&(*it) == pInfo->pBookmark)
+		{
+			DeleteItem((HTREEITEM) pNode);
+			bookmarks.erase(it);
+			return;
+		}
+	}
+}
+
+void CBookmarksWnd::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)
+{
+	CMyTreeCtrl::OnMenuSelect(nItemID, nFlags, hSysMenu);
+
+	GetTopLevelFrame()->SendMessage(WM_MENUSELECT, MAKEWPARAM(nItemID, nFlags),
+			(LPARAM) hSysMenu);
+}
+
+void CBookmarksWnd::OnEnterIdle(UINT nWhy, CWnd* pWho)
+{
+	CMyTreeCtrl::OnEnterIdle(nWhy, pWho);
+
+	GetTopLevelFrame()->SendMessage(WM_ENTERIDLE, nWhy, (LPARAM) pWho->GetSafeHwnd());
 }

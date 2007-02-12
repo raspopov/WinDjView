@@ -188,7 +188,7 @@ protected:
 	bool InvalidatePage(int nPage);
 	void DrawPage(CDC* pDC, int nPage);
 	void DrawMapArea(CDC* pDC, GP<GMapArea> pArea, int nPage, bool bActive);
-	void DrawHighlight(CDC* pDC, DjVuHighlight& highlight, int nPage, bool bActive);
+	void DrawAnnotation(CDC* pDC, Annotation& anno, int nPage, bool bActive);
 
 	int m_nZoomType;
 	double m_fZoom;
@@ -244,11 +244,11 @@ protected:
 	CSize UpdatePageRectFacing(int nPage);
 	void PreparePageRect(int nPage);
 	void PreparePageRectFacing(int nPage);
-	CSize CalcPageSize(const CSize& szPage, int nDPI);
+	CSize CalcPageSize(const CSize& szPage, int nDPI) const;
 	CSize CalcPageSize(const CSize& szPage, int nDPI, int nZoomType) const;
 	CSize CalcZoomedPageSize(const CSize& szPage, CSize szBounds, int nZoomType) const;
 	void CalcPageSizeFacing(const CSize& szPage1, int nDPI1, CSize& szDisplay1,
-			const CSize& szPage2, int nDPI2, CSize& szDisplay2);
+			const CSize& szPage2, int nDPI2, CSize& szDisplay2) const;
 	void CalcPageSizeFacing(const CSize& szPage1, int nDPI1, CSize& szDisplay1,
 			const CSize& szPage2, int nDPI2, CSize& szDisplay2, int nZoomType) const;
 	void UpdatePageSizes(int nTop, int nScroll = 0);
@@ -257,8 +257,8 @@ protected:
 	void UpdatePageSize(int nPage);
 	void UpdatePageSizeFacing(int nPage);
 	void DeleteBitmaps();
-	int GetPageFromPoint(CPoint point);
-	int GetPageNearPoint(CPoint point);
+	int GetPageFromPoint(CPoint point) const;
+	int GetPageNearPoint(CPoint point) const;
 	void ReadZoomSettings(GP<DjVuANT> pAnt);
 	void ReadDisplayMode(GP<DjVuANT> pAnt);
 	bool IsValidPage(int nPage) const;
@@ -270,6 +270,7 @@ protected:
 	void PageRendered(int nPage, CDIB* pDIB);
 	void PageDecoded(int nPage);
 	void SettingsChanged();
+	void UpdateCursor();
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -287,37 +288,37 @@ protected:
 	void UpdatePageCacheSingle(int nPage, bool bUpdateImages);
 	void UpdatePageCacheFacing(int nPage, bool bUpdateImages);
 	bool IsViewNextpageEnabled();
-	bool IsViewPreviouspageEnabled();
+	bool IsViewPreviouspageEnabled() const;
 	void ClearSelection(int nPage = -1);
 	void UpdateSelectionStatus();
-	bool IsSelectionBelowTop(int nPage, const DjVuSelection& selection);
-	bool IsSelectionVisible(int nPage, const DjVuSelection& selection);
+	bool IsSelectionBelowTop(int nPage, const DjVuSelection& selection) const;
+	bool IsSelectionVisible(int nPage, const DjVuSelection& selection) const;
 	void EnsureSelectionVisible(int nPage, const DjVuSelection& selection);
 	CRect GetSelectionRect(int nPage, const DjVuSelection& selection) const;
-	CRect TranslatePageRect(int nPage, GRect rect, bool bAnno = false, bool bToDisplay = true) const;
+	CRect TranslatePageRect(int nPage, GRect rect, bool bToDisplay = true) const;
 	bool m_bInsideUpdateLayout;
 
-	bool m_bHoverHighlight;
-	GP<GMapArea> m_pHoverArea;
-	DjVuHighlight* m_pHoverHighlight;
-	DjVuHighlight* m_pClickedHighlight;
+	Annotation* m_pHoverAnno;
+	Annotation* m_pClickedAnno;
 	int m_nHoverPage;
 	bool m_bIgnoreMouseLeave;
-	GP<GMapArea> GetAreaFromPoint(CPoint point, int* pnPage = NULL);
-	DjVuHighlight* GetHighlightFromPoint(CPoint point, int* pnPage = NULL);
-	void UpdateHoverHighlight(CPoint point);
-	void UpdateHoverHighlight();
+	bool m_bHoverIsCustom;
+	Annotation* GetAnnotationFromPoint(const CPoint& point, int& nPage, bool& bCustom);
+	bool PtInAnnotation(const Annotation& anno, int nPage, const CPoint& point) const;
+	void UpdateHoverAnnotation(const CPoint& point);
+	void UpdateHoverAnnotation();
+	bool InvalidateAnno(Annotation* pAnno, int nPage);
 
 	int m_nMode, m_nType;
 	int m_nSelStartPos;
 	CPoint ScreenToDjVu(int nPage, const CPoint& point) const;
 	void UpdateDragAction();
-	int GetTextPosFromPoint(int nPage, CPoint point);
-	void GetTextPosFromTop(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos);
-	void GetTextPosFromBottom(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos);
-	void FindSelectionZones(DjVuSelection& list, DjVuTXT* pText, int nStart, int nEnd);
+	int GetTextPosFromPoint(int nPage, const CPoint& point);
+	void GetTextPosFromTop(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos) const;
+	void GetTextPosFromBottom(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos) const;
+	void FindSelectionZones(DjVuSelection& list, DjVuTXT* pText, int nStart, int nEnd) const;
 	void SelectTextRange(int nPage, int nStart, int nEnd, bool& bInfoLoaded, CWaitCursor*& pWaitCursor);
-	GUTF8String GetSelectedText();
+	GUTF8String GetSelectedText() const;
 	bool m_bHasSelection;
 	int m_nSelectionPage;
 	GRect m_rcSelectionRect;
@@ -413,7 +414,7 @@ protected:
 	afx_msg void OnMouseLeave();
 	afx_msg void OnHighlightSelection();
 	afx_msg void OnUpdateHighlightSelection(CCmdUI* pCmdUI);
-	afx_msg void OnHighlightRemove();
+	afx_msg void OnHighlightDelete();
 	afx_msg void OnHighlightEdit();
 	DECLARE_MESSAGE_MAP()
 };

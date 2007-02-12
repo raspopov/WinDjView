@@ -91,6 +91,8 @@ GUTF8String MakeUTF8String(const wstring& strText);
 #define ZOOM_CHANGED 10
 #define APP_SETTINGS_CHANGED 11
 #define APP_LANGUAGE_CHANGED 12
+#define BOOKMARK_DELETED 13
+#define ANNOTATION_DELETED 14
 
 struct ThumbnailClicked : public Message
 {
@@ -182,6 +184,26 @@ struct AppLanguageChanged : public Message
 {
 	AppLanguageChanged()
 		: Message(APP_LANGUAGE_CHANGED) {}
+};
+
+struct Bookmark;
+struct Annotation;
+
+struct BookmarkDeleted : public Message
+{
+	BookmarkDeleted(Bookmark* pBookmark_)
+		: Message(BOOKMARK_DELETED), pBookmark(pBookmark_) {}
+
+	Bookmark* pBookmark;
+};
+
+struct AnnotationDeleted : public Message
+{
+	AnnotationDeleted(Annotation* pAnno_, int nPage_)
+		: Message(ANNOTATION_DELETED), pAnno(pAnno_), nPage(nPage_) {}
+
+	Annotation* pAnno;
+	int nPage;
 };
 
 struct MD5

@@ -326,16 +326,20 @@ END
 
 IDR_POPUP MENU DISCARDABLE 
 BEGIN
-    POPUP "Popup"
+    POPUP "Page"
     BEGIN
         MENUITEM "&Copy Text",                  ID_EDIT_COPY
         MENUITEM "&Highlight Selection...",     ID_HIGHLIGHT_SEL
         MENUITEM "E&dit Highlight...",          ID_HIGHLIGHT_EDIT
-        MENUITEM "Remove &Highlight",           ID_HIGHLIGHT_REMOVE
+        MENUITEM "Delete &Highlight",           ID_HIGHLIGHT_DELETE
         MENUITEM SEPARATOR
         MENUITEM "Page &Information...",        ID_PAGE_INFORMATION
         MENUITEM "&Export Page...",             ID_EXPORT_PAGE
         MENUITEM "Export &Selection...",        ID_EXPORT_SELECTION
+    END
+    POPUP "Bookmark"
+    BEGIN
+        MENUITEM "Delete",                      ID_BOOKMARK_DELETE
     END
 END
 
@@ -656,7 +660,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
 END
 
-IDD_HIGHLIGHT DIALOGEX 0, 0, 200, 195
+IDD_HIGHLIGHT DIALOGEX 0, 0, 200, 259
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Edit Highlight"
 FONT 8, "MS Sans Serif"
@@ -665,34 +669,42 @@ BEGIN
                     WS_EX_STATICEDGE
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,19,59,174,1,
                     WS_EX_STATICEDGE
-    LTEXT           "Border",IDC_STATIC,7,7,24,9
+    LTEXT           "&Border",IDC_STATIC,7,7,24,9
     LTEXT           "Type:",IDC_STATIC,18,19,22,12,SS_CENTERIMAGE
     COMBOBOX        IDC_BORDER_TYPE,43,19,79,64,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     LTEXT           "Color:",IDC_STATIC,130,19,20,12,SS_CENTERIMAGE
     PUSHBUTTON      "",IDC_BORDER_COLOR,152,18,41,15
-    CONTROL         "Show only when hovered by mouse",IDC_HIDE_INACTIVE,
+    CONTROL         "&Show only when hovered by mouse",IDC_HIDE_INACTIVE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,37,129,11
-    LTEXT           "Fill",IDC_STATIC,7,55,11,9
+    LTEXT           "&Fill",IDC_STATIC,7,55,11,9
     LTEXT           "Type:",IDC_STATIC,19,67,22,12,SS_CENTERIMAGE
     COMBOBOX        IDC_FILL_TYPE,43,67,79,64,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     LTEXT           "Color:",IDC_STATIC,130,67,20,12,SS_CENTERIMAGE
     PUSHBUTTON      "",IDC_FILL_COLOR,152,66,41,15
-    LTEXT           "Transparency:",IDC_STATIC,19,85,47,12,SS_CENTERIMAGE
+    LTEXT           "&Transparency:",IDC_STATIC,19,85,47,12,SS_CENTERIMAGE
     CONTROL         "Slider1",IDC_FILL_TRANSPARENCY,"msctls_trackbar32",
                     WS_TABSTOP,70,86,101,12
     RTEXT           "100%",IDC_FILL_TRANSPARENCY_TEXT,172,85,20,12,
                     SS_CENTERIMAGE
-    DEFPUSHBUTTON   "OK",IDOK,89,174,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,143,174,50,14
-    LTEXT           "Link:",IDC_STATIC,7,112,33,13,SS_CENTERIMAGE
-    LTEXT           "Comment:",IDC_STATIC,7,129,33,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_URL,43,112,150,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,7,105,186,1,
                     WS_EX_STATICEDGE
+    LTEXT           "&Link:",IDC_STATIC,7,112,33,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_URL,43,112,150,13,ES_AUTOHSCROLL
+    LTEXT           "&Comment:",IDC_STATIC,7,129,33,13,SS_CENTERIMAGE
     EDITTEXT        IDC_COMMENT,43,129,150,39,ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,89,175,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,143,175,50,14
+    PUSHBUTTON      "Book&mark >>",IDC_ADD_BOOKMARK,7,175,54,14
+    CONTROL         "",IDC_STATIC_LESS,"Static",SS_GRAYFRAME,7,196,186,1,
+                    WS_EX_STATICEDGE
+    CONTROL         "",IDC_STATIC_MORE,"Static",SS_GRAYFRAME,7,251,186,1,
+                    WS_EX_STATICEDGE
+    LTEXT           "T&itle:",IDC_STATIC,7,205,33,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_BOOKMARK_TITLE,43,205,150,39,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
 END
 
 
@@ -835,7 +847,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 193
         TOPMARGIN, 7
-        BOTTOMMARGIN, 188
+        BOTTOMMARGIN, 252
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -854,7 +866,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_BOOKMARKS_TAB       "Bookmarks"
+    IDS_BOOKMARKS_TAB       "Contents"
     IDS_ASSOCIATE_SUCCESSFUL 
                             "Now you will be able to open .djvu and .djv files with WinDjView\nby double-clicking them in the Explorer."
     IDS_ASSOCIATE_FAILED    "An error occurred while trying to register file associations.\nYou may not have enough permissions to write to system registry."
@@ -994,7 +1006,7 @@ BEGIN
                             "Display first page alone in facing and continuous-facing layouts"
     ID_HIGHLIGHT_SEL        "Highlights current selection"
     ID_HIGHLIGHT_EDIT       "Edit properties of currently selected highlight"
-    ID_HIGHLIGHT_REMOVE     "Removes currently selected highlight"
+    ID_HIGHLIGHT_DELETE     "Removes currently selected highlight"
     ID_INDICATOR_PAGE       "  Page %d of %d  "
 END
 
@@ -1085,6 +1097,10 @@ STRINGTABLE DISCARDABLE
 BEGIN
     IDC_PAGENUM             "Select page number\nPage"
     IDC_ZOOM                "Select zoom level\nZoom"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
     ID_PAGE_INFORMATION     "Displays page information"
     ID_FILE_SETTINGS        "Change application settings\nSettings"
     ID_EXPORT_PAGE          "Exports current page as bmp file"
@@ -1156,6 +1172,14 @@ BEGIN
     ID_INDICATOR_SIZE       "  %s x %s %s  "
     ID_INDICATOR_ADJUST     "  Adjusted  "
     ID_INDICATOR_MODE       "  Display Mode  "
+    ID_BOOKMARK_DELETE      "Delete this bookmark"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_CUSTOM_BOOKMARKS_TAB "Bookmarks"
+    IDS_BOOKMARK_MORE       "Book&mark >>"
+    IDS_BOOKMARK_LESS       "Book&mark <<"
 END
 
 #endif    // English (U.S.) resources

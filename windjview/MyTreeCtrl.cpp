@@ -82,6 +82,7 @@ BEGIN_MESSAGE_MAP(CMyTreeCtrl, CWnd)
 	ON_WM_ERASEBKGND()
 	ON_MESSAGE_VOID(WM_THEMECHANGED, OnThemeChanged)
 	ON_WM_LBUTTONDOWN()
+	ON_WM_RBUTTONDOWN()
 	ON_WM_MOUSEMOVE()
 	ON_WM_SETFOCUS()
 	ON_WM_KILLFOCUS()
@@ -104,7 +105,8 @@ BOOL CMyTreeCtrl::PreCreateWindow(CREATESTRUCT& cs)
 	if (!CWnd::PreCreateWindow(cs))
 		return false;
 
-	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS);
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
+			::LoadCursor(NULL, IDC_ARROW));
 
 	cs.style |= WS_HSCROLL | WS_VSCROLL;
 	cs.lpszClass = strWndClass;
@@ -359,6 +361,41 @@ HTREEITEM CMyTreeCtrl::InsertItem(LPCTSTR pszItem, int nImage, int nSelectedImag
 	return reinterpret_cast<HTREEITEM>(pNode);
 }
 
+bool CMyTreeCtrl::DeleteItem(HTREEITEM hItem)
+{
+	if (hItem == TVI_ROOT)
+		return false;
+
+	TreeNode* pNode = reinterpret_cast<TreeNode*>(hItem);
+	ASSERT_POINTER(pNode, TreeNode);
+
+	TreeNode* pParent = pNode->pParent;
+	if (pParent->pChild == pNode)
+	{
+		pParent->pChild = pNode->pNext;
+		if (pParent->pLastChild == pNode)
+			pParent->pLastChild = NULL;
+	}
+	else
+	{
+		TreeNode* pPrev = pParent->pChild;
+		while (pPrev != NULL && pPrev->pNext != pNode)
+			pPrev = pPrev->pNext;
+
+		if (pPrev == NULL)
+			return false;
+
+		pPrev->pNext = pNode->pNext;
+		if (pParent->pLastChild == pNode)
+			pParent->pLastChild = pPrev;
+	}
+
+	if (!m_bBatchUpdate)
+		RecalcLayout();
+
+	return true;
+}
+
 void CMyTreeCtrl::BeginBatchUpdate()
 {
 	m_bBatchUpdate = true;
@@ -442,7 +479,6 @@ void CMyTreeCtrl::RecalcLayout()
 
 				pNode->rcText.left = pNode->rcNode.left + (bHasLine ? nChildOffset : 0);
 				pNode->rcText.top = nTop + nTextOffsetTop;
-				pNode->rcText.bottom = nTop + m_nItemHeight;
 
 				pNode->rcGlyph.left = pNode->rcNode.left + 4;
 				pNode->rcGlyph.right = pNode->rcGlyph.left + szGlyph.cx;
@@ -467,12 +503,20 @@ void CMyTreeCtrl::RecalcLayout()
 				}
 
 				pNode->rcText.left += s_nTextOffset;
-				pNode->rcText.right = max(rcClient.right - s_nOffsetRight, pNode->rcText.left + 1);
+				pNode->rcText.right = pNode->rcText.left + 2;
+				
+				if (!pNode->strLabel.IsEmpty())
+				{
+					pNode->rcText.right = max(pNode->rcText.right, rcClient.right - s_nOffsetRight);
+					pNode->rcText.bottom = nTop + m_nItemHeight;
 
-				UINT nFlags = DT_CALCRECT | DT_LEFT | DT_NOPREFIX | DT_TOP |
-					(m_bWrapLabels ? DT_WORDBREAK : DT_SINGLELINE);
-				int nHeight = dc.DrawText(pNode->strLabel, pNode->rcText, nFlags);
-				pNode->rcText.bottom = pNode->rcText.top + nHeight;
+					UINT nFlags = DT_CALCRECT | DT_LEFT | DT_NOPREFIX | DT_TOP |
+						(m_bWrapLabels ? DT_WORDBREAK : DT_SINGLELINE);
+					int nHeight = dc.DrawText(pNode->strLabel, pNode->rcText, nFlags);
+					pNode->rcText.bottom = pNode->rcText.top + nHeight;
+				}
+				else
+					pNode->rcText.bottom = nTop + m_nItemHeight - 2;
 
 				pNode->rcNode.bottom = max(pNode->rcNode.bottom, pNode->rcText.bottom + 2);
 				pNode->rcNode.bottom += (pNode->rcNode.bottom % 2);
@@ -666,6 +710,24 @@ void CMyTreeCtrl::OnLButtonDown(UINT nFlags, CPoint point)
 	CWnd::OnLButtonDown(nFlags, point);
 }
 
+void CMyTreeCtrl::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	SetFocus();
+
+	int nArea;
+	TreeNode* pNode = HitTest(point, &nArea);
+
+	if (pNode != NULL)
+	{
+		if (nArea == HT_IMAGE || nArea == HT_LABEL)
+		{
+			SelectNode(pNode, TVC_BYMOUSE);
+		}
+	}
+
+	CWnd::OnRButtonDown(nFlags, point);
+}
+
 CMyTreeCtrl::TreeNode* CMyTreeCtrl::HitTest(CPoint point, int* pnArea)
 {
 	return HitTest(m_pRoot, point, pnArea);
@@ -829,7 +891,7 @@ BOOL CMyTreeCtrl::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	if (hCursorLink == NULL)
 		hCursorLink = AfxGetApp()->LoadCursor(IDC_CURSOR_LINK);
 
-	if (m_pHoverNode != NULL)
+	if (nHitTest == HTCLIENT && m_pHoverNode != NULL)
 	{
 		SetCursor(hCursorLink);
 		return true;
@@ -1416,7 +1478,8 @@ void CMyTreeCtrl::OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct)
 
 BOOL CMyTreeCtrl::CTreeToolTip::Create(CMyTreeCtrl* pTree)
 {
-	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS);
+	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
+			::LoadCursor(NULL, IDC_ARROW));
 
 	m_pTree = pTree;
 
@@ -1429,7 +1492,7 @@ BOOL CMyTreeCtrl::CTreeToolTip::Create(CMyTreeCtrl* pTree)
 		pParent = GetTopLevelParent();
 	}
 
-	return CreateEx(WS_EX_LEFT | WS_EX_TOPMOST, strWndClass, NULL, WS_POPUP,
+	return CreateEx(WS_EX_TOPMOST | WS_EX_TOOLWINDOW, strWndClass, NULL, WS_POPUP,
 		CRect(0, 0, 0, 0), pParent, 0);
 }
 

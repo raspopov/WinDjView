@@ -464,7 +464,7 @@ void CDjViewApp::LoadSettings()
 	m_printSettings.bShrinkOversized = !!GetProfileInt(s_pszPrintSettings, s_pszShrinkOversized, m_printSettings.bShrinkOversized);
 }
 
-void CDjViewApp::LoadDjVuUserData(const CString& strKey, DjVuUserData* pData)
+void CDjViewApp::LoadDocSettings(const CString& strKey, DocSettings* pSettings)
 {
 	LPBYTE pBuf;
 	UINT nSize;
@@ -483,7 +483,7 @@ void CDjViewApp::LoadDjVuUserData(const CString& strKey, DjVuUserData* pData)
 		stringstream sin((const char*) text);
 		XMLParser parser;
 		if (parser.Parse(sin))
-			pData->Load(*parser.GetRoot());
+			pSettings->Load(*parser.GetRoot());
 
 		delete[] pBuf;
 	}
@@ -538,13 +538,13 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszPrintSettings, s_pszIgnoreMargins, m_printSettings.bIgnorePrinterMargins);
 	WriteProfileInt(s_pszPrintSettings, s_pszShrinkOversized, m_printSettings.bShrinkOversized);
 
-	const map<MD5, DjVuUserData>& userData = DjVuSource::GetAllUserData();
-	for (map<MD5, DjVuUserData>::const_iterator it = userData.begin(); it != userData.end(); ++it)
+	const map<MD5, DocSettings>& settings = DjVuSource::GetAllSettings();
+	for (map<MD5, DocSettings>::const_iterator it = settings.begin(); it != settings.end(); ++it)
 	{
 		CString strDocumentKey = (*it).first.ToString();
 
-		const DjVuUserData& data = (*it).second;
-		GUTF8String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + data.GetXML();
+		const DocSettings& settings = (*it).second;
+		GUTF8String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + settings.GetXML();
 
 		GP<ByteStream> raw = ByteStream::create();
 
@@ -571,7 +571,7 @@ void CDjViewApp::SaveSettings()
 		}
 		else
 		{
-			DjVuUserData newData;
+			DocSettings newData;
 			newData.Load(*parser.GetRoot());
 			if (data.GetXML() != newData.GetXML())
 			{
@@ -813,7 +813,7 @@ void CDjViewApp::OnCheckForUpdate()
 
 void CDjViewApp::SetLanguage(HINSTANCE hResources, DWORD nLanguage)
 {
-	m_appSettings.bLocalized = (hResources == AfxGetInstanceHandle());
+	m_appSettings.bLocalized = (hResources != AfxGetInstanceHandle());
 	m_appSettings.nLanguage = nLanguage;
 
 	AfxSetResourceHandle(hResources);
@@ -925,6 +925,71 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def, LP
 	}
 }
 
+struct MonitorAPI
+{
+	MonitorAPI();
+	~MonitorAPI();
+
+	struct MonitorInfo
+	{
+		MonitorInfo() : cbSize(sizeof(MonitorInfo)) {}
+
+		DWORD cbSize;
+		RECT rcMonitor;
+		RECT rcWork;
+		DWORD dwFlags;
+	};
+
+	enum
+	{
+		DefaultToNull = 0,
+		DefaultToPrimary = 1,
+		DefaultToNearest = 2
+	};
+
+	typedef HANDLE (WINAPI* pfnMonitorFromPoint)(POINT pt, DWORD dwFlags);
+	typedef BOOL (WINAPI* pfnGetMonitorInfo)(HANDLE hMonitor, MonitorInfo* pmi);
+	typedef HANDLE (WINAPI* pfnMonitorFromWindow)(HWND hWnd, DWORD dwFlags);
+
+	pfnMonitorFromPoint pMonitorFromPoint;
+	pfnMonitorFromWindow pMonitorFromWindow;
+	pfnGetMonitorInfo pGetMonitorInfo;
+
+	bool IsLoaded() const { return hUser32 != NULL; }
+
+	HINSTANCE hUser32;
+};
+
+static MonitorAPI theMonitorAPI;
+
+MonitorAPI::MonitorAPI()
+	: pMonitorFromPoint(NULL),
+	  pMonitorFromWindow(NULL),
+	  pGetMonitorInfo(NULL)
+{
+	hUser32 = ::LoadLibrary(_T("user32.dll"));
+	if (hUser32 != NULL)
+	{
+		pMonitorFromPoint = (pfnMonitorFromPoint) ::GetProcAddress(hUser32, "MonitorFromPoint");
+		pMonitorFromWindow = (pfnMonitorFromWindow) ::GetProcAddress(hUser32, "MonitorFromWindow");
+		pGetMonitorInfo = (pfnGetMonitorInfo) ::GetProcAddress(hUser32, "GetMonitorInfoA");
+
+		if (pMonitorFromPoint == NULL
+				|| pMonitorFromWindow == NULL
+				|| pGetMonitorInfo == NULL)
+		{
+			::FreeLibrary(hUser32);
+			hUser32 = NULL;
+		}
+	}
+}
+
+MonitorAPI::~MonitorAPI()
+{
+	if (hUser32 != NULL)
+		::FreeLibrary(hUser32);
+}
+
 CRect GetMonitorWorkArea(const CPoint& point)
 {
 	CRect rcWorkArea;
@@ -935,35 +1000,50 @@ CRect GetMonitorWorkArea(const CPoint& point)
 		rcWorkArea = CRect(CPoint(0, 0), szScreen);
 	}
 
-	HMODULE hUser32 = ::GetModuleHandle(_T("USER32.DLL"));
-	if (hUser32 != NULL)
+	if (theMonitorAPI.IsLoaded())
 	{
-		struct MonitorInfo
-		{
-			DWORD cbSize;
-			RECT rcMonitor;
-			RECT rcWork;
-			DWORD dwFlags;
-		};
-
-		typedef HANDLE (WINAPI* pfnMonitorFromPoint)(POINT pt, DWORD dwFlags);
-		typedef BOOL (WINAPI* pfnGetMonitorInfo)(HANDLE hMonitor, MonitorInfo* pmi);
-
-		pfnMonitorFromPoint pMonitorFromPoint =
-				(pfnMonitorFromPoint) ::GetProcAddress(hUser32, "MonitorFromPoint");
-		pfnGetMonitorInfo pGetMonitorInfo =
-				(pfnGetMonitorInfo) ::GetProcAddress(hUser32, "GetMonitorInfoA");
-
-		if (pMonitorFromPoint != NULL && pGetMonitorInfo != NULL)
-		{
-			MonitorInfo mi;
-			mi.cbSize = sizeof(mi);
-
-			HANDLE hMonitor = pMonitorFromPoint(point, 1); // MONITOR_DEFAULTTONEAREST
-			if (hMonitor != NULL && pGetMonitorInfo(hMonitor, &mi))
-				rcWorkArea = mi.rcWork;
-		}
+		MonitorAPI::MonitorInfo mi;
+		HANDLE hMonitor = theMonitorAPI.pMonitorFromPoint(point, MonitorAPI::DefaultToNearest);
+		if (hMonitor != NULL && theMonitorAPI.pGetMonitorInfo(hMonitor, &mi))
+			rcWorkArea = mi.rcWork;
 	}
 
 	return rcWorkArea;
+}
+
+CRect GetMonitorWorkArea(CWnd* pWnd)
+{
+	CRect rcWorkArea;
+
+	if (!::SystemParametersInfo(SPI_GETWORKAREA, 0, (PVOID)&rcWorkArea, false))
+	{
+		CSize szScreen(::GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN));
+		rcWorkArea = CRect(CPoint(0, 0), szScreen);
+	}
+
+	if (theMonitorAPI.IsLoaded())
+	{
+		MonitorAPI::MonitorInfo mi;
+		HANDLE hMonitor = theMonitorAPI.pMonitorFromWindow(pWnd->GetSafeHwnd(), MonitorAPI::DefaultToNearest);
+		if (hMonitor != NULL && theMonitorAPI.pGetMonitorInfo(hMonitor, &mi))
+			rcWorkArea = mi.rcWork;
+	}
+
+	return rcWorkArea;
+}
+
+CRect GetMonitorRect(CWnd* pWnd)
+{
+	CSize szScreen(::GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN));
+	CRect rcMonitor(CPoint(0, 0), szScreen);
+
+	if (theMonitorAPI.IsLoaded())
+	{
+		MonitorAPI::MonitorInfo mi;
+		HANDLE hMonitor = theMonitorAPI.pMonitorFromWindow(pWnd->GetSafeHwnd(), MonitorAPI::DefaultToNearest);
+		if (hMonitor != NULL && theMonitorAPI.pGetMonitorInfo(hMonitor, &mi))
+			rcMonitor = mi.rcMonitor;
+	}
+
+	return rcMonitor;
 }

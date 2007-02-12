@@ -110,6 +110,9 @@
 #define IDS_FILL_TYPES                  269
 #define IDS_COLOR_PALETTE               270
 #define IDS_MORE_COLORS                 271
+#define IDS_CUSTOM_BOOKMARKS_TAB        272
+#define IDS_BOOKMARK_MORE               273
+#define IDS_BOOKMARK_LESS               274
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -183,6 +186,14 @@
 #define IDC_FILL_COLOR                  1070
 #define IDC_PROPERTIES                  1071
 #define IDC_FIND_ALL                    1072
+#define IDC_URL                         1073
+#define IDC_COMMENT                     1074
+#define IDC_PAGENUM                     1075
+#define IDC_BOOKMARK_TITLE              1075
+#define IDC_ZOOM                        1076
+#define IDC_STATIC_LESS                 1077
+#define IDC_STATIC_MORE                 1078
+#define IDC_ADD_BOOKMARK                1079
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_ZOOM_50                      32777
@@ -202,8 +213,6 @@
 #define ID_ROTATE_180                   32794
 #define ID_VIEW_FIRSTPAGE               32797
 #define ID_VIEW_LASTPAGE                32798
-#define IDC_PAGENUM                     32806
-#define IDC_ZOOM                        32807
 #define ID_PAGE_INFORMATION             32809
 #define ID_VIEW_LAYOUT                  32810
 #define ID_FILE_SETTINGS                32813
@@ -250,7 +259,7 @@
 #define ID_LAYOUT_FIRSTPAGE_ALONE       33120
 #define ID_HIGHLIGHT_SEL                33124
 #define ID_HIGHLIGHT_EDIT               33130
-#define ID_HIGHLIGHT_REMOVE             33131
+#define ID_HIGHLIGHT_DELETE             33131
 #define ID_FIND_STRING                  33132
 #define ID_EXPAND_PANE                  33133
 #define ID_COLLAPSE_PANE                33134
@@ -259,14 +268,15 @@
 #define ID_INDICATOR_ADJUST             33137
 #define ID_INDICATOR_MODE               33138
 #define ID_FIND_ALL                     33139
+#define ID_BOOKMARK_DELETE              33140
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        272
-#define _APS_NEXT_COMMAND_VALUE         33140
-#define _APS_NEXT_CONTROL_VALUE         1073
+#define _APS_NEXT_RESOURCE_VALUE        273
+#define _APS_NEXT_COMMAND_VALUE         33143
+#define _APS_NEXT_CONTROL_VALUE         1080
 #define _APS_NEXT_SYMED_VALUE           112
 #endif
 #endif

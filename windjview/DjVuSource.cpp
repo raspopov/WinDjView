@@ -31,7 +31,7 @@
 
 // PageInfo
 
-void PageInfo::Update(GP<DjVuImage> pImage, bool bNeedText)
+void PageInfo::Update(GP<DjVuImage> pImage)
 {
 	if (pImage == NULL)
 		return;
@@ -54,15 +54,6 @@ void PageInfo::Update(GP<DjVuImage> pImage, bool bNeedText)
 
 		bHasText = !!(pImage->get_djvu_file()->text != NULL);
 		bDecoded = true;
-	}
-
-	try
-	{
-		if (!bTextDecoded && bNeedText)
-			DecodeText(pImage->get_djvu_file()->text);
-	}
-	catch (GException&)
-	{
 	}
 
 	try
@@ -95,6 +86,7 @@ void PageInfo::Update(const PageInfo& info)
 	if (!bAnnoDecoded && info.bAnnoDecoded)
 	{
 		pAnt = info.pAnt;
+		anno = info.anno;
 		bAnnoDecoded = true;
 	}
 }
@@ -108,6 +100,17 @@ void PageInfo::DecodeAnno(GP<ByteStream> pAnnoStream)
 	GP<DjVuAnno> pDjVuAnno = DjVuAnno::create();
 	pDjVuAnno->decode(pAnnoStream);
 	pAnt = pDjVuAnno->ant;
+
+	if (pAnt != NULL)
+	{
+		for (GPosition pos = pAnt->map_areas; pos; ++pos)
+		{
+			GP<GMapArea> pArea = pAnt->map_areas[pos];
+			anno.push_back(Annotation());
+			anno.back().Init(pArea, szPage, nInitialRotate);
+		}
+	}
+
 	bAnnoDecoded = true;
 }
 
@@ -124,9 +127,9 @@ void PageInfo::DecodeText(GP<ByteStream> pTextStream)
 }
 
 
-// DjVuHighlight
+// Annotation
 
-const TCHAR pszTagHighlight[] = _T("highlight");
+const TCHAR pszTagAnnotation[] = _T("annotation");
 const TCHAR pszAttrBorder[] = _T("border");
 const TCHAR pszAttrBorderColor[] = _T("border-color");
 const TCHAR pszAttrBorderHideInactive[] = _T("border-hide-inactive");
@@ -142,7 +145,7 @@ const TCHAR pszAttrTop[] = _T("top");
 const TCHAR pszAttrRight[] = _T("right");
 const TCHAR pszAttrBottom[] = _T("bottom");
 
-void DjVuHighlight::UpdateBounds()
+void Annotation::UpdateBounds()
 {
 	if (rects.empty())
 		return;
@@ -152,7 +155,7 @@ void DjVuHighlight::UpdateBounds()
 		rectBounds.recthull(GRect(rectBounds), rects[i]);
 }
 
-GUTF8String DjVuHighlight::GetXML() const
+GUTF8String Annotation::GetXML() const
 {
 	CString strRects;
 	for (size_t i = 0; i < rects.size(); ++i)
@@ -173,19 +176,19 @@ GUTF8String DjVuHighlight::GetXML() const
 			pszAttrFillTransparency, static_cast<int>(fTransparency*100 + 0.5));
 
 	CString strBegin;
-	strBegin.Format(_T("<%s %s\n%s\n%s=\""), pszTagHighlight,
+	strBegin.Format(_T("<%s %s\n%s\n%s=\""), pszTagAnnotation,
 			strBorder, strFill, pszAttrComment);
-			
+
 	CString strEnd;
-	strEnd.Format(_T("\" >\n%s</%s>\n"), strRects, pszTagHighlight);
+	strEnd.Format(_T("\" >\n%s</%s>\n"), strRects, pszTagAnnotation);
 
 	return MakeUTF8String(strBegin) + strComment.toEscaped() + "\" "
 		+ GUTF8String(pszAttrURL) + "=\"" + strURL.toEscaped() + MakeUTF8String(strEnd);
 }
 
-void DjVuHighlight::Load(const XMLNode& node)
+void Annotation::Load(const XMLNode& node)
 {
-	if (MakeCString(node.tagName) != pszTagHighlight)
+	if (MakeCString(node.tagName) != pszTagAnnotation)
 		return;
 
 	int borderType;
@@ -248,45 +251,160 @@ void DjVuHighlight::Load(const XMLNode& node)
 	UpdateBounds();
 }
 
+void Annotation::Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate)
+{
+	sourceArea = pArea;
 
-// DjVuPageData
+	if (pArea->border_type == GMapArea::NO_BORDER)
+		nBorderType = BorderNone;
+	else if (pArea->border_type == GMapArea::XOR_BORDER)
+		nBorderType = BorderXOR;
+	else
+		nBorderType = BorderSolid;
 
-GUTF8String DjVuPageData::GetXML() const
+	if (nBorderType == BorderSolid)
+	{
+		DWORD dwColor = pArea->border_color;
+		crBorder = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
+	}
+
+	bHideInactiveBorder = !pArea->border_always_visible;
+
+	if (pArea->hilite_color == 0xffffffff)
+		nFillType = FillNone;
+	else if (pArea->hilite_color == 0xff000000)
+		nFillType = FillXOR;
+	else
+		nFillType = FillSolid;
+
+	if (nFillType == FillSolid)
+	{
+		DWORD dwColor = pArea->hilite_color;
+		crFill = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
+	}
+
+	fTransparency = 0.75;
+	strComment = pArea->comment;
+	strURL = pArea->url;
+
+	GRect rect = pArea->get_bound_rect();
+	if (nRotate != 0)
+	{
+		GRect input(0, 0, szPage.cx, szPage.cy);
+		GRect output(0, 0, szPage.cx, szPage.cy);
+
+		if ((nRotate % 2) != 0)
+			swap(input.xmax, input.ymax);
+
+		GRectMapper mapper;
+		mapper.clear();
+		mapper.set_input(input);
+		mapper.set_output(output);
+		mapper.rotate(nRotate);
+		mapper.unmap(rect);
+	}
+
+	rects.push_back(rect);
+	UpdateBounds();
+}
+
+
+// PageSettings
+
+const TCHAR pszTagPageSettings[] = _T("page-settings");
+const TCHAR pszAttrNumber[] = _T("number");
+
+GUTF8String PageSettings::GetXML() const
 {
 	GUTF8String result;
 
-	list<DjVuHighlight>::const_iterator it;
-	for (it = highlights.begin(); it != highlights.end(); ++it)
+	list<Annotation>::const_iterator it;
+	for (it = anno.begin(); it != anno.end(); ++it)
 	{
-		const DjVuHighlight& highlight = *it;
+		const Annotation& highlight = *it;
 		result += highlight.GetXML();
 	}
 
 	return result;
 }
 
-void DjVuPageData::Load(const XMLNode& node)
+void PageSettings::Load(const XMLNode& node)
 {
-	highlights.clear();
+	if (MakeCString(node.tagName) != pszTagPageSettings)
+		return;
+
 	list<XMLNode>::const_iterator it;
 	for (it = node.childElements.begin(); it != node.childElements.end(); ++it)
 	{
 		const XMLNode& child = *it;
-		if (MakeCString(child.tagName) == pszTagHighlight)
+		if (MakeCString(child.tagName) == pszTagAnnotation)
 		{
-			highlights.push_back(DjVuHighlight());
-			DjVuHighlight& highlight = highlights.back();
+			anno.push_back(Annotation());
+			Annotation& highlight = anno.back();
 			highlight.Load(child);
 
 			if (highlight.rects.empty())
-				highlights.pop_back();
+				anno.pop_back();
 		}
 	}
 }
 
-// DjVuUserData
 
-const TCHAR pszTagData[] = _T("data");
+// Bookmark
+
+const TCHAR pszTagBookmark[] = _T("bookmark");
+const TCHAR pszAttrTitle[] = _T("title");
+
+GUTF8String Bookmark::GetXML() const
+{
+	GUTF8String result;
+	result += MakeUTF8String(FormatString(_T("<%s %s=\""), pszTagBookmark, pszAttrTitle));
+	result += strTitle.toEscaped();
+	result += MakeUTF8String(FormatString(_T("\" %s=\""), pszAttrURL));
+	result += strURL.toEscaped();
+
+	if (!children.empty())
+	{
+		result += "\" >\n";
+		for (list<Bookmark>::iterator it = children.begin(); it != children.end(); ++it)
+			result += (*it).GetXML();
+		result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagBookmark));
+	}
+	else
+		result += "\" />\n";
+
+	return result;
+}
+
+void Bookmark::Load(const XMLNode& node)
+{
+	if (MakeCString(node.tagName) != pszTagBookmark)
+		return;
+
+	wstring str;
+	if (node.GetAttribute(pszAttrTitle, str))
+		strTitle = MakeUTF8String(str);
+
+	if (node.GetAttribute(pszAttrURL, str))
+		strURL = MakeUTF8String(str);
+
+	list<XMLNode>::const_iterator it;
+	for (it = node.childElements.begin(); it != node.childElements.end(); ++it)
+	{
+		const XMLNode& child = *it;
+		if (MakeCString(child.tagName) == pszTagBookmark)
+		{
+			children.push_back(Bookmark());
+			Bookmark& bookmark = children.back();
+			bookmark.Load(child);
+		}
+	}
+}
+
+
+// DocSettings
+
+const TCHAR pszTagSettings[] = _T("settings");
 const TCHAR pszAttrStartPage[] = _T("start-page");
 const TCHAR pszAttrOffsetX[] = _T("offset-x");
 const TCHAR pszAttrOffsetY[] = _T("offset-y");
@@ -295,46 +413,58 @@ const TCHAR pszAttrZoom[] = _T("zoom");
 const TCHAR pszAttrLayout[] = _T("layout");
 const TCHAR pszAttrFirstPage[] = _T("first-page");
 const TCHAR pszAttrDisplayMode[] = _T("display-mode");
+const TCHAR pszTagBookmarks[] = _T("bookmarks");
 
-const TCHAR pszTagPage[] = _T("page");
-const TCHAR pszAttrNumber[] = _T("number");
-
-DjVuUserData::DjVuUserData()
+DocSettings::DocSettings()
 	: nPage(-1), ptOffset(0, 0), nZoomType(-10), fZoom(100.0), nLayout(-1),
 	  bFirstPageAlone(false), nDisplayMode(-1)
 {
 }
 
-GUTF8String DjVuUserData::GetXML() const
+GUTF8String DocSettings::GetXML() const
 {
 	GUTF8String result;
 
 	CString strHead;
 	strHead.Format(_T("<%s %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%.2lf%%\" %s=\"%d\" %s=\"%d\" %s=\"%d\" >\n"),
-		pszTagData, pszAttrStartPage, nPage, pszAttrOffsetX, ptOffset.x, pszAttrOffsetY, ptOffset.y,
+		pszTagSettings, pszAttrStartPage, nPage, pszAttrOffsetX, ptOffset.x, pszAttrOffsetY, ptOffset.y,
 		pszAttrZoomType, nZoomType, pszAttrZoom, fZoom, pszAttrLayout, nLayout,
 		pszAttrFirstPage, static_cast<int>(bFirstPageAlone), pszAttrDisplayMode, nDisplayMode);
 
 	result += MakeUTF8String(strHead);
 
-	map<int, DjVuPageData>::const_iterator it;
-	for (it = pageData.begin(); it != pageData.end(); ++it)
+	if (!bookmarks.empty())
 	{
-		int nPage = (*it).first + 1;
-		const DjVuPageData& data = (*it).second;
-		result += MakeUTF8String(FormatString(_T("<%s %s=\"%d\" >\n"), pszTagPage, pszAttrNumber, nPage));
-		result += data.GetXML();
-		result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagPage));
+		result += MakeUTF8String(FormatString(_T("<%s>\n"), pszTagBookmarks));
+		for (list<Bookmark>::const_iterator it = bookmarks.begin(); it != bookmarks.end(); ++it)
+			result += (*it).GetXML();
+		result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagBookmarks));
 	}
 
-	result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagData));
+	map<int, PageSettings>::const_iterator it;
+	for (it = pageSettings.begin(); it != pageSettings.end(); ++it)
+	{
+		int nPage = (*it).first + 1;
+		const PageSettings& settings = (*it).second;
+
+		GUTF8String strPageXML = settings.GetXML();
+		if (strPageXML.length() != 0)
+		{
+			result += MakeUTF8String(FormatString(_T("<%s %s=\"%d\" >\n"),
+					pszTagPageSettings, pszAttrNumber, nPage));
+			result += strPageXML;
+			result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagPageSettings));
+		}
+	}
+
+	result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagSettings));
 
 	return result;
 }
 
-void DjVuUserData::Load(const XMLNode& node)
+void DocSettings::Load(const XMLNode& node)
 {
-	if (MakeCString(node.tagName) != pszTagData)
+	if (MakeCString(node.tagName) != pszTagSettings)
 		return;
 
 	node.GetIntAttribute(pszAttrStartPage, nPage);
@@ -349,30 +479,90 @@ void DjVuUserData::Load(const XMLNode& node)
 	if (node.GetIntAttribute(pszAttrStartPage, nFirstPage))
 		bFirstPageAlone = (nFirstPage != 0);
 
-	pageData.clear();
+	pageSettings.clear();
+	bookmarks.clear();
+
 	list<XMLNode>::const_iterator it;
 	for (it = node.childElements.begin(); it != node.childElements.end(); ++it)
 	{
 		const XMLNode& child = *it;
-		if (MakeCString(child.tagName) == pszTagPage)
+		if (MakeCString(child.tagName) == pszTagPageSettings)
 		{
 			int pageNo;
 			if (!child.GetIntAttribute(pszAttrNumber, pageNo))
 				continue;
 
-			DjVuPageData& data = pageData[pageNo - 1];
+			PageSettings& data = pageSettings[pageNo - 1];
 			data.Load(child);
+		}
+		else if (MakeCString(child.tagName) == pszTagBookmarks)
+		{
+			list<XMLNode>::const_iterator it;
+			for (it = child.childElements.begin(); it != child.childElements.end(); ++it)
+			{
+				const XMLNode& bmNode = *it;
+				if (MakeCString(bmNode.tagName) == pszTagBookmark)
+				{
+					bookmarks.push_back(Bookmark());
+					Bookmark& bookmark = bookmarks.back();
+					bookmark.Load(bmNode);
+				}
+			}
 		}
 	}
 }
-	
+
+bool DocSettings::DeleteBookmark(const Bookmark* pBookmark)
+{
+	list<Bookmark>& bmList = (pBookmark->pParent != NULL ?
+		pBookmark->pParent->children : bookmarks);
+
+	for (list<Bookmark>::iterator it = bmList.begin(); it != bmList.end(); ++it)
+	{
+		Bookmark* pCurBookmark = &(*it);
+		if (pCurBookmark == pBookmark)
+		{
+			list<Bookmark> temp;
+			temp.splice(temp.end(), bmList, it);
+			ASSERT(&(temp.front()) == pCurBookmark);
+
+			UpdateObservers(BookmarkDeleted(pCurBookmark));
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool DocSettings::DeleteAnnotation(const Annotation* pAnno, int nPage)
+{
+	PageSettings& settings = pageSettings[nPage];
+	list<Annotation>::iterator it;
+	for (it = settings.anno.begin(); it != settings.anno.end(); ++it)
+	{
+		Annotation* pCurAnno = &(*it);
+		if (pCurAnno == pAnno)
+		{
+			list<Annotation> temp;
+			temp.splice(temp.end(), settings.anno, it);
+			ASSERT(&(temp.front()) == pCurAnno);
+
+			UpdateObservers(AnnotationDeleted(pCurAnno, nPage));
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
 // DjVuSource
 
 map<CString, DjVuSource*> DjVuSource::openDocuments;
-map<MD5, DjVuUserData> DjVuSource::userData;
+map<MD5, DocSettings> DjVuSource::settings;
 
-DjVuSource::DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DjVuUserData* pData)
-	: m_strFileName(strFileName), m_pDjVuDoc(pDoc), m_nPageCount(0), m_bHasText(false), m_pUserData(pData)
+DjVuSource::DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DocSettings* pSettings)
+	: m_strFileName(strFileName), m_pDjVuDoc(pDoc), m_nPageCount(0), m_bHasText(false), m_pSettings(pSettings)
 {
 	m_nPageCount = m_pDjVuDoc->get_pages_num();
 	ASSERT(m_nPageCount > 0);
@@ -441,16 +631,16 @@ DjVuSource* DjVuSource::FromFile(const CString& strFileName)
 		return NULL;
 	}
 
-	map<MD5, DjVuUserData>::iterator it = userData.find(digest);
-	bool bExisting = (it != userData.end());
-	DjVuUserData* pData = &userData[digest];
+	map<MD5, DocSettings>::iterator it = settings.find(digest);
+	bool bExisting = (it != settings.end());
+	DocSettings* pSettings = &settings[digest];
 
 	if (!bExisting)
 	{
-		theApp.LoadDjVuUserData(digest.ToString(), pData);
+		theApp.LoadDocSettings(digest.ToString(), pSettings);
 	}
 
-	return new DjVuSource(pszName, pDoc, pData);
+	return new DjVuSource(pszName, pDoc, pSettings);
 }
 
 bool DjVuSource::IsPageCached(int nPage, Observer* observer)
