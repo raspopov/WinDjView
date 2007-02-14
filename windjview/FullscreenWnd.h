@@ -40,6 +40,10 @@ public:
 	CDjVuView* GetView() const { return m_pView; }
 	CDjVuView* GetOwner() const { return m_pOwner; }
 
+// Overrides
+public:
+	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
+
 protected:
 	CDjVuView* m_pView;
 	CDjVuView* m_pOwner;

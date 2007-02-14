@@ -160,7 +160,8 @@ CDjVuView::CDjVuView()
 	  m_bDraggingMagnify(false), m_pHScrollBar(NULL), m_pVScrollBar(NULL),
 	  m_bControlDown(false), m_nType(Normal), m_bPanning(false), m_bHoverIsCustom(false),
 	  m_bDraggingRect(false), m_nSelectionPage(-1), m_pHoverAnno(NULL),
-	  m_bIgnoreMouseLeave(false), m_pClickedAnno(NULL), m_bDraggingLink(false)
+	  m_bIgnoreMouseLeave(false), m_pClickedAnno(NULL), m_bDraggingLink(false),
+	  m_bPopupMenu(false)
 {
 	m_nMargin = c_nDefaultMargin;
 	m_nShadowMargin = c_nDefaultShadowMargin;
@@ -2929,9 +2930,20 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 	if (m_bHoverIsCustom)
 		m_pClickedAnno = m_pHoverAnno;
 
+	m_bPopupMenu = true;
+	ShowCursor();
+
 	ClientToScreen(&point);
-	pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON, point.x, point.y,
-		GetMainFrame());
+	UINT nID = pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
+			point.x, point.y, GetTopLevelParent());
+
+	m_bPopupMenu = false;
+
+	if (nID != 0)
+		GetTopLevelParent()->SendMessage(WM_COMMAND, nID);
+
+	m_pClickedAnno = NULL;
+	m_nClickedPage = -1;
 
 	UpdateHoverAnnotation();
 	UpdateCursor();
@@ -3569,7 +3581,7 @@ int CDjVuView::CalcCurrentPage(int& nTopPage) const
 BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 {
 	CWnd* pWnd = WindowFromPoint(point);
-	if (pWnd != this && !IsChild(pWnd) && GetMainFrame()->IsChild(pWnd) &&
+	if (pWnd != this && !IsChild(pWnd) && IsFromCurrentProcess(pWnd) &&
 			pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
 		return true;
 
@@ -5268,13 +5280,20 @@ void CDjVuView::OnTimer(UINT nIDEvent)
 		m_bNeedUpdate = false;
 	}
 
-	if (m_nType == Fullscreen && !m_bCursorHidden && !m_bDragging && !m_bPanning)
+	if (m_nType == Fullscreen && !m_bCursorHidden)
 	{
-		int nTickCount = ::GetTickCount();
-		if (nTickCount - m_nCursorTime > s_nCursorHideDelay)
+		if (GetFocus() == this && !m_bDragging && !m_bPanning && !m_bPopupMenu)
 		{
-			m_bCursorHidden = true;
-			::ShowCursor(false);
+			int nTickCount = ::GetTickCount();
+			if (nTickCount - m_nCursorTime > s_nCursorHideDelay)
+			{
+				m_bCursorHidden = true;
+				::ShowCursor(false);
+			}
+		}
+		else
+		{
+			m_nCursorTime = ::GetTickCount();
 		}
 	}
 
@@ -5450,10 +5469,10 @@ CScrollBar* CDjVuView::GetScrollBarCtrl(int nBar) const
 void CDjVuView::CreateScrollbars()
 {
 	m_pHScrollBar = new CScrollBar();
-	m_pHScrollBar->Create(SBS_HORZ | WS_CHILD, CRect(0, 0, 0, 0), const_cast<CDjVuView*>(this), 0);
+	m_pHScrollBar->Create(SBS_HORZ | WS_CHILD, CRect(0, 0, 0, 0), this, 0);
 
 	m_pVScrollBar = new CScrollBar();
-	m_pVScrollBar->Create(SBS_VERT |WS_CHILD, CRect(0, 0, 0, 0), const_cast<CDjVuView*>(this), 1);
+	m_pVScrollBar->Create(SBS_VERT |WS_CHILD, CRect(0, 0, 0, 0), this, 1);
 }
 
 void CDjVuView::StartMagnify()
@@ -5743,8 +5762,19 @@ void CDjVuView::OnHighlight(UINT nID)
 
 		bmNew.strTitle = MakeUTF8String(dlg.m_strBookmark);
 
-		CBookmarksWnd* pBookmarks = ((CChildFrame*)GetParentFrame())->GetCustomBookmarks();
-		pBookmarks->AddBookmark(bmNew);
+		CFrameWnd* pFrame;
+		if (m_nType == Fullscreen)
+		{
+			CFullscreenWnd* pFullscreenWnd = GetMainFrame()->GetFullscreenWnd();
+			pFrame = pFullscreenWnd->GetOwner()->GetParentFrame();
+		}
+		else
+		{
+			pFrame = GetParentFrame();
+		}
+
+		CBookmarksWnd* pBookmarkWnd = ((CChildFrame*) pFrame)->GetCustomBookmarks();
+		pBookmarkWnd->AddBookmark(bmNew);
 	}
 }
 
@@ -5758,7 +5788,10 @@ void CDjVuView::OnDeleteAnnotation()
 	if (m_pClickedAnno == NULL || m_nClickedPage == -1)
 		return;
 
-	m_pSource->GetSettings()->DeleteAnnotation(m_pClickedAnno, m_nClickedPage);
+	if (AfxMessageBox(IDS_PROMPT_ANNOTATION_DELETE, MB_ICONEXCLAMATION | MB_YESNO) == IDYES)
+	{
+		m_pSource->GetSettings()->DeleteAnnotation(m_pClickedAnno, m_nClickedPage);
+	}
 }
 
 void CDjVuView::OnEditAnnotation()
@@ -5822,8 +5855,19 @@ void CDjVuView::OnAddBookmark()
 		m_pSource->GetSettings()->bookmarks.push_back(bookmark);
 		Bookmark& bmNew = m_pSource->GetSettings()->bookmarks.back();
 
-		CBookmarksWnd* pBookmarks = ((CChildFrame*)GetParentFrame())->GetCustomBookmarks();
-		pBookmarks->AddBookmark(bmNew);
+		CFrameWnd* pFrame;
+		if (m_nType == Fullscreen)
+		{
+			CFullscreenWnd* pFullscreenWnd = GetMainFrame()->GetFullscreenWnd();
+			pFrame = pFullscreenWnd->GetOwner()->GetParentFrame();
+		}
+		else
+		{
+			pFrame = GetParentFrame();
+		}
+
+		CBookmarksWnd* pBookmarkWnd = ((CChildFrame*) pFrame)->GetCustomBookmarks();
+		pBookmarkWnd->AddBookmark(bmNew);
 	}
 }
 

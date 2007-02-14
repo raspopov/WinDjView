@@ -974,7 +974,7 @@ BOOL CMainFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 BOOL CMainFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
 {
 	if (IsFullscreenMode())
-		return m_pFullscreenWnd->GetView()->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+		return m_pFullscreenWnd->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 
 	return CMDIFrameWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }

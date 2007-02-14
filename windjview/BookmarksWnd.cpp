@@ -266,6 +266,8 @@ void CBookmarksWnd::DeleteBookmark(TreeNode* pNode)
 		m_pSource->GetSettings()->DeleteBookmark(pInfo->pBookmark);
 		DeleteItem((HTREEITEM) pNode);
 	}
+
+	SetFocus();
 }
 
 void CBookmarksWnd::RenameBookmark(TreeNode* pNode)
@@ -285,8 +287,9 @@ void CBookmarksWnd::RenameBookmark(TreeNode* pNode)
 		pNode->strLabel = dlg.m_strTitle;
 		pInfo->pBookmark->strTitle = MakeUTF8String(dlg.m_strTitle);
 		RecalcLayout();
-		SetFocus();
 	}
+
+	SetFocus();
 }
 
 void CBookmarksWnd::SetBookmarkDestination(TreeNode* pNode)
@@ -301,9 +304,10 @@ void CBookmarksWnd::SetBookmarkDestination(TreeNode* pNode)
 	if (AfxMessageBox(IDS_PROMPT_BOOKMARK_DESTINATION, MB_ICONEXCLAMATION | MB_YESNO) == IDYES)
 	{
 		CDjVuView* pView = ((CChildFrame*) GetParentFrame())->GetDjVuView();
-
 		pView->CreateBookmarkFromView(*pInfo->pBookmark);
 	}
+
+	SetFocus();
 }
 
 void CBookmarksWnd::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)

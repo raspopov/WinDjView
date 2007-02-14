@@ -66,12 +66,12 @@ BOOL CMyComboBox::CNotifyingEdit::PreTranslateMessage(MSG* pMsg)
 		if (pMsg->wParam == VK_RETURN)
 		{
 			pParent->SendMessage(WM_COMMAND, MAKEWPARAM(pCombo->GetDlgCtrlID(), CBN_FINISHEDIT), (LPARAM)pCombo->m_hWnd);
-			return TRUE;
+			return true;
 		}
 		else if (pMsg->wParam == VK_ESCAPE)
 		{
 			pParent->SendMessage(WM_COMMAND, MAKEWPARAM(pCombo->GetDlgCtrlID(), CBN_CANCELEDIT), (LPARAM)pCombo->m_hWnd);
-			return TRUE;
+			return true;
 		}
 	}
 

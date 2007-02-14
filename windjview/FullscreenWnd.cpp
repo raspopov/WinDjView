@@ -161,3 +161,15 @@ void CFullscreenWnd::OnClose()
 {
 	Hide();
 }
+
+BOOL CFullscreenWnd::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
+{
+	if (IsWindowVisible() && m_pView != NULL)
+	{
+		// Trick to make dialogs and message boxes work properly
+		CPushRoutingFrame push((CFrameWnd*) this);
+		return m_pView->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+	}
+
+	return CWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+}

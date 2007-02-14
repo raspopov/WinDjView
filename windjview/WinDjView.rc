@@ -730,11 +730,11 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Rename Bookmark"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,95,69,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,149,69,50,14
     LTEXT           "T&itle:",IDC_STATIC,7,7,20,13,SS_CENTERIMAGE
     EDITTEXT        IDC_BOOKMARK_TITLE,28,7,171,53,ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,95,69,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,149,69,50,14
 END
 
 
@@ -1083,6 +1083,8 @@ BEGIN
                             "The destination of the selected bookmark will be set to the current location. Are you sure you want to proceed?"
     IDS_PROMPT_BOOKMARK_DELETE 
                             "The selected bookmark will be deleted. Are you sure you want to proceed?"
+    IDS_PROMPT_ANNOTATION_DELETE 
+                            "The selected annotation will be deleted. Are you sure you want to proceed?"
 END
 
 STRINGTABLE DISCARDABLE 

@@ -330,6 +330,7 @@ protected:
 	int m_nClickedPage;
 	bool m_bDragging, m_bDraggingPage, m_bDraggingText, m_bDraggingRect, m_bDraggingLink;
 	bool m_bPanning;
+	bool m_bPopupMenu;
 	void StopDragging();
 	CPoint m_ptStart, m_ptStartPos, m_ptPrevCursor;
 	int m_nStartPage, m_nPrevPage;
