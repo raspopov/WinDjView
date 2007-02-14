@@ -15,6 +15,7 @@
 #define IDD_SETTINGS_DISPLAY            109
 #define IDD_SETTINGS_ASSOCS             110
 #define IDD_ANNOTATION                  111
+#define IDD_RENAME_BOOKMARK             112
 #define IDR_MAINFRAME                   128
 #define IDR_DjVuTYPE                    129
 #define IDR_POPUP                       130
@@ -114,6 +115,14 @@
 #define IDS_BOOKMARK_LESS               274
 #define IDS_UNITS_FULL                  275
 #define IDS_UNITS_SHORT                 276
+#define IDS_EDIT_ANNOTATION             277
+#define IDS_CREATE_ANNOTATION           278
+#define IDS_BOOKMARK_SELECTION          279
+#define IDS_BOOKMARK_ANNOTATION         280
+#define IDS_BOOKMARK_VIEW               281
+#define IDS_RENAME_BOOKMARK             282
+#define IDS_PROMPT_BOOKMARK_DESTINATION 283
+#define IDS_PROMPT_BOOKMARK_DELETE      284
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -187,7 +196,6 @@
 #define IDC_FILL_COLOR                  1070
 #define IDC_PROPERTIES                  1071
 #define IDC_FIND_ALL                    1072
-#define IDC_URL                         1073
 #define IDC_COMMENT                     1074
 #define IDC_PAGENUM                     1075
 #define IDC_BOOKMARK_TITLE              1075
@@ -260,6 +268,7 @@
 #define ID_LAYOUT_CONTINUOUS_FACING     33119
 #define ID_LAYOUT_FIRSTPAGE_ALONE       33120
 #define ID_HIGHLIGHT_SELECTION          33124
+#define ID_HIGHLIGHT_TEXT               33125
 #define ID_ANNOTATION_EDIT              33130
 #define ID_ANNOTATION_DELETE            33131
 #define ID_FIND_STRING                  33132
@@ -271,14 +280,17 @@
 #define ID_INDICATOR_MODE               33138
 #define ID_FIND_ALL                     33139
 #define ID_BOOKMARK_DELETE              33140
+#define ID_BOOKMARK_RENAME              33141
+#define ID_BOOKMARK_SETDESTINATION      33142
+#define ID_BOOKMARK_ADD                 33143
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        277
+#define _APS_NEXT_RESOURCE_VALUE        285
 #define _APS_NEXT_COMMAND_VALUE         33144
 #define _APS_NEXT_CONTROL_VALUE         1081
-#define _APS_NEXT_SYMED_VALUE           112
+#define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

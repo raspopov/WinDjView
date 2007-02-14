@@ -19,46 +19,25 @@
 
 #pragma once
 
-#include "MyColorPicker.h"
 
+// CBookmarkDlg dialog
 
-// CAnnotationDlg dialog
-
-class CAnnotationDlg : public CDialog
+class CBookmarkDlg : public CDialog
 {
-	DECLARE_DYNAMIC(CAnnotationDlg)
+	DECLARE_DYNAMIC(CBookmarkDlg)
 
 public:
-	CAnnotationDlg(UINT nTitle, CWnd* pParent = NULL);
-	virtual ~CAnnotationDlg();
+	CBookmarkDlg(UINT nTitle, CWnd* pParent = NULL);
+	virtual ~CBookmarkDlg();
 
 // Dialog Data
-	enum { IDD = IDD_ANNOTATION };
-	CMyColorPicker m_colorBorder;
-	CMyColorPicker m_colorFill;
-	CSliderCtrl m_sliderTransparency;
-	CComboBox m_cboBorderType;
-	CComboBox m_cboFillType;
-	BOOL m_bHideInactive;
-	int m_nBorderType;
-	int m_nFillType;
-	COLORREF m_crBorder;
-	COLORREF m_crFill;
-	int m_nTransparency;
-	CString m_strComment;
-	bool m_bAddBookmark;
-	bool m_bEnableBookmark;
-	CString m_strBookmark;
+	enum { IDD = IDD_RENAME_BOOKMARK };
+	CString m_strTitle;
 
 protected:
 	UINT m_nTitle;
-	void UpdateControls();
-	void ToggleDialog(bool bExpand, bool bCenterWindow = false);
 
-	virtual BOOL OnInitDialog();
 	virtual void DoDataExchange(CDataExchange* pDX);
-	afx_msg void OnChangeCombo();
-	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	afx_msg void OnAddBookmark();
+	virtual BOOL OnInitDialog();
 	DECLARE_MESSAGE_MAP()
 };

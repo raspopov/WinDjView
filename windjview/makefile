@@ -57,6 +57,7 @@ clean:
 LINK_OBJS = \
 	"$(INTDIR)\AnnotationDlg.obj" \
 	"$(INTDIR)\AppSettings.obj" \
+	"$(INTDIR)\BookmarkDlg.obj" \
 	"$(INTDIR)\BookmarksWnd.obj" \
 	"$(INTDIR)\ChildFrm.obj" \
 	"$(INTDIR)\DjVuDoc.obj" \
@@ -106,6 +107,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 
 "$(INTDIR)\AnnotationDlg.obj" : AnnotationDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\AppSettings.obj" : AppSettings.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\BookmarkDlg.obj" : BookmarkDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\BookmarksWnd.obj" : BookmarksWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\ChildFrm.obj" : ChildFrm.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DjVuDoc.obj" : DjVuDoc.cpp "$(INTDIR)" $(PCH)

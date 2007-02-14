@@ -83,16 +83,32 @@ private:
 
 public:
 	Bookmark()
-		: pchildren(new list<Bookmark>()), children(*pchildren), pParent(NULL) {}
+		: pchildren(new list<Bookmark>()), children(*pchildren), pParent(NULL),
+		  nLinkType(URL), nPage(0), ptOffset(0, 0) {}
 	Bookmark(const Bookmark& bm)
 		: pchildren(new list<Bookmark>(bm.children)), children(*pchildren),
-		  strURL(bm.strURL), strTitle(bm.strTitle), pParent(bm.pParent) {}
+		  strURL(bm.strURL), strTitle(bm.strTitle), pParent(bm.pParent),
+		  nLinkType(bm.nLinkType), nPage(bm.nPage), ptOffset(bm.ptOffset) {}
 	~Bookmark()
 		{ delete pchildren; }
 
-	GUTF8String strURL;
 	GUTF8String strTitle;
 	Bookmark* pParent;
+
+	enum LinkType
+	{
+		URL = 0,
+		Page = 1,
+		View = 2
+	};
+
+	bool HasLink() const
+		{ return (nLinkType == URL ? strURL.length() > 0 : true); }
+
+	int nLinkType;
+	GUTF8String strURL;
+	int nPage;
+	CPoint ptOffset;
 
 	list<Bookmark>& children;
 
@@ -119,7 +135,7 @@ struct DocSettings : public Observable
 	GUTF8String GetXML() const;
 	void Load(const XMLNode& node);
 
-	void AddAnnotation(const Annotation& anno, int nPage);
+	Annotation* AddAnnotation(const Annotation& anno, int nPage);
 	bool DeleteBookmark(const Bookmark* pBookmark);
 	bool DeleteAnnotation(const Annotation* pAnno, int nPage);
 };

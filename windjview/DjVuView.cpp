@@ -38,6 +38,7 @@
 #include "ThumbnailsView.h"
 #include "MagnifyWnd.h"
 #include "AnnotationDlg.h"
+#include "BookmarkDlg.h"
 
 #include "RenderThread.h"
 
@@ -125,6 +126,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_WM_LBUTTONDBLCLK()
 	ON_COMMAND(ID_PAGE_INFORMATION, OnPageInformation)
 	ON_COMMAND_RANGE(ID_EXPORT_PAGE, ID_EXPORT_SELECTION, OnExportPage)
+	ON_UPDATE_COMMAND_UI(ID_EXPORT_SELECTION, OnUpdateExportSelection)
 	ON_COMMAND_RANGE(ID_MODE_DRAG, ID_MODE_SELECT_RECT, OnChangeMode)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_MODE_DRAG, ID_MODE_SELECT_RECT, OnUpdateMode)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
@@ -138,10 +140,11 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND(ID_LAYOUT_FIRSTPAGE_ALONE, OnFirstPageAlone)
 	ON_UPDATE_COMMAND_UI(ID_LAYOUT_FIRSTPAGE_ALONE, OnUpdateFirstPageAlone)
 	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
-	ON_COMMAND(ID_HIGHLIGHT_SELECTION, OnHighlightSelection)
-	ON_UPDATE_COMMAND_UI(ID_HIGHLIGHT_SELECTION, OnUpdateHighlightSelection)
+	ON_COMMAND_RANGE(ID_HIGHLIGHT_SELECTION, ID_HIGHLIGHT_TEXT, OnHighlight)
+	ON_UPDATE_COMMAND_UI_RANGE(ID_HIGHLIGHT_SELECTION, ID_HIGHLIGHT_TEXT, OnUpdateHighlight)
 	ON_COMMAND(ID_ANNOTATION_DELETE, OnDeleteAnnotation)
 	ON_COMMAND(ID_ANNOTATION_EDIT, OnEditAnnotation)
+	ON_COMMAND(ID_BOOKMARK_ADD, OnAddBookmark)
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -268,7 +271,7 @@ void CDjVuView::OnDraw(CDC* pDC)
 
 		// Draw annotations
 		for (list<Annotation>::iterator lit = page.info.anno.begin(); lit != page.info.anno.end(); ++lit)
-			DrawAnnotation(&m_offscreenDC, *lit, nPage, &(*lit) == m_pHoverAnno || m_bShiftDown);
+			DrawAnnotation(&m_offscreenDC, *lit, nPage, &(*lit) == m_pHoverAnno);
 
 		// Draw custom annotations
 		map<int, PageSettings>::iterator it = m_pSource->GetSettings()->pageSettings.find(nPage);
@@ -276,7 +279,7 @@ void CDjVuView::OnDraw(CDC* pDC)
 		{
 			PageSettings& pageSettings = (*it).second;
 			for (list<Annotation>::iterator lit = pageSettings.anno.begin(); lit != pageSettings.anno.end(); ++lit)
-				DrawAnnotation(&m_offscreenDC, *lit, nPage, &(*lit) == m_pHoverAnno || m_bShiftDown);
+				DrawAnnotation(&m_offscreenDC, *lit, nPage, &(*lit) == m_pHoverAnno);
 		}
 
 		// Draw selection
@@ -309,15 +312,15 @@ void CDjVuView::DrawAnnotation(CDC* pDC, const Annotation& anno, int nPage, bool
 	rcBounds.OffsetRect(-GetScrollPosition());
 
 	// Border
-	if (bActive || !anno.bHideInactiveBorder)
+	if (bActive || m_bShiftDown || !anno.bHideInactiveBorder)
 	{
-		if (anno.nBorderType == Annotation::BorderSolid)
-		{
-			FrameRect(pDC, rcBounds, anno.crBorder);
-		}
-		if (anno.nBorderType == Annotation::BorderXOR)
+		if (anno.nBorderType == Annotation::BorderXOR || m_bShiftDown)
 		{
 			InvertFrame(pDC, rcBounds);
+		}
+		else if (anno.nBorderType == Annotation::BorderSolid)
+		{
+			FrameRect(pDC, rcBounds, anno.crBorder);
 		}
 		rcBounds.DeflateRect(1, 1);
 	}
@@ -334,7 +337,7 @@ void CDjVuView::DrawAnnotation(CDC* pDC, const Annotation& anno, int nPage, bool
 		{
 			HighlightRect(pDC, rect, anno.crFill, anno.fTransparency);
 		}
-		if (anno.nFillType == Annotation::FillXOR)
+		else if (anno.nFillType == Annotation::FillXOR)
 		{
 			pDC->InvertRect(rect);
 		}
@@ -488,9 +491,6 @@ void CDjVuView::OnInitialUpdate()
 	theApp.AddObserver(this);
 	pDocSettings->AddObserver(this);
 
-	// Save m_nPage, because UpdateLayout, which is called before RenderPage, can change it
-	int nStartupPage = (m_nPage >= 0 && m_nPage < GetPageCount() ? m_nPage : 0);
-
 	CBitmap bitmap;
 	bitmap.LoadBitmap(IDB_HOURGLASS);
 	m_hourglass.Create(c_nHourglassWidth, c_nHourglassHeight, ILC_COLOR24 | ILC_MASK, 0, 1);
@@ -512,6 +512,9 @@ void CDjVuView::OnInitialUpdate()
 
 	m_nPageCount = m_pSource->GetPageCount();
 	m_pages.resize(m_nPageCount);
+
+	// Save m_nPage, because UpdateLayout, which is called before RenderPage, can change it
+	int nStartupPage = (m_nPage >= 0 && m_nPage < GetPageCount() ? m_nPage : 0);
 
 	if (m_nType == Normal)
 	{
@@ -565,11 +568,14 @@ void CDjVuView::OnInitialUpdate()
 	{
 		pDocSettings->nZoomType = m_nZoomType;
 		pDocSettings->fZoom = m_fZoom;
-		pDocSettings->ptOffset = GetScrollPosition() - m_pages[m_nPage].ptOffset;
 		pDocSettings->nDisplayMode = m_nDisplayMode;
 		pDocSettings->nLayout = m_nLayout;
 		pDocSettings->bFirstPageAlone = m_bFirstPageAlone;
 		pDocSettings->nRotate = m_nRotate;
+
+		CPoint ptOffset = GetScrollPosition() - m_pages[m_nPage].ptOffset;
+		pDocSettings->nPage = m_nPage;
+		pDocSettings->ptOffset = ScreenToDjVu(m_nPage, ptOffset, false);
 	}
 
 	m_nTimerID = SetTimer(1, 100, NULL);
@@ -685,15 +691,18 @@ void CDjVuView::ScrollToPage(int nPage, const CPoint& ptOffset)
 {
 	RenderPage(nPage, -1, false);
 
+	GRect rect(ptOffset.x, ptOffset.y);
+	CRect rcPos = TranslatePageRect(nPage, rect, true, false) - m_pages[nPage].ptOffset;
+
 	CPoint ptPageOffset = m_pages[nPage].ptOffset;
 
 	if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 	{
-		UpdatePageSizes(ptPageOffset.y, ptOffset.y);
+		UpdatePageSizes(ptPageOffset.y, rcPos.top);
 		ptPageOffset = m_pages[nPage].ptOffset;
 	}
 
-	ScrollToPositionNoRepaint(ptPageOffset + ptOffset);
+	ScrollToPositionNoRepaint(ptPageOffset + rcPos.TopLeft());
 
 	Invalidate();
 	UpdateWindow();
@@ -2107,7 +2116,7 @@ void CDjVuView::OnSetFocus(CWnd* pOldWnd)
 
 	if (m_nType == Normal)
 	{
-		UpdateObservers(ViewActivated());
+		UpdateObservers(VIEW_ACTIVATED);
 	}
 
 	m_nClickCount = 0;
@@ -2156,7 +2165,7 @@ void CDjVuView::ZoomTo(int nZoomType, double fZoom)
 	UpdateHoverAnnotation();
 	UpdateCursor();
 
-	UpdateObservers(ZoomChanged());
+	UpdateObservers(ZOOM_CHANGED);
 }
 
 BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
@@ -2311,8 +2320,6 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 
 		Page& page = m_pages[m_nStartPage];
 		CPoint pt = point + GetScrollPosition() - page.ptOffset;
-		pt.x = max(0, min(page.szDisplay.cx - 1, pt.x));
-		pt.y = max(0, min(page.szDisplay.cy - 1, pt.y));
 		m_ptStart = ScreenToDjVu(m_nStartPage, pt);
 
 		m_nSelectionPage = m_nStartPage;
@@ -2338,7 +2345,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 	CMyScrollView::OnLButtonDown(nFlags, point);
 }
 
-CPoint CDjVuView::ScreenToDjVu(int nPage, const CPoint& point) const
+CPoint CDjVuView::ScreenToDjVu(int nPage, const CPoint& point, bool bClip) const
 {
 	const Page& page = m_pages[nPage];
 	CSize szPage = page.GetSize(m_nRotate);
@@ -2349,13 +2356,14 @@ CPoint CDjVuView::ScreenToDjVu(int nPage, const CPoint& point) const
 	CPoint ptResult(static_cast<int>(point.x * fRatioX + 0.5),
 			static_cast<int>(szPage.cy - point.y * fRatioY + 0.5));
 
-	int nRotate = m_nRotate + page.info.nInitialRotate;
+	GRect output(0, 0, page.info.szPage.cx, page.info.szPage.cy);
+
+	int nRotate = (m_nRotate + page.info.nInitialRotate) % 4;
 	if (nRotate != 0)
 	{
 		GRect rect(ptResult.x, ptResult.y);
 
 		GRect input(0, 0, szPage.cx, szPage.cy);
-		GRect output(0, 0, page.info.szPage.cx, page.info.szPage.cy);
 
 		if ((page.info.nInitialRotate & 1) != 0)
 			swap(output.xmax, output.ymax);
@@ -2368,6 +2376,12 @@ CPoint CDjVuView::ScreenToDjVu(int nPage, const CPoint& point) const
 		mapper.map(rect);
 
 		ptResult = CPoint(rect.xmin, rect.ymin);
+	}
+
+	if (bClip)
+	{
+		ptResult.x = max(min(ptResult.x, output.xmax - 1), 0);
+		ptResult.y = max(min(ptResult.y, output.ymax - 1), 0);
 	}
 
 	return ptResult;
@@ -2430,9 +2444,6 @@ int CDjVuView::GetTextPosFromPoint(int nPage, const CPoint& point)
 		return 0;
 
 	CPoint ptPage = point + GetScrollPosition() - page.ptOffset;
-	ptPage.x = max(0, min(page.szDisplay.cx - 1, ptPage.x));
-	ptPage.y = max(0, min(page.szDisplay.cy - 1, ptPage.y));
-
 	CPoint ptDjVu = ScreenToDjVu(nPage, ptPage);
 
 	int nPos = -1;
@@ -2664,9 +2675,9 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 	{
 		Page& page = m_pages[m_nSelectionPage];
 		CPoint pt = point + GetScrollPosition() - page.ptOffset;
-		pt.x = max(0, min(page.szDisplay.cx - 1, pt.x));
-		pt.y = max(0, min(page.szDisplay.cy - 1, pt.y));
-		CPoint ptCurrent = ScreenToDjVu(m_nStartPage, pt);
+//		pt.x = max(0, min(page.szDisplay.cx - 1, pt.x));
+//		pt.y = max(0, min(page.szDisplay.cy - 1, pt.y));
+		CPoint ptCurrent = ScreenToDjVu(m_nStartPage, pt, true);
 
 		CRect rcDisplay = TranslatePageRect(m_nSelectionPage, m_rcSelectionRect);
 		rcDisplay.OffsetRect(-GetScrollPosition());
@@ -2887,13 +2898,20 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 		pPopup->DeleteMenu(ID_ANNOTATION_EDIT, MF_BYCOMMAND);
 
 		if (!m_bHasSelection)
+		{
 			pPopup->DeleteMenu(ID_EDIT_COPY, MF_BYCOMMAND);
+			pPopup->DeleteMenu(ID_HIGHLIGHT_TEXT, MF_BYCOMMAND);
+		}
 		else
+		{
+			pPopup->DeleteMenu(ID_HIGHLIGHT_SELECTION, MF_BYCOMMAND);
 			pPopup->DeleteMenu(ID_EXPORT_SELECTION, MF_BYCOMMAND);
+		}
 	}
 	else
 	{
 		pPopup->DeleteMenu(ID_EDIT_COPY, MF_BYCOMMAND);
+		pPopup->DeleteMenu(ID_HIGHLIGHT_TEXT, MF_BYCOMMAND);
 		pPopup->DeleteMenu(ID_HIGHLIGHT_SELECTION, MF_BYCOMMAND);
 		pPopup->DeleteMenu(ID_EXPORT_SELECTION, MF_BYCOMMAND);
 
@@ -3525,7 +3543,7 @@ int CDjVuView::CalcTopPage() const
 	return FixPageNumber(nPage);
 }
 
-int CDjVuView::CalcCurrentPage() const
+int CDjVuView::CalcCurrentPage(int& nTopPage) const
 {
 	if (m_nLayout == SinglePage || m_nLayout == Facing)
 		return m_nPage;
@@ -3533,7 +3551,9 @@ int CDjVuView::CalcCurrentPage() const
 	CRect rcClient;
 	GetClientRect(rcClient);
 
-	int nPage = CalcTopPage();
+	nTopPage = CalcTopPage();
+
+	int nPage = nTopPage;
 	const Page& page = m_pages[nPage];
 	int nHeight = min(page.szDisplay.cy, rcClient.Height());
 
@@ -3758,6 +3778,11 @@ void CDjVuView::OnExportPage(UINT nID)
 	}
 
 	delete pBitmap;
+}
+
+void CDjVuView::OnUpdateExportSelection(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(m_nSelectionPage != -1);
 }
 
 void CDjVuView::OnFindString()
@@ -4183,7 +4208,7 @@ void CDjVuView::EnsureSelectionVisible(int nPage, const DjVuSelection& selection
 	}
 }
 
-CRect CDjVuView::TranslatePageRect(int nPage, GRect rect, bool bToDisplay) const
+CRect CDjVuView::TranslatePageRect(int nPage, GRect rect, bool bToDisplay, bool bClip) const
 {
 	const Page& page = m_pages[nPage];
 	CSize szPage = page.GetSize(m_nRotate);
@@ -4217,14 +4242,17 @@ CRect CDjVuView::TranslatePageRect(int nPage, GRect rect, bool bToDisplay) const
 			static_cast<int>(rect.xmax * fRatioX + 0.5),
 			static_cast<int>((szPage.cy - rect.ymin) * fRatioY + 0.5));
 
-		rcResult.left = max(rcResult.left, 0);
-		rcResult.top = max(rcResult.top, 0);
-		rcResult.right = min(rcResult.right, page.szDisplay.cx);
-		rcResult.bottom = min(rcResult.bottom, page.szDisplay.cy);
+		if (bClip)
+		{
+			rcResult.left = max(rcResult.left, 0);
+			rcResult.top = max(rcResult.top, 0);
+			rcResult.right = min(rcResult.right, page.szDisplay.cx);
+			rcResult.bottom = min(rcResult.bottom, page.szDisplay.cy);
+		}
 
 		rcResult.OffsetRect(page.ptOffset);
 	}
-	else
+	else if (bClip)
 	{
 		rcResult.left = max(rect.xmin, 0);
 		rcResult.top = max(szPage.cy - rect.ymax, 0);
@@ -4346,6 +4374,10 @@ void CDjVuView::UpdateCursor()
 {
 	CPoint ptCursor;
 	GetCursorPos(&ptCursor);
+
+	if (WindowFromPoint(ptCursor) != this)
+		return;
+
 	ScreenToClient(&ptCursor);
 
 	CRect rcClient;
@@ -4464,8 +4496,44 @@ BOOL CDjVuView::PreTranslateMessage(MSG* pMsg)
 	return CMyScrollView::PreTranslateMessage(pMsg);
 }
 
+void CDjVuView::GoToBookmark(const Bookmark& bookmark, int nLinkPage, int nAddToHistory)
+{
+	if (bookmark.nLinkType == Bookmark::URL)
+	{
+		GoToURL(bookmark.strURL, nLinkPage, nAddToHistory);
+	}
+	else if (bookmark.nLinkType == Bookmark::Page)
+	{
+		GoToPage(bookmark.nPage, nLinkPage, nAddToHistory);
+	}
+	else if (bookmark.nLinkType == Bookmark::View)
+	{
+		if (nLinkPage == -1)
+			nLinkPage = m_nPage;
+
+		int nPage = max(min(bookmark.nPage, m_nPageCount - 1), 0);
+
+		if (m_nType == Normal)
+		{
+			if (nAddToHistory & AddSource)
+				GetMainFrame()->AddToHistory(this, nLinkPage);
+
+			if (nAddToHistory & AddTarget)
+				GetMainFrame()->AddToHistory(this, nPage);
+		}
+
+		if (bookmark.nPage == nPage)
+			ScrollToPage(nPage, bookmark.ptOffset);
+		else
+			RenderPage(nPage);
+	}
+}
+
 void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory)
 {
+	if (url.length() == 0)
+		return;
+
 	if (nLinkPage == -1)
 		nLinkPage = m_nPage;
 
@@ -4506,11 +4574,6 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory
 		{
 			ReportFatalError();
 		}
-
-		if (nPage >= m_nPageCount)
-			nPage = m_nPageCount - 1;
-		if (nPage < 0)
-			nPage = 0;
 
 		GoToPage(nPage, nLinkPage, nAddToHistory);
 		return;
@@ -4606,6 +4669,8 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory
 
 void CDjVuView::GoToPage(int nPage, int nLinkPage, int nAddToHistory)
 {
+	nPage = max(min(nPage, m_nPageCount - 1), 0);
+
 	if (nLinkPage == -1)
 		nLinkPage = m_nPage;
 
@@ -5543,23 +5608,28 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 {
 	if (message->code == PAGE_RENDERED)
 	{
-		const ::PageRendered* msg = (const ::PageRendered*) message;
+		const BitmapMsg* msg = (const BitmapMsg*) message;
 		PageRendered(msg->nPage, msg->pDIB);
 	}
 	else if (message->code == PAGE_DECODED)
 	{
-		const ::PageDecoded* msg = (const ::PageDecoded*) message;
+		const PageMsg* msg = (const PageMsg*) message;
 		PageDecoded(msg->nPage);
 	}
 	else if (message->code == THUMBNAIL_CLICKED)
 	{
-		const ThumbnailClicked* msg = (const ThumbnailClicked*) message;
+		const PageMsg* msg = (const PageMsg*) message;
 		GoToPage(msg->nPage);
+	}
+	else if (message->code == LINK_CLICKED)
+	{
+		const LinkClicked* msg = (const LinkClicked*) message;
+		GoToURL(msg->url);
 	}
 	else if (message->code == BOOKMARK_CLICKED)
 	{
-		const BookmarkClicked* msg = (const BookmarkClicked*) message;
-		GoToURL(msg->url);
+		const BookmarkMsg* msg = (const BookmarkMsg*) message;
+		GoToBookmark(*msg->pBookmark);
 	}
 	else if (message->code == SEARCH_RESULT_CLICKED)
 	{
@@ -5572,7 +5642,7 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 	}
 	else if (message->code == ANNOTATION_DELETED)
 	{
-		const AnnotationDeleted* msg = (const AnnotationDeleted*) message;
+		const AnnotationMsg* msg = (const AnnotationMsg*) message;
 
 		if (m_pClickedAnno == msg->pAnno)
 			m_pClickedAnno = NULL;
@@ -5581,7 +5651,7 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 	}
 	else if (message->code == ANNOTATION_ADDED)
 	{
-		const AnnotationDeleted* msg = (const AnnotationDeleted*) message;
+		const AnnotationMsg* msg = (const AnnotationMsg*) message;
 		InvalidateAnno(msg->pAnno, msg->nPage);
 
 		UpdateHoverAnnotation();
@@ -5590,26 +5660,30 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 
 void CDjVuView::UpdatePageNumber()
 {
-	int nCurrentPage = CalcCurrentPage();
+	int nTopPage;
+	int nCurrentPage = CalcCurrentPage(nTopPage);
 	if (nCurrentPage != m_nPage)
 	{
 		m_nPage = nCurrentPage;
-		UpdateObservers(CurrentPageChanged(m_nPage));
+		UpdateObservers(PageMsg(CURRENT_PAGE_CHANGED, m_nPage));
 	}
 
 	if (m_nType == Normal)
 	{
+		CPoint ptOffset = GetScrollPosition() - m_pages[m_nPage].ptOffset;
+
 		m_pSource->GetSettings()->nPage = m_nPage;
-		m_pSource->GetSettings()->ptOffset = GetScrollPosition() - m_pages[nCurrentPage].ptOffset;
+		m_pSource->GetSettings()->ptOffset = ScreenToDjVu(m_nPage, ptOffset, false);
 	}
 }
 
-void CDjVuView::OnHighlightSelection()
+void CDjVuView::OnHighlight(UINT nID)
 {
 	if (m_nSelectionPage == -1 && !m_bHasSelection)
 		return;
 
-	CAnnotationDlg dlg;
+	CAnnotationDlg dlg(IDS_CREATE_ANNOTATION);
+
 	if (dlg.DoModal() != IDOK)
 		return;
 
@@ -5621,10 +5695,9 @@ void CDjVuView::OnHighlightSelection()
 	annoTemplate.crFill = dlg.m_crFill;
 	annoTemplate.fTransparency = dlg.m_nTransparency / 100.0;
 	annoTemplate.strComment = MakeUTF8String(dlg.m_strComment);
-	annoTemplate.strURL = MakeUTF8String(dlg.m_strURL);
 
-	GRect rectLink;
-	int nLinkPage = -1;
+	Annotation* pNewAnno = NULL;
+	int nAnnoPage = -1;
 
 	if (m_nSelectionPage != -1)
 	{
@@ -5632,10 +5705,8 @@ void CDjVuView::OnHighlightSelection()
 		anno.rects.push_back(m_rcSelectionRect);
 		anno.UpdateBounds();
 
-		nLinkPage = m_nSelectionPage;
-		rectLink = m_rcSelectionRect;
-
-		m_pSource->GetSettings()->AddAnnotation(anno, m_nSelectionPage);
+		nAnnoPage = m_nSelectionPage;
+		pNewAnno = m_pSource->GetSettings()->AddAnnotation(anno, m_nSelectionPage);
 	}
 	else if (m_bHasSelection)
 	{
@@ -5650,33 +5721,34 @@ void CDjVuView::OnHighlightSelection()
 					anno.rects.push_back(page.selection[pos]->rect);
 				anno.UpdateBounds();
 
-				if (nLinkPage == -1)
+				Annotation* pAnno = m_pSource->GetSettings()->AddAnnotation(anno, nPage);
+				if (pNewAnno == NULL)
 				{
-					nLinkPage = nPage;
-					rectLink = anno.rectBounds;
+					nAnnoPage = nPage;
+					pNewAnno = pAnno;
 				}
-
-				m_pSource->GetSettings()->AddAnnotation(anno, nPage);
 			}
 		}
 	}
 
 	ClearSelection();
 
-	if (nLinkPage != -1 && dlg.m_bAddBookmark)
+	if (dlg.m_bAddBookmark && pNewAnno != NULL)
 	{
-		m_pSource->GetSettings()->bookmarks.push_back(Bookmark());
-		Bookmark& bookmark = m_pSource->GetSettings()->bookmarks.back();
+		Bookmark bookmark;
+		CreateBookmarkFromAnnotation(bookmark, pNewAnno, nAnnoPage);
 
-		bookmark.strTitle = MakeUTF8String(dlg.m_strBookmark);
-		bookmark.strURL = MakeUTF8String(FormatString(_T("#%d"), nLinkPage + 1));
+		m_pSource->GetSettings()->bookmarks.push_back(bookmark);
+		Bookmark& bmNew = m_pSource->GetSettings()->bookmarks.back();
+
+		bmNew.strTitle = MakeUTF8String(dlg.m_strBookmark);
 
 		CBookmarksWnd* pBookmarks = ((CChildFrame*)GetParentFrame())->GetCustomBookmarks();
-		pBookmarks->AddBookmark(bookmark);
+		pBookmarks->AddBookmark(bmNew);
 	}
 }
 
-void CDjVuView::OnUpdateHighlightSelection(CCmdUI* pCmdUI)
+void CDjVuView::OnUpdateHighlight(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(m_bHasSelection || m_nSelectionPage != -1);
 }
@@ -5694,7 +5766,7 @@ void CDjVuView::OnEditAnnotation()
 	if (m_pClickedAnno == NULL || m_nClickedPage == -1)
 		return;
 
-	CAnnotationDlg dlg;
+	CAnnotationDlg dlg(IDS_EDIT_ANNOTATION);
 
 	dlg.m_bEnableBookmark = false;
 	dlg.m_nBorderType = m_pClickedAnno->nBorderType;
@@ -5704,7 +5776,6 @@ void CDjVuView::OnEditAnnotation()
 	dlg.m_crFill = m_pClickedAnno->crFill;
 	dlg.m_nTransparency = static_cast<int>(m_pClickedAnno->fTransparency * 100.0 + 0.5);
 	dlg.m_strComment = MakeCString(m_pClickedAnno->strComment);
-	dlg.m_strURL = MakeCString(m_pClickedAnno->strURL);
 
 	if (dlg.DoModal() == IDOK)
 	{
@@ -5715,8 +5786,89 @@ void CDjVuView::OnEditAnnotation()
 		m_pClickedAnno->crFill = dlg.m_crFill;
 		m_pClickedAnno->fTransparency = dlg.m_nTransparency / 100.0;
 		m_pClickedAnno->strComment = MakeUTF8String(dlg.m_strComment);
-		m_pClickedAnno->strURL = MakeUTF8String(dlg.m_strURL);
 
 		InvalidateAnno(m_pClickedAnno, m_nClickedPage);
 	}
+}
+
+void CDjVuView::OnAddBookmark()
+{
+	Bookmark bookmark;
+	UINT nDlgTitle;
+
+	if (m_nSelectionPage != -1 || m_bHasSelection)
+	{
+		CreateBookmarkFromSelection(bookmark);
+		nDlgTitle = IDS_BOOKMARK_SELECTION;
+	}
+	else if (m_pClickedAnno != NULL)
+	{
+		CreateBookmarkFromAnnotation(bookmark, m_pClickedAnno, m_nClickedPage);
+		nDlgTitle = IDS_BOOKMARK_ANNOTATION;
+	}
+	else
+	{
+		CreateBookmarkFromView(bookmark);
+		nDlgTitle = IDS_BOOKMARK_VIEW;
+	}
+
+	CBookmarkDlg dlg(nDlgTitle);
+	dlg.m_strTitle = MakeCString(bookmark.strTitle);
+
+	if (dlg.DoModal() == IDOK)
+	{
+		bookmark.strTitle = MakeUTF8String(dlg.m_strTitle);
+
+		m_pSource->GetSettings()->bookmarks.push_back(bookmark);
+		Bookmark& bmNew = m_pSource->GetSettings()->bookmarks.back();
+
+		CBookmarksWnd* pBookmarks = ((CChildFrame*)GetParentFrame())->GetCustomBookmarks();
+		pBookmarks->AddBookmark(bmNew);
+	}
+}
+
+void CDjVuView::CreateBookmarkFromSelection(Bookmark& bookmark) const
+{
+	if (m_nSelectionPage != -1)
+	{
+		bookmark.nLinkType = Bookmark::View;
+		bookmark.nPage = m_nSelectionPage;
+		bookmark.ptOffset = CPoint(m_rcSelectionRect.xmin, m_rcSelectionRect.ymax);
+	}
+	else if (m_bHasSelection)
+	{
+		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+		{
+			const Page& page = m_pages[nPage];
+
+			if (!page.selection.isempty())
+			{
+				GPosition pos = page.selection;
+				GRect rect = page.selection[pos]->rect;
+
+				bookmark.nLinkType = Bookmark::View;
+				bookmark.nPage = nPage;
+				bookmark.ptOffset = CPoint(rect.xmin, rect.ymax);
+				break;
+			}
+		}
+	}
+}
+
+void CDjVuView::CreateBookmarkFromView(Bookmark& bookmark) const
+{
+	int nTopPage = CalcTopPage();
+	CPoint ptOffset = GetScrollPosition() - m_pages[nTopPage].ptOffset;
+	CPoint ptDjVuOffset = ScreenToDjVu(nTopPage, ptOffset);
+
+	bookmark.nLinkType = Bookmark::View;
+	bookmark.nPage = nTopPage;
+	bookmark.ptOffset = ptDjVuOffset;
+}
+
+void CDjVuView::CreateBookmarkFromAnnotation(Bookmark& bookmark, const Annotation* pAnno, int nPage) const
+{
+	bookmark.nLinkType = Bookmark::View;
+	bookmark.nPage = nPage;
+	bookmark.ptOffset = CPoint(pAnno->rectBounds.xmin, pAnno->rectBounds.ymax);
 }

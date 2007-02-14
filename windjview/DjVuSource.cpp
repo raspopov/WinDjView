@@ -354,24 +354,43 @@ void PageSettings::Load(const XMLNode& node)
 
 const TCHAR pszTagBookmark[] = _T("bookmark");
 const TCHAR pszAttrTitle[] = _T("title");
+const TCHAR pszAttrType[] = _T("type");
+const TCHAR pszAttrPage[] = _T("page");
+const TCHAR pszAttrOffsetX[] = _T("offset-x");
+const TCHAR pszAttrOffsetY[] = _T("offset-y");
 
 GUTF8String Bookmark::GetXML() const
 {
 	GUTF8String result;
 	result += MakeUTF8String(FormatString(_T("<%s %s=\""), pszTagBookmark, pszAttrTitle));
 	result += strTitle.toEscaped();
-	result += MakeUTF8String(FormatString(_T("\" %s=\""), pszAttrURL));
-	result += strURL.toEscaped();
+	result += MakeUTF8String(FormatString(_T("\" %s=\"%d\" "), pszAttrType, nLinkType));
+
+	if (nLinkType == Page || nLinkType == View)
+	{
+		result += MakeUTF8String(FormatString(_T("%s=\"%d\" "), pszAttrPage, nPage));
+		if (nLinkType == View)
+		{
+			result += MakeUTF8String(FormatString(_T("%s=\"%d\" "), pszAttrOffsetX, ptOffset.x));
+			result += MakeUTF8String(FormatString(_T("%s=\"%d\" "), pszAttrOffsetY, ptOffset.y));
+		}
+	}
+	else if (nLinkType == URL)
+	{
+		result += MakeUTF8String(FormatString(_T("%s=\""), pszAttrURL));
+		result += strURL.toEscaped();
+		result += "\" ";
+	}
 
 	if (!children.empty())
 	{
-		result += "\" >\n";
+		result += ">\n";
 		for (list<Bookmark>::iterator it = children.begin(); it != children.end(); ++it)
 			result += (*it).GetXML();
 		result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagBookmark));
 	}
 	else
-		result += "\" />\n";
+		result += "/>\n";
 
 	return result;
 }
@@ -385,8 +404,22 @@ void Bookmark::Load(const XMLNode& node)
 	if (node.GetAttribute(pszAttrTitle, str))
 		strTitle = MakeUTF8String(str);
 
-	if (node.GetAttribute(pszAttrURL, str))
-		strURL = MakeUTF8String(str);
+	node.GetIntAttribute(pszAttrType, nLinkType);
+
+	if (nLinkType == URL)
+	{
+		if (node.GetAttribute(pszAttrURL, str))
+			strURL = MakeUTF8String(str);
+	}
+	else if (nLinkType == Page || nLinkType == View)
+	{
+		node.GetIntAttribute(pszAttrPage, nPage);
+		if (nLinkType == View)
+		{
+			node.GetLongAttribute(pszAttrOffsetX, ptOffset.x);
+			node.GetLongAttribute(pszAttrOffsetY, ptOffset.y);
+		}
+	}
 
 	list<XMLNode>::const_iterator it;
 	for (it = node.childElements.begin(); it != node.childElements.end(); ++it)
@@ -406,8 +439,6 @@ void Bookmark::Load(const XMLNode& node)
 
 const TCHAR pszTagSettings[] = _T("settings");
 const TCHAR pszAttrStartPage[] = _T("start-page");
-const TCHAR pszAttrOffsetX[] = _T("offset-x");
-const TCHAR pszAttrOffsetY[] = _T("offset-y");
 const TCHAR pszAttrZoomType[] = _T("zoom-type");
 const TCHAR pszAttrZoom[] = _T("zoom");
 const TCHAR pszAttrLayout[] = _T("layout");
@@ -516,13 +547,15 @@ void DocSettings::Load(const XMLNode& node)
 	}
 }
 
-void DocSettings::AddAnnotation(const Annotation& anno, int nPage)
+Annotation* DocSettings::AddAnnotation(const Annotation& anno, int nPage)
 {
 	PageSettings& settings = pageSettings[nPage];
 	settings.anno.push_back(anno);
 
 	Annotation* pNewAnno = &(settings.anno.back());
-	UpdateObservers(AnnotationAdded(pNewAnno, nPage));
+	UpdateObservers(AnnotationMsg(ANNOTATION_ADDED, pNewAnno, nPage));
+
+	return pNewAnno;
 }
 
 bool DocSettings::DeleteBookmark(const Bookmark* pBookmark)
@@ -539,7 +572,7 @@ bool DocSettings::DeleteBookmark(const Bookmark* pBookmark)
 			temp.splice(temp.end(), bmList, it);
 			ASSERT(&(temp.front()) == pCurBookmark);
 
-			UpdateObservers(BookmarkDeleted(pCurBookmark));
+			UpdateObservers(BookmarkMsg(BOOKMARK_DELETED, pCurBookmark));
 			return true;
 		}
 	}
@@ -560,7 +593,7 @@ bool DocSettings::DeleteAnnotation(const Annotation* pAnno, int nPage)
 			temp.splice(temp.end(), settings.anno, it);
 			ASSERT(&(temp.front()) == pCurAnno);
 
-			UpdateObservers(AnnotationDeleted(pCurAnno, nPage));
+			UpdateObservers(AnnotationMsg(ANNOTATION_DELETED, pCurAnno, nPage));
 			return true;
 		}
 	}

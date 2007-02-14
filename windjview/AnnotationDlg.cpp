@@ -34,8 +34,8 @@ const TCHAR* s_pszCustomColors = _T("Colors");
 
 IMPLEMENT_DYNAMIC(CAnnotationDlg, CDialog)
 
-CAnnotationDlg::CAnnotationDlg(CWnd* pParent)
-	: CDialog(CAnnotationDlg::IDD, pParent)
+CAnnotationDlg::CAnnotationDlg(UINT nTitle, CWnd* pParent)
+	: CDialog(CAnnotationDlg::IDD, pParent), m_nTitle(nTitle)
 {
 	m_nBorderType = Annotation::BorderNone;
 	m_nFillType = Annotation::FillSolid;
@@ -61,7 +61,6 @@ void CAnnotationDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_FILL_TRANSPARENCY, m_sliderTransparency);
 	DDX_Control(pDX, IDC_BORDER_TYPE, m_cboBorderType);
 	DDX_Control(pDX, IDC_FILL_TYPE, m_cboFillType);
-	DDX_Text(pDX, IDC_URL, m_strURL);
 	DDX_Text(pDX, IDC_COMMENT, m_strComment);
 	DDX_Check(pDX, IDC_HIDE_INACTIVE, m_bHideInactive);
 	DDX_Text(pDX, IDC_BOOKMARK_TITLE, m_strBookmark);
@@ -85,6 +84,8 @@ END_MESSAGE_MAP()
 BOOL CAnnotationDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
+	
+	SetWindowText(LoadString(m_nTitle));
 
 	m_sliderTransparency.SetRange(0, 100);
 	m_sliderTransparency.SetPos(m_nTransparency);

@@ -99,7 +99,7 @@ protected:
 	vector<Paper> m_paperSizes;
 
 	CRect m_rcPreview;
-	CBitmap m_bitmap;
+	COffscreenDC m_offscreenDC;
 
 	CDjVuDoc* m_pDoc;
 	DjVuSource* m_pSource;

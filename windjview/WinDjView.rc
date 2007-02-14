@@ -233,6 +233,8 @@ BEGIN
     BEGIN
         MENUITEM "&Copy Text\tCtrl+C",          ID_EDIT_COPY
         MENUITEM SEPARATOR
+        MENUITEM "Add &Bookmark...\tCtrl+B",    ID_BOOKMARK_ADD
+        MENUITEM SEPARATOR
         MENUITEM "&Highlight Selection...\tCtrl+H", ID_HIGHLIGHT_SELECTION
         MENUITEM "Export &Selection...",        ID_EXPORT_SELECTION
         MENUITEM SEPARATOR
@@ -335,17 +337,23 @@ BEGIN
     POPUP "Page"
     BEGIN
         MENUITEM "&Copy Text",                  ID_EDIT_COPY
+        MENUITEM "&Highlight Text...",          ID_HIGHLIGHT_TEXT
         MENUITEM "&Highlight Selection...",     ID_HIGHLIGHT_SELECTION
         MENUITEM "Export &Selection...",        ID_EXPORT_SELECTION
         MENUITEM "E&dit Annotation...",         ID_ANNOTATION_EDIT
         MENUITEM "Delete &Annotation",          ID_ANNOTATION_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Add &Bookmark...",            ID_BOOKMARK_ADD
         MENUITEM SEPARATOR
         MENUITEM "Page &Information...",        ID_PAGE_INFORMATION
         MENUITEM "&Export Page...",             ID_EXPORT_PAGE
     END
     POPUP "Bookmark"
     BEGIN
-        MENUITEM "Delete",                      ID_BOOKMARK_DELETE
+        MENUITEM "&Rename",                     ID_BOOKMARK_RENAME
+        MENUITEM "&Delete",                     ID_BOOKMARK_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "&Set Destination",            ID_BOOKMARK_SETDESTINATION
     END
 END
 
@@ -382,6 +390,7 @@ BEGIN
                                                     NOINVERT
     "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
+    "B",            ID_BOOKMARK_ADD,        VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
     "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
@@ -671,7 +680,7 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_ANNOTATION DIALOGEX 0, 0, 200, 259
+IDD_ANNOTATION DIALOGEX 0, 0, 200, 260
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Edit Annotation"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
@@ -701,20 +710,30 @@ BEGIN
                     SS_CENTERIMAGE
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,7,105,186,1,
                     WS_EX_STATICEDGE
-    LTEXT           "&Link:",IDC_STATIC,7,112,33,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_URL,43,112,150,13,ES_AUTOHSCROLL
-    LTEXT           "&Comment:",IDC_STATIC,7,129,33,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_COMMENT,43,129,150,39,ES_MULTILINE | ES_AUTOVSCROLL | 
+    LTEXT           "&Comment:",IDC_STATIC,7,114,33,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_COMMENT,43,114,150,47,ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_WANTRETURN | WS_VSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,89,175,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,143,175,50,14
-    PUSHBUTTON      "Book&mark >>",IDC_ADD_BOOKMARK,7,175,54,14
-    CONTROL         "",IDC_STATIC_LESS,"Static",SS_GRAYFRAME,7,196,186,1,
+    DEFPUSHBUTTON   "OK",IDOK,89,168,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,143,168,50,14
+    PUSHBUTTON      "Book&mark >>",IDC_ADD_BOOKMARK,7,168,54,14
+    CONTROL         "",IDC_STATIC_LESS,"Static",SS_GRAYFRAME,7,189,186,1,
                     WS_EX_STATICEDGE
-    CONTROL         "",IDC_STATIC_MORE,"Static",SS_GRAYFRAME,7,251,186,1,
+    CONTROL         "",IDC_STATIC_MORE,"Static",SS_GRAYFRAME,7,252,186,1,
                     WS_EX_STATICEDGE
-    LTEXT           "T&itle:",IDC_STATIC,7,205,33,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_BOOKMARK_TITLE,43,205,150,39,ES_MULTILINE | 
+    LTEXT           "T&itle:",IDC_STATIC,7,198,33,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_BOOKMARK_TITLE,43,198,150,47,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+END
+
+IDD_RENAME_BOOKMARK DIALOG DISCARDABLE  0, 0, 206, 90
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Rename Bookmark"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,95,69,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,149,69,50,14
+    LTEXT           "T&itle:",IDC_STATIC,7,7,20,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_BOOKMARK_TITLE,28,7,171,53,ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
 END
 
@@ -858,7 +877,15 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 193
         TOPMARGIN, 7
-        BOTTOMMARGIN, 252
+        BOTTOMMARGIN, 253
+    END
+
+    IDD_RENAME_BOOKMARK, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 199
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1030,7 +1057,7 @@ BEGIN
     IDS_VERSION_ABOUT       "WinDjView %s"
     IDS_CURRENT_VERSION     "0.4.4"
     IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
-    IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure you want to continue?"
+    IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure you want to proceed?"
     IDS_OPENFILE            "Open"
     IDS_ALLFILTER           "All Files (*.*)"
     IDS_SETTINGS            "Settings"
@@ -1046,6 +1073,16 @@ BEGIN
     IDS_BOOKMARK_LESS       "Book&mark <<"
     IDS_UNITS_FULL          "Centimeters,Millimeters,Inches"
     IDS_UNITS_SHORT         "cm,mm,in"
+    IDS_EDIT_ANNOTATION     "Edit Annotation"
+    IDS_CREATE_ANNOTATION   "Create Annotation"
+    IDS_BOOKMARK_SELECTION  "Bookmark Selection"
+    IDS_BOOKMARK_ANNOTATION "Bookmark Annotation"
+    IDS_BOOKMARK_VIEW       "Bookmark View"
+    IDS_RENAME_BOOKMARK     "Rename Bookmark"
+    IDS_PROMPT_BOOKMARK_DESTINATION 
+                            "The destination of the selected bookmark will be set to the current location. Are you sure you want to proceed?"
+    IDS_PROMPT_BOOKMARK_DELETE 
+                            "The selected bookmark will be deleted. Are you sure you want to proceed?"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -1191,7 +1228,11 @@ BEGIN
     ID_INDICATOR_SIZE       "  %s x %s %s  "
     ID_INDICATOR_ADJUST     "  Adjusted  "
     ID_INDICATOR_MODE       "  Display Mode  "
-    ID_BOOKMARK_DELETE      "Delete this bookmark"
+    ID_BOOKMARK_DELETE      "Delete the selected bookmark"
+    ID_BOOKMARK_RENAME      "Rename the selected bookmark"
+    ID_BOOKMARK_SETDESTINATION 
+                            "Set the destination of the selected bookmark to current view"
+    ID_BOOKMARK_ADD         "Bookmark current view, selection or annotation"
 END
 
 #endif    // English (U.S.) resources

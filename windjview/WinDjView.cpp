@@ -743,7 +743,7 @@ void CDjViewApp::OnFileSettings()
 
 		SaveSettings();
 
-		UpdateObservers(AppSettingsChanged());
+		UpdateObservers(APP_SETTINGS_CHANGED);
 	}
 }
 
@@ -845,7 +845,7 @@ void CDjViewApp::SetLanguage(HINSTANCE hResources, DWORD nLanguage)
 
 	m_pDjVuTemplate->UpdateTemplate();
 
-	UpdateObservers(AppLanguageChanged());
+	UpdateObservers(APP_LANGUAGE_CHANGED);
 }
 	
 BOOL CDjViewApp::OnOpenRecentFile(UINT nID)

@@ -394,7 +394,7 @@ void CThumbnailsView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	case VK_SPACE:
 		if (m_nSelectedPage != -1)
 		{
-			UpdateObservers(ThumbnailClicked(m_nSelectedPage));
+			UpdateObservers(PageMsg(THUMBNAIL_CLICKED, m_nSelectedPage));
 		}
 		return;
 
@@ -474,7 +474,7 @@ void CThumbnailsView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	if (nPage != -1)
 	{
-		UpdateObservers(ThumbnailClicked(nPage));
+		UpdateObservers(PageMsg(THUMBNAIL_CLICKED, nPage));
 	}
 
 	CMyScrollView::OnLButtonDown(nFlags, point);
@@ -847,7 +847,7 @@ void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 {
 	if (message->code == THUMBNAIL_RENDERED)
 	{
-		const ThumbnailRendered* msg = static_cast<const ThumbnailRendered*>(message);
+		const BitmapMsg* msg = static_cast<const BitmapMsg*>(message);
 
 		m_dataLock.Lock();
 
@@ -864,7 +864,7 @@ void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 	}
 	else if (message->code == CURRENT_PAGE_CHANGED)
 	{
-		const CurrentPageChanged* msg = static_cast<const CurrentPageChanged*>(message);
+		const PageMsg* msg = static_cast<const PageMsg*>(message);
 
 		if (GetCurrentPage() != msg->nPage)
 		{

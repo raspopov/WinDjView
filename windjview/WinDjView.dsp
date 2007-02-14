@@ -159,6 +159,10 @@ SOURCE=.\AppSettings.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\BookmarkDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\BookmarksWnd.cpp
 # End Source File
 # Begin Source File
@@ -337,6 +341,10 @@ SOURCE=.\AnnotationDlg.h
 # Begin Source File
 
 SOURCE=.\AppSettings.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\BookmarkDlg.h
 # End Source File
 # Begin Source File
 

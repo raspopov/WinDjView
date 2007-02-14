@@ -37,7 +37,7 @@ public:
 
 	void InitBookmarks();
 	void InitCustomBookmarks();
-	void AddBookmark(const Bookmark& bookmark);
+	void AddBookmark(Bookmark& bookmark);
 	void EnableEditing(bool bEnable = true) { m_bEnableEditing = bEnable; }
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
@@ -51,13 +51,15 @@ protected:
 	void GoToBookmark(HTREEITEM hItem);
 	void InitBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks,
 		HTREEITEM hParent, GPosition& pos, int nCount);
-	void AddBookmark(const Bookmark& bookmark, HTREEITEM hParent);
+	void AddBookmark(Bookmark& bookmark, HTREEITEM hParent);
 	void DeleteBookmark(TreeNode* pNode);
+	void RenameBookmark(TreeNode* pNode);
+	void SetBookmarkDestination(TreeNode* pNode);
 
 	struct BookmarkInfo
 	{
 		GUTF8String strURL;
-		const Bookmark* pBookmark;
+		Bookmark* pBookmark;
 	};
 	list<BookmarkInfo> m_links;
 

@@ -105,11 +105,11 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 		if (!m_bActivating)
 			pView->UpdateVisiblePages();
 
-		((CMainFrame*) GetMDIFrame())->OnUpdate(pView, &ViewActivated());
+		((CMainFrame*) GetMDIFrame())->OnUpdate(pView, &Message(VIEW_ACTIVATED));
 	}
 	else if (pActivateWnd == NULL)
 	{
-		((CMainFrame*) GetMDIFrame())->OnUpdate(NULL, &ViewActivated());
+		((CMainFrame*) GetMDIFrame())->OnUpdate(NULL, &Message(VIEW_ACTIVATED));
 	}
 }
 

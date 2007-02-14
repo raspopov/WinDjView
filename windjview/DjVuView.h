@@ -61,6 +61,7 @@ public:
 		AddTarget = 2
 	};
 	void GoToPage(int nPage, int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
+	void GoToBookmark(const Bookmark& bookmark, int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
 	void GoToURL(const GUTF8String& url, int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
 	void GoToSelection(int nPage, int nStartPos, int nEndPos,
 		int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
@@ -86,6 +87,10 @@ public:
 
 	void UpdateKeyboard(UINT nKey, bool bDown);
 	void UpdateVisiblePages();
+
+	void CreateBookmarkFromSelection(Bookmark& bookmark) const;
+	void CreateBookmarkFromAnnotation(Bookmark& bookmark, const Annotation* pAnno, int nPage) const;
+	void CreateBookmarkFromView(Bookmark& bookmark) const;
 
 	enum ZoomType
 	{
@@ -182,7 +187,7 @@ protected:
 	int m_nPendingPage;
 	CSize m_szDisplay;
 	int CalcTopPage() const;
-	int CalcCurrentPage() const;
+	int CalcCurrentPage(int& nTopPage) const;
 	void RenderPage(int nPage, int nTimeout = -1, bool bUpdateWindow = true);
 
 	bool InvalidatePage(int nPage);
@@ -294,7 +299,7 @@ protected:
 	bool IsSelectionVisible(int nPage, const DjVuSelection& selection) const;
 	void EnsureSelectionVisible(int nPage, const DjVuSelection& selection);
 	CRect GetSelectionRect(int nPage, const DjVuSelection& selection) const;
-	CRect TranslatePageRect(int nPage, GRect rect, bool bToDisplay = true) const;
+	CRect TranslatePageRect(int nPage, GRect rect, bool bToDisplay = true, bool bClip = true) const;
 	bool m_bInsideUpdateLayout;
 
 	Annotation* m_pHoverAnno;
@@ -310,7 +315,7 @@ protected:
 
 	int m_nMode, m_nType;
 	int m_nSelStartPos;
-	CPoint ScreenToDjVu(int nPage, const CPoint& point) const;
+	CPoint ScreenToDjVu(int nPage, const CPoint& point, bool bClip = true) const;
 	void UpdateDragAction();
 	int GetTextPosFromPoint(int nPage, const CPoint& point);
 	void GetTextPosFromTop(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos) const;
@@ -389,6 +394,7 @@ protected:
 	afx_msg void OnDestroy();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnExportPage(UINT nID);
+	afx_msg void OnUpdateExportSelection(CCmdUI* pCmdUI);
 	afx_msg void OnFindString();
 	afx_msg void OnFindAll();
 	afx_msg BOOL OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult);
@@ -412,10 +418,11 @@ protected:
 	afx_msg void OnFirstPageAlone();
 	afx_msg void OnUpdateFirstPageAlone(CCmdUI* pCmdUI);
 	afx_msg void OnMouseLeave();
-	afx_msg void OnHighlightSelection();
-	afx_msg void OnUpdateHighlightSelection(CCmdUI* pCmdUI);
-	afx_msg void OnDeleteAnnotation();
+	afx_msg void OnHighlight(UINT nID);
+	afx_msg void OnUpdateHighlight(CCmdUI* pCmdUI);
 	afx_msg void OnEditAnnotation();
+	afx_msg void OnDeleteAnnotation();
+	afx_msg void OnAddBookmark();
 	DECLARE_MESSAGE_MAP()
 };
 

@@ -97,7 +97,7 @@ unsigned int __stdcall CThumbnailsThread::RenderThreadProc(void* pvData)
 		pData->m_lock.Unlock();
 
 		if (bNotify)
-			pData->m_pOwner->OnUpdate(NULL, &ThumbnailRendered(job.nPage, pBitmap));
+			pData->m_pOwner->OnUpdate(NULL, &BitmapMsg(THUMBNAIL_RENDERED, job.nPage, pBitmap));
 
 		if (::WaitForSingleObject(pData->m_stop.m_hObject, 0) == WAIT_OBJECT_0)
 			break;

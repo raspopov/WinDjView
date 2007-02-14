@@ -22,6 +22,10 @@
 #include "BookmarksWnd.h"
 #include "DjVuSource.h"
 #include "AppSettings.h"
+#include "BookmarkDlg.h"
+#include "ChildFrm.h"
+#include "DjVuView.h"
+
 
 // CBookmarksWnd
 
@@ -93,7 +97,7 @@ void CBookmarksWnd::InitCustomBookmarks()
 
 	DocSettings* pSettings = m_pSource->GetSettings();
 
-	list<Bookmark>::const_iterator it;
+	list<Bookmark>::iterator it;
 	for (it = pSettings->bookmarks.begin(); it != pSettings->bookmarks.end(); ++it)
 		AddBookmark(*it, TVI_ROOT);
 
@@ -121,12 +125,12 @@ void CBookmarksWnd::InitBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks
 	}
 }
 
-void CBookmarksWnd::AddBookmark(const Bookmark& bookmark)
+void CBookmarksWnd::AddBookmark(Bookmark& bookmark)
 {
 	AddBookmark(bookmark, TVI_ROOT);
 }
 
-void CBookmarksWnd::AddBookmark(const Bookmark& bookmark, HTREEITEM hParent)
+void CBookmarksWnd::AddBookmark(Bookmark& bookmark, HTREEITEM hParent)
 {
 	CString strTitle = MakeCString(bookmark.strTitle);
 	HTREEITEM hItem = InsertItem(strTitle, 0, 1, hParent);
@@ -138,7 +142,7 @@ void CBookmarksWnd::AddBookmark(const Bookmark& bookmark, HTREEITEM hParent)
 
 	SetItemData(hItem, (DWORD_PTR)&info);
 
-	list<Bookmark>::const_iterator it;
+	list<Bookmark>::iterator it;
 	for (it = bookmark.children.begin(); it != bookmark.children.end(); ++it)
 		AddBookmark(*it, hItem);
 }
@@ -146,8 +150,16 @@ void CBookmarksWnd::AddBookmark(const Bookmark& bookmark, HTREEITEM hParent)
 void CBookmarksWnd::GoToBookmark(HTREEITEM hItem)
 {
 	BookmarkInfo* pInfo = (BookmarkInfo*) GetItemData(hItem);
-	if (pInfo->strURL.length() > 0)
-		UpdateObservers(BookmarkClicked(pInfo->strURL));
+	if (pInfo->pBookmark != NULL)
+	{
+		if (pInfo->pBookmark->HasLink())
+			UpdateObservers(BookmarkMsg(BOOKMARK_CLICKED, pInfo->pBookmark));
+	}
+	else
+	{
+		if (pInfo->strURL.length() > 0)
+			UpdateObservers(LinkClicked(pInfo->strURL));
+	}
 }
 
 void CBookmarksWnd::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
@@ -233,6 +245,10 @@ void CBookmarksWnd::OnContextMenu(CWnd* pWnd, CPoint point)
 				point.x, point.y, this);
 		if (nCommand == ID_BOOKMARK_DELETE)
 			DeleteBookmark(pNode);
+		else if (nCommand == ID_BOOKMARK_RENAME)
+			RenameBookmark(pNode);
+		else if (nCommand == ID_BOOKMARK_SETDESTINATION)
+			SetBookmarkDestination(pNode);
 	}
 }
 
@@ -245,17 +261,48 @@ void CBookmarksWnd::DeleteBookmark(TreeNode* pNode)
 	if (pInfo->pBookmark == NULL)
 		return;
 
-	list<Bookmark>& bookmarks = (pInfo->pBookmark->pParent != NULL ?
-		pInfo->pBookmark->pParent->children : m_pSource->GetSettings()->bookmarks);
-
-	for (list<Bookmark>::iterator it = bookmarks.begin(); it != bookmarks.end(); ++it)
+	if (AfxMessageBox(IDS_PROMPT_BOOKMARK_DELETE, MB_ICONEXCLAMATION | MB_YESNO) == IDYES)
 	{
-		if (&(*it) == pInfo->pBookmark)
-		{
-			DeleteItem((HTREEITEM) pNode);
-			bookmarks.erase(it);
-			return;
-		}
+		m_pSource->GetSettings()->DeleteBookmark(pInfo->pBookmark);
+		DeleteItem((HTREEITEM) pNode);
+	}
+}
+
+void CBookmarksWnd::RenameBookmark(TreeNode* pNode)
+{
+	if (pNode == NULL)
+		return;
+
+	BookmarkInfo* pInfo = (BookmarkInfo*) pNode->dwUserData;
+	if (pInfo->pBookmark == NULL)
+		return;
+
+	CBookmarkDlg dlg(IDS_RENAME_BOOKMARK);
+	dlg.m_strTitle = pNode->strLabel;
+
+	if (dlg.DoModal())
+	{
+		pNode->strLabel = dlg.m_strTitle;
+		pInfo->pBookmark->strTitle = MakeUTF8String(dlg.m_strTitle);
+		RecalcLayout();
+		SetFocus();
+	}
+}
+
+void CBookmarksWnd::SetBookmarkDestination(TreeNode* pNode)
+{
+	if (pNode == NULL)
+		return;
+
+	BookmarkInfo* pInfo = (BookmarkInfo*) pNode->dwUserData;
+	if (pInfo->pBookmark == NULL)
+		return;
+
+	if (AfxMessageBox(IDS_PROMPT_BOOKMARK_DESTINATION, MB_ICONEXCLAMATION | MB_YESNO) == IDYES)
+	{
+		CDjVuView* pView = ((CChildFrame*) GetParentFrame())->GetDjVuView();
+
+		pView->CreateBookmarkFromView(*pInfo->pBookmark);
 	}
 }
 

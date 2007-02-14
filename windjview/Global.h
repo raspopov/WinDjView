@@ -81,7 +81,7 @@ GUTF8String MakeUTF8String(const wstring& strText);
 
 #define PAGE_RENDERED 1
 #define PAGE_DECODED 2
-#define BOOKMARK_CLICKED 3
+#define LINK_CLICKED 3
 #define SEARCH_RESULT_CLICKED 4
 #define THUMBNAIL_RENDERED 5
 #define THUMBNAIL_CLICKED 6
@@ -95,57 +95,35 @@ GUTF8String MakeUTF8String(const wstring& strText);
 #define ANNOTATION_ADDED 14
 #define BOOKMARK_DELETED 15
 #define ANNOTATION_DELETED 16
-
-struct ThumbnailClicked : public Message
-{
-	ThumbnailClicked(int nPage_)
-		: Message(THUMBNAIL_CLICKED), nPage(nPage_) {}
-
-	int nPage;
-};
+#define BOOKMARK_CLICKED 17
 
 class CDIB;
+struct Bookmark;
+struct Annotation;
 
-struct ThumbnailRendered : public Message
+struct PageMsg : public Message
 {
-	ThumbnailRendered(int nPage_, CDIB* pDIB_)
-		: Message(THUMBNAIL_RENDERED), nPage(nPage_), pDIB(pDIB_) {}
+	PageMsg(int msg, int nPage_)
+		: Message(msg), nPage(nPage_) {}
+
+	int nPage;
+};
+
+struct BitmapMsg : public Message
+{
+	BitmapMsg(int msg, int nPage_, CDIB* pDIB_)
+		: Message(msg), nPage(nPage_), pDIB(pDIB_) {}
 
 	int nPage;
 	CDIB* pDIB;
 };
 
-struct BookmarkClicked : public Message
+struct LinkClicked : public Message
 {
-	BookmarkClicked(const GUTF8String& url_)
-		: Message(BOOKMARK_CLICKED), url(url_) {}
+	LinkClicked(const GUTF8String& url_)
+		: Message(LINK_CLICKED), url(url_) {}
 
 	const GUTF8String& url;
-};
-
-struct CurrentPageChanged : public Message
-{
-	CurrentPageChanged(int nPage_)
-		: Message(CURRENT_PAGE_CHANGED), nPage(nPage_) {}
-
-	int nPage;
-};
-
-struct PageRendered : public Message
-{
-	PageRendered(int nPage_, CDIB* pDIB_)
-		: Message(PAGE_RENDERED), nPage(nPage_), pDIB(pDIB_) {}
-
-	int nPage;
-	CDIB* pDIB;
-};
-
-struct PageDecoded : public Message
-{
-	PageDecoded(int nPage_)
-		: Message(PAGE_DECODED), nPage(nPage_) {}
-
-	int nPage;
 };
 
 struct SearchResultClicked : public Message
@@ -164,58 +142,23 @@ struct RotateChanged : public Message
 	int nRotate;
 };
 
-struct ViewActivated : public Message
+struct AnnotationMsg : public Message
 {
-	ViewActivated()
-		: Message(VIEW_ACTIVATED) {}
-};
-
-struct ZoomChanged : public Message
-{
-	ZoomChanged()
-		: Message(ZOOM_CHANGED) {}
-};
-
-struct AppSettingsChanged : public Message
-{
-	AppSettingsChanged()
-		: Message(APP_SETTINGS_CHANGED) {}
-};
-
-struct AppLanguageChanged : public Message
-{
-	AppLanguageChanged()
-		: Message(APP_LANGUAGE_CHANGED) {}
-};
-
-struct Bookmark;
-struct Annotation;
-
-struct AnnotationAdded : public Message
-{
-	AnnotationAdded(Annotation* pAnno_, int nPage_)
-		: Message(ANNOTATION_ADDED), pAnno(pAnno_), nPage(nPage_) {}
+	AnnotationMsg(int msg, Annotation* pAnno_, int nPage_)
+		: Message(msg), pAnno(pAnno_), nPage(nPage_) {}
 
 	Annotation* pAnno;
 	int nPage;
 };
 
-struct BookmarkDeleted : public Message
+struct BookmarkMsg : public Message
 {
-	BookmarkDeleted(Bookmark* pBookmark_)
-		: Message(BOOKMARK_DELETED), pBookmark(pBookmark_) {}
+	BookmarkMsg(int msg, const Bookmark* pBookmark_)
+		: Message(msg), pBookmark(pBookmark_) {}
 
-	Bookmark* pBookmark;
+	const Bookmark* pBookmark;
 };
 
-struct AnnotationDeleted : public Message
-{
-	AnnotationDeleted(Annotation* pAnno_, int nPage_)
-		: Message(ANNOTATION_DELETED), pAnno(pAnno_), nPage(nPage_) {}
-
-	Annotation* pAnno;
-	int nPage;
-};
 
 struct MD5
 {

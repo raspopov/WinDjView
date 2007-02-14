@@ -121,12 +121,12 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 			switch (job.type)
 			{
 			case RENDER:
-				pData->m_pOwner->OnUpdate(NULL, &PageRendered(job.nPage, pBitmap));
+				pData->m_pOwner->OnUpdate(NULL, &BitmapMsg(PAGE_RENDERED, job.nPage, pBitmap));
 				break;
 
 			case DECODE:
 			case READINFO:
-				pData->m_pOwner->OnUpdate(NULL, &PageDecoded(job.nPage));
+				pData->m_pOwner->OnUpdate(NULL, &PageMsg(PAGE_DECODED, job.nPage));
 				break;
 			}
 		}

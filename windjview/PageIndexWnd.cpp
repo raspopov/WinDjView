@@ -219,7 +219,7 @@ void CPageIndexWnd::GoToItem(HTREEITEM hItem)
 
 	if (!entry.strLink.empty())
 	{
-		UpdateObservers(BookmarkClicked(MakeUTF8String(entry.strLink)));
+		UpdateObservers(LinkClicked(MakeUTF8String(entry.strLink)));
 	}
 }
 

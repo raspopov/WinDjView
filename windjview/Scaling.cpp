@@ -39,12 +39,6 @@ void horizontal_scale(const GPixel* inputxelrow, GPixel* newxelrow, UINT cols, U
 	// Take the input row inputxelrow[], which is 'cols' columns wide, and
 	// scale it by a factor of 'sxcale', which is in SCALEths to create
 	// the output row newxelrow[], which is 'newcols' columns wide.
-	//
-	// 'format' and 'maxval' describe the Netpbm format of the both input and
-	// output rows.
-	//
-	// *stretchP is the number of columns (could be fractional) on the right 
-	// that we had to fill by stretching due to rounding problems.
 	
 	UINT r = 0, g = 0, b = 0;
 	UINT newcol = 0;
@@ -166,10 +160,6 @@ GP<GPixmap> RescalePnm(GP<GPixmap> pSrc, UINT nWidth, UINT nHeight)
 	UINT rows = pSrc->rows();
 	UINT newcols = nWidth;
 	UINT newrows = nHeight;
-
-	// The number of rows we had to fill by stretching because of
-	// rounding error, which made us run out of input rows before we
-	// had filled up the output rows.
 
 	// We round the scale factor down so that we never fill up the
 	// output while (a fractional pixel of) input remains unused.

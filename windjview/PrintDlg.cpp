@@ -335,18 +335,10 @@ void CPrintDlg::OnPaint()
 {
 	CPaintDC paintDC(this);
 
-	if (m_bitmap.m_hObject == NULL)
-	{
-		m_bitmap.CreateCompatibleBitmap(&paintDC,
-			m_rcPreview.Width(), m_rcPreview.Height());
-	}
-
-	CDC dc;
-	dc.CreateCompatibleDC(&paintDC);
-	CBitmap* pBmpOld = dc.SelectObject(&m_bitmap);
+	m_offscreenDC.Create(&paintDC, m_rcPreview.Size());
 
 	CRect rcPreview = m_rcPreview - m_rcPreview.TopLeft();
-	dc.FillSolidRect(rcPreview, ::GetSysColor(COLOR_BTNFACE));
+	m_offscreenDC.FillSolidRect(rcPreview, ::GetSysColor(COLOR_BTNFACE));
 
 	if (m_pPaper != NULL && m_pPaper->size.cx != 0 && m_pPaper->size.cy != 0)
 	{
@@ -369,12 +361,12 @@ void CPrintDlg::OnPaint()
 		ptTopLeft.Offset((rcPreview.Width() - szPage.cx) / 2, (rcPreview.Height() - szPage.cy) / 2);
 		CRect rcPage(ptTopLeft, szPage);
 
-		dc.FillSolidRect(rcPage + CPoint(6, 6), ::GetSysColor(COLOR_BTNSHADOW));
-		dc.FillSolidRect(rcPage, ::GetSysColor(COLOR_WINDOW));
+		m_offscreenDC.FillSolidRect(rcPage + CPoint(6, 6), ::GetSysColor(COLOR_BTNSHADOW));
+		m_offscreenDC.FillSolidRect(rcPage, ::GetSysColor(COLOR_WINDOW));
 
 		CRect rcFrame = rcPage;
 		rcFrame.InflateRect(1, 1);
-		dc.FrameRect(rcFrame, &CBrush(::GetSysColor(COLOR_WINDOWFRAME)));
+		FrameRect(&m_offscreenDC, rcFrame, ::GetSysColor(COLOR_WINDOWFRAME));
 
 		if (m_pCurPage == NULL)
 			m_pCurPage = m_pSource->GetPage(m_nCurPage, NULL);
@@ -402,21 +394,22 @@ void CPrintDlg::OnPaint()
 
 		if (!m_settings.bTwoPages)
 		{
-			PrintPage(&dc, m_pCurPage, m_nRotate, m_nMode, rcPage, fScreenMM, fScreenMM, m_settings, true);
+			PrintPage(&m_offscreenDC, m_pCurPage, m_nRotate, m_nMode,
+				rcPage, fScreenMM, fScreenMM, m_settings, true);
 		}
 		else
 		{
 			if (m_pNextPage == NULL && m_nCurPage < m_pSource->GetPageCount() - 1)
 				m_pNextPage = m_pSource->GetPage(m_nCurPage + 1, NULL);
 
-			PreviewTwoPages(&dc, rcPage, szPaper, fScreenMM);
+			PreviewTwoPages(&m_offscreenDC, rcPage, szPaper, fScreenMM);
 		}
 	}
 
 	paintDC.BitBlt(m_rcPreview.left, m_rcPreview.top, m_rcPreview.Width(), m_rcPreview.Height(),
-		&dc, 0, 0, SRCCOPY);
+		&m_offscreenDC, 0, 0, SRCCOPY);
 
-	dc.SelectObject(pBmpOld);
+	m_offscreenDC.Release();
 }
 
 void CPrintDlg::PreviewTwoPages(CDC* pDC, const CRect& rcPage, const CSize& szPaper, double fScreenMM)
