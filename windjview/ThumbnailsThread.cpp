@@ -17,12 +17,11 @@
 
 // $Id$
 
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "WinDjView.h"
 
 #include "ThumbnailsThread.h"
 #include "Drawing.h"
-#include "DjVuDoc.h"
 #include "RenderThread.h"
 
 #ifdef _DEBUG

@@ -34,11 +34,11 @@
 #define IDC_CURSOR_PAN_U                143
 #define IDC_CURSOR_PAN_UD               144
 #define IDC_CURSOR_PAN_UL               145
-#define IDB_PAN_ANCHOR                  146
-#define IDB_HOURGLASS                   147
-#define IDB_CLOSE                       148
-#define IDB_BOOKMARKS                   149
-#define IDB_DONATE                      150
+#define IDB_PAN_ANCHOR                  149
+#define IDB_HOURGLASS                   150
+#define IDB_CLOSE                       151
+#define IDB_BOOKMARKS                   152
+#define IDB_DONATE                      153
 #define IDS_BOOKMARKS_TAB               200
 #define IDS_ASSOCIATE_SUCCESSFUL        201
 #define IDS_ASSOCIATE_FAILED            202

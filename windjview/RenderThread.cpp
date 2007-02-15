@@ -17,7 +17,7 @@
 
 // $Id$
 
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "WinDjView.h"
 
 #include "RenderThread.h"

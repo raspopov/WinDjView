@@ -245,7 +245,7 @@ BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
-        MENUITEM "F&ullscreen\tCtrl+L",         ID_VIEW_FULLSCREEN
+        MENUITEM "&Fullscreen\tCtrl+L",         ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
         MENUITEM "Fit &Page\tCtrl+0",           ID_ZOOM_FITPAGE
         MENUITEM "Fit &Width\tCtrl+2",          ID_ZOOM_FITWIDTH
@@ -289,10 +289,8 @@ BEGIN
             MENUITEM "&Facing\tCtrl+Alt+3",         ID_LAYOUT_FACING
             MENUITEM "C&ontinuous - Facing\tCtrl+Alt+4", 
                                                     ID_LAYOUT_CONTINUOUS_FACING
-
             MENUITEM SEPARATOR
             MENUITEM "First page &alone",           ID_LAYOUT_FIRSTPAGE_ALONE
-
         END
         POPUP "&Display"
         BEGIN

@@ -139,6 +139,8 @@ GUTF8String MakeUTF8String(const wstring& strText)
 CString MakeCString(const GUTF8String& text)
 {
 	CString strResult;
+	if (text.length() == 0)
+		return strResult;
 
 	// Prepare Unicode text
 	LPWSTR pszUnicodeText = NULL;
@@ -231,6 +233,12 @@ void MakeWString(const CString& strText, wstring& result)
 
 bool MakeWString(const GUTF8String& text, wstring& result)
 {
+	if (text.length() == 0)
+	{
+		result.resize(0);
+		return true;
+	}
+
 	// Prepare Unicode text
 	LPWSTR pszUnicodeText = NULL;
 	int nResult = 0;
@@ -254,14 +262,11 @@ bool MakeWString(const GUTF8String& text, wstring& result)
 	}
 
 	int nSize = ::MultiByteToWideChar(CP_UTF8, dwFlags, (LPCSTR)text, -1, NULL, 0);
-	if (nSize != 0)
+	if (nSize > 1)
 	{
 		result.resize(nSize - 1);
-		if (nSize > 1)
-		{
-			nResult = ::MultiByteToWideChar(CP_UTF8, dwFlags, (LPCSTR)text, -1,
-				(LPWSTR)result.data(), nSize);
-		}
+		nResult = ::MultiByteToWideChar(CP_UTF8, dwFlags, (LPCSTR)text, -1,
+			(LPWSTR)result.data(), nSize);
 	}
 
 	return (nResult != 0);

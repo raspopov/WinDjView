@@ -93,9 +93,6 @@ const TCHAR* s_pszIgnoreMargins = _T("no-margins");
 const TCHAR* s_pszShrinkOversized = _T("shrink");
 
 const TCHAR* s_pszDocumentsSettings = _T("Documents");
-//const TCHAR* s_pszStartupPage = _T("page");
-//const TCHAR* s_pszDisplayMode = _T("display");
-
 
 // CDjViewApp
 

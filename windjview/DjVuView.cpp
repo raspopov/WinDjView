@@ -217,7 +217,7 @@ void CDjVuView::OnDraw(CDC* pDC)
 	// CScrollView sets viewport to minus scroll position, so that
 	// all drawing can be done in natural coordinates. Unfortunately,
 	// this does not work in Win98, because in this OS coordinates
-	// cannot be larger than 32767. So we will subtract scroll position 
+	// cannot be larger than 32767. So we will subtract scroll position
 	// explicitly.
 	pDC->SetViewportOrg(CPoint(0, 0));
 
@@ -639,8 +639,6 @@ BOOL CDjVuView::OnEraseBkgnd(CDC* pDC)
 void CDjVuView::RenderPage(int nPage, int nTimeout, bool bUpdateWindow)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
-
-	//int nOrigPage = nPage;
 
 	if (m_nLayout == Facing || m_nLayout == ContinuousFacing)
 		nPage = FixPageNumber(nPage);
@@ -2676,8 +2674,6 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 	{
 		Page& page = m_pages[m_nSelectionPage];
 		CPoint pt = point + GetScrollPosition() - page.ptOffset;
-//		pt.x = max(0, min(page.szDisplay.cx - 1, pt.x));
-//		pt.y = max(0, min(page.szDisplay.cy - 1, pt.y));
 		CPoint ptCurrent = ScreenToDjVu(m_nStartPage, pt, true);
 
 		CRect rcDisplay = TranslatePageRect(m_nSelectionPage, m_rcSelectionRect);
@@ -3251,7 +3247,8 @@ void CDjVuView::OnDestroy()
 	}
 
 	theApp.RemoveObserver(this);
-	m_pSource->GetSettings()->RemoveObserver(this);
+	if (m_pSource != NULL)
+		m_pSource->GetSettings()->RemoveObserver(this);
 
 	KillTimer(m_nTimerID);
 	ShowCursor();

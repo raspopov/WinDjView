@@ -25,9 +25,9 @@ class DjVuSource;
 struct Bookmark;
 
 
-// CBookmarksWnd view
+// CBookmarksWnd window
 
-class CBookmarksWnd : public CMyTreeCtrl, public Observable, public Observer
+class CBookmarksWnd : public CMyTreeCtrl, public Observer, public Observable
 {
 	DECLARE_DYNAMIC(CBookmarksWnd)
 
@@ -63,7 +63,7 @@ protected:
 	};
 	list<BookmarkInfo> m_links;
 
-// Generated message map functions
+	// Message map functions
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
 	afx_msg void OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult);
