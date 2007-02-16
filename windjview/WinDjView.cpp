@@ -78,8 +78,10 @@ const TCHAR* s_pszWrapLongBookmarks = _T("wrap-long-bookmarks");
 const TCHAR* s_pszRestoreView = _T("restore-view");
 const TCHAR* s_pszVersion = _T("version");
 const TCHAR* s_pszLanguage = _T("language");
-const TCHAR* s_pszFind = _T("find");
 const TCHAR* s_pszMatchCase = _T("match-case");
+
+const TCHAR* s_pszSearchHistory = _T("Search History");
+const TCHAR* s_pszFindStringPrefix = _T("string");
 
 const TCHAR* s_pszPrintSettings = _T("Print");
 const TCHAR* s_pszMarginLeft = _T("m-left");
@@ -439,9 +441,19 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.bWrapLongBookmarks = !!GetProfileInt(s_pszGlobalSettings, s_pszWrapLongBookmarks, m_appSettings.bWrapLongBookmarks);
 	m_appSettings.bRestoreView = !!GetProfileInt(s_pszGlobalSettings, s_pszRestoreView, m_appSettings.bRestoreView);
 	m_appSettings.nLanguage = GetProfileInt(s_pszGlobalSettings, s_pszLanguage, m_appSettings.nLanguage);
-	m_appSettings.strFind = GetProfileString(s_pszGlobalSettings, s_pszFind, m_appSettings.strFind);
 	m_appSettings.bMatchCase = !!GetProfileInt(s_pszGlobalSettings, s_pszMatchCase, m_appSettings.bMatchCase);
 	m_appSettings.strVersion = GetProfileString(s_pszGlobalSettings, s_pszVersion, CURRENT_VERSION);
+
+	for (int nItem = 0; nItem < CAppSettings::HistorySize; ++nItem)
+	{
+		CString strItem = GetProfileString(s_pszSearchHistory,
+				s_pszFindStringPrefix + FormatString(_T("%d"), nItem), _T(""));
+		if (!strItem.IsEmpty())
+			m_appSettings.searchHistory.push_back(strItem);
+	}
+
+	if (!m_appSettings.searchHistory.empty())
+		m_appSettings.strFind = m_appSettings.searchHistory.front();
 
 	m_displaySettings.nScaleMethod = GetProfileInt(s_pszDisplaySettings, s_pszScaleMethod, m_displaySettings.nScaleMethod);
 	m_displaySettings.bInvertColors = !!GetProfileInt(s_pszDisplaySettings, s_pszInvertColors, m_displaySettings.bInvertColors);
@@ -520,8 +532,25 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszGlobalSettings, s_pszRestoreView, m_appSettings.bRestoreView);
 	WriteProfileString(s_pszGlobalSettings, s_pszVersion, CURRENT_VERSION);
 	WriteProfileInt(s_pszGlobalSettings, s_pszLanguage, m_appSettings.nLanguage);
-	WriteProfileString(s_pszGlobalSettings, s_pszFind, m_appSettings.strFind);
 	WriteProfileInt(s_pszGlobalSettings, s_pszMatchCase, m_appSettings.bMatchCase);
+
+	list<CString>::iterator itHist;
+	int nItem = 0;
+	for (itHist = m_appSettings.searchHistory.begin(); itHist != m_appSettings.searchHistory.end(); ++itHist)
+	{
+		if (!(*itHist).IsEmpty())
+		{
+			WriteProfileString(s_pszSearchHistory,
+					s_pszFindStringPrefix + FormatString(_T("%d"), nItem), *itHist);
+			++nItem;
+		}
+	}
+
+	for (; nItem < CAppSettings::HistorySize; ++nItem)
+	{
+		WriteProfileString(s_pszSearchHistory,
+				s_pszFindStringPrefix + FormatString(_T("%d"), nItem), _T(""));
+	}
 
 	WriteProfileInt(s_pszDisplaySettings, s_pszScaleMethod, m_displaySettings.nScaleMethod);
 	WriteProfileInt(s_pszDisplaySettings, s_pszInvertColors, m_displaySettings.bInvertColors);

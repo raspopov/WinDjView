@@ -35,11 +35,14 @@ public:
 // Dialog Data
 	enum { IDD = IDD_FIND };
 	CString m_strFind;
+	CComboBoxEx m_cboFind;
 	BOOL m_bMatchCase;
 
 protected:
 	void UpdateButtons();
+	void UpdateSearchHistory();
 
+	virtual BOOL OnInitDialog();
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual void OnOK();
 	virtual void OnCancel();

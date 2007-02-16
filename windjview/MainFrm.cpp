@@ -228,8 +228,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	lf.lfWeight = FW_BOLD;
 	m_font.CreateFontIndirect(&lf);
 
-	m_cboPage.Create(WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_VSCROLL | CBS_DROPDOWN,
-		rcCombo, &m_wndToolBar, IDC_PAGENUM);
+	m_cboPage.Create(WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_VSCROLL
+			| CBS_DROPDOWN | CBS_AUTOHSCROLL, rcCombo, &m_wndToolBar, IDC_PAGENUM);
 	m_cboPage.SetFont(&m_font);
 	m_cboPage.SetItemHeight(-1, 16);
 	m_cboPage.GetEditCtrl().SetInteger();
@@ -241,8 +241,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	rcCombo.DeflateRect(3, 0);
 	rcCombo.bottom += 400;
 
-	m_cboZoom.Create(WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_VSCROLL | CBS_DROPDOWN,
-		rcCombo, &m_wndToolBar, IDC_ZOOM);
+	m_cboZoom.Create(WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_VSCROLL
+		| CBS_DROPDOWN | CBS_AUTOHSCROLL, rcCombo, &m_wndToolBar, IDC_ZOOM);
 	m_cboZoom.SetFont(&m_font);
 	m_cboZoom.SetItemHeight(-1, 16);
 	m_cboPage.GetEditCtrl().SetReal();

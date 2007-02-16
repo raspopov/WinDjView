@@ -289,8 +289,10 @@ BEGIN
             MENUITEM "&Facing\tCtrl+Alt+3",         ID_LAYOUT_FACING
             MENUITEM "C&ontinuous - Facing\tCtrl+Alt+4", 
                                                     ID_LAYOUT_CONTINUOUS_FACING
+
             MENUITEM SEPARATOR
             MENUITEM "First page &alone",           ID_LAYOUT_FIRSTPAGE_ALONE
+
         END
         POPUP "&Display"
         BEGIN
@@ -606,7 +608,8 @@ CAPTION "Find"
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "Fi&nd what:",IDC_STATIC,7,7,35,12,SS_CENTERIMAGE
-    EDITTEXT        IDC_FIND,47,7,173,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_FIND,"ComboBoxEx32",CBS_DROPDOWN | 
+                    CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP,47,7,173,95
     CONTROL         "Match &case",IDC_MATCH_CASE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,28,64,8
     DEFPUSHBUTTON   "&Find Next",IDOK,230,7,50,14
@@ -743,8 +746,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,4,4,0
- PRODUCTVERSION 0,4,4,0
+ FILEVERSION 0,5,0,0
+ PRODUCTVERSION 0,5,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -762,14 +765,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "Andrew Zhezherun\0"
             VALUE "FileDescription", "WinDjView\0"
-            VALUE "FileVersion", "0.4.4\0"
+            VALUE "FileVersion", "0.5\0"
             VALUE "InternalName", "WinDjView.exe\0"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2007 Andrew Zhezherun.  All rights reserved.\0"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2007 Andrew Zhezherun. All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "WinDjView.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "WinDjView\0"
-            VALUE "ProductVersion", "0.4.4\0"
+            VALUE "ProductVersion", "0.5\0"
             VALUE "SpecialBuild", "\0"
         END
     END
@@ -1053,7 +1056,7 @@ BEGIN
     IDS_PAPER_SIZE          "%s x %s %s"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "0.4.4"
+    IDS_CURRENT_VERSION     "0.5"
     IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
     IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure you want to proceed?"
     IDS_OPENFILE            "Open"

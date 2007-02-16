@@ -141,6 +141,8 @@ struct CAppSettings
 	HMENU hDjVuMenu;
 	HMENU hDefaultMenu;
 
+	enum { HistorySize = 15 };
+	list<CString> searchHistory;
 	CString strFind;
 	bool bMatchCase;
 

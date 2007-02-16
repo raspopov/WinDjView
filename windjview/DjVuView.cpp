@@ -161,7 +161,7 @@ CDjVuView::CDjVuView()
 	  m_bControlDown(false), m_nType(Normal), m_bPanning(false), m_bHoverIsCustom(false),
 	  m_bDraggingRect(false), m_nSelectionPage(-1), m_pHoverAnno(NULL),
 	  m_bIgnoreMouseLeave(false), m_pClickedAnno(NULL), m_bDraggingLink(false),
-	  m_bPopupMenu(false)
+	  m_bPopupMenu(false), m_bClickedCustom(false)
 {
 	m_nMargin = c_nDefaultMargin;
 	m_nShadowMargin = c_nDefaultShadowMargin;
@@ -312,10 +312,12 @@ void CDjVuView::DrawAnnotation(CDC* pDC, const Annotation& anno, int nPage, bool
 	CRect rcBounds = TranslatePageRect(nPage, anno.rectBounds);
 	rcBounds.OffsetRect(-GetScrollPosition());
 
+	bool bShowAll = m_bShiftDown && GetFocus() == this;
+
 	// Border
-	if (bActive || m_bShiftDown || !anno.bHideInactiveBorder)
+	if (bActive || bShowAll || !anno.bHideInactiveBorder)
 	{
-		if (anno.nBorderType == Annotation::BorderXOR || m_bShiftDown)
+		if (anno.nBorderType == Annotation::BorderXOR || bShowAll)
 		{
 			InvertFrame(pDC, rcBounds);
 		}
@@ -2883,6 +2885,9 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 	if (m_nClickedPage == -1)
 		return;
 
+	m_pClickedAnno = m_pHoverAnno;
+	m_bClickedCustom = m_bHoverIsCustom;
+
 	CMenu menu;
 	menu.LoadMenu(IDR_POPUP);
 
@@ -2912,7 +2917,7 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 		pPopup->DeleteMenu(ID_HIGHLIGHT_SELECTION, MF_BYCOMMAND);
 		pPopup->DeleteMenu(ID_EXPORT_SELECTION, MF_BYCOMMAND);
 
-		if (m_pHoverAnno == NULL || !m_bHoverIsCustom)
+		if (m_pClickedAnno == NULL || !m_bClickedCustom)
 		{
 			pPopup->DeleteMenu(ID_ANNOTATION_DELETE, MF_BYCOMMAND);
 			pPopup->DeleteMenu(ID_ANNOTATION_EDIT, MF_BYCOMMAND);
@@ -2921,11 +2926,6 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 	}
 
 	m_bIgnoreMouseLeave = true;
-
-	m_pClickedAnno = NULL;
-	if (m_bHoverIsCustom)
-		m_pClickedAnno = m_pHoverAnno;
-
 	m_bPopupMenu = true;
 	ShowCursor();
 
@@ -5782,7 +5782,7 @@ void CDjVuView::OnUpdateHighlight(CCmdUI* pCmdUI)
 
 void CDjVuView::OnDeleteAnnotation()
 {
-	if (m_pClickedAnno == NULL || m_nClickedPage == -1)
+	if (m_pClickedAnno == NULL || !m_bClickedCustom || m_nClickedPage == -1)
 		return;
 
 	if (AfxMessageBox(IDS_PROMPT_ANNOTATION_DELETE, MB_ICONEXCLAMATION | MB_YESNO) == IDYES)
@@ -5793,7 +5793,7 @@ void CDjVuView::OnDeleteAnnotation()
 
 void CDjVuView::OnEditAnnotation()
 {
-	if (m_pClickedAnno == NULL || m_nClickedPage == -1)
+	if (m_pClickedAnno == NULL || !m_bClickedCustom || m_nClickedPage == -1)
 		return;
 
 	CAnnotationDlg dlg(IDS_EDIT_ANNOTATION);

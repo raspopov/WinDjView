@@ -304,9 +304,9 @@ protected:
 
 	Annotation* m_pHoverAnno;
 	Annotation* m_pClickedAnno;
+	bool m_bHoverIsCustom, m_bClickedCustom;
 	int m_nHoverPage;
 	bool m_bIgnoreMouseLeave;
-	bool m_bHoverIsCustom;
 	Annotation* GetAnnotationFromPoint(const CPoint& point, int& nPage, bool& bCustom);
 	bool PtInAnnotation(const Annotation& anno, int nPage, const CPoint& point) const;
 	void UpdateHoverAnnotation(const CPoint& point);
