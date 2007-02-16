@@ -585,6 +585,7 @@ void CDjVuView::OnInitialUpdate()
 	ShowCursor();
 
 	m_bInitialized = true;
+	UpdateObservers(VIEW_INITIALIZED);
 }
 
 void CDjVuView::ReadZoomSettings(GP<DjVuANT> pAnt)

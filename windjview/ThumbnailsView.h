@@ -53,7 +53,6 @@ public:
 	void SetRotate(int nRotate);
 	int GetRotate() const { return m_nRotate; }
 
-	void Start();
 	void StopDecoding();
 	void RestartThreads();
 

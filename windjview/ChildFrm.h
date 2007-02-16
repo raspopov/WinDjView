@@ -76,7 +76,7 @@ protected:
 	int m_nStartupPage;
 	CPoint m_ptStartupOffset;
 	CMySplitterWnd m_wndSplitter;
-	CSplitterWnd m_wndDynSplitter;
+//	CSplitterWnd m_wndDynSplitter;
 	CThumbnailsView* m_pThumbnailsView;
 	CBookmarksWnd* m_pBookmarksWnd;
 	CBookmarksWnd* m_pCustomBookmarksWnd;

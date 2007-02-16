@@ -25,6 +25,7 @@
 #include "Drawing.h"
 #include "ThumbnailsThread.h"
 #include "ChildFrm.h"
+#include "DjVuView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -303,12 +304,6 @@ void CThumbnailsView::OnInitialUpdate()
 	m_pIdleThread = new CThumbnailsThread(m_pSource, this, true);
 	m_pIdleThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
 
-	UpdateView(RECALC);
-}
-
-void CThumbnailsView::Start()
-{
-	m_bInitialized = true;
 	UpdateView(RECALC);
 }
 
@@ -656,7 +651,7 @@ void CThumbnailsView::UpdateView(UpdateType updateType)
 	// Save page and offset to restore after changes
 	int nAnchorPage;
 	CPoint ptAnchorOffset;
-	CPoint ptTop = GetDeviceScrollPosition();
+	CPoint ptTop = GetScrollPosition();
 
 	if (updateType == TOP)
 	{
@@ -882,6 +877,14 @@ void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 	else if (message->code == APP_SETTINGS_CHANGED)
 	{
 		SettingsChanged();
+	}
+	else if (message->code == VIEW_INITIALIZED)
+	{
+		const CDjVuView* pView = static_cast<const CDjVuView*>(source);
+		m_nRotate = pView->GetRotate();
+
+		m_bInitialized = true;
+		UpdateView(RECALC);
 	}
 }
 

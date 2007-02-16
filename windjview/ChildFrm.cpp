@@ -180,10 +180,6 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 	}
 
 	m_bActivating = false;
-
-	if (m_bFirstShow)
-		GetThumbnailsView()->Start();
-
 	m_bFirstShow = false;
 }
 
@@ -193,11 +189,11 @@ BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 
 	m_wndSplitter.CreateView(0, 0, RUNTIME_CLASS(CNavPaneWnd),
 		CSize(100, 0), pContext);
-/*
-	m_wndDynSplitter.Create(&m_wndSplitter, 2, 2, CSize(10, 10), pContext,
-		WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | SPLS_DYNAMIC_SPLIT,
-		m_wndSplitter.IdFromRowCol(0, 1));
-*/
+
+//	m_wndDynSplitter.Create(&m_wndSplitter, 2, 2, CSize(10, 10), pContext,
+//		WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | SPLS_DYNAMIC_SPLIT,
+//		m_wndSplitter.IdFromRowCol(0, 1));
+
 	m_wndSplitter.CreateView(0, 1, RUNTIME_CLASS(CDjVuView),
 		CSize(0, 0), pContext);
 
