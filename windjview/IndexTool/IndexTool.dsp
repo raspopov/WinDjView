@@ -1,26 +1,26 @@
-# Microsoft Developer Studio Project File - Name="BookmarkTool" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="IndexTool" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Application" 0x0101
 
-CFG=BookmarkTool - Win32 Debug Unicode
+CFG=IndexTool - Win32 Debug Unicode
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "BookmarkTool.mak".
+!MESSAGE NMAKE /f "IndexTool.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "BookmarkTool.mak" CFG="BookmarkTool - Win32 Debug Unicode"
+!MESSAGE NMAKE /f "IndexTool.mak" CFG="IndexTool - Win32 Debug Unicode"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "BookmarkTool - Win32 Release" (based on "Win32 (x86) Application")
-!MESSAGE "BookmarkTool - Win32 Debug" (based on "Win32 (x86) Application")
-!MESSAGE "BookmarkTool - Win32 Debug Unicode" (based on "Win32 (x86) Application")
-!MESSAGE "BookmarkTool - Win32 Release Unicode" (based on "Win32 (x86) Application")
+!MESSAGE "IndexTool - Win32 Release" (based on "Win32 (x86) Application")
+!MESSAGE "IndexTool - Win32 Debug" (based on "Win32 (x86) Application")
+!MESSAGE "IndexTool - Win32 Debug Unicode" (based on "Win32 (x86) Application")
+!MESSAGE "IndexTool - Win32 Release Unicode" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -31,7 +31,7 @@ CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "BookmarkTool - Win32 Release"
+!IF  "$(CFG)" == "IndexTool - Win32 Release"
 
 # PROP BASE Use_MFC 1
 # PROP BASE Use_Debug_Libraries 0
@@ -57,7 +57,7 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
 # ADD LINK32 ../libdjvu/libdjvu.lib msimg32.lib version.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"msvcrt.lib"
 
-!ELSEIF  "$(CFG)" == "BookmarkTool - Win32 Debug"
+!ELSEIF  "$(CFG)" == "IndexTool - Win32 Debug"
 
 # PROP BASE Use_MFC 2
 # PROP BASE Use_Debug_Libraries 1
@@ -83,7 +83,7 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 ../libdjvu/libdjvud.lib msimg32.lib version.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
-!ELSEIF  "$(CFG)" == "BookmarkTool - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "IndexTool - Win32 Debug Unicode"
 
 # PROP BASE Use_MFC 2
 # PROP BASE Use_Debug_Libraries 1
@@ -111,7 +111,7 @@ LINK32=link.exe
 # ADD LINK32 ../libdjvu/libdjvudu.lib msimg32.lib version.lib /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /debug /machine:I386 /nodefaultlib:"libcmtd.lib" /pdbtype:sept
 # SUBTRACT LINK32 /nodefaultlib
 
-!ELSEIF  "$(CFG)" == "BookmarkTool - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "IndexTool - Win32 Release Unicode"
 
 # PROP BASE Use_MFC 1
 # PROP BASE Use_Debug_Libraries 0
@@ -142,24 +142,24 @@ LINK32=link.exe
 
 # Begin Target
 
-# Name "BookmarkTool - Win32 Release"
-# Name "BookmarkTool - Win32 Debug"
-# Name "BookmarkTool - Win32 Debug Unicode"
-# Name "BookmarkTool - Win32 Release Unicode"
+# Name "IndexTool - Win32 Release"
+# Name "IndexTool - Win32 Debug"
+# Name "IndexTool - Win32 Debug Unicode"
+# Name "IndexTool - Win32 Release Unicode"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\BookmarkDlg.cpp
+SOURCE=.\IndexDlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\BookmarkTool.cpp
+SOURCE=.\IndexTool.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\BookmarkTool.rc
+SOURCE=.\IndexTool.rc
 # End Source File
 # Begin Source File
 
@@ -169,19 +169,19 @@ SOURCE=.\MyDropTarget.cpp
 
 SOURCE=.\stdafx.cpp
 
-!IF  "$(CFG)" == "BookmarkTool - Win32 Release"
+!IF  "$(CFG)" == "IndexTool - Win32 Release"
 
 # ADD CPP /Yc"stdafx.h"
 
-!ELSEIF  "$(CFG)" == "BookmarkTool - Win32 Debug"
+!ELSEIF  "$(CFG)" == "IndexTool - Win32 Debug"
 
 # ADD CPP /Yc"stdafx.h"
 
-!ELSEIF  "$(CFG)" == "BookmarkTool - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "IndexTool - Win32 Debug Unicode"
 
 # ADD CPP /Yc"stdafx.h"
 
-!ELSEIF  "$(CFG)" == "BookmarkTool - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "IndexTool - Win32 Release Unicode"
 
 # ADD CPP /Yc"stdafx.h"
 
@@ -194,11 +194,11 @@ SOURCE=.\stdafx.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\BookmarkDlg.h
+SOURCE=.\IndexDlg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\BookmarkTool.h
+SOURCE=.\IndexTool.h
 # End Source File
 # Begin Source File
 
@@ -218,15 +218,15 @@ SOURCE=.\stdafx.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE=.\res\BookmarkTool.ico
+SOURCE=.\res\IndexTool.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\BookmarkTool.manifest
+SOURCE=.\res\IndexTool.manifest
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\BookmarkTool.rc2
+SOURCE=.\res\IndexTool.rc2
 # End Source File
 # End Group
 # End Target

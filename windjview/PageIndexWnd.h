@@ -22,6 +22,7 @@
 #include "BookmarksWnd.h"
 #include "MyTreeCtrl.h"
 class DjVuSource;
+struct XMLNode;
 
 
 // CPageIndexWnd view
@@ -51,6 +52,7 @@ protected:
 		ID_LIST = 2
 	};
 
+	int AddEntries(const XMLNode& parent, HTREEITEM hParent);
 	void GoToItem(HTREEITEM hItem);
 	void UpdateControls();
 

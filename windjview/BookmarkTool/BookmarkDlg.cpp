@@ -550,19 +550,17 @@ void CBookmarkDlg::OnEmbed()
 	istreambuf_iterator<char> begin(in), end;
 	vector<char> raw_data;
 	copy(begin, end, back_inserter(raw_data));
+	in.close();
 
 	raw_data.push_back(0);
 	string data = &raw_data[0];
-
 	raw_data.clear();
 
 	if (!read_bookmarks(data, bookmarks))
 	{
 		AfxMessageBox(IDS_ERROR_READING_BOOKMARKS, MB_OK | MB_ICONEXCLAMATION);
-		in.close();
 		return;
 	}
-	in.close();
 
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
 	_tsplitpath(m_strDjVuFile, szDrive, szPath, szName, szExt);

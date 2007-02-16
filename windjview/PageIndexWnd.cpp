@@ -21,6 +21,7 @@
 #include "WinDjView.h"
 #include "PageIndexWnd.h"
 #include "DjVuSource.h"
+#include "XMLParser.h"
 
 
 static int s_nTextHeight = 11;
@@ -106,95 +107,61 @@ inline wstring tolower(wstring str)
 	return str;
 }
 
-inline void TrimQuotes(wstring& s)
+const TCHAR pszTagEntry[] = _T("entry");
+const TCHAR pszAttrStartPage[] = _T("first");
+const TCHAR pszAttrLastPage[] = _T("last");
+const TCHAR pszAttrURL[] = _T("url");
+
+int CPageIndexWnd::AddEntries(const XMLNode& parent, HTREEITEM hParent)
 {
-	if (s.length() > 0 && s[0] == '\"')
-		s.erase(0, 1);
-	if (s.length() > 0 && s[s.length() - 1] == '\"')
-		s.erase(s.length() - 1, 1);
-}
-
-bool CPageIndexWnd::InitPageIndex(DjVuSource* pSource)
-{
-	wstring strPageIndex;
-	if (!MakeWString(pSource->GetPageIndex(), strPageIndex))
-		return false;
-
-	m_list.BeginBatchUpdate();
-
-	size_t nNextPos;
-	size_t nLength = static_cast<int>(strPageIndex.length());
-
-	stack<HTREEITEM> parents;
-	parents.push(TVI_ROOT);
-	HTREEITEM hLast = NULL;
-	int nPrevLevel = 1;
-
-	for (size_t nPos = 0; nPos < nLength; nPos = nNextPos)
+	list<XMLNode>::const_iterator it;
+	int nCount = 0;
+	for (it = parent.childElements.begin(); it != parent.childElements.end(); ++it)
 	{
-		nNextPos = strPageIndex.find_first_of(L"\n\r", nPos);
-		if (nNextPos == wstring::npos)
-			nNextPos = nLength;
-
-		wstring strLine = strPageIndex.substr(nPos, nNextPos - nPos);
-		while (nNextPos < nLength &&
-				(strPageIndex[nNextPos] == '\n' || strPageIndex[nNextPos] == '\r'))
-			++nNextPos;
-
-		int nComma1 = strLine.find(',');
-		if (nComma1 == wstring::npos)
-			continue;
-		int nComma2 = strLine.find(',', nComma1 + 1);
-		if (nComma2 == wstring::npos)
-			continue;
-		int nComma3 = strLine.find(',', nComma2 + 1);
-		if (nComma3 == wstring::npos)
+		const XMLNode& node = *it;
+		if (MakeCString(node.tagName) != pszTagEntry)
 			continue;
 
 		m_entries.push_back(IndexEntry());
 		IndexEntry& entry = m_entries.back();
 
-		int nLevel = _wtoi(strLine.substr(0, nComma1).c_str());
-		if (nLevel < 1 || nLevel > nPrevLevel + 1)
-			return false;
-
-		entry.strFirst = strLine.substr(nComma1 + 1, nComma2 - nComma1 - 1);
-		entry.strLast = strLine.substr(nComma2 + 1, nComma3 - nComma2 - 1);
-		entry.strLink = strLine.substr(nComma3 + 1, nLength - nComma3 - 1);
-
-		TrimQuotes(entry.strFirst);
-		TrimQuotes(entry.strLast);
-		TrimQuotes(entry.strLink);
+		node.GetAttribute(pszAttrStartPage, entry.strFirst);
+		node.GetAttribute(pszAttrLastPage, entry.strLast);
+		node.GetAttribute(pszAttrURL, entry.strLink);
 
 		CString strTitle = MakeCString(entry.strFirst);
 		if (!entry.strLast.empty())
 			strTitle += _T(" - ") + MakeCString(entry.strLast);
 
-		if (nLevel == nPrevLevel + 1)
-		{
-			if (hLast == NULL)
-				return false;
-
-			m_list.Expand(hLast, TVE_EXPAND);
-			parents.push(hLast);
-		}
-		else if (nLevel < nPrevLevel)
-		{
-			while (static_cast<int>(parents.size()) > nLevel)
-				parents.pop();
-		}
-
-		HTREEITEM hItem = m_list.InsertItem(strTitle, 0, 1, parents.top());
-
+		++nCount;
+		HTREEITEM hItem = m_list.InsertItem(strTitle, 0, 1, hParent);
 		m_list.SetItemData(hItem, m_entries.size() - 1);
 		entry.hItem = hItem;
 
 		entry.strFirst = tolower(entry.strFirst);
 		entry.strLast = tolower(entry.strLast);
 
-		nPrevLevel = nLevel;
-		hLast = hItem;
+		if (AddEntries(node, hItem) > 0)
+			m_list.Expand(hItem, TVE_EXPAND);
 	}
+
+	return nCount;
+}
+
+bool CPageIndexWnd::InitPageIndex(DjVuSource* pSource)
+{
+	GUTF8String strPageIndex = pSource->GetPageIndex();
+	if (strPageIndex.length() == 0)
+		return false;
+
+	stringstream sin((const char*) strPageIndex);
+	XMLParser parser;
+	if (!parser.Parse(sin))
+		return false;
+
+	m_list.BeginBatchUpdate();
+
+	AddEntries(*parser.GetRoot(), TVI_ROOT);
 
 	m_sorted.resize(m_entries.size());
 
