@@ -47,6 +47,7 @@
 #include <afxwin.h>         // MFC core and standard components
 #include <afxext.h>         // MFC extensions
 #include <afxdisp.h>        // MFC Automation classes
+#include <afxole.h>
 
 #include <afxdtctl.h>		// MFC support for Internet Explorer 4 Common Controls
 #ifndef _AFX_NO_AFXCMN_SUPPORT
@@ -67,6 +68,7 @@
 #include <stack>
 #include <fstream>
 #include <string>
+#include <set>
 using namespace std;
 
 #ifdef NDEBUG
@@ -86,14 +88,7 @@ using namespace std;
 #include "../libdjvu/ByteStream.h"
 #include "../libdjvu/BSByteStream.h"
 #include "../libdjvu/IFFByteStream.h"
-#include <afxole.h>
 
-inline CString LoadString(UINT nID)
-{
-	CString strResult;
-	strResult.LoadString(nID);
-	return strResult;
-}
 
 #import "C:\\Program Files\\Common Files\\Microsoft Shared\\OFFICE11\\MSO.DLL" \
     rename("RGB", "MSORGB")

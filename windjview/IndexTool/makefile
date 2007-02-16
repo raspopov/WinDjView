@@ -27,7 +27,7 @@ CPP_PCH = /Yu"stdafx.h"
 CPP_PCH_CREATE = /Yc"stdafx.h"
 
 CPP_FLAGS = $(CPP_FLAGS) /nologo /MT /W3 /GX /Ox /Ob2 /Ot /Oi /Og /G6 /GL /GR \
-            /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Fp$(PCH) /Fo"$(INTDIR)/" /c
+            /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Fp$(PCH) /Fo"$(INTDIR)/" /Fd"$(INTDIR)/" /c
 
 LINK_FLAGS = $(LINK_FLAGS) "..\libdjvu\$(LIBDJVU)" \
              /nologo /subsystem:windows /incremental:no /machine:x86 \
@@ -58,6 +58,7 @@ clean:
 	@$(RSC) $(RSC_FLAGS) $<
 
 LINK_OBJS = \
+	"$(INTDIR)\Global.obj" \
 	"$(INTDIR)\IndexDlg.obj" \
 	"$(INTDIR)\IndexTool.obj" \
 	"$(INTDIR)\MyDropTarget.obj" \
@@ -67,6 +68,7 @@ LINK_OBJS = \
 $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 	@$(LINK) $(LINK_FLAGS) $(LINK_OBJS)
 
+"$(INTDIR)\Global.obj" : Global.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\IndexDlg.obj" : IndexDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\IndexTool.obj" : IndexTool.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDropTarget.obj" : MyDropTarget.cpp "$(INTDIR)" $(PCH)

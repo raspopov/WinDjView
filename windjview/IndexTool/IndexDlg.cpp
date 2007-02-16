@@ -20,6 +20,7 @@
 #include "stdafx.h"
 #include "IndexTool.h"
 #include "IndexDlg.h"
+#include "Global.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -156,46 +157,6 @@ void CIndexDlg::OnBrowseDjvu()
 
 	CString strDjVuFile = dlg.GetPathName();
 	OpenDocument(strDjVuFile);
-}
-
-GUTF8String MakeUTF8String(const CString& strText)
-{
-	int nSize;
-
-#ifdef _UNICODE
-	LPCWSTR pszUnicodeText = strText;
-#else
-	nSize = ::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)strText, -1, NULL, 0);
-	LPWSTR pszUnicodeText = new WCHAR[nSize];
-	::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)strText, -1, pszUnicodeText, nSize);
-#endif
-
-	nSize = ::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, NULL, 0, NULL, NULL);
-	LPSTR pszTextUTF8 = new CHAR[nSize];
-	::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, pszTextUTF8, nSize, NULL, NULL);
-
-	GUTF8String utf8String(pszTextUTF8);
-	delete[] pszTextUTF8;
-
-#ifndef _UNICODE
-	delete[] pszUnicodeText;
-#endif
-
-	return utf8String;
-}
-
-GUTF8String MakeUTF8String(const wstring& strText)
-{
-	LPCWSTR pszUnicodeText = (LPCWSTR)strText.c_str();
-
-	int nSize = ::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, NULL, 0, NULL, NULL);
-	LPSTR pszTextUTF8 = new CHAR[nSize];
-	::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, pszTextUTF8, nSize, NULL, NULL);
-
-	GUTF8String utf8String(pszTextUTF8);
-	delete[] pszTextUTF8;
-
-	return utf8String;
 }
 
 bool CIndexDlg::OpenDocument(const CString& strFileName)

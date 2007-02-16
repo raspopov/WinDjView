@@ -163,30 +163,16 @@ SOURCE=.\BookmarkTool.rc
 # End Source File
 # Begin Source File
 
+SOURCE=.\Global.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MyDropTarget.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\stdafx.cpp
-
-!IF  "$(CFG)" == "BookmarkTool - Win32 Release"
-
 # ADD CPP /Yc"stdafx.h"
-
-!ELSEIF  "$(CFG)" == "BookmarkTool - Win32 Debug"
-
-# ADD CPP /Yc"stdafx.h"
-
-!ELSEIF  "$(CFG)" == "BookmarkTool - Win32 Debug Unicode"
-
-# ADD CPP /Yc"stdafx.h"
-
-!ELSEIF  "$(CFG)" == "BookmarkTool - Win32 Release Unicode"
-
-# ADD CPP /Yc"stdafx.h"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -199,6 +185,10 @@ SOURCE=.\BookmarkDlg.h
 # Begin Source File
 
 SOURCE=.\BookmarkTool.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Global.h
 # End Source File
 # Begin Source File
 

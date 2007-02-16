@@ -151,6 +151,10 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\Global.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\IndexDlg.cpp
 # End Source File
 # Begin Source File
@@ -168,30 +172,16 @@ SOURCE=.\MyDropTarget.cpp
 # Begin Source File
 
 SOURCE=.\stdafx.cpp
-
-!IF  "$(CFG)" == "IndexTool - Win32 Release"
-
 # ADD CPP /Yc"stdafx.h"
-
-!ELSEIF  "$(CFG)" == "IndexTool - Win32 Debug"
-
-# ADD CPP /Yc"stdafx.h"
-
-!ELSEIF  "$(CFG)" == "IndexTool - Win32 Debug Unicode"
-
-# ADD CPP /Yc"stdafx.h"
-
-!ELSEIF  "$(CFG)" == "IndexTool - Win32 Release Unicode"
-
-# ADD CPP /Yc"stdafx.h"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\Global.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\IndexDlg.h

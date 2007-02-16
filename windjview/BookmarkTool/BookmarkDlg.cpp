@@ -20,6 +20,7 @@
 #include "stdafx.h"
 #include "BookmarkTool.h"
 #include "BookmarkDlg.h"
+#include "Global.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -163,32 +164,6 @@ void CBookmarkDlg::OnBrowseDjvu()
 
 	CString strDjVuFile = dlg.GetPathName();
 	OpenDocument(strDjVuFile);
-}
-
-GUTF8String MakeUTF8String(const CString& strText)
-{
-	int nSize;
-
-#ifdef _UNICODE
-	LPCWSTR pszUnicodeText = strText;
-#else
-	nSize = ::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)strText, -1, NULL, 0);
-	LPWSTR pszUnicodeText = new WCHAR[nSize];
-	::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)strText, -1, pszUnicodeText, nSize);
-#endif
-
-	nSize = ::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, NULL, 0, NULL, NULL);
-	LPSTR pszTextUTF8 = new CHAR[nSize];
-	::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, pszTextUTF8, nSize, NULL, NULL);
-
-	GUTF8String utf8String(pszTextUTF8);
-	delete[] pszTextUTF8;
-
-#ifndef _UNICODE
-	delete[] pszUnicodeText;
-#endif
-
-	return utf8String;
 }
 
 bool CBookmarkDlg::OpenDocument(const CString& strFileName)
@@ -639,6 +614,8 @@ void CBookmarkDlg::OnEmbed()
 		{
 			DeleteFile(strNewFile);
 			AfxMessageBox(IDS_ERROR_WRITING_TEMP);
+
+			OpenDocument(strOrigFile);
 			return;
 		}
 		DeleteFile(szTemp);

@@ -60,6 +60,7 @@ clean:
 LINK_OBJS = \
 	"$(INTDIR)\BookmarkDlg.obj" \
 	"$(INTDIR)\BookmarkTool.obj" \
+	"$(INTDIR)\Global.obj" \
 	"$(INTDIR)\MyDropTarget.obj" \
 	"$(INTDIR)\stdafx.obj" \
 	"$(INTDIR)\BookmarkTool.res"
@@ -69,6 +70,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 
 "$(INTDIR)\BookmarkDlg.obj" : BookmarkDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\BookmarkTool.obj" : BookmarkTool.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\Global.obj" : Global.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDropTarget.obj" : MyDropTarget.cpp "$(INTDIR)" $(PCH)
 
 "$(INTDIR)\stdafx.obj" $(PCH) : stdafx.cpp "$(INTDIR)"
