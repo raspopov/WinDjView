@@ -264,7 +264,7 @@ bool MakeWString(const GUTF8String& text, wstring& result)
 	else
 	{
 		result.resize(text.length());
-		for (int i = 0; i < text.length(); ++i)
+		for (int i = 0; i < static_cast<int>(text.length()); ++i)
 			result[i] = static_cast<unsigned char>(text[i]);
 		return true;
 	}

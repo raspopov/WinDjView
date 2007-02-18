@@ -4943,9 +4943,13 @@ void CDjVuView::GetNormalizedText(wstring& text, bool bSelected, int nMaxLength)
 
 			bool bFoundEOL = false;
 			int nWordPos;
-			for (nWordPos = nHyphen + 1; nWordPos < text.length() && text[nWordPos] <= 0x20; ++nWordPos)
+			for (nWordPos = nHyphen + 1;
+				 nWordPos < static_cast<int>(text.length()) && text[nWordPos] <= 0x20;
+				 ++nWordPos)
+			{
 				if (wcschr(L"\n\r\013\035\038", text[nWordPos]) != NULL)
 					bFoundEOL = true;
+			}
 
 			if (bFoundEOL)
 			{
@@ -4966,7 +4970,7 @@ void CDjVuView::GetNormalizedText(wstring& text, bool bSelected, int nMaxLength)
 		if (!bAgain)
 			nLastHyphen = text.length() - 1;
 
-		if (nMaxLength >= 0 && text.length() >= nMaxLength)
+		if (nMaxLength >= 0 && static_cast<int>(text.length()) >= nMaxLength)
 			break;
 	}
 }

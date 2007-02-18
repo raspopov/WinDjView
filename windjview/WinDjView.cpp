@@ -489,7 +489,7 @@ void CDjViewApp::LoadDocSettings(const CString& strKey, DocSettings* pSettings)
 		GP<ByteStream> raw = ByteStream::create(pBuf, nSize);
 		GP<ByteStream> compressed = BSByteStream::create(raw);
 
-		TCHAR szTemp[1024];
+		char szTemp[1024];
 		string text;
 		int nRead;
 		while ((nRead = compressed->read(szTemp, 1024)) != 0)
