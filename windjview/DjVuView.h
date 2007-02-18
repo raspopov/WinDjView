@@ -60,12 +60,11 @@ public:
 		AddSource = 1,
 		AddTarget = 2
 	};
-	void GoToPage(int nPage, int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
-	void GoToBookmark(const Bookmark& bookmark, int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
-	void GoToURL(const GUTF8String& url, int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
-	void GoToSelection(int nPage, int nStartPos, int nEndPos,
-		int nLinkPage = -1, int nAddToHistory = AddSource | AddTarget);
-	void ScrollToPage(int nPage, const CPoint& ptOffset);
+	void GoToPage(int nPage, int nAddToHistory = AddSource | AddTarget);
+	void GoToBookmark(const Bookmark& bookmark, int nAddToHistory = AddSource | AddTarget);
+	void GoToURL(const GUTF8String& url, int nAddToHistory = AddSource | AddTarget);
+	void GoToSelection(int nPage, int nStartPos, int nEndPos, int nAddToHistory = AddSource | AddTarget);
+	void ScrollToPage(int nPage, const CPoint& ptOffset, bool bMargin = false);
 
 	int GetPageCount() const { return m_nPageCount; }
 	int GetCurrentPage() const { return m_nPage; }
@@ -75,7 +74,6 @@ public:
 	int GetLayout() const { return m_nLayout; }
 	int GetRotate() const { return m_nRotate; }
 
-	GUTF8String GetFullText();
 	void StopDecoding();
 	void RestartThread();
 	bool UpdatePageInfoFrom(CDjVuView* pFrom);
@@ -88,9 +86,10 @@ public:
 	void UpdateKeyboard(UINT nKey, bool bDown);
 	void UpdateVisiblePages();
 
-	void CreateBookmarkFromSelection(Bookmark& bookmark) const;
-	void CreateBookmarkFromAnnotation(Bookmark& bookmark, const Annotation* pAnno, int nPage) const;
-	void CreateBookmarkFromView(Bookmark& bookmark) const;
+	bool CreateBookmarkFromSelection(Bookmark& bookmark);
+	void CreateBookmarkFromAnnotation(Bookmark& bookmark, const Annotation* pAnno, int nPage);
+	void CreateBookmarkFromView(Bookmark& bookmark);
+	void CreateBookmarkFromPage(Bookmark& bookmark, int nPage);
 
 	enum ZoomType
 	{
@@ -322,7 +321,7 @@ protected:
 	void GetTextPosFromBottom(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos) const;
 	void FindSelectionZones(DjVuSelection& list, DjVuTXT* pText, int nStart, int nEnd) const;
 	void SelectTextRange(int nPage, int nStart, int nEnd, bool& bInfoLoaded, CWaitCursor*& pWaitCursor);
-	GUTF8String GetSelectedText() const;
+	void GetNormalizedText(wstring& text, bool bSelected = false, int nMaxLength = -1);
 	bool m_bHasSelection;
 	int m_nSelectionPage;
 	GRect m_rcSelectionRect;

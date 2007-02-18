@@ -84,11 +84,12 @@ private:
 public:
 	Bookmark()
 		: pchildren(new list<Bookmark>()), children(*pchildren), pParent(NULL),
-		  nLinkType(URL), nPage(0), ptOffset(0, 0) {}
+		  nLinkType(URL), nPage(0), ptOffset(0, 0), bMargin(false) {}
 	Bookmark(const Bookmark& bm)
 		: pchildren(new list<Bookmark>(bm.children)), children(*pchildren),
 		  strURL(bm.strURL), strTitle(bm.strTitle), pParent(bm.pParent),
-		  nLinkType(bm.nLinkType), nPage(bm.nPage), ptOffset(bm.ptOffset) {}
+		  nLinkType(bm.nLinkType), nPage(bm.nPage), ptOffset(bm.ptOffset),
+		  bMargin(bm.bMargin) {}
 	~Bookmark()
 		{ delete pchildren; }
 
@@ -109,6 +110,7 @@ public:
 	GUTF8String strURL;
 	int nPage;
 	CPoint ptOffset;
+	bool bMargin;
 
 	list<Bookmark>& children;
 

@@ -689,22 +689,32 @@ void CDjVuView::RenderPage(int nPage, int nTimeout, bool bUpdateWindow)
 		UpdateWindow();
 }
 
-void CDjVuView::ScrollToPage(int nPage, const CPoint& ptOffset)
+void CDjVuView::ScrollToPage(int nPage, const CPoint& ptOffset, bool bMargin)
 {
 	RenderPage(nPage, -1, false);
 
 	GRect rect(ptOffset.x, ptOffset.y);
-	CRect rcPos = TranslatePageRect(nPage, rect, true, false) - m_pages[nPage].ptOffset;
+	CPoint ptPos = TranslatePageRect(nPage, rect, true, false).TopLeft() - m_pages[nPage].ptOffset;
 
 	CPoint ptPageOffset = m_pages[nPage].ptOffset;
 
+	if (bMargin)
+	{
+		// Offset top-left to 1/10 of the client area
+		CRect rcClient;
+		GetClientRect(rcClient);
+
+		ptPos.x -= static_cast<int>(0.1 * rcClient.Width() + 0.5);
+		ptPos.y -= static_cast<int>(0.1 * rcClient.Height() + 0.5);
+	}
+
 	if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 	{
-		UpdatePageSizes(ptPageOffset.y, rcPos.top);
+		UpdatePageSizes(ptPageOffset.y, ptPos.y);
 		ptPageOffset = m_pages[nPage].ptOffset;
 	}
 
-	ScrollToPositionNoRepaint(ptPageOffset + rcPos.TopLeft());
+	ScrollToPositionNoRepaint(ptPageOffset + ptPos);
 
 	Invalidate();
 	UpdateWindow();
@@ -1066,7 +1076,6 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 
 		UpdatePageNumber();
 	}
-
 
 	m_bInsideUpdateLayout = false;
 }
@@ -4506,46 +4515,43 @@ BOOL CDjVuView::PreTranslateMessage(MSG* pMsg)
 	return CMyScrollView::PreTranslateMessage(pMsg);
 }
 
-void CDjVuView::GoToBookmark(const Bookmark& bookmark, int nLinkPage, int nAddToHistory)
+void CDjVuView::GoToBookmark(const Bookmark& bookmark, int nAddToHistory)
 {
 	if (bookmark.nLinkType == Bookmark::URL)
 	{
-		GoToURL(bookmark.strURL, nLinkPage, nAddToHistory);
+		GoToURL(bookmark.strURL, nAddToHistory);
 	}
 	else if (bookmark.nLinkType == Bookmark::Page)
 	{
-		GoToPage(bookmark.nPage, nLinkPage, nAddToHistory);
+		GoToPage(bookmark.nPage, nAddToHistory);
 	}
 	else if (bookmark.nLinkType == Bookmark::View)
 	{
-		if (nLinkPage == -1)
-			nLinkPage = m_nPage;
-
 		int nPage = max(min(bookmark.nPage, m_nPageCount - 1), 0);
 
-		if (m_nType == Normal)
+		if ((nAddToHistory & AddSource) != 0)
 		{
-			if (nAddToHistory & AddSource)
-				GetMainFrame()->AddToHistory(this, nLinkPage);
-
-			if (nAddToHistory & AddTarget)
-				GetMainFrame()->AddToHistory(this, nPage);
+			Bookmark bmHist;
+			CreateBookmarkFromView(bmHist);
+			GetMainFrame()->AddToHistory(this, bmHist);
 		}
 
 		if (bookmark.nPage == nPage)
-			ScrollToPage(nPage, bookmark.ptOffset);
+			ScrollToPage(nPage, bookmark.ptOffset, bookmark.bMargin);
 		else
 			RenderPage(nPage);
+
+		if ((nAddToHistory & AddTarget) != 0)
+		{
+			GetMainFrame()->AddToHistory(this, bookmark);
+		}
 	}
 }
 
-void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory)
+void CDjVuView::GoToURL(const GUTF8String& url, int nAddToHistory)
 {
 	if (url.length() == 0)
 		return;
-
-	if (nLinkPage == -1)
-		nLinkPage = m_nPage;
 
 	if (url[0] == '#')
 	{
@@ -4564,9 +4570,9 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory
 			{
 				nPage = str.toInt();
 				if (base == '+')
-					nPage = nLinkPage + nPage;
+					nPage = m_nPage + nPage;
 				else if (base=='-')
-					nPage = nLinkPage - nPage;
+					nPage = m_nPage - nPage;
 				else
 					--nPage;
 			}
@@ -4585,7 +4591,7 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory
 			ReportFatalError();
 		}
 
-		GoToPage(nPage, nLinkPage, nAddToHistory);
+		GoToPage(nPage, nAddToHistory);
 		return;
 	}
 
@@ -4614,54 +4620,47 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory
 			strPathName = strPathName.Mid(7);
 
 		// Try as absolute path
+		bool bOk = false;
 		CFile file;
 		if (file.Open(strPathName, CFile::modeRead | CFile::shareDenyWrite))
 		{
 			file.Close();
+			bOk = true;
+		}
+		else
+		{
+			// Try as relative path
+			CString strCurrentPath = m_pSource->GetFileName();
+			_tsplitpath(strCurrentPath, szDrive, szDir, NULL, NULL);
 
-			if (m_nType == Fullscreen)
+			strPathName = CString(szDrive) + CString(szDir) + strPathName;
+			if (file.Open(strPathName, CFile::modeRead | CFile::shareDenyWrite))
 			{
-				CFullscreenWnd* pFullscreenWnd = GetMainFrame()->GetFullscreenWnd();
-				CDjVuView* pOwner = pFullscreenWnd->GetOwner();
-
-				pFullscreenWnd->Hide();
-
-				if (nAddToHistory & AddSource)
-					GetMainFrame()->AddToHistory(pOwner, nLinkPage);
+				file.Close();
+				bOk = true;
 			}
-			else
-			{
-				if (nAddToHistory & AddSource)
-					GetMainFrame()->AddToHistory(this, nLinkPage);
-			}
-
-			theApp.OpenDocument(strPathName, strPage);
-			return;
 		}
 
-		// Try as relative path
-		CString strCurrentPath = m_pSource->GetFileName();
-		_tsplitpath(strCurrentPath, szDrive, szDir, NULL, NULL);
-
-		strPathName = CString(szDrive) + CString(szDir) + strPathName;
-		if (file.Open(strPathName, CFile::modeRead | CFile::shareDenyWrite))
+		if (bOk)
 		{
-			file.Close();
-
-			if (m_nType == Fullscreen)
+			if ((nAddToHistory & AddSource) != 0)
 			{
-				CFullscreenWnd* pFullscreenWnd = GetMainFrame()->GetFullscreenWnd();
-				CDjVuView* pOwner = pFullscreenWnd->GetOwner();
+				Bookmark bookmark;
+				if (m_nType == Fullscreen)
+				{
+					CFullscreenWnd* pFullscreenWnd = GetMainFrame()->GetFullscreenWnd();
+					CDjVuView* pOwner = pFullscreenWnd->GetOwner();
 
-				pFullscreenWnd->Hide();
+					pFullscreenWnd->Hide();
 
-				if (nAddToHistory & AddSource)
-					GetMainFrame()->AddToHistory(pOwner, nLinkPage);
-			}
-			else
-			{
-				if (nAddToHistory & AddSource)
-					GetMainFrame()->AddToHistory(this, nLinkPage);
+					pOwner->CreateBookmarkFromView(bookmark);
+					GetMainFrame()->AddToHistory(pOwner, bookmark);
+				}
+				else
+				{
+					CreateBookmarkFromView(bookmark);
+					GetMainFrame()->AddToHistory(this, bookmark);
+				}
 			}
 
 			theApp.OpenDocument(strPathName, strPage);
@@ -4677,23 +4676,25 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nLinkPage, int nAddToHistory
 	}
 }
 
-void CDjVuView::GoToPage(int nPage, int nLinkPage, int nAddToHistory)
+void CDjVuView::GoToPage(int nPage, int nAddToHistory)
 {
 	nPage = max(min(nPage, m_nPageCount - 1), 0);
 
-	if (nLinkPage == -1)
-		nLinkPage = m_nPage;
-
-	if (m_nType == Normal)
+	if (m_nType == Normal && (nAddToHistory & AddSource) != 0)
 	{
-		if (nAddToHistory & AddSource)
-			GetMainFrame()->AddToHistory(this, nLinkPage);
-
-		if (nAddToHistory & AddTarget)
-			GetMainFrame()->AddToHistory(this, nPage);
+		Bookmark bookmark;
+		CreateBookmarkFromView(bookmark);
+		GetMainFrame()->AddToHistory(this, bookmark);
 	}
 
 	RenderPage(nPage);
+
+	if (m_nType == Normal && (nAddToHistory & AddTarget) != 0)
+	{
+		Bookmark bookmark;
+		CreateBookmarkFromPage(bookmark, nPage);
+		GetMainFrame()->AddToHistory(this, bookmark);
+	}
 }
 
 void CDjVuView::OnViewZoomIn()
@@ -4834,28 +4835,33 @@ void CDjVuView::OnEditCopy()
 		return;
 	EmptyClipboard();
 
-	GUTF8String text = GetSelectedText();
+	wstring text;
+	GetNormalizedText(text, true);
+	int nLength = text.length();
+
 	HGLOBAL hText = NULL, hUnicodeText = NULL;
 
 	// Prepare Unicode text
-	int nSize = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)text, -1, NULL, 0);
-	hUnicodeText = ::GlobalAlloc(GMEM_MOVEABLE, nSize*sizeof(WCHAR));
+	hUnicodeText = ::GlobalAlloc(GMEM_MOVEABLE, (nLength + 1)*sizeof(WCHAR));
 	if (hUnicodeText != NULL)
 	{
 		// Lock the handle and copy the text to the buffer.
 		LPWSTR pszUnicodeText = (LPWSTR)::GlobalLock(hUnicodeText);
-		MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)text, -1, pszUnicodeText, nSize);
+		memmove(pszUnicodeText, text.c_str(), (nLength + 1)*sizeof(WCHAR));
 
 		// Prepare ANSI text
-		nSize = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+		int nSize = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
 				pszUnicodeText, -1, NULL, 0, NULL, NULL);
-		hText = ::GlobalAlloc(GMEM_MOVEABLE, nSize*sizeof(CHAR));
-		if (hText != NULL)
+		if (nSize > 0)
 		{
-			LPSTR pszText = (LPSTR)::GlobalLock(hText);
-			WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-				pszUnicodeText, -1, pszText, nSize, NULL, NULL);
-			::GlobalUnlock(pszText);
+			hText = ::GlobalAlloc(GMEM_MOVEABLE, nSize*sizeof(CHAR));
+			if (hText != NULL)
+			{
+				LPSTR pszText = (LPSTR)::GlobalLock(hText);
+				WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+					pszUnicodeText, -1, pszText, nSize, NULL, NULL);
+				::GlobalUnlock(pszText);
+			}
 		}
 
 		::GlobalUnlock(pszUnicodeText);
@@ -4874,46 +4880,95 @@ void CDjVuView::OnUpdateEditCopy(CCmdUI* pCmdUI)
 	pCmdUI->Enable(m_bHasSelection);
 }
 
-GUTF8String CDjVuView::GetSelectedText() const
+void CDjVuView::GetNormalizedText(wstring& text, bool bSelected, int nMaxLength)
 {
-	GUTF8String selection;
-	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
-	{
-		const Page& page = m_pages[nPage];
-		if (page.nSelStart != -1)
-		{
-			ASSERT(page.info.pText != NULL);
-			selection += page.info.pText->textUTF8.substr(page.nSelStart, page.nSelEnd - page.nSelStart);
-		}
-	}
-
-	return selection;
-}
-
-GUTF8String CDjVuView::GetFullText()
-{
-	GUTF8String text;
-	bool bNeedUpdate = false;
+	text.resize(0);
+	int nLastHyphen = -1;
+	bool bAgain = false;
 
 	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 	{
 		Page& page = m_pages[nPage];
-		if (!page.info.bDecoded || page.info.bHasText && !page.info.bTextDecoded)
-		{
-			if (!page.info.bDecoded)
-				bNeedUpdate = true;
 
-			page.Init(m_pSource, nPage, true);
+		wstring chunk;
+		if (bSelected)
+		{
+			if (page.nSelStart != -1)
+			{
+				ASSERT(page.info.pText != NULL);
+				MakeWString(page.info.pText->textUTF8.substr(page.nSelStart, page.nSelEnd - page.nSelStart), chunk);
+			}
+		}
+		else
+		{
+			if (!page.info.bDecoded || page.info.bHasText && !page.info.bTextDecoded)
+			{
+				page.Init(m_pSource, nPage, true);
+				m_bNeedUpdate = true;
+			}
+
+			if (page.info.pText != NULL)
+				MakeWString(page.info.pText->textUTF8, chunk);
 		}
 
-		if (page.info.pText != NULL)
-			text += page.info.pText->textUTF8;
+		if (text.length() + chunk.length() > text.capacity())
+			text.reserve(max(2*text.length(), text.length() + chunk.length()));
+
+		// Replace \n with \r\n
+		size_t nLastPos = 0, nPos = 0;
+		while ((nPos = chunk.find(L'\n', nLastPos)) != wstring::npos)
+		{
+			text.insert(text.length(), chunk, nLastPos, nPos - nLastPos);
+			text += L"\r\n";
+			nLastPos = nPos + 1;
+		}
+		text.insert(text.length(), chunk, nLastPos, chunk.length() - nLastPos);
+
+		// If a word is hyphenated, both initial part and the full word
+		// are usually stored in the text layer, and the latter is associated
+		// with the part of the word after the hyphen. This is done to ensure
+		// that hyphenated words can be located with the "Find" command.
+		// The following code cuts the initial parts of hyphenated words,
+		// to keep the extracted text clean.
+
+		bAgain = false;
+		int nHyphen = text.find(L'-', nLastHyphen + 1);
+		while (nHyphen != string::npos)
+		{
+			int nPos = nHyphen;
+			for (nPos = nHyphen - 1; nPos >= 0 && text[nPos] > 0x20 && (nHyphen - nPos < 50); --nPos)
+				;
+
+			wstring strPrev = text.substr(nPos + 1, nHyphen - nPos - 1);
+
+			bool bFoundEOL = false;
+			int nWordPos;
+			for (nWordPos = nHyphen + 1; nWordPos < text.length() && text[nWordPos] <= 0x20; ++nWordPos)
+				if (wcschr(L"\n\r\013\035\038", text[nWordPos]) != NULL)
+					bFoundEOL = true;
+
+			if (bFoundEOL)
+			{
+				if (text.length() - nWordPos < strPrev.length())
+				{
+					nLastHyphen = nHyphen - 1;
+					bAgain = true;
+					break;
+				}
+
+				if (text.substr(nWordPos, strPrev.length()) == strPrev)
+					text.erase(nWordPos, strPrev.length());
+			}
+
+			nHyphen = text.find(L'-', nHyphen + 1);
+		}
+
+		if (!bAgain)
+			nLastHyphen = text.length() - 1;
+
+		if (nMaxLength >= 0 && text.length() >= nMaxLength)
+			break;
 	}
-
-	if (bNeedUpdate)
-		UpdateLayout();
-
-	return text;
 }
 
 void CDjVuView::OnFileExportText()
@@ -4937,8 +4992,9 @@ void CDjVuView::OnFileExportText()
 	CWaitCursor wait;
 
 	strFileName = dlg.GetPathName();
-	GUTF8String text = GetFullText();
-	CString strANSIText = MakeCString(text);
+	wstring wtext;
+	GetNormalizedText(wtext);
+	CString strText = MakeCString(wtext);
 
 	CFile file;
 	if (file.Open(strFileName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive))
@@ -4946,17 +5002,24 @@ void CDjVuView::OnFileExportText()
 #ifdef _UNICODE
 		// Get ANSI text
 		int nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-			strANSIText, -1, NULL, 0, NULL, NULL);
+			strText, -1, NULL, 0, NULL, NULL);
 		LPSTR pszText = new CHAR[nSize];
 		::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-			strANSIText, -1, pszText, nSize, NULL, NULL);
+			strText, -1, pszText, nSize, NULL, NULL);
 
 		file.Write(pszText, strlen(pszText));
 		delete[] pszText;
 #else
-		file.Write(strANSIText, strANSIText.GetLength());
+		file.Write(strText, strText.GetLength());
 #endif
 		file.Close();
+	}
+
+	// Page information could be updated in GetNormalizedText
+	if (m_bNeedUpdate)
+	{
+		UpdateLayout();
+		m_bNeedUpdate = false;
 	}
 }
 
@@ -5039,8 +5102,15 @@ void CDjVuView::OnUpdateViewDisplay(CCmdUI* pCmdUI)
 	}
 }
 
-void CDjVuView::GoToSelection(int nPage, int nStartPos, int nEndPos, int nLinkPage, int nAddToHistory)
+void CDjVuView::GoToSelection(int nPage, int nStartPos, int nEndPos, int nAddToHistory)
 {
+	if ((nAddToHistory & AddSource) != 0)
+	{
+		Bookmark bookmark;
+		CreateBookmarkFromView(bookmark);
+		GetMainFrame()->AddToHistory(this, bookmark);
+	}
+
 	Page& page = m_pages[nPage];
 	bool bInfoLoaded;
 	CWaitCursor* pWaitCursor = NULL;
@@ -5062,16 +5132,11 @@ void CDjVuView::GoToSelection(int nPage, int nStartPos, int nEndPos, int nLinkPa
 	if (pWaitCursor)
 		delete pWaitCursor;
 
-	if (nLinkPage == -1)
-		nLinkPage = m_nPage;
-
-	if (m_nType == Normal)
+	if ((nAddToHistory & AddTarget) != 0)
 	{
-		if (nAddToHistory & AddSource)
-			GetMainFrame()->AddToHistory(this, nLinkPage);
-
-		if (nAddToHistory & AddTarget)
-			GetMainFrame()->AddToHistory(this, nPage);
+		Bookmark bookmark;
+		CreateBookmarkFromView(bookmark);
+		GetMainFrame()->AddToHistory(this, bookmark);
 	}
 }
 
@@ -5754,11 +5819,10 @@ void CDjVuView::OnHighlight(UINT nID)
 	{
 		Bookmark bookmark;
 		CreateBookmarkFromAnnotation(bookmark, pNewAnno, nAnnoPage);
+		bookmark.strTitle = MakeUTF8String(dlg.m_strBookmark);
 
 		m_pSource->GetSettings()->bookmarks.push_back(bookmark);
 		Bookmark& bmNew = m_pSource->GetSettings()->bookmarks.back();
-
-		bmNew.strTitle = MakeUTF8String(dlg.m_strBookmark);
 
 		CFrameWnd* pFrame;
 		if (m_nType == Fullscreen)
@@ -5869,13 +5933,43 @@ void CDjVuView::OnAddBookmark()
 	}
 }
 
-void CDjVuView::CreateBookmarkFromSelection(Bookmark& bookmark) const
+void MakeBookmarkTitle(const wstring& strText, wstring& result)
+{
+	result.resize(0);
+	result.reserve(strText.length());
+
+	bool bSkipSpaces = true;
+	for (size_t i = 0; i < strText.length(); ++i)
+	{
+		if (strText[i] <= 0x20)
+		{
+			if (!bSkipSpaces)
+				result += L' ';
+			bSkipSpaces = true;
+		}
+		else
+		{
+			result += strText[i];
+			bSkipSpaces = false;
+		}
+	}
+
+	if (result.length() > 100)
+	{
+		result.erase(100);
+		result += L"...";
+	}
+}
+
+bool CDjVuView::CreateBookmarkFromSelection(Bookmark& bookmark)
 {
 	if (m_nSelectionPage != -1)
 	{
 		bookmark.nLinkType = Bookmark::View;
 		bookmark.nPage = m_nSelectionPage;
 		bookmark.ptOffset = CPoint(m_rcSelectionRect.xmin, m_rcSelectionRect.ymax);
+		bookmark.bMargin = true;
+		return true;
 	}
 	else if (m_bHasSelection)
 	{
@@ -5891,13 +5985,22 @@ void CDjVuView::CreateBookmarkFromSelection(Bookmark& bookmark) const
 				bookmark.nLinkType = Bookmark::View;
 				bookmark.nPage = nPage;
 				bookmark.ptOffset = CPoint(rect.xmin, rect.ymax);
-				break;
+				bookmark.bMargin = true;
+
+				wstring strText, strTitle;
+				GetNormalizedText(strText, true, 200);
+				MakeBookmarkTitle(strText, strTitle);
+				bookmark.strTitle = MakeUTF8String(strTitle);
+
+				return true;
 			}
 		}
 	}
+
+	return false;
 }
 
-void CDjVuView::CreateBookmarkFromView(Bookmark& bookmark) const
+void CDjVuView::CreateBookmarkFromView(Bookmark& bookmark)
 {
 	int nTopPage = CalcTopPage();
 	CPoint ptOffset = GetScrollPosition() - m_pages[nTopPage].ptOffset;
@@ -5906,11 +6009,24 @@ void CDjVuView::CreateBookmarkFromView(Bookmark& bookmark) const
 	bookmark.nLinkType = Bookmark::View;
 	bookmark.nPage = nTopPage;
 	bookmark.ptOffset = ptDjVuOffset;
+	bookmark.bMargin = false;
 }
 
-void CDjVuView::CreateBookmarkFromAnnotation(Bookmark& bookmark, const Annotation* pAnno, int nPage) const
+void CDjVuView::CreateBookmarkFromAnnotation(Bookmark& bookmark, const Annotation* pAnno, int nPage)
 {
 	bookmark.nLinkType = Bookmark::View;
 	bookmark.nPage = nPage;
 	bookmark.ptOffset = CPoint(pAnno->rectBounds.xmin, pAnno->rectBounds.ymax);
+	bookmark.bMargin = true;
+
+	wstring strComment, strTitle;;
+	MakeWString(pAnno->strComment, strComment);
+	MakeBookmarkTitle(strComment, strTitle);
+	bookmark.strTitle = MakeUTF8String(strTitle);
+}
+
+void CDjVuView::CreateBookmarkFromPage(Bookmark& bookmark, int nPage)
+{
+	bookmark.nLinkType = Bookmark::Page;
+	bookmark.nPage = nPage;
 }

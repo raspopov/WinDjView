@@ -489,13 +489,17 @@ void CDjViewApp::LoadDocSettings(const CString& strKey, DocSettings* pSettings)
 		GP<ByteStream> raw = ByteStream::create(pBuf, nSize);
 		GP<ByteStream> compressed = BSByteStream::create(raw);
 
-		GUTF8String text;
-		char szTemp[1024];
+		TCHAR szTemp[1024];
+		string text;
 		int nRead;
 		while ((nRead = compressed->read(szTemp, 1024)) != 0)
-			text += GUTF8String(szTemp, nRead);
+		{
+			if (text.length() + nRead > text.capacity())
+				text.reserve(max(2*text.length(), text.length() + nRead));
+			text.append(szTemp, nRead);
+		}
 
-		stringstream sin((const char*) text);
+		stringstream sin(text.c_str());
 		XMLParser parser;
 		if (parser.Parse(sin))
 			pSettings->Load(*parser.GetRoot());
@@ -594,27 +598,6 @@ void CDjViewApp::SaveSettings()
 			WriteProfileBinary(s_pszDocumentsSection + CString(_T("\\")) + strKey, s_pszSettings, pBuf, nSize);
 			delete[] pBuf;
 		}
-/*
-		OutputDebugString(data.GetXML());
-		stringstream sin((const char*) data.GetXML());
-		XMLParser parser;
-		if (!parser.Parse(sin))
-		{
-			OutputDebugString("Error!");
-		}
-		else
-		{
-			DocSettings newData;
-			newData.Load(*parser.GetRoot());
-			if (data.GetXML() != newData.GetXML())
-			{
-				OutputDebugString("Strings differ!\n");
-				OutputDebugString(newData.GetXML());
-			}
-			else
-				OutputDebugString("OK!\n");
-		}
-*/
 	}
 }
 
@@ -802,7 +785,7 @@ CDjVuDoc* CDjViewApp::OpenDocument(const CString& strPathName, const GUTF8String
 /**/
 	if (strPage.length() > 0)
 	{
-		pView->GoToURL(strPage, -1, CDjVuView::AddTarget);
+		pView->GoToURL(strPage, CDjVuView::AddTarget);
 	}
 
 	return pDoc;

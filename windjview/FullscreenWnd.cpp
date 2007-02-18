@@ -43,6 +43,7 @@ BEGIN_MESSAGE_MAP(CFullscreenWnd, CWnd)
 	ON_WM_SETFOCUS()
 	ON_WM_ERASEBKGND()
 	ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNeedText)
+	ON_MESSAGE(WM_APPCOMMAND, OnAppCommand)
 END_MESSAGE_MAP()
 
 
@@ -98,7 +99,7 @@ void CFullscreenWnd::Hide()
 		m_pOwner->UpdatePageInfoFrom(m_pView);
 		m_pOwner->CopyBitmapsFrom(m_pView, true);
 
-		m_pOwner->GoToPage(nPage, -1, CDjVuView::DoNotAdd);
+		m_pOwner->GoToPage(nPage, CDjVuView::DoNotAdd);
 
 		m_pOwner->RestartThread();
 		CThumbnailsView* pThumbnailsView = ((CChildFrame*)m_pOwner->GetParentFrame())->GetThumbnailsView();
@@ -168,8 +169,32 @@ BOOL CFullscreenWnd::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERI
 	{
 		// Trick to make dialogs and message boxes work properly
 		CPushRoutingFrame push((CFrameWnd*) this);
-		return m_pView->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+
+		// Send commands to the view
+		if (m_pView->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+			return true;
 	}
 
 	return CWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+}
+
+LRESULT CFullscreenWnd::OnAppCommand(WPARAM wParam, LPARAM lParam)
+{
+	if (IsWindowVisible() && m_pView != NULL)
+	{
+		UINT nCommand = GET_APPCOMMAND_LPARAM(lParam);
+		if (nCommand == APPCOMMAND_BROWSER_BACKWARD)
+		{
+			m_pOwner->GetTopLevelParent()->SendMessage(WM_COMMAND, ID_VIEW_BACK);
+			return 1;
+		}
+		else if (nCommand == APPCOMMAND_BROWSER_FORWARD)
+		{
+			m_pOwner->GetTopLevelParent()->SendMessage(WM_COMMAND, ID_VIEW_FORWARD);
+			return 1;
+		}
+	}
+
+	Default();
+	return 0;
 }

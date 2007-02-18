@@ -24,6 +24,7 @@
 #include "MyStatusBar.h"
 #include "MyComboBox.h"
 #include "FindDlg.h"
+#include "DjVuSource.h"
 class CDjVuView;
 class CFullscreenWnd;
 class CMagnifyWnd;
@@ -47,7 +48,7 @@ public:
 public:
 	void HilightStatusMessage(LPCTSTR pszMessage);
 
-	void AddToHistory(CDjVuView* pView, int nPage);
+	void AddToHistory(CDjVuView* pView, const Bookmark& bookmark);
 	CFullscreenWnd* GetFullscreenWnd();
 	bool IsFullscreenMode();
 	CMagnifyWnd* GetMagnifyWnd();
@@ -94,11 +95,21 @@ protected:
 
 	struct HistoryPos
 	{
-		CString strFileName;
-		int nPage;
+		HistoryPos(const CString& strFile, const Bookmark& bm)
+			: strFileName(strFile), bookmark(bm) {}
 
-		bool operator==(const HistoryPos& rhs) const { return strFileName == rhs.strFileName && nPage == rhs.nPage; }
-		bool operator!=(const HistoryPos& rhs) const { return !(*this == rhs); }
+		bool operator==(const HistoryPos& rhs) const
+		{
+			return strFileName == rhs.strFileName
+					&& bookmark.nLinkType == rhs.bookmark.nLinkType
+					&& bookmark.nPage == rhs.bookmark.nPage
+					&& bookmark.ptOffset == rhs.bookmark.ptOffset;
+		}
+		bool operator!=(const HistoryPos& rhs) const
+			{ return !(*this == rhs); }
+
+		CString strFileName;
+		Bookmark bookmark;
 	};
 	list<HistoryPos> m_history;
 	list<HistoryPos>::iterator m_historyPos;
@@ -143,7 +154,6 @@ protected:
 	afx_msg void OnUpdateStatusMode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateStatusPage(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateStatusSize(CCmdUI* pCmdUI);
-	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnDestroy();
 	afx_msg LRESULT OnUpdateKeyboard(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnSetLanguage(UINT nID);

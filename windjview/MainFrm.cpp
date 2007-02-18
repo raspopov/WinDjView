@@ -120,13 +120,6 @@ void CreateSystemMenuFont(CFont& font)
 	font.CreateFontIndirect(&ncm.lfMenuFont);
 }
 
-// AppCommand constants from winuser.h
-#define WM_APPCOMMAND                0x0319
-#define APPCOMMAND_BROWSER_BACKWARD       1
-#define APPCOMMAND_BROWSER_FORWARD        2
-#define FAPPCOMMAND_MASK             0xF000
-#define GET_APPCOMMAND_LPARAM(lParam) ((short)(HIWORD(lParam) & ~FAPPCOMMAND_MASK))
-
 
 // CMainFrame
 
@@ -156,7 +149,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_MODE, OnUpdateStatusMode)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_PAGE, OnUpdateStatusPage)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_SIZE, OnUpdateStatusSize)
-	ON_WM_SETFOCUS()
 	ON_WM_DESTROY()
 	ON_MESSAGE(WM_UPDATE_KEYBOARD, OnUpdateKeyboard)
 	ON_COMMAND_RANGE(ID_LANGUAGE_FIRST + 1, ID_LANGUAGE_LAST, OnSetLanguage)
@@ -577,7 +569,7 @@ void CMainFrame::OnEditFind()
 void CMainFrame::OnUpdateEditFind(CCmdUI* pCmdUI)
 {
 	CMDIChildWnd* pFrame = MDIGetActive();
-	if (pFrame == NULL)
+	if (IsFullscreenMode() || pFrame == NULL)
 	{
 		pCmdUI->Enable(false);
 		return;
@@ -708,12 +700,25 @@ void CMainFrame::GoToHistoryPos(const HistoryPos& pos)
 	}
 
 	CDjVuView* pView = pDoc->GetDjVuView();
-	pView->GoToPage(pos.nPage, -1, CDjVuView::DoNotAdd);
+	if (IsFullscreenMode())
+	{
+		if (pView == m_pFullscreenWnd->GetOwner())
+		{
+			m_pFullscreenWnd->GetView()->GoToBookmark(pos.bookmark, CDjVuView::DoNotAdd);
+			return;
+		}
+		else
+		{
+			m_pFullscreenWnd->Hide();
+		}
+	}
+
+	pView->GoToBookmark(pos.bookmark, CDjVuView::DoNotAdd);
 }
 
 void CMainFrame::OnViewBack()
 {
-	if (IsFullscreenMode() || m_history.empty() || m_historyPos == m_history.begin())
+	if (m_history.empty() || m_historyPos == m_history.begin())
 		return;
 
 	const HistoryPos& pos = *(--m_historyPos);
@@ -722,13 +727,12 @@ void CMainFrame::OnViewBack()
 
 void CMainFrame::OnUpdateViewBack(CCmdUI* pCmdUI)
 {
-	pCmdUI->Enable(!IsFullscreenMode() && !m_history.empty()
-		&& m_historyPos != m_history.begin());
+	pCmdUI->Enable(!m_history.empty() && m_historyPos != m_history.begin());
 }
 
 void CMainFrame::OnViewForward()
 {
-	if (IsFullscreenMode() || m_history.empty())
+	if (m_history.empty())
 		return;
 
 	list<HistoryPos>::iterator it = m_history.end();
@@ -741,7 +745,7 @@ void CMainFrame::OnViewForward()
 
 void CMainFrame::OnUpdateViewForward(CCmdUI* pCmdUI)
 {
-	if (IsFullscreenMode() || m_history.empty())
+	if (m_history.empty())
 	{
 		pCmdUI->Enable(false);
 	}
@@ -752,11 +756,11 @@ void CMainFrame::OnUpdateViewForward(CCmdUI* pCmdUI)
 	}
 }
 
-void CMainFrame::AddToHistory(CDjVuView* pView, int nPage)
+void CMainFrame::AddToHistory(CDjVuView* pView, const Bookmark& bookmark)
 {
-	HistoryPos pos;
-	pos.strFileName = pView->GetDocument()->GetPathName();
-	pos.nPage = nPage;
+	ASSERT(bookmark.nLinkType == Bookmark::Page || bookmark.nLinkType == Bookmark::View);
+
+	HistoryPos pos(pView->GetDocument()->GetPathName(), bookmark);
 
 	if (!m_history.empty() && pos == *m_historyPos)
 		return;
@@ -966,7 +970,12 @@ void CMainFrame::OnUpdateStatusSize(CCmdUI* pCmdUI)
 BOOL CMainFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	if (IsFullscreenMode())
-		return m_pFullscreenWnd->GetView()->SendMessage(WM_COMMAND, wParam, lParam);
+	{
+		if (m_pFullscreenWnd->GetView()->SendMessage(WM_COMMAND, wParam, lParam))
+			return true;
+
+		return CWnd::OnCommand(wParam, lParam);
+	}
 
 	return CMDIFrameWnd::OnCommand(wParam, lParam);
 }
@@ -974,21 +983,14 @@ BOOL CMainFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 BOOL CMainFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
 {
 	if (IsFullscreenMode())
-		return m_pFullscreenWnd->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
-
-	return CMDIFrameWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
-}
-
-void CMainFrame::OnSetFocus(CWnd* pOldWnd)
-{
-	if (IsFullscreenMode())
 	{
-		m_pFullscreenWnd->SetForegroundWindow();
-		m_pFullscreenWnd->SetFocus();
-		return;
+		if (m_pFullscreenWnd->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+			return true;
+
+		return CWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 	}
 
-	CMDIFrameWnd::OnSetFocus(pOldWnd);
+	return CMDIFrameWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }
 
 LRESULT CALLBACK CMainFrame::KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)

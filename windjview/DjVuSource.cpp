@@ -358,6 +358,7 @@ const TCHAR pszAttrType[] = _T("type");
 const TCHAR pszAttrPage[] = _T("page");
 const TCHAR pszAttrOffsetX[] = _T("offset-x");
 const TCHAR pszAttrOffsetY[] = _T("offset-y");
+const TCHAR pszAttrMargin[] = _T("margin");
 
 GUTF8String Bookmark::GetXML() const
 {
@@ -373,6 +374,7 @@ GUTF8String Bookmark::GetXML() const
 		{
 			result += MakeUTF8String(FormatString(_T("%s=\"%d\" "), pszAttrOffsetX, ptOffset.x));
 			result += MakeUTF8String(FormatString(_T("%s=\"%d\" "), pszAttrOffsetY, ptOffset.y));
+			result += MakeUTF8String(FormatString(_T("%s=\"%d\" "), pszAttrMargin, (int) bMargin));
 		}
 	}
 	else if (nLinkType == URL)
@@ -418,6 +420,10 @@ void Bookmark::Load(const XMLNode& node)
 		{
 			node.GetLongAttribute(pszAttrOffsetX, ptOffset.x);
 			node.GetLongAttribute(pszAttrOffsetY, ptOffset.y);
+
+			int nMargin;
+			if (node.GetIntAttribute(pszAttrMargin, nMargin))
+				bMargin = (nMargin != 0);
 		}
 	}
 

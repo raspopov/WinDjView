@@ -112,3 +112,12 @@ using namespace std;
 #define IDC_HAND MAKEINTRESOURCE(32649)
 #define COLOR_HOTLIGHT 26
 #endif
+
+#ifndef WM_APPCOMMAND
+#define WM_APPCOMMAND                0x0319
+#define APPCOMMAND_BROWSER_BACKWARD       1
+#define APPCOMMAND_BROWSER_FORWARD        2
+#define FAPPCOMMAND_MASK             0xF000
+#define GET_APPCOMMAND_LPARAM(lParam) ((short)(HIWORD(lParam) & ~FAPPCOMMAND_MASK))
+#endif
+

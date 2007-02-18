@@ -35,7 +35,7 @@
 void BuildInvertTable(BYTE* table)
 {
 	for (int i = 0; i < 256; ++i)
-		table[i] = static_cast<BYTE>(255 - table[i]);
+		table[i] = 255 - table[i];
 }
 
 void BuildBrightnessTable(int nBrightness, BYTE* table)
@@ -43,7 +43,7 @@ void BuildBrightnessTable(int nBrightness, BYTE* table)
 	for (int i = 0; i < 256; ++i)
 	{
 		double color = table[i] * (100.0 + nBrightness) / 100.0;
-		table[i] = max(0, min(255, static_cast<BYTE>(color + 0.5)));
+		table[i] = max(0, min(255, static_cast<int>(color + 0.5)));
 	}
 }
 
@@ -52,7 +52,7 @@ void BuildContrastTable(int nContrast, BYTE* table)
 	for (int i = 0; i < 256; ++i)
 	{
 		double color = 128.0 + (table[i] - 128.0) * (100 + nContrast) / 100.0;
-		table[i] = max(0, min(255, static_cast<BYTE>(color + 0.5)));
+		table[i] = max(0, min(255, static_cast<int>(color + 0.5)));
 	}
 }
 
@@ -62,7 +62,7 @@ void BuildGammaTable(double fGamma, BYTE* table)
 	for (int i = 0; i < 256; ++i)
 	{
 		double color = pow(table[i] / 255.0, exponent) * 255.0;
-		table[i] = max(0, min(255, static_cast<BYTE>(color + 0.5)));
+		table[i] = max(0, min(255, static_cast<int>(color + 0.5)));
 	}
 }
 
