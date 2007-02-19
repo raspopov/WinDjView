@@ -66,9 +66,9 @@ public:
 	bool HasObservers() const { return !m_observers.empty(); }
 	bool IsObservedBy(Observer* observer) const
 		{ return m_observers.find(observer) != m_observers.end(); }
+	void UpdateObservers(const Message& message);
 	
 protected:
-	void UpdateObservers(const Message& message);
 	set<Observer*> m_observers;
 };
 

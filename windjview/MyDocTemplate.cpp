@@ -110,4 +110,6 @@ void CMyDocTemplate::InitialUpdateFrame(CFrameWnd* pFrame, CDocument* pDoc, BOOL
 	pChildFrm->CreateNavPanes();
 
 	CMultiDocTemplate::InitialUpdateFrame(pFrame, pDoc, bMakeVisible);
+
+	pView->UpdateObservers(VIEW_INITIALIZED);
 }

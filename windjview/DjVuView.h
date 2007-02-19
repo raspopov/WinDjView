@@ -186,7 +186,7 @@ protected:
 	int m_nPendingPage;
 	CSize m_szDisplay;
 	int CalcTopPage() const;
-	int CalcCurrentPage(int& nTopPage) const;
+	int CalcCurrentPage() const;
 	void RenderPage(int nPage, int nTimeout = -1, bool bUpdateWindow = true);
 
 	bool InvalidatePage(int nPage);

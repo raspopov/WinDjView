@@ -518,6 +518,7 @@ void CDjVuView::OnInitialUpdate()
 
 	// Save m_nPage, because UpdateLayout, which is called before RenderPage, can change it
 	int nStartupPage = (m_nPage >= 0 && m_nPage < GetPageCount() ? m_nPage : 0);
+	m_nPage = nStartupPage;
 
 	if (m_nType == Normal)
 	{
@@ -585,7 +586,6 @@ void CDjVuView::OnInitialUpdate()
 	ShowCursor();
 
 	m_bInitialized = true;
-	UpdateObservers(VIEW_INITIALIZED);
 }
 
 void CDjVuView::ReadZoomSettings(GP<DjVuANT> pAnt)
@@ -3562,7 +3562,7 @@ int CDjVuView::CalcTopPage() const
 	return FixPageNumber(nPage);
 }
 
-int CDjVuView::CalcCurrentPage(int& nTopPage) const
+int CDjVuView::CalcCurrentPage() const
 {
 	if (m_nLayout == SinglePage || m_nLayout == Facing)
 		return m_nPage;
@@ -3570,9 +3570,7 @@ int CDjVuView::CalcCurrentPage(int& nTopPage) const
 	CRect rcClient;
 	GetClientRect(rcClient);
 
-	nTopPage = CalcTopPage();
-
-	int nPage = nTopPage;
+	int nPage = CalcTopPage();
 	const Page& page = m_pages[nPage];
 	int nHeight = min(page.szDisplay.cy, rcClient.Height());
 
@@ -5746,12 +5744,18 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 
 void CDjVuView::UpdatePageNumber()
 {
-	int nTopPage;
-	int nCurrentPage = CalcCurrentPage(nTopPage);
-	if (nCurrentPage != m_nPage)
+	if (m_nLayout == SinglePage || m_nLayout == Facing)
 	{
-		m_nPage = nCurrentPage;
 		UpdateObservers(PageMsg(CURRENT_PAGE_CHANGED, m_nPage));
+	}
+	else
+	{
+		int nCurrentPage = CalcCurrentPage();
+		if (nCurrentPage != m_nPage)
+		{
+			m_nPage = nCurrentPage;
+			UpdateObservers(PageMsg(CURRENT_PAGE_CHANGED, m_nPage));
+		}
 	}
 
 	if (m_nType == Normal)
