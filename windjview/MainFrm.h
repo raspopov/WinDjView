@@ -48,7 +48,10 @@ public:
 public:
 	void HilightStatusMessage(LPCTSTR pszMessage);
 
+	void AddToHistory(CDjVuView* pView);
+	void AddToHistory(CDjVuView* pView, int nPage);
 	void AddToHistory(CDjVuView* pView, const Bookmark& bookmark);
+
 	CFullscreenWnd* GetFullscreenWnd();
 	bool IsFullscreenMode();
 	CMagnifyWnd* GetMagnifyWnd();
@@ -95,25 +98,24 @@ protected:
 
 	struct HistoryPos
 	{
-		HistoryPos(const CString& strFile, const Bookmark& bm)
-			: strFileName(strFile), bookmark(bm) {}
-
 		bool operator==(const HistoryPos& rhs) const
 		{
+			ASSERT(bmView.nLinkType == Bookmark::View && rhs.bmView.nLinkType == Bookmark::View);
 			return strFileName == rhs.strFileName
-					&& bookmark.nLinkType == rhs.bookmark.nLinkType
-					&& bookmark.nPage == rhs.bookmark.nPage
-					&& bookmark.ptOffset == rhs.bookmark.ptOffset;
+					&& bmView.nPage == rhs.bmView.nPage
+					&& bmView.ptOffset == rhs.bmView.ptOffset;
 		}
 		bool operator!=(const HistoryPos& rhs) const
 			{ return !(*this == rhs); }
 
 		CString strFileName;
 		Bookmark bookmark;
+		Bookmark bmView;
 	};
 	list<HistoryPos> m_history;
 	list<HistoryPos>::iterator m_historyPos;
 	void GoToHistoryPos(const HistoryPos& pos);
+	void AddToHistory(const HistoryPos& pos);
 
 	struct LanguageInfo
 	{

@@ -757,35 +757,26 @@ void CDjViewApp::OnFileSettings()
 	}
 }
 
-CDjVuDoc* CDjViewApp::OpenDocument(const CString& strPathName, const GUTF8String& strPage)
+CDjVuDoc* CDjViewApp::OpenDocument(LPCTSTR lpszPathName, const GUTF8String& strPage)
 {
-/**/
-	CDjVuDoc* pDoc = (CDjVuDoc*)FindOpenDocument(strPathName);
+	CDjVuDoc* pDoc = (CDjVuDoc*)FindOpenDocument(lpszPathName);
 	if (pDoc == NULL)
-		pDoc = (CDjVuDoc*)OpenDocumentFile(strPathName);
+		pDoc = (CDjVuDoc*)OpenDocumentFile(lpszPathName);
 
 	if (pDoc == NULL)
-	{
-		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + strPathName);
 		return NULL;
-	}
 
 	CDjVuView* pView = pDoc->GetDjVuView();
 	CFrameWnd* pFrame = pView->GetParentFrame();
 	pFrame->ActivateFrame();
-/*/
-	CDjVuDoc* pDoc = (CDjVuDoc*)OpenDocumentFile(strPathName);
-	if (pDoc == NULL)
-	{
-		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + strPathName);
-		return NULL;
-	}
 
-	CDjVuView* pView = pDoc->GetDjVuView();
-/**/
 	if (strPage.length() > 0)
 	{
 		pView->GoToURL(strPage, CDjVuView::AddTarget);
+	}
+	else
+	{
+		((CMainFrame*) pView->GetTopLevelFrame())->AddToHistory(pView);
 	}
 
 	return pDoc;
@@ -873,11 +864,18 @@ BOOL CDjViewApp::OnOpenRecentFile(UINT nID)
 	ASSERT(strPathName.GetLength() != 0);
 	TRACE(_T("MRU: open file (%d) '%s'.\n"), nIndex + 1, strPathName);
 
-	CDocument* pDoc = OpenDocumentFile(strPathName);
+	CDjVuDoc* pDoc = (CDjVuDoc*) OpenDocumentFile(strPathName);
 	if (pDoc == NULL)
+	{
 		m_pRecentFileList->Remove(nIndex);
+	}
 	else
+	{
 		AddToRecentFileList(pDoc->GetPathName());
+
+		CDjVuView* pView = pDoc->GetDjVuView();
+		((CMainFrame*) pView->GetTopLevelFrame())->AddToHistory(pView);
+	}
 
 	return true;
 }
@@ -990,6 +988,86 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def, LP
 		if (_stscanf(strText, _T("%u"), &value) != 1)
 			value = def;
 	}
+}
+
+void CreateSystemDialogFont(CFont& font)
+{
+	LOGFONT lf;
+
+	HGDIOBJ hFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
+	::GetObject(hFont, sizeof(LOGFONT), &lf);
+
+	OSVERSIONINFO vi;
+	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
+		vi.dwMajorVersion >= 5)
+	{
+		_tcscpy(lf.lfFaceName, _T("MS Shell Dlg 2"));
+	}
+
+	font.CreateFontIndirect(&lf);
+}
+
+void CreateSystemIconFont(CFont& font)
+{
+	LOGFONT lf;
+
+	if (IsThemed())
+	{
+		LOGFONTW lfw;
+		HRESULT hr = XPGetThemeSysFont(NULL, TMT_ICONTITLEFONT, &lfw);
+		if (SUCCEEDED(hr))
+		{
+#ifdef UNICODE
+			memcpy(&lf, &lfw, sizeof(LOGFONT));
+#else
+			memcpy(&lf, &lfw, (char*)&lfw.lfFaceName - (char*)&lfw);
+			_tcscpy(lf.lfFaceName, CString(lfw.lfFaceName));
+#endif
+			font.CreateFontIndirect(&lf);
+			return;
+		}
+	}
+
+	if (!SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &lf, 0))
+	{
+		CreateSystemDialogFont(font);
+		return;
+	}
+
+	font.CreateFontIndirect(&lf);
+}
+
+void CreateSystemMenuFont(CFont& font)
+{
+	LOGFONT lf;
+
+	if (IsThemed())
+	{
+		LOGFONTW lfw;
+		HRESULT hr = XPGetThemeSysFont(NULL, TMT_MENUFONT, &lfw);
+		if (SUCCEEDED(hr))
+		{
+#ifdef UNICODE
+			memcpy(&lf, &lfw, sizeof(LOGFONT));
+#else
+			memcpy(&lf, &lfw, (char*)&lfw.lfFaceName - (char*)&lfw);
+			_tcscpy(lf.lfFaceName, CString(lfw.lfFaceName));
+#endif
+			font.CreateFontIndirect(&lf);
+			return;
+		}
+	}
+
+	NONCLIENTMETRICS ncm;
+	ncm.cbSize = sizeof(NONCLIENTMETRICS);
+	if (!SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0))
+	{
+		CreateSystemDialogFont(font);
+		return;
+	}
+
+	font.CreateFontIndirect(&ncm.lfMenuFont);
 }
 
 struct MonitorAPI

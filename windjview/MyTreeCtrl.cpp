@@ -54,8 +54,6 @@ CMyTreeCtrl::CMyTreeCtrl()
 
 	lf.lfUnderline = true;
 	m_fontHover.CreateFontIndirect(&lf);
-
-	m_toolTip.Create(this);
 }
 
 CMyTreeCtrl::~CMyTreeCtrl()
@@ -625,7 +623,7 @@ void CMyTreeCtrl::RecalcLayout()
 	Invalidate();
 }
 
-int CMyTreeCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct) 
+int CMyTreeCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	m_bHasLines = (lpCreateStruct->style & TVS_HASLINES) != 0;
 	m_bLinesAtRoot = (lpCreateStruct->style & TVS_LINESATROOT) != 0;
@@ -637,6 +635,8 @@ int CMyTreeCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (IsThemed())
 		m_hTheme = XPOpenThemeData(m_hWnd, L"TREEVIEW");
 
+	m_toolTip.Create(this);
+
 	return 0;
 }
 
@@ -647,6 +647,8 @@ void CMyTreeCtrl::OnDestroy()
 		XPCloseThemeData(m_hTheme);
 		m_hTheme = NULL;
 	}
+
+	m_toolTip.DestroyWindow();
 
 	CWnd::OnDestroy();
 }

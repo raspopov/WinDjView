@@ -360,6 +360,23 @@ const TCHAR pszAttrOffsetX[] = _T("offset-x");
 const TCHAR pszAttrOffsetY[] = _T("offset-y");
 const TCHAR pszAttrMargin[] = _T("margin");
 
+Bookmark& Bookmark::operator=(const Bookmark& bm)
+{
+	if (this != &bm)
+	{
+		children = bm.children;
+		strURL = bm.strTitle;
+		strTitle = bm.strTitle;
+		pParent = bm.pParent;
+		nLinkType = bm.nLinkType;
+		nPage = bm.nPage;
+		ptOffset = bm.ptOffset;
+		bMargin = bm.bMargin;
+	}
+
+	return *this;
+}
+
 GUTF8String Bookmark::GetXML() const
 {
 	GUTF8String result;

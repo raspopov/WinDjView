@@ -577,9 +577,10 @@ void CDjVuView::OnInitialUpdate()
 		pDocSettings->bFirstPageAlone = m_bFirstPageAlone;
 		pDocSettings->nRotate = m_nRotate;
 
-		CPoint ptOffset = GetScrollPosition() - m_pages[m_nPage].ptOffset;
-		pDocSettings->nPage = m_nPage;
-		pDocSettings->ptOffset = ScreenToDjVu(m_nPage, ptOffset, false);
+		Bookmark bmView;
+		CreateBookmarkFromView(bmView);
+		pDocSettings->nPage = bmView.nPage;
+		pDocSettings->ptOffset = bmView.ptOffset;
 	}
 
 	m_nTimerID = SetTimer(1, 100, NULL);
@@ -671,7 +672,7 @@ void CDjVuView::RenderPage(int nPage, int nTimeout, bool bUpdateWindow)
 	{
 		UpdatePageSizes(page.ptOffset.y);
 
-		int nUpdatedPos = page.ptOffset.y - 1 - (nPage == 0 ? m_nMargin : min(m_nMargin, m_nPageGap));
+		int nUpdatedPos = page.ptOffset.y - m_nPageBorder - (nPage == 0 ? m_nMargin : min(m_nMargin, m_nPageGap));
 		ScrollToPositionNoRepaint(CPoint(GetScrollPos(SB_HORZ), nUpdatedPos));
 	}
 
@@ -706,6 +707,13 @@ void CDjVuView::ScrollToPage(int nPage, const CPoint& ptOffset, bool bMargin)
 
 		ptPos.x -= static_cast<int>(0.1 * rcClient.Width() + 0.5);
 		ptPos.y -= static_cast<int>(0.1 * rcClient.Height() + 0.5);
+	}
+	else
+	{
+		if (ptPos.x == 0)
+			ptPos.x = -m_nMargin;
+		if (ptPos.y == 0)
+			ptPos.y = -m_nPageBorder - (nPage == 0 ? m_nMargin : min(m_nMargin, m_nPageGap));
 	}
 
 	if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
@@ -4528,11 +4536,7 @@ void CDjVuView::GoToBookmark(const Bookmark& bookmark, int nAddToHistory)
 		int nPage = max(min(bookmark.nPage, m_nPageCount - 1), 0);
 
 		if ((nAddToHistory & AddSource) != 0)
-		{
-			Bookmark bmHist;
-			CreateBookmarkFromView(bmHist);
-			GetMainFrame()->AddToHistory(this, bmHist);
-		}
+			GetMainFrame()->AddToHistory(this);
 
 		if (bookmark.nPage == nPage)
 			ScrollToPage(nPage, bookmark.ptOffset, bookmark.bMargin);
@@ -4540,9 +4544,7 @@ void CDjVuView::GoToBookmark(const Bookmark& bookmark, int nAddToHistory)
 			RenderPage(nPage);
 
 		if ((nAddToHistory & AddTarget) != 0)
-		{
 			GetMainFrame()->AddToHistory(this, bookmark);
-		}
 	}
 }
 
@@ -4643,7 +4645,6 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nAddToHistory)
 		{
 			if ((nAddToHistory & AddSource) != 0)
 			{
-				Bookmark bookmark;
 				if (m_nType == Fullscreen)
 				{
 					CFullscreenWnd* pFullscreenWnd = GetMainFrame()->GetFullscreenWnd();
@@ -4651,14 +4652,10 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nAddToHistory)
 
 					pFullscreenWnd->Hide();
 
-					pOwner->CreateBookmarkFromView(bookmark);
-					GetMainFrame()->AddToHistory(pOwner, bookmark);
+					GetMainFrame()->AddToHistory(pOwner);
 				}
 				else
-				{
-					CreateBookmarkFromView(bookmark);
-					GetMainFrame()->AddToHistory(this, bookmark);
-				}
+					GetMainFrame()->AddToHistory(this);
 			}
 
 			theApp.OpenDocument(strPathName, strPage);
@@ -4678,21 +4675,13 @@ void CDjVuView::GoToPage(int nPage, int nAddToHistory)
 {
 	nPage = max(min(nPage, m_nPageCount - 1), 0);
 
-	if (m_nType == Normal && (nAddToHistory & AddSource) != 0)
-	{
-		Bookmark bookmark;
-		CreateBookmarkFromView(bookmark);
-		GetMainFrame()->AddToHistory(this, bookmark);
-	}
+	if ((nAddToHistory & AddSource) != 0)
+		GetMainFrame()->AddToHistory(this);
 
 	RenderPage(nPage);
 
-	if (m_nType == Normal && (nAddToHistory & AddTarget) != 0)
-	{
-		Bookmark bookmark;
-		CreateBookmarkFromPage(bookmark, nPage);
-		GetMainFrame()->AddToHistory(this, bookmark);
-	}
+	if ((nAddToHistory & AddTarget) != 0)
+		GetMainFrame()->AddToHistory(this, nPage);
 }
 
 void CDjVuView::OnViewZoomIn()
@@ -5107,11 +5096,7 @@ void CDjVuView::OnUpdateViewDisplay(CCmdUI* pCmdUI)
 void CDjVuView::GoToSelection(int nPage, int nStartPos, int nEndPos, int nAddToHistory)
 {
 	if ((nAddToHistory & AddSource) != 0)
-	{
-		Bookmark bookmark;
-		CreateBookmarkFromView(bookmark);
-		GetMainFrame()->AddToHistory(this, bookmark);
-	}
+		GetMainFrame()->AddToHistory(this);
 
 	Page& page = m_pages[nPage];
 	bool bInfoLoaded;
@@ -5135,11 +5120,7 @@ void CDjVuView::GoToSelection(int nPage, int nStartPos, int nEndPos, int nAddToH
 		delete pWaitCursor;
 
 	if ((nAddToHistory & AddTarget) != 0)
-	{
-		Bookmark bookmark;
-		CreateBookmarkFromView(bookmark);
-		GetMainFrame()->AddToHistory(this, bookmark);
-	}
+		GetMainFrame()->AddToHistory(this);
 }
 
 void CDjVuView::OnViewFullscreen()
@@ -5760,10 +5741,11 @@ void CDjVuView::UpdatePageNumber()
 
 	if (m_nType == Normal)
 	{
-		CPoint ptOffset = GetScrollPosition() - m_pages[m_nPage].ptOffset;
+		Bookmark bmView;
+		CreateBookmarkFromView(bmView);
 
-		m_pSource->GetSettings()->nPage = m_nPage;
-		m_pSource->GetSettings()->ptOffset = ScreenToDjVu(m_nPage, ptOffset, false);
+		m_pSource->GetSettings()->nPage = bmView.nPage;
+		m_pSource->GetSettings()->ptOffset = bmView.ptOffset;
 	}
 }
 
@@ -6010,12 +5992,17 @@ bool CDjVuView::CreateBookmarkFromSelection(Bookmark& bookmark)
 
 void CDjVuView::CreateBookmarkFromView(Bookmark& bookmark)
 {
-	int nTopPage = CalcTopPage();
-	CPoint ptOffset = GetScrollPosition() - m_pages[nTopPage].ptOffset;
-	CPoint ptDjVuOffset = ScreenToDjVu(nTopPage, ptOffset);
+	int nPage;
+	if (m_nLayout == SinglePage || m_nLayout == Facing)
+		nPage = m_nPage;
+	else
+		nPage = CalcTopPage();
+
+	CPoint ptOffset = GetScrollPosition() - m_pages[nPage].ptOffset;
+	CPoint ptDjVuOffset = ScreenToDjVu(nPage, ptOffset);
 
 	bookmark.nLinkType = Bookmark::View;
-	bookmark.nPage = nTopPage;
+	bookmark.nPage = nPage;
 	bookmark.ptOffset = ptDjVuOffset;
 	bookmark.bMargin = false;
 }
@@ -6027,7 +6014,7 @@ void CDjVuView::CreateBookmarkFromAnnotation(Bookmark& bookmark, const Annotatio
 	bookmark.ptOffset = CPoint(pAnno->rectBounds.xmin, pAnno->rectBounds.ymax);
 	bookmark.bMargin = true;
 
-	wstring strComment, strTitle;;
+	wstring strComment, strTitle;
 	MakeWString(pAnno->strComment, strComment);
 	MakeBookmarkTitle(strComment, strTitle);
 	bookmark.strTitle = MakeUTF8String(strTitle);

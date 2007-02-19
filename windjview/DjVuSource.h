@@ -86,12 +86,10 @@ public:
 		: pchildren(new list<Bookmark>()), children(*pchildren), pParent(NULL),
 		  nLinkType(URL), nPage(0), ptOffset(0, 0), bMargin(false) {}
 	Bookmark(const Bookmark& bm)
-		: pchildren(new list<Bookmark>(bm.children)), children(*pchildren),
-		  strURL(bm.strURL), strTitle(bm.strTitle), pParent(bm.pParent),
-		  nLinkType(bm.nLinkType), nPage(bm.nPage), ptOffset(bm.ptOffset),
-		  bMargin(bm.bMargin) {}
+		: pchildren(new list<Bookmark>()), children(*pchildren) { *this = bm; }
 	~Bookmark()
 		{ delete pchildren; }
+	Bookmark& operator=(const Bookmark& bm);
 
 	GUTF8String strTitle;
 	Bookmark* pParent;

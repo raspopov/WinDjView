@@ -85,6 +85,14 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 {
 	DeleteContents();
 
+	CFile file;
+	if (!file.Open(lpszPathName, CFile::modeRead | CFile::shareDenyWrite))
+	{
+		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + lpszPathName);
+		return false;
+	}
+	file.Close();
+
 	try
 	{
 		m_pSource = DjVuSource::FromFile(lpszPathName);

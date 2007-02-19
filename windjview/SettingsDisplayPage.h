@@ -40,9 +40,9 @@ public:
 	CSliderCtrl m_sliderBrightness;
 	CSliderCtrl m_sliderContrast;
 	CSliderCtrl m_sliderGamma;
-	CString m_strBrightnessValue;
-	CString m_strContrastValue;
-	CString m_strGammaValue;
+	int m_nBrightness;
+	int m_nContrast;
+	int m_nGamma;
 	int m_nUnits;
 	CComboBox m_cboUnits;
 
@@ -53,6 +53,7 @@ protected:
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual BOOL OnInitDialog();
+	virtual BOOL OnKillActive();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnAdjustDisplay();
 	DECLARE_MESSAGE_MAP()

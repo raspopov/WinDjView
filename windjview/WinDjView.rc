@@ -667,14 +667,14 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
     CONTROL         "A&djust settings:",IDC_ADJUST_DISPLAY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,35,208,9
-    LTEXT           "&Brightness: 0",IDC_BRIGHTNESS_TEXT,7,49,61,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,68,49,
-                    133,12
-    LTEXT           "&Contrast: 0",IDC_CONTRAST_TEXT,7,63,55,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,68,63,133,
+    LTEXT           "&Brightness: 0",IDC_BRIGHTNESS_TEXT,7,49,52,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,61,48,
+                    154,12
+    LTEXT           "&Contrast: 0",IDC_CONTRAST_TEXT,7,63,52,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,61,62,154,
                     12
-    LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,7,77,45,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,68,77,133,12
+    LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,7,77,52,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,61,76,154,12
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,98,208,1
     LTEXT           "&Units:",IDC_STATIC,7,108,23,10
     COMBOBOX        IDC_COMBO_UNITS,32,106,87,60,CBS_DROPDOWNLIST | 

@@ -30,98 +30,16 @@
 #include "MagnifyWnd.h"
 #include "MyDocTemplate.h"
 
-#include "MyTheme.h"
-
 #include <dde.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-HHOOK CMainFrame::hHook;
-
-void CreateSystemDialogFont(CFont& font)
-{
-	LOGFONT lf;
-
-	HGDIOBJ hFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
-	::GetObject(hFont, sizeof(LOGFONT), &lf);
-
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-		vi.dwMajorVersion >= 5)
-	{
-		_tcscpy(lf.lfFaceName, _T("MS Shell Dlg 2"));
-	}
-
-	font.CreateFontIndirect(&lf);
-}
-
-void CreateSystemIconFont(CFont& font)
-{
-	LOGFONT lf;
-
-	if (IsThemed())
-	{
-		LOGFONTW lfw;
-		HRESULT hr = XPGetThemeSysFont(NULL, TMT_ICONTITLEFONT, &lfw);
-		if (SUCCEEDED(hr))
-		{
-#ifdef UNICODE
-			memcpy(&lf, &lfw, sizeof(LOGFONT));
-#else
-			memcpy(&lf, &lfw, (char*)&lfw.lfFaceName - (char*)&lfw);
-			_tcscpy(lf.lfFaceName, CString(lfw.lfFaceName));
-#endif
-			font.CreateFontIndirect(&lf);
-			return;
-		}
-	}
-
-	if (!SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &lf, 0))
-	{
-		CreateSystemDialogFont(font);
-		return;
-	}
-
-	font.CreateFontIndirect(&lf);
-}
-
-void CreateSystemMenuFont(CFont& font)
-{
-	LOGFONT lf;
-
-	if (IsThemed())
-	{
-		LOGFONTW lfw;
-		HRESULT hr = XPGetThemeSysFont(NULL, TMT_MENUFONT, &lfw);
-		if (SUCCEEDED(hr))
-		{
-#ifdef UNICODE
-			memcpy(&lf, &lfw, sizeof(LOGFONT));
-#else
-			memcpy(&lf, &lfw, (char*)&lfw.lfFaceName - (char*)&lfw);
-			_tcscpy(lf.lfFaceName, CString(lfw.lfFaceName));
-#endif
-			font.CreateFontIndirect(&lf);
-			return;
-		}
-	}
-
-	NONCLIENTMETRICS ncm;
-	ncm.cbSize = sizeof(NONCLIENTMETRICS);
-	if (!SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0))
-	{
-		CreateSystemDialogFont(font);
-		return;
-	}
-
-	font.CreateFontIndirect(&ncm.lfMenuFont);
-}
-
 
 // CMainFrame
+
+HHOOK CMainFrame::hHook;
 
 IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWnd)
 
@@ -692,12 +610,9 @@ int CMainFrame::GetDocumentCount()
 
 void CMainFrame::GoToHistoryPos(const HistoryPos& pos)
 {
-	CDjVuDoc* pDoc = theApp.OpenDocument(pos.strFileName, "");
+	CDjVuDoc* pDoc = (CDjVuDoc*) theApp.OpenDocument(pos.strFileName, "");
 	if (pDoc == NULL)
-	{
-		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + pos.strFileName, MB_ICONERROR | MB_OK);
 		return;
-	}
 
 	CDjVuView* pView = pDoc->GetDjVuView();
 	if (IsFullscreenMode())
@@ -756,11 +671,39 @@ void CMainFrame::OnUpdateViewForward(CCmdUI* pCmdUI)
 	}
 }
 
+void CMainFrame::AddToHistory(CDjVuView* pView)
+{
+	HistoryPos pos;
+	pos.strFileName = pView->GetDocument()->GetPathName();
+	pView->CreateBookmarkFromView(pos.bmView);
+	pos.bookmark = pos.bmView;
+
+	AddToHistory(pos);
+}
+
+void CMainFrame::AddToHistory(CDjVuView* pView, int nPage)
+{
+	HistoryPos pos;
+	pos.strFileName = pView->GetDocument()->GetPathName();
+	pView->CreateBookmarkFromView(pos.bmView);
+	pView->CreateBookmarkFromPage(pos.bookmark, nPage);
+
+	AddToHistory(pos);
+}
+
 void CMainFrame::AddToHistory(CDjVuView* pView, const Bookmark& bookmark)
 {
-	ASSERT(bookmark.nLinkType == Bookmark::Page || bookmark.nLinkType == Bookmark::View);
+	HistoryPos pos;
+	pos.strFileName = pView->GetDocument()->GetPathName();
+	pView->CreateBookmarkFromView(pos.bmView);
+	pos.bookmark = bookmark;
 
-	HistoryPos pos(pView->GetDocument()->GetPathName(), bookmark);
+	AddToHistory(pos);
+}
+
+void CMainFrame::AddToHistory(const HistoryPos& pos)
+{
+	ASSERT(pos.bmView.nLinkType == Bookmark::View);
 
 	if (!m_history.empty() && pos == *m_historyPos)
 		return;

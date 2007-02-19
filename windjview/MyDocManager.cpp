@@ -20,6 +20,9 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "MyDocManager.h"
+#include "MainFrm.h"
+#include "DjVuDoc.h"
+#include "DjVuView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -196,3 +199,21 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName)
 	return pBestTemplate->OpenDocumentFile(szPath);
 }
 */
+
+void CMyDocManager::OnFileOpen()
+{
+	// prompt the user (with all document templates)
+	CString strPathName;
+	if (!DoPromptFileName(strPathName, AFX_IDS_OPENFILE,
+			OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, TRUE, NULL))
+		return;
+
+	CDjVuDoc* pDoc = (CDjVuDoc*) AfxGetApp()->OpenDocumentFile(strPathName);
+	// if returns NULL, the user has already been alerted
+
+	if (pDoc != NULL)
+	{
+		CDjVuView* pView = pDoc->GetDjVuView();
+		((CMainFrame*) pView->GetTopLevelFrame())->AddToHistory(pView);
+	}
+}

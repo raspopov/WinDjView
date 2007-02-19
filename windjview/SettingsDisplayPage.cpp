@@ -35,9 +35,14 @@ CSettingsDisplayPage::CSettingsDisplayPage()
 	: CPropertyPage(CSettingsDisplayPage::IDD), m_bSlidersInitialized(false)
 {
 	m_displaySettings = *theApp.GetDisplaySettings();
+
 	m_bAdjustDisplay = m_displaySettings.bAdjustDisplay;
 	m_bHQScaling = (m_displaySettings.nScaleMethod != CDisplaySettings::Default);
 	m_bInvertColors = m_displaySettings.bInvertColors;
+
+	m_nBrightness = m_displaySettings.nBrightness + 100;
+	m_nContrast = m_displaySettings.nContrast + 100;
+	m_nGamma = static_cast<int>(m_displaySettings.fGamma * 10 + 0.5);
 
 	m_nUnits = theApp.GetAppSettings()->nUnits;
 }
@@ -63,31 +68,21 @@ void CSettingsDisplayPage::DoDataExchange(CDataExchange* pDX)
 		// Second: If position is set before SetRange is called, slider is not updated
 		// until position changes. That's why all this mess.
 
-		int nBrightness = m_displaySettings.nBrightness + 100;
-		int nContrast = m_displaySettings.nContrast + 100;
-		int nGamma = static_cast<int>(m_displaySettings.fGamma * 10 + 0.5);
-		DDX_Slider(pDX, IDC_BRIGHTNESS, nBrightness);
-		DDX_Slider(pDX, IDC_CONTRAST, nContrast);
-		DDX_Slider(pDX, IDC_GAMMA, nGamma);
-		if (pDX->m_bSaveAndValidate)
-		{
-			m_displaySettings.nBrightness = nBrightness - 100;
-			m_displaySettings.nContrast = nContrast - 100;
-			m_displaySettings.fGamma = nGamma / 10.0;
-		}
+		DDX_Slider(pDX, IDC_BRIGHTNESS, m_nBrightness);
+		DDX_Slider(pDX, IDC_CONTRAST, m_nContrast);
+		DDX_Slider(pDX, IDC_GAMMA, m_nGamma);
 	}
 
 	DDX_Control(pDX, IDC_COMBO_UNITS, m_cboUnits);
 	DDX_CBIndex(pDX, IDC_COMBO_UNITS, m_nUnits);
 
-	m_strBrightnessValue.Format(m_displaySettings.nBrightness == 0 ?
-		IDS_BRIGHTNESS_TEXT_ZERO : IDS_BRIGHTNESS_TEXT, m_displaySettings.nBrightness);
-	DDX_Text(pDX, IDC_BRIGHTNESS_TEXT, m_strBrightnessValue);
-	m_strContrastValue.Format(m_displaySettings.nContrast == 0 ?
-		IDS_CONTRAST_TEXT_ZERO : IDS_CONTRAST_TEXT, m_displaySettings.nContrast);
-	DDX_Text(pDX, IDC_CONTRAST_TEXT, m_strContrastValue);
-	m_strGammaValue.Format(IDS_GAMMA_TEXT, m_displaySettings.fGamma);
-	DDX_Text(pDX, IDC_GAMMA_TEXT, m_strGammaValue);
+	CString strBrightness, strContrast, strGamma;
+	strBrightness.Format(m_nBrightness == 100 ? IDS_BRIGHTNESS_TEXT_ZERO : IDS_BRIGHTNESS_TEXT, m_nBrightness - 100);
+	strContrast.Format(m_nContrast == 100 ? IDS_CONTRAST_TEXT_ZERO : IDS_CONTRAST_TEXT, m_nContrast - 100);
+	strGamma.Format(IDS_GAMMA_TEXT, m_nGamma / 10.0);
+	DDX_Text(pDX, IDC_BRIGHTNESS_TEXT, strBrightness);
+	DDX_Text(pDX, IDC_CONTRAST_TEXT, strContrast);
+	DDX_Text(pDX, IDC_GAMMA_TEXT, strGamma);
 
 	m_sliderBrightness.EnableWindow(m_bAdjustDisplay);
 	m_sliderContrast.EnableWindow(m_bAdjustDisplay);
@@ -95,11 +90,6 @@ void CSettingsDisplayPage::DoDataExchange(CDataExchange* pDX)
 	GetDlgItem(IDC_BRIGHTNESS_TEXT)->EnableWindow(m_bAdjustDisplay);
 	GetDlgItem(IDC_CONTRAST_TEXT)->EnableWindow(m_bAdjustDisplay);
 	GetDlgItem(IDC_GAMMA_TEXT)->EnableWindow(m_bAdjustDisplay);
-
-	m_displaySettings.bAdjustDisplay = !!m_bAdjustDisplay;
-	m_displaySettings.nScaleMethod = (m_bHQScaling ?
-			CDisplaySettings::PnmScaleFixed : CDisplaySettings::Default);
-	m_displaySettings.bInvertColors = !!m_bInvertColors;
 }
 
 
@@ -167,4 +157,21 @@ void CSettingsDisplayPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrol
 void CSettingsDisplayPage::OnAdjustDisplay()
 {
 	UpdateData();
+}
+
+BOOL CSettingsDisplayPage::OnKillActive()
+{
+	if (!UpdateData())
+		return false;
+
+	m_displaySettings.bAdjustDisplay = !!m_bAdjustDisplay;
+	m_displaySettings.nScaleMethod = (m_bHQScaling ?
+			CDisplaySettings::PnmScaleFixed : CDisplaySettings::Default);
+	m_displaySettings.bInvertColors = !!m_bInvertColors;
+
+	m_displaySettings.nBrightness = m_nBrightness - 100;
+	m_displaySettings.nContrast = m_nContrast - 100;
+	m_displaySettings.fGamma = m_nGamma / 10.0;
+
+	return true;
 }
