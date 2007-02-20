@@ -56,7 +56,8 @@ END_MESSAGE_MAP()
 CChildFrame::CChildFrame()
 	: m_bCreated(false), m_bActivating(false), m_pThumbnailsView(NULL),
 	  m_pBookmarksWnd(NULL), m_pResultsView(NULL), m_bFirstShow(true),
-	  m_pCustomBookmarksWnd(NULL), m_nStartupPage(-1)
+	  m_pCustomBookmarksWnd(NULL), m_pPageIndexWnd(NULL), m_nStartupPage(-1),
+	  m_bLockingUpdate(false)
 {
 }
 
@@ -115,16 +116,27 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 
 void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 {
-	BOOL bMaximized = false;
-	CMDIChildWnd* pActive = GetMDIFrame()->MDIGetActive(&bMaximized);
+	bool bLockingUpdate = false;
 
-	if (!m_bActivating && bMaximized && theApp.m_bInitialized)
-		GetMDIFrame()->LockWindowUpdate();
+	BOOL bMaximized = false;
+	CMDIFrameWnd* pFrame = GetMDIFrame();
+	CMDIChildWnd* pActive = pFrame->MDIGetActive(&bMaximized);
+
+	if (!m_bLockingUpdate && pActive == this && bMaximized)
+	{
+		bLockingUpdate = true;
+		m_bLockingUpdate = true;
+		::SendMessage(pFrame->m_hWndMDIClient, WM_SETREDRAW, 0, 0);
+	}
 
 	CMDIChildWnd::OnWindowPosChanged(lpwndpos);
 
-	if (!m_bActivating && bMaximized && theApp.m_bInitialized)
-		GetMDIFrame()->UnlockWindowUpdate();
+	if (bLockingUpdate)
+	{
+		m_bLockingUpdate = false;
+		::SendMessage(pFrame->m_hWndMDIClient, WM_SETREDRAW, 1, 0);
+		::RedrawWindow(pFrame->m_hWndMDIClient, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME | RDW_ALLCHILDREN);
+	}
 
 	if (pActive == this && IsWindowVisible() && !IsIconic())
 		theApp.GetAppSettings()->bChildMaximized = !!IsZoomed();
@@ -132,23 +144,28 @@ void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 	if (m_bCreated)
 		m_wndSplitter.UpdateNavPane();
 
-	OnUpdateFrameTitle(TRUE);
+	OnUpdateFrameTitle(true);
 }
 
 void CChildFrame::ActivateFrame(int nCmdShow)
 {
+	bool bLockingUpdate = false;
 	m_bActivating = true;
 
+	CMDIFrameWnd* pFrame = GetMDIFrame();
 	CDjVuView* pView = GetDjVuView();
 
 	if (theApp.GetAppSettings()->bChildMaximized)
 	{
 		nCmdShow = SW_SHOWMAXIMIZED;
 
-		if (theApp.m_bInitialized)
+		if (!m_bLockingUpdate)
 		{
-			GetMDIFrame()->SetRedraw(false);
-			GetMDIFrame()->LockWindowUpdate();
+			bLockingUpdate = true;
+			m_bLockingUpdate = true;
+
+			pFrame->UpdateWindow();
+			::SendMessage(pFrame->m_hWndMDIClient, WM_SETREDRAW, 0, 0);
 		}
 	}
 
@@ -171,12 +188,11 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 
 	pView->UpdateVisiblePages();
 
-	if (theApp.GetAppSettings()->bChildMaximized && theApp.m_bInitialized)
+	if (bLockingUpdate)
 	{
-		GetMDIFrame()->UnlockWindowUpdate();
-		GetMDIFrame()->SetRedraw(true);
-
-		GetMDIFrame()->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME | RDW_ALLCHILDREN); 
+		m_bLockingUpdate = false;
+		::SendMessage(pFrame->m_hWndMDIClient, WM_SETREDRAW, 1, 0);
+		::RedrawWindow(pFrame->m_hWndMDIClient, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME | RDW_ALLCHILDREN);
 	}
 
 	m_bActivating = false;

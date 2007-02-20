@@ -85,6 +85,8 @@ static UINT indicators[] =
 	ID_INDICATOR_SIZE
 };
 
+const int s_nIndicatorPage = 3;
+
 
 // CMainFrame construction/destruction
 
@@ -610,7 +612,7 @@ int CMainFrame::GetDocumentCount()
 
 void CMainFrame::GoToHistoryPos(const HistoryPos& pos)
 {
-	CDjVuDoc* pDoc = (CDjVuDoc*) theApp.OpenDocument(pos.strFileName, "");
+	CDjVuDoc* pDoc = (CDjVuDoc*) theApp.OpenDocument(pos.strFileName, "", false);
 	if (pDoc == NULL)
 		return;
 
@@ -836,7 +838,7 @@ void CMainFrame::OnUpdateStatusPage(CCmdUI* pCmdUI)
 	CMDIChildWnd* pActive = MDIGetActive();
 	if (pActive == NULL)
 	{
-		m_wndStatusBar.SetPaneInfo(3, ID_INDICATOR_PAGE, SBPS_DISABLED | SBPS_NOBORDERS, 0);
+		m_wndStatusBar.SetPaneInfo(s_nIndicatorPage, ID_INDICATOR_PAGE, SBPS_DISABLED | SBPS_NOBORDERS, 0);
 		pCmdUI->Enable(false);
 		strMessage.Empty();
 		return;
@@ -854,11 +856,11 @@ void CMainFrame::OnUpdateStatusPage(CCmdUI* pCmdUI)
 
 		strMessage = strNewMessage;
 		pCmdUI->SetText(strMessage);
-		status.SetText(strMessage, 3, 0);
+		status.SetText(strMessage, s_nIndicatorPage, 0);
 
 		CWindowDC dc(&status);
 		CFont* pOldFont = dc.SelectObject(status.GetFont());
-		m_wndStatusBar.SetPaneInfo(3, ID_INDICATOR_PAGE, 0, dc.GetTextExtent(strMessage).cx + 2);
+		m_wndStatusBar.SetPaneInfo(s_nIndicatorPage, ID_INDICATOR_PAGE, 0, dc.GetTextExtent(strMessage).cx + 2);
 		dc.SelectObject(pOldFont);
 	}
 }

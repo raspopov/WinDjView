@@ -73,6 +73,7 @@ protected:
 	bool m_bCreated;
 	bool m_bActivating;
 	bool m_bFirstShow;
+	bool m_bLockingUpdate;
 	int m_nStartupPage;
 	CPoint m_ptStartupOffset;
 	CMySplitterWnd m_wndSplitter;

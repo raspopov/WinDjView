@@ -160,7 +160,7 @@ BOOL CDjViewApp::InitInstance()
 	if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
 		return FALSE;
 	m_pMainWnd = pMainFrame;
-	pMainFrame->LockWindowUpdate();
+	pMainFrame->SetRedraw(false);
 
 	CControlBar* pBar = pMainFrame->GetControlBar(ID_VIEW_TOOLBAR);
 	if (pBar)
@@ -192,19 +192,20 @@ BOOL CDjViewApp::InitInstance()
 	if (m_appSettings.bWindowMaximized && (m_nCmdShow == -1 || m_nCmdShow == SW_SHOWNORMAL))
 		m_nCmdShow = SW_SHOWMAXIMIZED;
 
+	// The main window has been initialized, so show and update it
+	pMainFrame->ShowWindow(m_nCmdShow);
+	pMainFrame->SetStartupLanguage();
+
+	pMainFrame->SetRedraw(true);
+	pMainFrame->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+
 	// Dispatch commands specified on the command line.  Will return FALSE if
 	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
 	if (!ProcessShellCommand(cmdInfo))
 		return false;
 
-	// The main window has been initialized, so show and update it
-	pMainFrame->ShowWindow(m_nCmdShow);
-	pMainFrame->SetStartupLanguage();
-
-	pMainFrame->UnlockWindowUpdate();
-	pMainFrame->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-
 	m_bInitialized = true;
+
 	CChildFrame* pChildFrame = (CChildFrame*)pMainFrame->MDIGetActive();
 	if (pChildFrame != NULL)
 		pChildFrame->GetDjVuView()->UpdateVisiblePages();
@@ -757,7 +758,7 @@ void CDjViewApp::OnFileSettings()
 	}
 }
 
-CDjVuDoc* CDjViewApp::OpenDocument(LPCTSTR lpszPathName, const GUTF8String& strPage)
+CDjVuDoc* CDjViewApp::OpenDocument(LPCTSTR lpszPathName, const GUTF8String& strPage, bool bAddToHistory)
 {
 	CDjVuDoc* pDoc = (CDjVuDoc*)FindOpenDocument(lpszPathName);
 	if (pDoc == NULL)
@@ -770,13 +771,16 @@ CDjVuDoc* CDjViewApp::OpenDocument(LPCTSTR lpszPathName, const GUTF8String& strP
 	CFrameWnd* pFrame = pView->GetParentFrame();
 	pFrame->ActivateFrame();
 
-	if (strPage.length() > 0)
+	if (bAddToHistory)
 	{
-		pView->GoToURL(strPage, CDjVuView::AddTarget);
-	}
-	else
-	{
-		((CMainFrame*) pView->GetTopLevelFrame())->AddToHistory(pView);
+		if (strPage.length() > 0)
+		{
+			pView->GoToURL(strPage, CDjVuView::AddTarget);
+		}
+		else
+		{
+			((CMainFrame*) pView->GetTopLevelFrame())->AddToHistory(pView);
+		}
 	}
 
 	return pDoc;

@@ -75,7 +75,7 @@ public:
 	virtual int ExitInstance();
 	bool RegisterShellFileTypes();
 
-	CDjVuDoc* OpenDocument(LPCTSTR lpszFileName, const GUTF8String& strPage);
+	CDjVuDoc* OpenDocument(LPCTSTR lpszFileName, const GUTF8String& strPage, bool bAddToHistory = true);
 
 	bool m_bInitialized;
 	CMyDocTemplate* m_pDjVuTemplate;
