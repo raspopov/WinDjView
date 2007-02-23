@@ -21,6 +21,7 @@
 #include "WinDjView.h"
 #include "MyScrollView.h"
 #include "FullscreenWnd.h"
+#include "Drawing.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -520,8 +521,7 @@ BOOL CMyAnchorWnd::Create(CMyScrollView* pView)
 
 	if (bRetVal)
 	{
-		CDC dcScreen;
-		dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+		CScreenDC dcScreen;
 
 		CDC dc;
 		dc.CreateCompatibleDC(&dcScreen);

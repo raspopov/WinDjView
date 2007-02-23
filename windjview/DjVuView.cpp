@@ -168,6 +168,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND(ID_ANNOTATION_DELETE, OnDeleteAnnotation)
 	ON_COMMAND(ID_ANNOTATION_EDIT, OnEditAnnotation)
 	ON_COMMAND(ID_BOOKMARK_ADD, OnAddBookmark)
+	ON_COMMAND(ID_ZOOM_TO_SELECTION, OnZoomToSelection)
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -1366,9 +1367,7 @@ CSize CDjVuView::CalcPageSize(const CSize& szPage, int nDPI, int nZoomType) cons
 	}
 	else
 	{
-		CDC dcScreen;
-		dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
-
+		CScreenDC dcScreen;
 		int nLogPixelsX = dcScreen.GetDeviceCaps(LOGPIXELSX);
 		int nLogPixelsY = dcScreen.GetDeviceCaps(LOGPIXELSX);
 
@@ -1458,9 +1457,7 @@ void CDjVuView::CalcPageSizeFacing(const CSize& szPage1, int nDPI1, CSize& szDis
 	}
 	else
 	{
-		CDC dcScreen;
-		dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
-
+		CScreenDC dcScreen;
 		int nLogPixelsX = dcScreen.GetDeviceCaps(LOGPIXELSX);
 		int nLogPixelsY = dcScreen.GetDeviceCaps(LOGPIXELSX);
 
@@ -1940,8 +1937,7 @@ double CDjVuView::GetZoom() const
 		return 100.0;
 
 	// Calculate zoom from display area size
-	CDC dcScreen;
-	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+	CScreenDC dcScreen;
 	int nLogPixels = dcScreen.GetDeviceCaps(LOGPIXELSX);
 
 	return 100.0*page.szBitmap.cx*page.info.nDPI/(szPage.cx*nLogPixels);
@@ -1956,8 +1952,7 @@ double CDjVuView::GetZoom(ZoomType nZoomType) const
 	// Calculate zoom from display area size
 	CSize szDisplay;
 
-	CDC dcScreen;
-	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+	CScreenDC dcScreen;
 	int nLogPixels = dcScreen.GetDeviceCaps(LOGPIXELSX);
 
 	if (m_nLayout == SinglePage || m_nLayout == Continuous)
@@ -2949,6 +2944,7 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 		{
 			pPopup->DeleteMenu(ID_HIGHLIGHT_SELECTION, MF_BYCOMMAND);
 			pPopup->DeleteMenu(ID_EXPORT_SELECTION, MF_BYCOMMAND);
+			pPopup->DeleteMenu(ID_ZOOM_TO_SELECTION, MF_BYCOMMAND);
 		}
 	}
 	else
@@ -2957,6 +2953,7 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 		pPopup->DeleteMenu(ID_HIGHLIGHT_TEXT, MF_BYCOMMAND);
 		pPopup->DeleteMenu(ID_HIGHLIGHT_SELECTION, MF_BYCOMMAND);
 		pPopup->DeleteMenu(ID_EXPORT_SELECTION, MF_BYCOMMAND);
+		pPopup->DeleteMenu(ID_ZOOM_TO_SELECTION, MF_BYCOMMAND);
 
 		if (m_pClickedAnno == NULL || !m_bClickedCustom)
 		{
@@ -6047,4 +6044,46 @@ void CDjVuView::CreateBookmarkFromPage(Bookmark& bookmark, int nPage)
 {
 	bookmark.nLinkType = Bookmark::Page;
 	bookmark.nPage = nPage;
+}
+
+void CDjVuView::OnZoomToSelection()
+{
+	if (m_nSelectionPage == -1)
+		return;
+
+	CRect rcClient;
+	GetClientRect(rcClient);
+	if ((GetStyle() & WS_VSCROLL) == 0)
+		rcClient.right -= ::GetSystemMetrics(SM_CXVSCROLL);
+	if ((GetStyle() & WS_HSCROLL) == 0)
+		rcClient.bottom -= ::GetSystemMetrics(SM_CYHSCROLL);
+
+	const Page& page = m_pages[m_nSelectionPage];
+	CSize szPage = page.GetSize(m_nRotate);
+
+	CScreenDC dcScreen;
+	int nLogPixels = dcScreen.GetDeviceCaps(LOGPIXELSX);
+
+	double fScale = min(1.0*rcClient.Width()/m_rcSelectionRect.width(),
+			1.0*rcClient.Height()/m_rcSelectionRect.height());
+	double fZoom = 100.0*fScale*page.info.nDPI/nLogPixels;
+
+	ZoomTo(ZoomPercent, fZoom);
+
+	CRect rcSel = TranslatePageRect(m_nSelectionPage, m_rcSelectionRect);
+	CPoint ptOffset = rcSel.TopLeft();
+
+	rcSel -= GetScrollPosition();
+	if (rcSel.Width() < rcClient.Width())
+		ptOffset.x -= (rcClient.Width() - rcSel.Width()) / 2;
+	if (rcSel.Height() < rcClient.Height())
+		ptOffset.y -= (rcClient.Height() - rcSel.Height()) / 2;
+
+	RenderPage(m_nSelectionPage, -1, false);
+
+	OnScrollBy(ptOffset - GetScrollPosition());
+
+	UpdateVisiblePages();
+	UpdatePageNumber();
+	UpdateHoverAnnotation();
 }

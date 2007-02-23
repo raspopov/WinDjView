@@ -306,8 +306,7 @@ void CPageIndexWnd::UpdateControls()
 	CRect rcClient;
 	GetClientRect(rcClient);
 
-	CDC dcScreen;
-	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+	CScreenDC dcScreen;
 	CFont* pOldFont = dcScreen.SelectObject(&m_font);
 
 	TEXTMETRIC tm;

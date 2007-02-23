@@ -20,6 +20,7 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "SettingsDlg.h"
+#include "Drawing.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -72,8 +73,7 @@ BOOL CSettingsDlg::OnInitDialog()
 	LOGFONT lf;
 	fnt.GetLogFont(&lf);
 
-	CDC dcScreen;
-	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+	CScreenDC dcScreen;
 
 	lf.lfHeight = -MulDiv(7, dcScreen.GetDeviceCaps(LOGPIXELSY), 72);
 	m_font.CreateFontIndirect(&lf);

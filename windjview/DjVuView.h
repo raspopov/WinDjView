@@ -423,6 +423,7 @@ protected:
 	afx_msg void OnEditAnnotation();
 	afx_msg void OnDeleteAnnotation();
 	afx_msg void OnAddBookmark();
+	afx_msg void OnZoomToSelection();
 	DECLARE_MESSAGE_MAP()
 };
 

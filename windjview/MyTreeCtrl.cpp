@@ -419,8 +419,7 @@ void CMyTreeCtrl::RecalcLayout()
 	if ((GetStyle() & WS_HSCROLL) != 0)
 		rcClient.bottom += ::GetSystemMetrics(SM_CYHSCROLL);
 
-	CDC dcScreen;
-	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+	CScreenDC dcScreen;
 
 	CDC dc;
 	dc.CreateCompatibleDC(&dcScreen);

@@ -63,9 +63,6 @@ void CMagnifyWnd::Show(CDjVuView* pOwner, CDjVuView* pContents, const CPoint& pt
 	m_pOwner = pOwner;
 	m_pView = pContents;
 
-	CDC dcScreen;
-	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
-
 	m_pView->MoveWindow(1, 1, m_nWidth - 2, m_nHeight - 2);
 	CenterOnPoint(ptCenter);
 

@@ -281,6 +281,9 @@ CDIB* RenderEmpty(const CSize& szBitmap, const CDisplaySettings& displaySettings
 	return pBitmap;
 }
 
+
+// CDIB
+
 CDIB::~CDIB()
 {
 	DeleteObject();
@@ -386,8 +389,7 @@ void CDIB::Create(CDIB* pSource, int nBitCount)
 	if (m_hObject == NULL)
 		return;
 
-	CDC dcScreen;
-	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+	CScreenDC dcScreen;
 
 	CDC dcDest;
 	dcDest.CreateCompatibleDC(&dcScreen);
@@ -453,8 +455,7 @@ CDIB* CDIB::Crop(const CRect& rcCrop)
 	if (pDIB->m_hObject == NULL)
 		return pDIB;
 
-	CDC dcScreen;
-	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+	CScreenDC dcScreen;
 
 	CDC dcDest;
 	dcDest.CreateCompatibleDC(&dcScreen);
@@ -543,6 +544,9 @@ void CDIB::Save(LPCTSTR pszPathName) const
 	file.Close();
 }
 
+
+// CLightweightDIB
+
 CLightweightDIB* CLightweightDIB::Create(CDIB* pSrc)
 {
 	CLightweightDIB* pDIB = new CLightweightDIB();
@@ -572,6 +576,222 @@ CLightweightDIB::~CLightweightDIB()
 {
 	delete[] m_pBits;
 }
+
+
+// Drawing
+
+void FrameRect(CDC* pDC, const CRect& rect, COLORREF color)
+{
+	CRect rcHorzLine(rect.TopLeft(), CSize(rect.Width(), 1));
+	pDC->FillSolidRect(rcHorzLine, color);
+	rcHorzLine.OffsetRect(0, rect.Height() - 1);
+	pDC->FillSolidRect(rcHorzLine, color);
+
+	CRect rcVertLine(rect.TopLeft(), CSize(1, rect.Height()));
+	pDC->FillSolidRect(rcVertLine, color);
+	rcVertLine.OffsetRect(rect.Width() - 1, 0);
+	pDC->FillSolidRect(rcVertLine, color);
+}
+
+void InvertFrame(CDC* pDC, const CRect& rect)
+{
+	CRect rcHorzLine(rect.TopLeft(), CSize(rect.Width(), 1));
+	pDC->InvertRect(rcHorzLine);
+	rcHorzLine.OffsetRect(0, rect.Height() - 1);
+	pDC->InvertRect(rcHorzLine);
+
+	CRect rcVertLine(CPoint(rect.left, rect.top + 1), CSize(1, rect.Height() - 2));
+	pDC->InvertRect(rcVertLine);
+	rcVertLine.OffsetRect(rect.Width() - 1, 0);
+	pDC->InvertRect(rcVertLine);
+}
+
+void DrawDottedLine(CDC* pDC, const CPoint& ptStart, const CPoint& ptEnd, COLORREF color)
+{
+	if (ptStart.x == ptEnd.x)
+	{
+		ASSERT(ptStart.y <= ptEnd.y);
+		for (int y = ptStart.y; y < ptEnd.y; y += 2)
+			pDC->SetPixel(ptStart.x, y, color);
+	}
+	else if (ptStart.y == ptEnd.y)
+	{
+		ASSERT(ptStart.x <= ptEnd.x);
+		for (int x = ptStart.x; x < ptEnd.x; x += 2)
+			pDC->SetPixel(x, ptStart.y, color);
+	}
+	else
+	{
+		ASSERT(false);
+	}
+}
+
+void DrawDottedRect(CDC* pDC, const CRect& rect, COLORREF color)
+{
+	DrawDottedLine(pDC, rect.TopLeft(), CPoint(rect.right, rect.top), color);
+	DrawDottedLine(pDC, CPoint(rect.right - 1, rect.top + (rect.Width() + 1) % 2),
+		CPoint(rect.right - 1, rect.bottom), color);
+	DrawDottedLine(pDC, rect.TopLeft(), CPoint(rect.left, rect.bottom), color);
+	DrawDottedLine(pDC, CPoint(rect.left + (rect.Height() + 1) % 2, rect.bottom - 1),
+		CPoint(rect.right, rect.bottom - 1), color);
+}
+
+void HighlightRect(CDC* pDC, const CRect& rect, COLORREF color, double fTransparency)
+{
+	CRect rcClip;
+	pDC->GetClipBox(rcClip);
+	if (!rcClip.IntersectRect(CRect(rcClip), rect))
+		return;
+
+	static COffscreenDC offscreenDC;
+
+	offscreenDC.Create(pDC, rcClip.Size());
+	CDIB* pDIB = offscreenDC.GetDIB();
+	if (pDIB == NULL || pDIB->m_hObject == NULL)
+	{
+		offscreenDC.Release();
+		return;
+	}
+
+	ASSERT(pDIB->GetBitsPerPixel() == 24);
+
+	offscreenDC.BitBlt(0, 0, rcClip.Width(), rcClip.Height(), pDC, rcClip.left, rcClip.top, SRCCOPY);
+
+	int nRowLength = pDIB->GetWidth()*3;
+	while (nRowLength % 4 != 0)
+		++nRowLength;
+
+	LPBYTE pBits = pDIB->GetBits();
+
+	BYTE tableRed[256], tableGreen[256], tableBlue[256];
+	for (int i = 0; i < 256; ++i)
+		tableRed[i] = tableGreen[i] = tableBlue[i] = i;
+
+	BuildTransparentcyTable(fTransparency, GetRValue(color), tableRed);
+	BuildTransparentcyTable(fTransparency, GetGValue(color), tableGreen);
+	BuildTransparentcyTable(fTransparency, GetBValue(color), tableBlue);
+
+	for (int y = 0; y < rcClip.Height(); ++y, pBits += nRowLength)
+	{
+		LPBYTE pPixel = pBits;
+		for (int x = 0; x < rcClip.Width(); ++x)
+		{
+			*pPixel = tableBlue[*pPixel];
+			++pPixel;
+			*pPixel = tableGreen[*pPixel];
+			++pPixel;
+			*pPixel = tableRed[*pPixel];
+			++pPixel;
+		}
+	}
+
+	pDC->BitBlt(rcClip.left, rcClip.top, rcClip.Width(), rcClip.Height(), &offscreenDC, 0, 0, SRCCOPY);
+	offscreenDC.Release();
+}
+
+void DrawDownArrow(CDC* pDC, const CRect& rect, COLORREF color)
+{
+	POINT points[3];
+
+	points[0].x = rect.left;
+	points[0].y = rect.top;
+	points[1].x = rect.right;
+	points[1].y = rect.top;
+	points[2].x = rect.CenterPoint().x;
+	points[2].y = rect.bottom;
+	
+	CBrush brush(color);
+	CPen pen(PS_SOLID, 1, color);
+
+	CBrush* pOldBrush = pDC->SelectObject(&brush);
+	CPen* pOldPen = pDC->SelectObject(&pen);
+	int nPolyFillMode = pDC->SetPolyFillMode(WINDING);
+
+	pDC->Polygon(points, 3);
+
+	pDC->SetPolyFillMode(nPolyFillMode);
+	pDC->SelectObject(pOldPen);
+	pDC->SelectObject(pOldBrush);
+}
+
+COLORREF ChangeBrightness(COLORREF color, double fFactor)
+{
+	int nRed = min(static_cast<int>(GetRValue(color)*fFactor + 0.5), 255);
+	int nGreen = min(static_cast<int>(GetGValue(color)*fFactor + 0.5), 255);
+	int nBlue = min(static_cast<int>(GetBValue(color)*fFactor + 0.5), 255);
+	return RGB(nRed, nGreen, nBlue);
+}
+
+COLORREF AlphaCombine(COLORREF crFirst, COLORREF crSecond, BYTE nAlpha)
+{
+	return RGB((GetRValue(crFirst) * (255L - nAlpha) + GetRValue(crSecond) * (0L + nAlpha)) >> 8,
+			(GetGValue(crFirst) * (255L - nAlpha) + GetGValue(crSecond) * (0L + nAlpha)) >> 8,
+			(GetBValue(crFirst) * (255L - nAlpha) + GetBValue(crSecond) * (0L + nAlpha)) >> 8);
+}
+
+
+// COffscreenDC
+
+COffscreenDC::COffscreenDC()
+	: m_pBitmap(NULL), m_pOldBitmap(NULL), m_szBitmap(0, 0)
+{
+}
+
+COffscreenDC::~COffscreenDC()
+{
+	if (m_hDC != NULL)
+		Release();
+
+	delete m_pBitmap;
+}
+
+bool COffscreenDC::Create(CDC* pDC, CSize size)
+{
+	if (m_pBitmap == NULL || m_szBitmap.cx < size.cx || m_szBitmap.cy < size.cy)
+	{
+		m_szBitmap.cx = max(m_szBitmap.cx, static_cast<int>(size.cx*1.1 + 0.5));
+		m_szBitmap.cy = max(m_szBitmap.cy, static_cast<int>(size.cy*1.1 + 0.5));
+
+		delete m_pBitmap;
+		m_pBitmap = CDIB::CreateDIB(m_szBitmap.cx, -m_szBitmap.cy, 24); // Top-down DIB
+	}
+
+	ASSERT(m_hDC == NULL);
+	if (m_hDC != NULL)
+		Release();
+
+	if (!CreateCompatibleDC(pDC))
+		return false;
+
+	SetViewportOrg(CPoint(0, 0));
+
+	m_pOldBitmap = SelectObject(m_pBitmap);
+	return true;
+}
+
+void COffscreenDC::Release()
+{
+	ASSERT(m_hDC != NULL);
+
+	if (m_hDC != NULL)
+	{
+		SelectObject(m_pOldBitmap);
+		m_pOldBitmap = NULL;
+
+		DeleteDC();
+	}
+}
+
+
+// CScreenDC
+
+CScreenDC::CScreenDC()
+{
+	CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+}
+
+
+// Printing
 
 CRect FindContentRect(GP<DjVuImage> pImage)
 {
@@ -1054,205 +1274,4 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 
 	::CoUninitialize();
 	return 0;
-}
-
-void FrameRect(CDC* pDC, const CRect& rect, COLORREF color)
-{
-	CRect rcHorzLine(rect.TopLeft(), CSize(rect.Width(), 1));
-	pDC->FillSolidRect(rcHorzLine, color);
-	rcHorzLine.OffsetRect(0, rect.Height() - 1);
-	pDC->FillSolidRect(rcHorzLine, color);
-
-	CRect rcVertLine(rect.TopLeft(), CSize(1, rect.Height()));
-	pDC->FillSolidRect(rcVertLine, color);
-	rcVertLine.OffsetRect(rect.Width() - 1, 0);
-	pDC->FillSolidRect(rcVertLine, color);
-}
-
-void InvertFrame(CDC* pDC, const CRect& rect)
-{
-	CRect rcHorzLine(rect.TopLeft(), CSize(rect.Width(), 1));
-	pDC->InvertRect(rcHorzLine);
-	rcHorzLine.OffsetRect(0, rect.Height() - 1);
-	pDC->InvertRect(rcHorzLine);
-
-	CRect rcVertLine(CPoint(rect.left, rect.top + 1), CSize(1, rect.Height() - 2));
-	pDC->InvertRect(rcVertLine);
-	rcVertLine.OffsetRect(rect.Width() - 1, 0);
-	pDC->InvertRect(rcVertLine);
-}
-
-void DrawDottedLine(CDC* pDC, const CPoint& ptStart, const CPoint& ptEnd, COLORREF color)
-{
-	if (ptStart.x == ptEnd.x)
-	{
-		ASSERT(ptStart.y <= ptEnd.y);
-		for (int y = ptStart.y; y < ptEnd.y; y += 2)
-			pDC->SetPixel(ptStart.x, y, color);
-	}
-	else if (ptStart.y == ptEnd.y)
-	{
-		ASSERT(ptStart.x <= ptEnd.x);
-		for (int x = ptStart.x; x < ptEnd.x; x += 2)
-			pDC->SetPixel(x, ptStart.y, color);
-	}
-	else
-	{
-		ASSERT(false);
-	}
-}
-
-void DrawDottedRect(CDC* pDC, const CRect& rect, COLORREF color)
-{
-	DrawDottedLine(pDC, rect.TopLeft(), CPoint(rect.right, rect.top), color);
-	DrawDottedLine(pDC, CPoint(rect.right - 1, rect.top + (rect.Width() + 1) % 2),
-		CPoint(rect.right - 1, rect.bottom), color);
-	DrawDottedLine(pDC, rect.TopLeft(), CPoint(rect.left, rect.bottom), color);
-	DrawDottedLine(pDC, CPoint(rect.left + (rect.Height() + 1) % 2, rect.bottom - 1),
-		CPoint(rect.right, rect.bottom - 1), color);
-}
-
-void HighlightRect(CDC* pDC, const CRect& rect, COLORREF color, double fTransparency)
-{
-	CRect rcClip;
-	pDC->GetClipBox(rcClip);
-	if (!rcClip.IntersectRect(CRect(rcClip), rect))
-		return;
-
-	static COffscreenDC offscreenDC;
-
-	offscreenDC.Create(pDC, rcClip.Size());
-	CDIB* pDIB = offscreenDC.GetDIB();
-	if (pDIB == NULL || pDIB->m_hObject == NULL)
-	{
-		offscreenDC.Release();
-		return;
-	}
-
-	ASSERT(pDIB->GetBitsPerPixel() == 24);
-
-	offscreenDC.BitBlt(0, 0, rcClip.Width(), rcClip.Height(), pDC, rcClip.left, rcClip.top, SRCCOPY);
-
-	int nRowLength = pDIB->GetWidth()*3;
-	while (nRowLength % 4 != 0)
-		++nRowLength;
-
-	LPBYTE pBits = pDIB->GetBits();
-
-	BYTE tableRed[256], tableGreen[256], tableBlue[256];
-	for (int i = 0; i < 256; ++i)
-		tableRed[i] = tableGreen[i] = tableBlue[i] = i;
-
-	BuildTransparentcyTable(fTransparency, GetRValue(color), tableRed);
-	BuildTransparentcyTable(fTransparency, GetGValue(color), tableGreen);
-	BuildTransparentcyTable(fTransparency, GetBValue(color), tableBlue);
-
-	for (int y = 0; y < rcClip.Height(); ++y, pBits += nRowLength)
-	{
-		LPBYTE pPixel = pBits;
-		for (int x = 0; x < rcClip.Width(); ++x)
-		{
-			*pPixel = tableBlue[*pPixel];
-			++pPixel;
-			*pPixel = tableGreen[*pPixel];
-			++pPixel;
-			*pPixel = tableRed[*pPixel];
-			++pPixel;
-		}
-	}
-
-	pDC->BitBlt(rcClip.left, rcClip.top, rcClip.Width(), rcClip.Height(), &offscreenDC, 0, 0, SRCCOPY);
-	offscreenDC.Release();
-}
-
-void DrawDownArrow(CDC* pDC, const CRect& rect, COLORREF color)
-{
-	POINT points[3];
-
-	points[0].x = rect.left;
-	points[0].y = rect.top;
-	points[1].x = rect.right;
-	points[1].y = rect.top;
-	points[2].x = rect.CenterPoint().x;
-	points[2].y = rect.bottom;
-	
-	CBrush brush(color);
-	CPen pen(PS_SOLID, 1, color);
-
-	CBrush* pOldBrush = pDC->SelectObject(&brush);
-	CPen* pOldPen = pDC->SelectObject(&pen);
-	int nPolyFillMode = pDC->SetPolyFillMode(WINDING);
-
-	pDC->Polygon(points, 3);
-
-	pDC->SetPolyFillMode(nPolyFillMode);
-	pDC->SelectObject(pOldPen);
-	pDC->SelectObject(pOldBrush);
-}
-
-COLORREF ChangeBrightness(COLORREF color, double fFactor)
-{
-	int nRed = min(static_cast<int>(GetRValue(color)*fFactor + 0.5), 255);
-	int nGreen = min(static_cast<int>(GetGValue(color)*fFactor + 0.5), 255);
-	int nBlue = min(static_cast<int>(GetBValue(color)*fFactor + 0.5), 255);
-	return RGB(nRed, nGreen, nBlue);
-}
-
-COLORREF AlphaCombine(COLORREF crFirst, COLORREF crSecond, BYTE nAlpha)
-{
-	return RGB((GetRValue(crFirst) * (255L - nAlpha) + GetRValue(crSecond) * (0L + nAlpha)) >> 8,
-			(GetGValue(crFirst) * (255L - nAlpha) + GetGValue(crSecond) * (0L + nAlpha)) >> 8,
-			(GetBValue(crFirst) * (255L - nAlpha) + GetBValue(crSecond) * (0L + nAlpha)) >> 8);
-}
-
-// COffscreenDC
-
-COffscreenDC::COffscreenDC()
-	: m_pBitmap(NULL), m_pOldBitmap(NULL), m_szBitmap(0, 0)
-{
-}
-
-COffscreenDC::~COffscreenDC()
-{
-	if (m_hDC != NULL)
-		Release();
-
-	delete m_pBitmap;
-}
-
-bool COffscreenDC::Create(CDC* pDC, CSize size)
-{
-	if (m_pBitmap == NULL || m_szBitmap.cx < size.cx || m_szBitmap.cy < size.cy)
-	{
-		m_szBitmap.cx = max(m_szBitmap.cx, static_cast<int>(size.cx*1.1 + 0.5));
-		m_szBitmap.cy = max(m_szBitmap.cy, static_cast<int>(size.cy*1.1 + 0.5));
-
-		delete m_pBitmap;
-		m_pBitmap = CDIB::CreateDIB(m_szBitmap.cx, -m_szBitmap.cy, 24); // Top-down DIB
-	}
-
-	ASSERT(m_hDC == NULL);
-	if (m_hDC != NULL)
-		Release();
-
-	if (!CreateCompatibleDC(pDC))
-		return false;
-
-	SetViewportOrg(CPoint(0, 0));
-
-	m_pOldBitmap = SelectObject(m_pBitmap);
-	return true;
-}
-
-void COffscreenDC::Release()
-{
-	ASSERT(m_hDC != NULL);
-
-	if (m_hDC != NULL)
-	{
-		SelectObject(m_pOldBitmap);
-		m_pOldBitmap = NULL;
-
-		DeleteDC();
-	}
 }

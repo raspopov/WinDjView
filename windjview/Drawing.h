@@ -102,6 +102,11 @@ private:
 	CSize m_szBitmap;
 };
 
+class CScreenDC : public CDC
+{
+public:
+	CScreenDC();
+};
 
 CDIB* RenderPixmap(GPixmap& pm, const CDisplaySettings& displaySettings);
 CDIB* RenderBitmap(GBitmap& bm, const CDisplaySettings& displaySettings);

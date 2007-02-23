@@ -55,12 +55,6 @@ BOOL CFullscreenWnd::Create()
 			::LoadCursor(NULL, IDC_ARROW), NULL,
 			::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME)));
 
-	CDC dcScreen;
-	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
-
-	m_nWidth = dcScreen.GetDeviceCaps(HORZRES);
-	m_nHeight = dcScreen.GetDeviceCaps(VERTRES);
-
 	return CreateEx(0, strWndClass, NULL,
 		WS_POPUP, CRect(0, 0, m_nWidth, m_nHeight), NULL, 0);
 }

@@ -340,6 +340,7 @@ BEGIN
         MENUITEM "&Highlight Text...",          ID_HIGHLIGHT_TEXT
         MENUITEM "&Highlight Selection...",     ID_HIGHLIGHT_SELECTION
         MENUITEM "Export &Selection...",        ID_EXPORT_SELECTION
+        MENUITEM "&Zoom To Selection",          ID_ZOOM_TO_SELECTION
         MENUITEM "E&dit Annotation...",         ID_ANNOTATION_EDIT
         MENUITEM "Delete &Annotation",          ID_ANNOTATION_DELETE
         MENUITEM SEPARATOR
@@ -1237,6 +1238,7 @@ BEGIN
     ID_BOOKMARK_SETDESTINATION 
                             "Set the destination of the selected bookmark to current view"
     ID_BOOKMARK_ADD         "Bookmark current view, selection or annotation"
+    ID_ZOOM_TO_SELECTION    "Zoom to the current selection"
 END
 
 #endif    // English (U.S.) resources

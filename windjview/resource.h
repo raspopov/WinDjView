@@ -234,8 +234,8 @@
 #define ID_EXPORT_PAGE                  32815
 #define ID_EXPORT_SELECTION             32816
 #define ID_VIEW_BACK                    32819
-#define ID_VIEW_FORWARD                 32820
 #define ID_VIEW_BACK_SHORTCUT           32819
+#define ID_VIEW_FORWARD                 32820
 #define ID_VIEW_FORWARD_SHORTCUT        32820
 #define ID_WINDOW_ACTIVATE_FIRST        32826
 #define ID_WINDOW_ACTIVATE_1            32827
@@ -290,13 +290,14 @@
 #define ID_BOOKMARK_RENAME              33141
 #define ID_BOOKMARK_SETDESTINATION      33142
 #define ID_BOOKMARK_ADD                 33143
+#define ID_ZOOM_TO_SELECTION            33144
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        286
-#define _APS_NEXT_COMMAND_VALUE         33144
+#define _APS_NEXT_COMMAND_VALUE         33145
 #define _APS_NEXT_CONTROL_VALUE         1082
 #define _APS_NEXT_SYMED_VALUE           113
 #endif

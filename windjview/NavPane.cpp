@@ -285,8 +285,7 @@ int CNavPaneWnd::AddTab(const CString& strName, CWnd* pWnd)
 	else
 		nTop += 5;
 
-	CDC dcScreen;
-	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+	CScreenDC dcScreen;
 	CFont* pOldFont = dcScreen.SelectObject(&m_fontActive);
 	CSize szText = dcScreen.GetTextExtent(strName);
 	dcScreen.SelectObject(pOldFont);
@@ -547,8 +546,7 @@ void CNavPaneWnd::SetTabName(int nTab, const CString& strName)
 	Tab& tab = m_tabs[nTab];
 	tab.strName = strName;
 
-	CDC dcScreen;
-	dcScreen.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+	CScreenDC dcScreen;
 	CFont* pOldFont = dcScreen.SelectObject(&m_fontActive);
 	CSize szText = dcScreen.GetTextExtent(strName);
 	dcScreen.SelectObject(pOldFont);
