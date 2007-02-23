@@ -35,11 +35,11 @@ CFullscreenWnd::CFullscreenWnd()
 
 CFullscreenWnd::~CFullscreenWnd()
 {
-	ASSERT(m_pOwner == NULL);
 }
 
 BEGIN_MESSAGE_MAP(CFullscreenWnd, CWnd)
 	ON_WM_CLOSE()
+	ON_WM_DESTROY()
 	ON_WM_SETFOCUS()
 	ON_WM_ERASEBKGND()
 	ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNeedText)
@@ -89,15 +89,15 @@ void CFullscreenWnd::Show(CDjVuView* pOwner, CDjVuView* pContents)
 
 void CFullscreenWnd::Hide()
 {
-	ShowWindow(SW_HIDE);
-
 	if (m_pOwner != NULL)
 	{
-		m_pOwner->GetTopLevelParent()->ShowWindow(SW_SHOW);
-
 		int nPage = m_pView->GetCurrentPage();
 		m_pOwner->UpdatePageInfoFrom(m_pView);
 		m_pOwner->CopyBitmapsFrom(m_pView, true);
+
+		// Detach view from the document before destroying
+		m_pView->SetDocument(NULL);
+		m_pView->DestroyWindow();
 
 		m_pOwner->GoToPage(nPage, CDjVuView::DoNotAdd);
 
@@ -106,12 +106,13 @@ void CFullscreenWnd::Hide()
 		if (pThumbnailsView != NULL)
 			pThumbnailsView->RestartThreads();
 
-		// Detach view from the document before destroying
-		m_pView->SetDocument(NULL);
-		m_pView->DestroyWindow();
-
-		m_pOwner->SetFocus();
+		m_pOwner->GetTopLevelParent()->ShowWindow(SW_SHOW);
 	}
+
+	ShowWindow(SW_HIDE);
+
+	if (m_pOwner != NULL)
+		m_pOwner->SetFocus();
 
 	m_pView = NULL;
 	m_pOwner = NULL;
@@ -160,7 +161,25 @@ BOOL CFullscreenWnd::OnEraseBkgnd(CDC* pDC)
 
 void CFullscreenWnd::OnClose()
 {
-	Hide();
+	if (m_pOwner != NULL)
+	{
+		// WM_CLOSE may cause a message box to pop up. Ensure that it gets a correct parent.
+		CPushRoutingFrame push((CFrameWnd*) this);
+
+		m_pOwner->GetTopLevelFrame()->SendMessage(WM_CLOSE);
+	}
+	else
+	{
+		Hide();
+	}
+}
+
+void CFullscreenWnd::OnDestroy()
+{
+	if (m_pView != NULL)
+		m_pView->SetDocument(NULL);
+
+	CWnd::OnDestroy();
 }
 
 BOOL CFullscreenWnd::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)

@@ -36,6 +36,8 @@
 CRenderThread::CRenderThread(DjVuSource* pSource, Observer* pOwner)
 	: m_pOwner(pOwner), m_pSource(pSource), m_bPaused(false), m_bRejectCurrentJob(false)
 {
+	m_pSource->AddRef();
+
 	m_currentJob.nPage = -1;
 	m_pages.resize(m_pSource->GetPageCount(), m_jobs.end());
 
@@ -47,6 +49,7 @@ CRenderThread::CRenderThread(DjVuSource* pSource, Observer* pOwner)
 CRenderThread::~CRenderThread()
 {
 	ASSERT(m_hThread == NULL);
+	m_pSource->Release();
 }
 
 void CRenderThread::Delete()

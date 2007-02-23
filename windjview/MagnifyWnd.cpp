@@ -33,12 +33,12 @@ CMagnifyWnd::CMagnifyWnd()
 
 CMagnifyWnd::~CMagnifyWnd()
 {
-	ASSERT(m_pOwner == NULL);
 }
 
 BEGIN_MESSAGE_MAP(CMagnifyWnd, CWnd)
 	ON_WM_PAINT()
 	ON_WM_ERASEBKGND()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -113,4 +113,12 @@ void CMagnifyWnd::OnPaint()
 BOOL CMagnifyWnd::OnEraseBkgnd(CDC* pDC)
 {
 	return true;
+}
+
+void CMagnifyWnd::OnDestroy()
+{
+	if (m_pView != NULL)
+		m_pView->SetDocument(NULL);
+
+	CWnd::OnDestroy();
 }

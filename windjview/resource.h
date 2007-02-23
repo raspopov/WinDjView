@@ -207,6 +207,8 @@
 #define IDC_COMBO_UNITS                 1080
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
+#define ID_VIEW_NEXTPAGE_SHORTCUT       32773
+#define ID_VIEW_PREVIOUSPAGE_SHORTCUT   32774
 #define ID_ZOOM_50                      32777
 #define ID_ZOOM_75                      32778
 #define ID_ZOOM_100                     32779
@@ -224,6 +226,8 @@
 #define ID_ROTATE_180                   32794
 #define ID_VIEW_FIRSTPAGE               32797
 #define ID_VIEW_LASTPAGE                32798
+#define ID_VIEW_FIRSTPAGE_SHORTCUT      32799
+#define ID_VIEW_LASTPAGE_SHORTCUT       32800
 #define ID_PAGE_INFORMATION             32809
 #define ID_VIEW_LAYOUT                  32810
 #define ID_FILE_SETTINGS                32813
@@ -231,6 +235,8 @@
 #define ID_EXPORT_SELECTION             32816
 #define ID_VIEW_BACK                    32819
 #define ID_VIEW_FORWARD                 32820
+#define ID_VIEW_BACK_SHORTCUT           32819
+#define ID_VIEW_FORWARD_SHORTCUT        32820
 #define ID_WINDOW_ACTIVATE_FIRST        32826
 #define ID_WINDOW_ACTIVATE_1            32827
 #define ID_WINDOW_ACTIVATE_2            32828

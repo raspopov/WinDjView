@@ -53,6 +53,7 @@ protected:
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg BOOL OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnClose();
+	afx_msg void OnDestroy();
 	afx_msg LRESULT OnAppCommand(WPARAM wParam, LPARAM lParam);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual void PostNcDestroy();

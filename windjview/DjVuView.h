@@ -205,7 +205,7 @@ protected:
 	struct Page
 	{
 		Page() :
-			szDisplay(0, 0), ptOffset(0, 0), pBitmap(NULL), nSelStart(-1), nSelEnd(-1),
+			szBitmap(0, 0), ptOffset(0, 0), pBitmap(NULL), nSelStart(-1), nSelEnd(-1),
 			bHasSize(false), bBitmapRendered(false) {}
 		~Page() { delete pBitmap; }
 
@@ -226,7 +226,7 @@ protected:
 
 		bool bHasSize;
 		CPoint ptOffset;
-		CSize szDisplay;
+		CSize szBitmap;
 		CRect rcDisplay;
 		CDIB* pBitmap;
 		bool bBitmapRendered;

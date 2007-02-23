@@ -852,7 +852,7 @@ void CDjViewApp::SetLanguage(HINSTANCE hResources, DWORD nLanguage)
 
 	UpdateObservers(APP_LANGUAGE_CHANGED);
 }
-	
+
 BOOL CDjViewApp::OnOpenRecentFile(UINT nID)
 {
 	// Fixed MFC's CWinApp::OnOpenRecentFile

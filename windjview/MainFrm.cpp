@@ -60,8 +60,10 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ACTIVATE_FIRST, OnUpdateWindowList)
 	ON_COMMAND_RANGE(ID_WINDOW_ACTIVATE_FIRST, ID_WINDOW_ACTIVATE_LAST, OnActivateWindow)
 	ON_COMMAND(ID_VIEW_BACK, OnViewBack)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_BACK, OnUpdateViewBack)
 	ON_COMMAND(ID_VIEW_FORWARD, OnViewForward)
+	ON_COMMAND(ID_VIEW_BACK_SHORTCUT, OnViewBack)
+	ON_COMMAND(ID_VIEW_FORWARD_SHORTCUT, OnViewForward)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_BACK, OnUpdateViewBack)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FORWARD, OnUpdateViewForward)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_ADJUST, OnUpdateStatusAdjust)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_MODE, OnUpdateStatusMode)
@@ -968,6 +970,29 @@ LRESULT CALLBACK CMainFrame::KeyboardProc(int nCode, WPARAM wParam, LPARAM lPara
 
 void CMainFrame::OnDestroy()
 {
+	if (m_pFullscreenWnd != NULL)
+	{
+		m_pFullscreenWnd->DestroyWindow();
+		m_pFullscreenWnd = NULL;
+	}
+
+	if (m_pMagnifyWnd != NULL)
+	{
+		m_pMagnifyWnd->DestroyWindow();
+		m_pMagnifyWnd = NULL;
+	}
+
+	if (m_pFindDlg != NULL)
+	{
+		m_pFindDlg->UpdateData();
+		theApp.GetAppSettings()->strFind = m_pFindDlg->m_strFind;
+		theApp.GetAppSettings()->bMatchCase = !!m_pFindDlg->m_bMatchCase;
+
+		m_pFindDlg->DestroyWindow();
+		delete m_pFindDlg;
+		m_pFindDlg = NULL;
+	}
+
 	theApp.RemoveObserver(this);
 	::UnhookWindowsHookEx(hHook);
 
@@ -1223,31 +1248,6 @@ void CMainFrame::OnClose()
 					MB_ICONEXCLAMATION | MB_YESNO) != IDYES)
 				return;
 		}
-	}
-
-	if (m_pFullscreenWnd != NULL)
-	{
-		m_pFullscreenWnd->Hide();
-		m_pFullscreenWnd->DestroyWindow();
-		m_pFullscreenWnd = NULL;
-	}
-
-	if (m_pMagnifyWnd != NULL)
-	{
-		m_pMagnifyWnd->Hide();
-		m_pMagnifyWnd->DestroyWindow();
-		m_pMagnifyWnd = NULL;
-	}
-
-	if (m_pFindDlg != NULL)
-	{
-		m_pFindDlg->UpdateData();
-		theApp.GetAppSettings()->strFind = m_pFindDlg->m_strFind;
-		theApp.GetAppSettings()->bMatchCase = !!m_pFindDlg->m_bMatchCase;
-
-		m_pFindDlg->DestroyWindow();
-		delete m_pFindDlg;
-		m_pFindDlg = NULL;
 	}
 
 	CMDIFrameWnd::OnClose();

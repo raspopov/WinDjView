@@ -34,6 +34,8 @@
 CThumbnailsThread::CThumbnailsThread(DjVuSource* pSource, Observer* pOwner, bool bIdle)
 	: m_pSource(pSource), m_pOwner(pOwner), m_bPaused(false), m_bRejectCurrentJob(false)
 {
+	m_pSource->AddRef();
+
 	m_currentJob.nPage = -1;
 
 	UINT dwThreadId;
@@ -45,6 +47,7 @@ CThumbnailsThread::CThumbnailsThread(DjVuSource* pSource, Observer* pOwner, bool
 CThumbnailsThread::~CThumbnailsThread()
 {
 	ASSERT(m_hThread == NULL);
+	m_pSource->Release();
 }
 
 void CThumbnailsThread::Delete()

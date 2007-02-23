@@ -401,6 +401,14 @@ void CThumbnailsView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	case VK_BACK:
 		szScroll.cy = -m_pageDev.cy;
 		break;
+
+	case VK_HOME:
+		szScroll.cy = -GetScrollPosition().y;
+		break;
+
+	case VK_END:
+		szScroll.cy = GetScrollLimit(SB_VERT) - GetScrollPosition().y;
+		break;
 	}
 
 	OnScrollBy(szScroll);
