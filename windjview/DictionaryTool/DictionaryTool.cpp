@@ -1,4 +1,4 @@
-//	DjVu Page Index Tool
+//	DjVu Dictionary Tool
 //	Copyright (C) 2006-2007 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
@@ -18,17 +18,17 @@
 // $Id$
 
 #include "stdafx.h"
-#include "IndexTool.h"
-#include "IndexDlg.h"
+#include "DictionaryTool.h"
+#include "DictionaryDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 
-// CIndexApp
+// CDictionaryApp
 
-BEGIN_MESSAGE_MAP(CIndexApp, CWinApp)
+BEGIN_MESSAGE_MAP(CDictionaryApp, CWinApp)
 	ON_COMMAND(ID_HELP, CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
@@ -36,20 +36,20 @@ END_MESSAGE_MAP()
 const TCHAR* s_pszGlobalSettings = _T("Settings");
 const TCHAR* s_pszPrompt = _T("prompt");
 
-// CIndexApp construction
+// CDictionaryApp construction
 
-CIndexApp::CIndexApp()
+CDictionaryApp::CDictionaryApp()
 {
 }
 
 
-// The one and only CIndexApp object
-CIndexApp theApp;
+// The one and only CDictionaryApp object
+CDictionaryApp theApp;
 
 
-// CIndexApp initialization
+// CDictionaryApp initialization
 
-BOOL CIndexApp::InitInstance()
+BOOL CDictionaryApp::InitInstance()
 {
 	_tsetlocale(LC_ALL, _T(""));
 
@@ -69,14 +69,14 @@ BOOL CIndexApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	SetRegistryKey(_T("Andrew Zhezherun"));
 
-	CIndexDlg::bPrompt = !!GetProfileInt(s_pszGlobalSettings, s_pszPrompt, true);
+	CDictionaryDlg::bPrompt = !!GetProfileInt(s_pszGlobalSettings, s_pszPrompt, true);
 
-	CIndexDlg dlg;
+	CDictionaryDlg dlg;
 	m_pMainWnd = &dlg;
 
 	dlg.DoModal();
 
-	WriteProfileInt(s_pszGlobalSettings, s_pszPrompt, CIndexDlg::bPrompt);
+	WriteProfileInt(s_pszGlobalSettings, s_pszPrompt, CDictionaryDlg::bPrompt);
 
 	AfxOleTerm();
 

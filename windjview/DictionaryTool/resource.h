@@ -1,9 +1,8 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Developer Studio generated include file.
-// Used by IndexTool.rc
+// Used by DictionaryTool.rc
 //
-#define IDR_MANIFEST                    1
-#define IDD_INDEXTOOL                   100
+#define IDD_DICTIONARYTOOL              100
 #define IDR_MAINFRAME                   128
 #define IDS_DJVU_FILTER                 129
 #define IDS_BROWSE_DJVU                 130

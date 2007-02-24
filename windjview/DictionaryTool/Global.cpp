@@ -21,9 +21,14 @@
 #include "Global.h"
 
 
+// RefCount
+
 RefCount::~RefCount()
 {
 }
+
+
+// Observable
 
 void Observable::AddObserver(Observer* observer)
 {
@@ -42,6 +47,50 @@ void Observable::UpdateObservers(const Message& message)
 		Observer* observer = *it;
 		observer->OnUpdate(this, &message);
 	}
+}
+
+bool IsWin2kOrLater()
+{
+	static int nResult = -1;
+
+	if (nResult == -1)
+	{
+		OSVERSIONINFO vi;
+		vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+		nResult = (::GetVersionEx(&vi) != 0 && vi.dwPlatformId == VER_PLATFORM_WIN32_NT
+				&& vi.dwMajorVersion >= 5);
+	}
+
+	return !!nResult;
+}
+
+bool IsWinXPOrLater()
+{
+	static int nResult = -1;
+
+	if (nResult == -1)
+	{
+		OSVERSIONINFO vi;
+		vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+		nResult = (::GetVersionEx(&vi) != 0 && vi.dwPlatformId == VER_PLATFORM_WIN32_NT
+				&& (vi.dwMajorVersion > 5 || vi.dwMajorVersion == 5 && vi.dwMinorVersion >= 1));
+	}
+
+	return !!nResult;
+}
+
+bool IsWinNT()
+{
+	static int nResult = -1;
+
+	if (nResult == -1)
+	{
+		OSVERSIONINFO vi;
+		vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+		nResult = (::GetVersionEx(&vi) != 0 && vi.dwPlatformId == VER_PLATFORM_WIN32_NT);
+	}
+
+	return !!nResult;
 }
 
 GUTF8String MakeUTF8String(const CString& strText)
@@ -70,14 +119,14 @@ GUTF8String MakeUTF8String(const CString& strText)
 	return utf8String;
 }
 
-int CheckUTF8Character(const unsigned char* s, int n)
+int ReadUTF8Character(const char* s, int& nBytes)
 {
-	// Taken from libiconv
-	unsigned char c = s[0];
+	unsigned char c = static_cast<unsigned char>(s[0]);
 
 	if (c < 0x80)
 	{
-		return 1;
+		nBytes = 1;
+		return c;
 	}
 	else if (c < 0xc2)
 	{
@@ -85,20 +134,18 @@ int CheckUTF8Character(const unsigned char* s, int n)
 	}
 	else if (c < 0xe0)
 	{
-		if (n < 2)
+		if (s[1] == 0 || !((s[1] ^ 0x80) < 0x40))
 			return -1;
-		if (!((s[1] ^ 0x80) < 0x40))
-			return -1;
-		return 2;
+		nBytes = 2;
+		return ((s[0] & 0x1F) << 6) + (s[1] & 0x7F);
 	}
 	else if (c < 0xf0)
 	{
-		if (n < 3)
+		if (s[1] == 0 || s[2] == 0 || !((s[1] ^ 0x80) < 0x40
+				&& (s[2] ^ 0x80) < 0x40 && (c >= 0xe1 || s[1] >= 0xa0)))
 			return -1;
-		if (!((s[1] ^ 0x80) < 0x40 && (s[2] ^ 0x80) < 0x40
-				&& (c >= 0xe1 || s[1] >= 0xa0)))
-			return -1;
-		return 3;
+		nBytes = 3;
+		return ((s[0] & 0xF) << 12) + ((s[1] & 0x7F) << 6) + (s[2] & 0x7F);
 	}
 	else
 	{
@@ -106,17 +153,15 @@ int CheckUTF8Character(const unsigned char* s, int n)
 	}
 }
 
-bool CheckUTF8(const char* pszText, int nLength)
+bool IsValidUTF8(const char* pszText)
 {
-	const unsigned char* s = reinterpret_cast<const unsigned char*>(pszText);
-	const unsigned char* end = s + nLength;
-
-	while (s < end)
+	const char* s = pszText;
+	while (*s != 0)
 	{
-		int nChar = CheckUTF8Character(s, end - s);
-		if (nChar < 0)
+		int nBytes = 0;
+		if (ReadUTF8Character(s, nBytes) < 0)
 			return false;
-		s += nChar;
+		s += nBytes;
 	}
 
 	return true;
@@ -153,16 +198,11 @@ CString MakeCString(const GUTF8String& text)
 
 	// Only Windows XP supports checking for invalid characters in UTF8 encoding
 	// inside MultiByteToWideChar function
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-		(vi.dwMajorVersion > 5 || vi.dwMajorVersion == 5 && vi.dwMinorVersion >= 1))
-	{
+	if (IsWinXPOrLater())
 		dwFlags = MB_ERR_INVALID_CHARS;
-	}
 
 	// Make our own check anyway
-	if (!CheckUTF8(text, text.length()))
+	if (!IsValidUTF8(text))
 	{
 		strResult = (LPCSTR)text;
 		return strResult;
@@ -247,29 +287,26 @@ bool MakeWString(const GUTF8String& text, wstring& result)
 
 	// Only Windows XP supports checking for invalid characters in UTF8 encoding
 	// inside MultiByteToWideChar function
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-		vi.dwMajorVersion >= 5)
-	{
+	if (IsWinXPOrLater())
 		dwFlags = MB_ERR_INVALID_CHARS;
-	}
 
 	// Make our own check anyway
-	if (!CheckUTF8(text, text.length()))
-	{
-		return false;
-	}
-
-	int nSize = ::MultiByteToWideChar(CP_UTF8, dwFlags, (LPCSTR)text, -1, NULL, 0);
-	if (nSize > 1)
+	int nSize;
+	if (IsValidUTF8(text) && (nSize = ::MultiByteToWideChar(CP_UTF8, dwFlags,
+			(LPCSTR)text, -1, NULL, 0)) > 1)
 	{
 		result.resize(nSize - 1);
 		nResult = ::MultiByteToWideChar(CP_UTF8, dwFlags, (LPCSTR)text, -1,
 			(LPWSTR)result.data(), nSize);
+		return (nResult != 0);
 	}
-
-	return (nResult != 0);
+	else
+	{
+		result.resize(text.length());
+		for (int i = 0; i < static_cast<int>(text.length()); ++i)
+			result[i] = static_cast<unsigned char>(text[i]);
+		return true;
+	}
 }
 
 

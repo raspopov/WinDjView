@@ -48,7 +48,7 @@ BEGIN
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
     "LANGUAGE 9, 1\r\n"
     "#pragma code_page(1252)\r\n"
-    "#include ""res\\IndexTool.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""res\\DictionaryTool.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
     "#include ""afxres.rc""         // Standard components\r\n"
     "#endif\r\n"
     "\0"
@@ -64,31 +64,24 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\IndexTool.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// 24
-//
-
-IDR_MANIFEST            24      MOVEABLE PURE   "res\\IndexTool.manifest"
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\DictionaryTool.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_INDEXTOOL DIALOGEX 0, 0, 323, 93
+IDD_DICTIONARYTOOL DIALOGEX 0, 0, 323, 94
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | 
     WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "DjVu Page Index Tool"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+CAPTION "DjVu Dictionary Tool"
+FONT 8, "MS Shell Dlg"
 BEGIN
     DEFPUSHBUTTON   "Close",IDOK,266,43,50,14
     PUSHBUTTON      "Embed",IDC_EMBED,266,7,50,14
     PUSHBUTTON      "Export",IDC_EXPORT,266,25,50,14
-    RTEXT           "DjVu Page Index Tool 1.0 by Andrew Zhezherun (C) 2006",
+    RTEXT           "DjVu Dictionary Tool 1.0 by Andrew Zhezherun (C) 2007",
                     IDC_STATIC,7,79,309,8
     GROUPBOX        "DjVu File",IDC_DJVU_GROUP,7,7,250,24
     CONTROL         "File name",IDC_DJVU_FILE,"Static",SS_LEFTNOWORDWRAP | 
@@ -129,12 +122,12 @@ BEGIN
         BLOCK "04090000"
         BEGIN
             VALUE "CompanyName", "Andrew Zhezherun\0"
-            VALUE "FileDescription", "DjVu Page Index Tool\0"
+            VALUE "FileDescription", "DjVu Dictionary Tool\0"
             VALUE "FileVersion", "1.0\0"
-            VALUE "InternalName", "IndexTool.exe\0"
-            VALUE "LegalCopyright", "Copyright (C) 2006 Andrew Zhezherun. All rights reserved.\0"
-            VALUE "OriginalFilename", "IndexTool.exe\0"
-            VALUE "ProductName", "DjVu Page Index Tool\0"
+            VALUE "InternalName", "DictionaryTool.exe\0"
+            VALUE "LegalCopyright", "Copyright (C) 2007 Andrew Zhezherun. All rights reserved.\0"
+            VALUE "OriginalFilename", "DictionaryTool.exe\0"
+            VALUE "ProductName", "DjVu Dictionary Tool\0"
             VALUE "ProductVersion", "1.0\0"
         END
     END
@@ -145,6 +138,25 @@ BEGIN
 END
 
 #endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_DICTIONARYTOOL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 316
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 87
+    END
+END
+#endif    // APSTUDIO_INVOKED
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -174,7 +186,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    AFX_IDS_APP_TITLE       "DjVu Page Index Tool"
+    AFX_IDS_APP_TITLE       "DjVu Dictionary Tool"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -186,7 +198,7 @@ BEGIN
     IDS_ERROR_WRITING_RESULT 
                             "Error writing to the output file. The directory might be read-only,\nor the disk may be full."
     IDS_REPLACE_ERROR       "Error saving the result file. The file might be in use by other application."
-    IDS_EMBEDDING_DONE      "Paeg index was successfully embedded into the document."
+    IDS_EMBEDDING_DONE      "Page index was successfully embedded into the document."
 END
 
 #endif    // English (U.S.) resources
@@ -207,7 +219,7 @@ END
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE 9, 1
 #pragma code_page(1252)
-#include "res\IndexTool.rc2"  // non-Microsoft Visual C++ edited resources
+#include "res\DictionaryTool.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
 

@@ -20,9 +20,9 @@ LIBDJVU = libdjvu.lib
 
 !ENDIF
 
-OUT = "$(INTDIR)\IndexTool.exe"
+OUT = "$(INTDIR)\DictionaryTool.exe"
 
-PCH = "$(INTDIR)\IndexTool.pch"
+PCH = "$(INTDIR)\DictionaryTool.pch"
 CPP_PCH = /Yu"stdafx.h"
 CPP_PCH_CREATE = /Yc"stdafx.h"
 
@@ -33,7 +33,7 @@ LINK_FLAGS = $(LINK_FLAGS) "..\libdjvu\$(LIBDJVU)" \
              /nologo /subsystem:windows /incremental:no /machine:x86 \
              /nodefaultlib:"msvcrt.lib" /ltcg /out:$(OUT)
 
-RSC_FLAGS = /l 0x409 /fo"$(INTDIR)\IndexTool.res" /d "NDEBUG"
+RSC_FLAGS = /l 0x409 /fo"$(INTDIR)\DictionaryTool.res" /d "NDEBUG"
 
 all: $(OUT)
 
@@ -59,21 +59,21 @@ clean:
 
 LINK_OBJS = \
 	"$(INTDIR)\Global.obj" \
-	"$(INTDIR)\IndexDlg.obj" \
-	"$(INTDIR)\IndexTool.obj" \
+	"$(INTDIR)\DictionaryDlg.obj" \
+	"$(INTDIR)\DictionaryTool.obj" \
 	"$(INTDIR)\MyDropTarget.obj" \
 	"$(INTDIR)\stdafx.obj" \
-	"$(INTDIR)\IndexTool.res"
+	"$(INTDIR)\DictionaryTool.res"
 
 $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 	@$(LINK) $(LINK_FLAGS) $(LINK_OBJS)
 
 "$(INTDIR)\Global.obj" : Global.cpp "$(INTDIR)" $(PCH)
-"$(INTDIR)\IndexDlg.obj" : IndexDlg.cpp "$(INTDIR)" $(PCH)
-"$(INTDIR)\IndexTool.obj" : IndexTool.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\DictionaryDlg.obj" : DictionaryDlg.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\DictionaryTool.obj" : DictionaryTool.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDropTarget.obj" : MyDropTarget.cpp "$(INTDIR)" $(PCH)
 
 "$(INTDIR)\stdafx.obj" $(PCH) : stdafx.cpp "$(INTDIR)"
 	@$(CPP) $(CPP_FLAGS) $(CPP_PCH_CREATE) stdafx.cpp
 
-"$(INTDIR)\IndexTool.res" : IndexTool.rc "$(INTDIR)"
+"$(INTDIR)\DictionaryTool.res" : DictionaryTool.rc "$(INTDIR)"

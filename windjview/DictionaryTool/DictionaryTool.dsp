@@ -1,26 +1,26 @@
-# Microsoft Developer Studio Project File - Name="IndexTool" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="DictionaryTool" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Application" 0x0101
 
-CFG=IndexTool - Win32 Debug Unicode
+CFG=DictionaryTool - Win32 Debug Unicode
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "IndexTool.mak".
+!MESSAGE NMAKE /f "DictionaryTool.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "IndexTool.mak" CFG="IndexTool - Win32 Debug Unicode"
+!MESSAGE NMAKE /f "DictionaryTool.mak" CFG="DictionaryTool - Win32 Debug Unicode"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "IndexTool - Win32 Release" (based on "Win32 (x86) Application")
-!MESSAGE "IndexTool - Win32 Debug" (based on "Win32 (x86) Application")
-!MESSAGE "IndexTool - Win32 Debug Unicode" (based on "Win32 (x86) Application")
-!MESSAGE "IndexTool - Win32 Release Unicode" (based on "Win32 (x86) Application")
+!MESSAGE "DictionaryTool - Win32 Release" (based on "Win32 (x86) Application")
+!MESSAGE "DictionaryTool - Win32 Debug" (based on "Win32 (x86) Application")
+!MESSAGE "DictionaryTool - Win32 Debug Unicode" (based on "Win32 (x86) Application")
+!MESSAGE "DictionaryTool - Win32 Release Unicode" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -31,7 +31,7 @@ CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "IndexTool - Win32 Release"
+!IF  "$(CFG)" == "DictionaryTool - Win32 Release"
 
 # PROP BASE Use_MFC 1
 # PROP BASE Use_Debug_Libraries 0
@@ -44,20 +44,20 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
+# ADD BASE CPP /nologo /MT /W3 /GR /GX /Zi /Ox /Ot /Og /Oi /Oy- /Ob2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /FR /Yu"stdafx.h" /FD /c
 # ADD CPP /nologo /MT /W3 /GR /GX /Zi /Ox /Ot /Og /Oi /Oy- /Ob2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD BASE RSC /l 0x419 /d "NDEBUG"
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
+# ADD BASE LINK32 ../libdjvu/libdjvu.lib msimg32.lib version.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"msvcrt.lib"
 # ADD LINK32 ../libdjvu/libdjvu.lib msimg32.lib version.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"msvcrt.lib"
 
-!ELSEIF  "$(CFG)" == "IndexTool - Win32 Debug"
+!ELSEIF  "$(CFG)" == "DictionaryTool - Win32 Debug"
 
 # PROP BASE Use_MFC 2
 # PROP BASE Use_Debug_Libraries 1
@@ -70,20 +70,20 @@ LINK32=link.exe
 # PROP Intermediate_Dir "Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Gf /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Gf /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
-# ADD BASE RSC /l 0x419 /d "_DEBUG"
+# ADD BASE RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL"
 # ADD RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD BASE LINK32 ../libdjvu/libdjvud.lib msimg32.lib version.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 ../libdjvu/libdjvud.lib msimg32.lib version.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
-!ELSEIF  "$(CFG)" == "IndexTool - Win32 Debug Unicode"
+!ELSEIF  "$(CFG)" == "DictionaryTool - Win32 Debug Unicode"
 
 # PROP BASE Use_MFC 2
 # PROP BASE Use_Debug_Libraries 1
@@ -97,7 +97,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "Debug_Unicode"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Gf /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /GZ /c
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Gf /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_UNICODE" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Gf /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_UNICODE" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -107,11 +107,10 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 Debug/libdjvud.lib msimg32.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"libcmtd.lib" /pdbtype:sept
-# ADD LINK32 ../libdjvu/libdjvudu.lib msimg32.lib version.lib /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /debug /machine:I386 /nodefaultlib:"libcmtd.lib" /pdbtype:sept
-# SUBTRACT LINK32 /nodefaultlib
+# ADD BASE LINK32 ../libdjvu/libdjvudu.lib msimg32.lib version.lib /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 ../libdjvu/libdjvudu.lib msimg32.lib version.lib /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
-!ELSEIF  "$(CFG)" == "IndexTool - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "DictionaryTool - Win32 Release Unicode"
 
 # PROP BASE Use_MFC 1
 # PROP BASE Use_Debug_Libraries 0
@@ -125,7 +124,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "Release_Unicode"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GR /GX /Ox /Ot /Og /Oi /Oy- /Ob2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FR /Yu"stdafx.h" /FD /c
+# ADD BASE CPP /nologo /MT /W3 /GR /GX /Ox /Ot /Og /Oi /Oy- /Ob2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_UNICODE" /FR /Yu"stdafx.h" /FD /c
 # ADD CPP /nologo /MT /W3 /GR /GX /Ox /Ot /Og /Oi /Oy- /Ob2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_UNICODE" /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -135,39 +134,43 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 Release/libdjvu.lib msimg32.lib /nologo /subsystem:windows /machine:I386 /nodefaultlib:"msvcrt.lib"
+# ADD BASE LINK32 ../libdjvu/libdjvuu.lib msimg32.lib version.lib /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /machine:I386 /nodefaultlib:"msvcrt.lib"
 # ADD LINK32 ../libdjvu/libdjvuu.lib msimg32.lib version.lib /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /machine:I386 /nodefaultlib:"msvcrt.lib"
 
 !ENDIF 
 
 # Begin Target
 
-# Name "IndexTool - Win32 Release"
-# Name "IndexTool - Win32 Debug"
-# Name "IndexTool - Win32 Debug Unicode"
-# Name "IndexTool - Win32 Release Unicode"
+# Name "DictionaryTool - Win32 Release"
+# Name "DictionaryTool - Win32 Debug"
+# Name "DictionaryTool - Win32 Debug Unicode"
+# Name "DictionaryTool - Win32 Release Unicode"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Source File
+
+SOURCE=.\DictionaryDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\DictionaryTool.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\DictionaryTool.rc
+# End Source File
 # Begin Source File
 
 SOURCE=.\Global.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\IndexDlg.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\IndexTool.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\IndexTool.rc
-# End Source File
-# Begin Source File
-
 SOURCE=.\MyDropTarget.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MyFileDialog.cpp
 # End Source File
 # Begin Source File
 
@@ -180,19 +183,23 @@ SOURCE=.\stdafx.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\DictionaryDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\DictionaryTool.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\Global.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\IndexDlg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\IndexTool.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\MyDropTarget.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MyFileDialog.h
 # End Source File
 # Begin Source File
 
@@ -208,15 +215,15 @@ SOURCE=.\stdafx.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE=.\res\IndexTool.ico
+SOURCE=.\res\DictionaryTool.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\IndexTool.manifest
+SOURCE=.\res\DictionaryTool.manifest
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\IndexTool.rc2
+SOURCE=.\res\DictionaryTool.rc2
 # End Source File
 # End Group
 # End Target

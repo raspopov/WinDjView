@@ -1,4 +1,4 @@
-//	DjVu Page Index Tool
+//	DjVu Dictionary Tool
 //	Copyright (C) 2006-2007 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
@@ -18,21 +18,22 @@
 // $Id$
 
 #include "stdafx.h"
-#include "IndexTool.h"
-#include "IndexDlg.h"
+#include "DictionaryTool.h"
+#include "DictionaryDlg.h"
 #include "Global.h"
+#include "MyFileDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 
-// CIndexDlg dialog
+// CDictionaryDlg dialog
 
-bool CIndexDlg::bPrompt = true;
+bool CDictionaryDlg::bPrompt = true;
 
-CIndexDlg::CIndexDlg(CWnd* pParent)
-	: CDialog(CIndexDlg::IDD, pParent), m_bHasDjVuFile(false),
+CDictionaryDlg::CDictionaryDlg(CWnd* pParent)
+	: CDialog(CDictionaryDlg::IDD, pParent), m_bHasDjVuFile(false),
 	  m_bHasPageIndexFile(false), m_bPrompt(bPrompt)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -41,7 +42,7 @@ CIndexDlg::CIndexDlg(CWnd* pParent)
 	m_strPageIndexFile.LoadString(IDS_BROWSE_PAGE_INDEX_PROMPT);
 }
 
-void CIndexDlg::DoDataExchange(CDataExchange* pDX)
+void CDictionaryDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_DJVU_FILE, m_strDjVuFile);
@@ -49,7 +50,7 @@ void CIndexDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_PROMPT_FILENAME, m_bPrompt);
 }
 
-BEGIN_MESSAGE_MAP(CIndexDlg, CDialog)
+BEGIN_MESSAGE_MAP(CDictionaryDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_EMBED, OnEmbed)
@@ -62,9 +63,9 @@ BEGIN_MESSAGE_MAP(CIndexDlg, CDialog)
 END_MESSAGE_MAP()
 
 
-// CIndexDlg message handlers
+// CDictionaryDlg message handlers
 
-BOOL CIndexDlg::OnInitDialog()
+BOOL CDictionaryDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
@@ -77,7 +78,7 @@ BOOL CIndexDlg::OnInitDialog()
 	return true;  // return true unless you set the focus to a control
 }
 
-void CIndexDlg::OnPaint() 
+void CDictionaryDlg::OnPaint() 
 {
 	if (IsIconic())
 	{
@@ -106,18 +107,18 @@ void CIndexDlg::OnPaint()
 
 // The system calls this function to obtain the cursor to display
 // while the user drags the minimized window.
-HCURSOR CIndexDlg::OnQueryDragIcon()
+HCURSOR CDictionaryDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-void CIndexDlg::OnExport()
+void CDictionaryDlg::OnExport()
 {
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
 	_tsplitpath(m_strDjVuFile, szDrive, szPath, szName, szExt);
 	CString strFileName = szDrive + CString(szPath) + CString(szName) + CString(_T(".xml"));
 
-	CFileDialog dlg(false, _T("xml"), strFileName, OFN_OVERWRITEPROMPT |
+	CMyFileDialog dlg(false, _T("xml"), strFileName, OFN_OVERWRITEPROMPT |
 		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_NOREADONLYRETURN,
 		LoadString(IDS_PAGE_INDEX_FILTER_EXPORT));
 
@@ -139,11 +140,11 @@ void CIndexDlg::OnExport()
 	}
 }
 
-void CIndexDlg::OnBrowseDjvu()
+void CDictionaryDlg::OnBrowseDjvu()
 {
 	CString strFileName = (m_bHasDjVuFile ? m_strDjVuFile : _T(""));
 
-	CFileDialog dlg(true, _T("djvu"), strFileName,
+	CMyFileDialog dlg(true, _T("djvu"), strFileName,
 		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST,
 		LoadString(IDS_DJVU_FILTER));
 
@@ -159,7 +160,7 @@ void CIndexDlg::OnBrowseDjvu()
 	OpenDocument(strDjVuFile);
 }
 
-bool CIndexDlg::OpenDocument(const CString& strFileName)
+bool CDictionaryDlg::OpenDocument(const CString& strFileName)
 {
 	try
 	{
@@ -188,7 +189,7 @@ bool CIndexDlg::OpenDocument(const CString& strFileName)
 	}
 }
 
-void CIndexDlg::CloseDocument(bool bUpdateData)
+void CDictionaryDlg::CloseDocument(bool bUpdateData)
 {
 	m_pDjVuDoc = NULL;
 	m_bHasDjVuFile = false;
@@ -203,11 +204,11 @@ void CIndexDlg::CloseDocument(bool bUpdateData)
 		UpdateData(false);
 }
 
-void CIndexDlg::OnBrowsePageIndex()
+void CDictionaryDlg::OnBrowsePageIndex()
 {
 	CString strFileName = (m_bHasPageIndexFile ? m_strPageIndexFile : _T(""));
 
-	CFileDialog dlg(true, _T("html"), strFileName,
+	CMyFileDialog dlg(true, _T("html"), strFileName,
 		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST,
 		LoadString(IDS_PAGE_INDEX_FILTER));
 
@@ -224,7 +225,7 @@ void CIndexDlg::OnBrowsePageIndex()
 	UpdateData(false);
 }
 
-HBRUSH CIndexDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+HBRUSH CDictionaryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
 	HBRUSH brush = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 
@@ -240,13 +241,13 @@ HBRUSH CIndexDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	return brush;
 }
 
-void CIndexDlg::OnKickIdle()
+void CDictionaryDlg::OnKickIdle()
 {
 	GetDlgItem(IDC_EXPORT)->EnableWindow(m_bHasDjVuFile);
 	GetDlgItem(IDC_EMBED)->EnableWindow(m_bHasPageIndexFile);
 }
 
-bool CIndexDlg::ExportPageIndex(const CString& strPageIndexFile)
+bool CDictionaryDlg::ExportPageIndex(const CString& strPageIndexFile)
 {
 	try
 	{
@@ -297,7 +298,7 @@ bool CIndexDlg::ExportPageIndex(const CString& strPageIndexFile)
 	}
 }
 
-void CIndexDlg::OnDestroy()
+void CDictionaryDlg::OnDestroy()
 {
 	UpdateData();
 	bPrompt = !!m_bPrompt;
@@ -825,7 +826,7 @@ GUTF8String ReadExcelPageIndex(LPCTSTR pszFileName)
 	return strResult;
 }
 
-void CIndexDlg::OnEmbed()
+void CDictionaryDlg::OnEmbed()
 {
 	UpdateData();
 
@@ -852,7 +853,7 @@ void CIndexDlg::OnEmbed()
 	{
 		CString strFileName = szDrive + CString(szPath) + CString(szName) + _T(".new") + CString(szExt);
 
-		CFileDialog dlg(false, _T("djvu"), strFileName, OFN_OVERWRITEPROMPT |
+		CMyFileDialog dlg(false, _T("djvu"), strFileName, OFN_OVERWRITEPROMPT |
 			OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_NOREADONLYRETURN,
 			LoadString(IDS_DJVU_FILTER));
 
@@ -966,13 +967,13 @@ void CIndexDlg::OnEmbed()
 	AfxMessageBox(IDS_EMBEDDING_DONE, MB_OK | MB_ICONINFORMATION);
 }
 
-DROPEFFECT CIndexDlg::OnDragEnter(CWnd* pWnd, COleDataObject* pDataObject,
+DROPEFFECT CDictionaryDlg::OnDragEnter(CWnd* pWnd, COleDataObject* pDataObject,
 	DWORD dwKeyState, CPoint point)
 {
 	return OnDragOver(pWnd, pDataObject, dwKeyState, point);
 }
 
-DROPEFFECT CIndexDlg::OnDragOver(CWnd* pWnd, COleDataObject* pDataObject,
+DROPEFFECT CDictionaryDlg::OnDragOver(CWnd* pWnd, COleDataObject* pDataObject,
 	DWORD dwKeyState, CPoint point)
 {
 	if (!pDataObject->IsDataAvailable(CF_HDROP))
@@ -992,7 +993,7 @@ DROPEFFECT CIndexDlg::OnDragOver(CWnd* pWnd, COleDataObject* pDataObject,
 	return DROPEFFECT_NONE;
 }
 
-BOOL CIndexDlg::OnDrop(CWnd* pWnd, COleDataObject* pDataObject,
+BOOL CDictionaryDlg::OnDrop(CWnd* pWnd, COleDataObject* pDataObject,
 	DROPEFFECT dropEffect, CPoint point)
 {
 	if (!pDataObject->IsDataAvailable(CF_HDROP))
@@ -1033,11 +1034,11 @@ BOOL CIndexDlg::OnDrop(CWnd* pWnd, COleDataObject* pDataObject,
 	return true;
 }
 
-void CIndexDlg::OnDragLeave(CWnd* pWnd)
+void CDictionaryDlg::OnDragLeave(CWnd* pWnd)
 {
 }
 
-DROPEFFECT CIndexDlg::OnDragScroll(CWnd* pWnd, DWORD dwKeyState, CPoint point)
+DROPEFFECT CDictionaryDlg::OnDragScroll(CWnd* pWnd, DWORD dwKeyState, CPoint point)
 {
 	return DROPEFFECT_NONE;
 }

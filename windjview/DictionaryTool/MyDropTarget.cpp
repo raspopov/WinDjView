@@ -1,4 +1,4 @@
-//	DjVu Page Index Tool
+//	DjVu Dictionary Tool
 //	Copyright (C) 2006-2007 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,6 @@
 // $Id$
 
 #include "stdafx.h"
-#include "IndexTool.h"
 #include "MyDropTarget.h"
 
 

@@ -66,11 +66,15 @@ public:
 	bool HasObservers() const { return !m_observers.empty(); }
 	bool IsObservedBy(Observer* observer) const
 		{ return m_observers.find(observer) != m_observers.end(); }
+	void UpdateObservers(const Message& message);
 	
 protected:
-	void UpdateObservers(const Message& message);
 	set<Observer*> m_observers;
 };
+
+bool IsWin2kOrLater();
+bool IsWinXPOrLater();
+bool IsWinNT();
 
 void MakeWString(const CString& strText, wstring& result);
 bool MakeWString(const GUTF8String& text, wstring& result);

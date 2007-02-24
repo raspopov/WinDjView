@@ -3,10 +3,10 @@
 <assemblyIdentity 
     version="1.0.0.0" 
     processorArchitecture="X86" 
-    name="Andrew.Zhezherun.IndexTool"
+    name="Andrew.Zhezherun.DictionaryTool"
     type="win32" 
 /> 
-<description>Your app description here</description> 
+<description>DjVu Dictionary Tool</description> 
 <dependency> 
     <dependentAssembly> 
         <assemblyIdentity 

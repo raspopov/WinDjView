@@ -1,4 +1,4 @@
-//	DjVu Page Index Tool
+//	DjVu Dictionary Tool
 //	Copyright (C) 2006-2007 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
@@ -22,15 +22,15 @@
 #include "MyDropTarget.h"
 
 
-// CIndexDlg dialog
+// CDictionaryDlg dialog
 
-class CIndexDlg : public CDialog, public IMyDropTarget
+class CDictionaryDlg : public CDialog, public IMyDropTarget
 {
 public:
-	CIndexDlg(CWnd* pParent = NULL);
+	CDictionaryDlg(CWnd* pParent = NULL);
 
 // Dialog Data
-	enum { IDD = IDD_INDEXTOOL };
+	enum { IDD = IDD_DICTIONARYTOOL };
 	CString m_strDjVuFile;
 	CString m_strPageIndexFile;
 

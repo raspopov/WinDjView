@@ -1,4 +1,4 @@
-//	DjVu Page Index Tool
+//	DjVu Dictionary Tool
 //	Copyright (C) 2006-2007 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
@@ -17,29 +17,6 @@
 
 // $Id$
 
-#pragma once
-
-#ifndef __AFXWIN_H__
-	#error include 'stdafx.h' before including this file for PCH
-#endif
-
-#include "resource.h"		// main symbols
+#include "stdafx.h"
 
 
-// CIndexApp
-
-class CIndexApp : public CWinApp
-{
-public:
-	CIndexApp();
-
-// Overrides
-public:
-	virtual BOOL InitInstance();
-
-// Implementation
-protected:
-	DECLARE_MESSAGE_MAP()
-};
-
-extern CIndexApp theApp;
