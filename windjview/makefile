@@ -76,6 +76,7 @@ LINK_OBJS = \
 	"$(INTDIR)\MyDocManager.obj" \
 	"$(INTDIR)\MyDocTemplate.obj" \
 	"$(INTDIR)\MyEdit.obj" \
+	"$(INTDIR)\MyFileDialog.obj" \
 	"$(INTDIR)\MyScrollView.obj" \
 	"$(INTDIR)\MySplitterWnd.obj" \
 	"$(INTDIR)\MyStatusBar.obj" \
@@ -126,6 +127,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\MyDocManager.obj" : MyDocManager.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDocTemplate.obj" : MyDocTemplate.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyEdit.obj" : MyEdit.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MyFileDialog.obj" : MyFileDialog.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyScrollView.obj" : MyScrollView.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MySplitterWnd.obj" : MySplitterWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyStatusBar.obj" : MyStatusBar.cpp "$(INTDIR)" $(PCH)

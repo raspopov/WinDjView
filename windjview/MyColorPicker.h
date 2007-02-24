@@ -94,7 +94,6 @@ protected:
     COLORREF m_colorOrig, m_color;
     CToolTipCtrl m_toolTip;
 
-	bool m_bIsXP;
 	bool m_bFlatMenus;
 
 	CString	m_strRegSection;

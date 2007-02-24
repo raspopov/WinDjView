@@ -39,6 +39,7 @@
 #include "MagnifyWnd.h"
 #include "AnnotationDlg.h"
 #include "BookmarkDlg.h"
+#include "MyFileDialog.h"
 
 #include "RenderThread.h"
 
@@ -3764,7 +3765,7 @@ void CDjVuView::OnExportPage(UINT nID)
 	CString strFileName = FormatString(_T("p%04d%s.bmp"), nPage + 1,
 		nID == ID_EXPORT_SELECTION ? _T("-sel") : _T(""));
 
-	CFileDialog dlg(false, _T("bmp"), strFileName, OFN_OVERWRITEPROMPT |
+	CMyFileDialog dlg(false, _T("bmp"), strFileName, OFN_OVERWRITEPROMPT |
 		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
 		LoadString(IDS_BMP_FILTER));
 
@@ -4989,7 +4990,7 @@ void CDjVuView::OnFileExportText()
 	_tsplitpath(strPathName, szDrive, szPath, szName, szExt);
 	CString strFileName = szName + CString(_T(".txt"));
 
-	CFileDialog dlg(false, _T("txt"), strFileName, OFN_OVERWRITEPROMPT |
+	CMyFileDialog dlg(false, _T("txt"), strFileName, OFN_OVERWRITEPROMPT |
 		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
 		LoadString(IDS_TEXT_FILTER));
 

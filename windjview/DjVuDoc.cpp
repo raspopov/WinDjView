@@ -23,6 +23,7 @@
 #include "ChildFrm.h"
 #include "DjVuDoc.h"
 #include "DjVuView.h"
+#include "MyFileDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -125,7 +126,7 @@ void CDjVuDoc::OnSaveCopyAs()
 {
 	CString strFileName = GetTitle();
 
-	CFileDialog dlg(false, _T("djvu"), strFileName, OFN_OVERWRITEPROMPT |
+	CMyFileDialog dlg(false, _T("djvu"), strFileName, OFN_OVERWRITEPROMPT |
 		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
 		LoadString(IDS_DJVU_FILTER));
 

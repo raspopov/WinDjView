@@ -72,6 +72,10 @@ protected:
 	set<Observer*> m_observers;
 };
 
+bool IsWin2kOrLater();
+bool IsWinXPOrLater();
+bool IsWinNT();
+
 void MakeWString(const CString& strText, wstring& result);
 bool MakeWString(const GUTF8String& text, wstring& result);
 CString MakeCString(const wstring& text);

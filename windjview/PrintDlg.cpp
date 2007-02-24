@@ -177,9 +177,7 @@ BOOL CPrintDlg::OnInitDialog()
 	// Quick enum all printers
 	DWORD cbNeeded, nPrinters;
 
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT)
+	if (IsWinNT())
 	{
 		// use PRINTER_INFO_4
 		::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,

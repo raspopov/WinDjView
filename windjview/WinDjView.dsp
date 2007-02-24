@@ -234,6 +234,10 @@ SOURCE=.\MyEdit.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MyFileDialog.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MyScrollView.cpp
 # End Source File
 # Begin Source File
@@ -416,6 +420,10 @@ SOURCE=.\MyDocTemplate.h
 # Begin Source File
 
 SOURCE=.\MyEdit.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MyFileDialog.h
 # End Source File
 # Begin Source File
 

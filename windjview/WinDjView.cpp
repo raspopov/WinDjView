@@ -1001,13 +1001,8 @@ void CreateSystemDialogFont(CFont& font)
 	HGDIOBJ hFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
 	::GetObject(hFont, sizeof(LOGFONT), &lf);
 
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-		vi.dwMajorVersion >= 5)
-	{
+	if (IsWin2kOrLater())
 		_tcscpy(lf.lfFaceName, _T("MS Shell Dlg 2"));
-	}
 
 	font.CreateFontIndirect(&lf);
 }
@@ -1073,6 +1068,9 @@ void CreateSystemMenuFont(CFont& font)
 
 	font.CreateFontIndirect(&ncm.lfMenuFont);
 }
+
+
+// MonitorAPI
 
 struct MonitorAPI
 {

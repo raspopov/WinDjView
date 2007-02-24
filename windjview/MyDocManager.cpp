@@ -23,6 +23,7 @@
 #include "MainFrm.h"
 #include "DjVuDoc.h"
 #include "DjVuView.h"
+#include "MyFileDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -97,7 +98,7 @@ BOOL CMyDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle,
 {
 	// From MFC: CDocManager::DoPromptFileName
 
-	CFileDialog dlgFile(bOpenFileDialog);
+	CMyFileDialog dlgFile(bOpenFileDialog);
 
 	CString title;
 	VERIFY(title.LoadString(nIDSTitle == AFX_IDS_OPENFILE ? IDS_OPENFILE : nIDSTitle));

@@ -1488,22 +1488,13 @@ void CMyTreeCtrl::OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct)
 
 BOOL CMyTreeCtrl::CTreeToolTip::Create(CMyTreeCtrl* pTree)
 {
+	m_pTree = pTree;
+
 	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
 			::LoadCursor(NULL, IDC_ARROW));
 
-	m_pTree = pTree;
-
-	CWnd* pParent = NULL;
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-			vi.dwMajorVersion >= 5)
-	{
-		pParent = GetTopLevelParent();
-	}
-
 	return CreateEx(WS_EX_TOPMOST | WS_EX_TOOLWINDOW, strWndClass, NULL, WS_POPUP,
-		CRect(0, 0, 0, 0), pParent, 0);
+		CRect(0, 0, 0, 0), pTree, 0);
 }
 
 void CMyTreeCtrl::CTreeToolTip::Show(const CString& strText,

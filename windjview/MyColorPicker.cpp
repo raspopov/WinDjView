@@ -140,12 +140,8 @@ CMyColorPicker::CMyColorPicker()
 	  m_bFlatMenus(false), m_hThemeButton(NULL), m_hThemeEdit(NULL), m_hThemeCombo(NULL),
 	  m_bIsDefault(false)
 {
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-		(vi.dwMajorVersion > 5 || vi.dwMajorVersion == 5 && vi.dwMinorVersion >= 1))
+	if (IsWinXPOrLater())
 	{
-		// Windows XP or later
 		BOOL bFlatMenus = FALSE;
 		if (::SystemParametersInfo(SPI_GETFLATMENU, 0, &bFlatMenus, false))
 			m_bFlatMenus = !!bFlatMenus;
@@ -788,14 +784,12 @@ CMyColorPopup::CMyColorPopup()
 	if (m_nBoxSize - 2*m_nMargin - 2 < 5)
 		m_nBoxSize = 5 + 2*m_nMargin + 2;
 
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	m_bIsXP = ::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-		(vi.dwMajorVersion > 5 || vi.dwMajorVersion == 5 && vi.dwMinorVersion >= 1);
-
-	BOOL bFlatMenus = FALSE;
-	if (m_bIsXP && ::SystemParametersInfo(SPI_GETFLATMENU, 0, &bFlatMenus, false))
-		m_bFlatMenus = !!bFlatMenus;
+	if (IsWinXPOrLater())
+	{
+		BOOL bFlatMenus = FALSE;
+		if (::SystemParametersInfo(SPI_GETFLATMENU, 0, &bFlatMenus, false))
+			m_bFlatMenus = !!bFlatMenus;
+	}
 
 	InitColorTable();
 
@@ -822,7 +816,7 @@ bool CMyColorPopup::Create(CWnd* pParent)
 	ASSERT(pParent != NULL && ::IsWindow(pParent->m_hWnd));
 
 	UINT nClassStyle = CS_CLASSDC | CS_SAVEBITS | CS_HREDRAW | CS_VREDRAW;
-	if (m_bIsXP)
+	if (IsWinXPOrLater())
 	{
 		BOOL bDropShadow = FALSE;
 		::SystemParametersInfo(SPI_GETDROPSHADOW, 0, &bDropShadow, false);
@@ -1293,7 +1287,7 @@ void CMyColorPopup::DrawCell(CDC* pDC, int nIndex)
 	COLORREF clrHighlightText = ::GetSysColor(COLOR_HIGHLIGHTTEXT);
 
 	COLORREF clrSelection = ::GetSysColor(COLOR_HIGHLIGHT);
-	if (m_bIsXP)
+	if (IsWinXPOrLater())
 		clrSelection = ::GetSysColor(COLOR_MENUHILIGHT);
 
 	COLORREF clrOrigSelection = AlphaCombine(clrBackground, clrSelection, 50);

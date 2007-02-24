@@ -21,9 +21,14 @@
 #include "Global.h"
 
 
+// RefCount
+
 RefCount::~RefCount()
 {
 }
+
+
+// Observable
 
 void Observable::AddObserver(Observer* observer)
 {
@@ -42,6 +47,50 @@ void Observable::UpdateObservers(const Message& message)
 		Observer* observer = *it;
 		observer->OnUpdate(this, &message);
 	}
+}
+
+bool IsWin2kOrLater()
+{
+	static int nResult = -1;
+
+	if (nResult == -1)
+	{
+		OSVERSIONINFO vi;
+		vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+		nResult = (::GetVersionEx(&vi) != 0 && vi.dwPlatformId == VER_PLATFORM_WIN32_NT
+				&& vi.dwMajorVersion >= 5);
+	}
+
+	return !!nResult;
+}
+
+bool IsWinXPOrLater()
+{
+	static int nResult = -1;
+
+	if (nResult == -1)
+	{
+		OSVERSIONINFO vi;
+		vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+		nResult = (::GetVersionEx(&vi) != 0 && vi.dwPlatformId == VER_PLATFORM_WIN32_NT
+				&& (vi.dwMajorVersion > 5 || vi.dwMajorVersion == 5 && vi.dwMinorVersion >= 1));
+	}
+
+	return !!nResult;
+}
+
+bool IsWinNT()
+{
+	static int nResult = -1;
+
+	if (nResult == -1)
+	{
+		OSVERSIONINFO vi;
+		vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+		nResult = (::GetVersionEx(&vi) != 0 && vi.dwPlatformId == VER_PLATFORM_WIN32_NT);
+	}
+
+	return !!nResult;
 }
 
 GUTF8String MakeUTF8String(const CString& strText)
@@ -149,13 +198,8 @@ CString MakeCString(const GUTF8String& text)
 
 	// Only Windows XP supports checking for invalid characters in UTF8 encoding
 	// inside MultiByteToWideChar function
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-		(vi.dwMajorVersion > 5 || vi.dwMajorVersion == 5 && vi.dwMinorVersion >= 1))
-	{
+	if (IsWinXPOrLater())
 		dwFlags = MB_ERR_INVALID_CHARS;
-	}
 
 	// Make our own check anyway
 	if (!IsValidUTF8(text))
@@ -243,13 +287,8 @@ bool MakeWString(const GUTF8String& text, wstring& result)
 
 	// Only Windows XP supports checking for invalid characters in UTF8 encoding
 	// inside MultiByteToWideChar function
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-		(vi.dwMajorVersion > 5 || vi.dwMajorVersion == 5 && vi.dwMinorVersion >= 1))
-	{
+	if (IsWinXPOrLater())
 		dwFlags = MB_ERR_INVALID_CHARS;
-	}
 
 	// Make our own check anyway
 	int nSize;

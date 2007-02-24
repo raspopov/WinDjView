@@ -18,6 +18,7 @@
 // $Id$
 
 #include "stdafx.h"
+#include "Global.h"
 #include "MyTheme.h"
 
 typedef HTHEME (__stdcall *pfOpenThemeData)(HWND hwnd, LPCWSTR pszClassList);
@@ -393,16 +394,7 @@ COLORREF XPGetThemeSysColor(HTHEME hTheme, int iColorId)
 
 bool IsThemed()
 {
-	static int nIsXP = -1;
-	if (nIsXP == -1)
-	{
-		OSVERSIONINFO vi;
-		vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-		nIsXP = (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-			(vi.dwMajorVersion > 5 || vi.dwMajorVersion == 5 && vi.dwMinorVersion >= 1));
-	}
-
-	if (!nIsXP)
+	if (!IsWinXPOrLater())
 		return false;
 
 	if (!XPIsAppThemed() && !XPIsThemeActive())
