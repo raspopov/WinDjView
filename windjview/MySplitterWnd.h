@@ -36,6 +36,7 @@ public:
 public:
 	CNavPaneWnd* GetNavPane();
 	void HideNavPane(bool bHide = true);
+	bool IsNavPaneHidden() const { return m_bNavHidden; }
 	void CollapseNavPane(bool bCollapse = true);
 	void UpdateNavPane();
 
@@ -57,7 +58,7 @@ protected:
 	bool m_bCollapsed;
 
 	bool m_bAllowTracking;
-	bool m_bHideSplitter;
+	bool m_bNavHidden;
 
 	int m_cxOrigSplitter;
 	int m_cxOrigSplitterGap;

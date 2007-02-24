@@ -32,7 +32,7 @@
 
 IMPLEMENT_DYNAMIC(CMySplitterWnd, CSplitterWnd)
 CMySplitterWnd::CMySplitterWnd()
-	: m_bAllowTracking(true), m_bHideSplitter(false)
+	: m_bAllowTracking(true), m_bNavHidden(false)
 {
 	m_cxOrigSplitter = m_cxSplitter;
 	m_cxOrigSplitterGap = m_cxSplitterGap;
@@ -41,6 +41,7 @@ CMySplitterWnd::CMySplitterWnd()
 
 	m_nNavPaneWidth = theApp.GetAppSettings()->nNavPaneWidth;
 	m_bCollapsed = theApp.GetAppSettings()->bNavPaneCollapsed;
+	HideNavPane(theApp.GetAppSettings()->bNavPaneHidden);
 }
 
 CMySplitterWnd::~CMySplitterWnd()
@@ -107,8 +108,10 @@ void CMySplitterWnd::HideNavPane(bool bHide)
 	}
 
 	m_bAllowTracking = !bHide;
-	m_bHideSplitter = bHide;
-	RecalcLayout();
+	m_bNavHidden = bHide;
+
+	if (::IsWindow(m_hWnd))
+		UpdateNavPane();
 }
 
 void CMySplitterWnd::TrackRowSize(int y, int row)
@@ -134,16 +137,10 @@ void CMySplitterWnd::DrawAllSplitBars(CDC* pDC, int cxInside, int cyInside)
 	// draw column split bar
 	CRect rect;
 	GetClientRect(rect);
-	rect.left += m_cxBorder;
-	rect.left += m_pColInfo[0].nCurSize + m_cxBorderShare;
+	rect.left += m_cxBorder + m_pColInfo[0].nCurSize;
 	rect.right = rect.left + m_cxSplitter;
-	if (rect.left <= cxInside)
-	{
-		if (m_bHideSplitter)
-			rect.DeflateRect(0, 0, 1, 0);
-
+	if (!m_bNavHidden && rect.left <= cxInside)
 		OnDrawSplitter(pDC, splitBar, rect);
-	}
 
 	// draw pane borders
 	GetClientRect(rect);
@@ -161,10 +158,10 @@ void CMySplitterWnd::DrawAllSplitBars(CDC* pDC, int cxInside, int cyInside)
 
 		if (nCol == 0)
 		{
-			if (!m_bHideSplitter)
+			if (!m_bNavHidden)
 				DrawLeftPaneBorder(pDC, CRect(x, y, x + cx, y + cy));
 			else
-				OnDrawSplitter(pDC, splitBar, CRect(x, y, x + cx - 1, y + cy));
+				OnDrawSplitter(pDC, splitBar, CRect(x, y, x + 1, y + cy));
 		}
 		else
 			OnDrawSplitter(pDC, splitBorder, CRect(x, y, x + cx, y + cy));
@@ -282,7 +279,11 @@ void CMySplitterWnd::UpdateNavPane()
 
 void CMySplitterWnd::UpdateNavPaneWidth(int nWidth)
 {
-	nWidth = max(nWidth, CNavPaneWnd::s_nTabsWidth);
+	if (m_bNavHidden)
+		nWidth = 0;
+	else
+		nWidth = max(nWidth, CNavPaneWnd::s_nTabsWidth);
+
 	SetColumnInfo(0, nWidth, 0);
 	RecalcLayout();
 }

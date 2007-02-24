@@ -56,6 +56,7 @@ const TCHAR* s_pszZoomPercent = _T("%");
 const TCHAR* s_pszLayout = _T("layout");
 const TCHAR* s_pszFirstPage = _T("first-page");
 const TCHAR* s_pszMode = _T("mode");
+const TCHAR* s_pszNavHidden = _T("nav-hidden");
 const TCHAR* s_pszNavCollapsed = _T("nav-collapsed");
 const TCHAR* s_pszNavWidth = _T("nav-width");
 const TCHAR* s_pszAdjustDisplay = _T("adjust");
@@ -430,6 +431,7 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.nDefaultLayout = GetProfileInt(s_pszDisplaySection, s_pszLayout, m_appSettings.nDefaultLayout);
 	m_appSettings.bFirstPageAlone = !!GetProfileInt(s_pszDisplaySection, s_pszFirstPage, m_appSettings.bFirstPageAlone);
 	m_appSettings.nDefaultMode = GetProfileInt(s_pszDisplaySection, s_pszMode, m_appSettings.nDefaultMode);
+	m_appSettings.bNavPaneHidden = !!GetProfileInt(s_pszDisplaySection, s_pszNavHidden, m_appSettings.bNavPaneHidden);
 	m_appSettings.bNavPaneCollapsed = !!GetProfileInt(s_pszDisplaySection, s_pszNavCollapsed, m_appSettings.bNavPaneCollapsed);
 	m_appSettings.nNavPaneWidth = GetProfileInt(s_pszDisplaySection, s_pszNavWidth, m_appSettings.nNavPaneWidth);
 
@@ -524,6 +526,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySection, s_pszLayout, m_appSettings.nDefaultLayout);
 	WriteProfileInt(s_pszDisplaySection, s_pszFirstPage, m_appSettings.bFirstPageAlone);
 	WriteProfileInt(s_pszDisplaySection, s_pszMode, m_appSettings.nDefaultMode);
+	WriteProfileInt(s_pszDisplaySection, s_pszNavHidden, m_appSettings.bNavPaneHidden);
 	WriteProfileInt(s_pszDisplaySection, s_pszNavCollapsed, m_appSettings.bNavPaneCollapsed);
 	WriteProfileInt(s_pszDisplaySection, s_pszNavWidth, m_appSettings.nNavPaneWidth);
 

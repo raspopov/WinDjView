@@ -291,13 +291,14 @@
 #define ID_BOOKMARK_SETDESTINATION      33142
 #define ID_BOOKMARK_ADD                 33143
 #define ID_ZOOM_TO_SELECTION            33144
+#define ID_VIEW_SIDEBAR                 33145
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        286
-#define _APS_NEXT_COMMAND_VALUE         33145
+#define _APS_NEXT_COMMAND_VALUE         33146
 #define _APS_NEXT_CONTROL_VALUE         1082
 #define _APS_NEXT_SYMED_VALUE           113
 #endif

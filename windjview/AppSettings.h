@@ -120,6 +120,7 @@ struct CAppSettings
 	bool bFirstPageAlone;
 	int nDefaultMode;
 
+	bool bNavPaneHidden;
 	bool bNavPaneCollapsed;
 	int nNavPaneWidth;
 

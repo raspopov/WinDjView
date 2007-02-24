@@ -138,6 +138,8 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnViewToolbar();
 	afx_msg void OnViewStatusBar();
+	afx_msg void OnViewSidebar();
+	afx_msg void OnUpdateViewSidebar(CCmdUI* pCmdUI);
 	afx_msg void OnChangePage();
 	afx_msg void OnChangePageEdit();
 	afx_msg void OnChangeZoom();

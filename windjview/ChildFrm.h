@@ -46,6 +46,9 @@ public:
 	void CreateNavPanes();
 	void SaveStartupPage();
 
+	void HideNavPane(bool bHide = true);
+	bool IsNavPaneHidden() const;
+
 	CThumbnailsView* GetThumbnailsView() { return m_pThumbnailsView; }
 	CBookmarksWnd* GetBookmarks() { return m_pBookmarksWnd; }
 	CPageIndexWnd* GetPageIndex() { return m_pPageIndexWnd; }

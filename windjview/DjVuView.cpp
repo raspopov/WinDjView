@@ -1698,7 +1698,8 @@ bool CDjVuView::IsViewPreviouspageEnabled() const
 
 void CDjVuView::OnSize(UINT nType, int cx, int cy)
 {
-	if (m_nPage != -1 && !m_bInsideUpdateLayout)
+	if (nType != SIZE_MINIMIZED && cx > 0 && cy > 0
+			&& m_nPage != -1 && !m_bInsideUpdateLayout)
 	{
 		if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 			UpdatePageSizes(GetScrollPos(SB_VERT));

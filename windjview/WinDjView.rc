@@ -244,6 +244,7 @@ BEGIN
     BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM "S&idebar",                    ID_VIEW_SIDEBAR
         MENUITEM SEPARATOR
         MENUITEM "&Fullscreen\tCtrl+L",         ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
@@ -1019,8 +1020,8 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
-    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+    ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle Toolbar"
+    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle Status Bar"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -1239,6 +1240,7 @@ BEGIN
                             "Set the destination of the selected bookmark to current view"
     ID_BOOKMARK_ADD         "Bookmark current view, selection or annotation"
     ID_ZOOM_TO_SELECTION    "Zoom to the current selection"
+    ID_VIEW_SIDEBAR         "Show or hide the sidebar\nToggle Sidebar"
 END
 
 #endif    // English (U.S.) resources

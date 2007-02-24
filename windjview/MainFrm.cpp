@@ -47,6 +47,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_WM_CREATE()
 	ON_COMMAND(ID_VIEW_TOOLBAR, OnViewToolbar)
 	ON_COMMAND(ID_VIEW_STATUS_BAR, OnViewStatusBar)
+	ON_COMMAND(ID_VIEW_SIDEBAR, OnViewSidebar)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_SIDEBAR, OnUpdateViewSidebar)
 	ON_WM_WINDOWPOSCHANGED()
 	ON_CBN_SELCHANGE(IDC_PAGENUM, OnChangePage)
 	ON_CONTROL(CBN_FINISHEDIT, IDC_PAGENUM, OnChangePageEdit)
@@ -236,6 +238,26 @@ void CMainFrame::OnViewStatusBar()
 	CControlBar* pBar = GetControlBar(ID_VIEW_STATUS_BAR);
 	if (pBar)
 		theApp.GetAppSettings()->bStatusBar = (pBar->GetStyle() & WS_VISIBLE) != 0;
+}
+
+void CMainFrame::OnViewSidebar()
+{
+	bool bHide = !theApp.GetAppSettings()->bNavPaneHidden;
+	theApp.GetAppSettings()->bNavPaneHidden = bHide;
+
+	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
+	if (pFrame == NULL)
+		return;
+
+	pFrame->HideNavPane(bHide);
+}
+
+void CMainFrame::OnUpdateViewSidebar(CCmdUI* pCmdUI)
+{
+	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
+
+	pCmdUI->Enable(pFrame != NULL);
+	pCmdUI->SetCheck(pFrame != NULL && !pFrame->IsNavPaneHidden());
 }
 
 void CMainFrame::UpdateSettings()

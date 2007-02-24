@@ -141,9 +141,6 @@ void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 	if (pActive == this && IsWindowVisible() && !IsIconic())
 		theApp.GetAppSettings()->bChildMaximized = !!IsZoomed();
 
-	if (m_bCreated)
-		m_wndSplitter.UpdateNavPane();
-
 	OnUpdateFrameTitle(true);
 }
 
@@ -311,6 +308,17 @@ CDjVuView* CChildFrame::GetDjVuView()
 CNavPaneWnd* CChildFrame::GetNavPane()
 {
 	return m_wndSplitter.GetNavPane();
+}
+
+void CChildFrame::HideNavPane(bool bHide)
+{
+	m_wndSplitter.HideNavPane(bHide);
+	GetNavPane()->ShowWindow(bHide ? SW_HIDE : SW_SHOWNA);
+}
+
+bool CChildFrame::IsNavPaneHidden() const
+{
+	return m_wndSplitter.IsNavPaneHidden();
 }
 
 void CChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)

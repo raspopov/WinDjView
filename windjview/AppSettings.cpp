@@ -48,6 +48,7 @@ CAppSettings::CAppSettings()
 	bFirstPageAlone = true;
 	nDefaultMode = 0; // Drag
 
+	bNavPaneHidden = false;
 	bNavPaneCollapsed = false;
 	nNavPaneWidth = 200;
 
