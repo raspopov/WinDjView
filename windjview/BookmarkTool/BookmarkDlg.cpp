@@ -21,6 +21,7 @@
 #include "BookmarkTool.h"
 #include "BookmarkDlg.h"
 #include "Global.h"
+#include "MyFileDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -124,7 +125,7 @@ void CBookmarkDlg::OnExport()
 	_tsplitpath(m_strDjVuFile, szDrive, szPath, szName, szExt);
 	CString strFileName = szDrive + CString(szPath) + CString(szName) + CString(_T(".html"));
 
-	CFileDialog dlg(false, _T("html"), strFileName, OFN_OVERWRITEPROMPT |
+	CMyFileDialog dlg(false, _T("html"), strFileName, OFN_OVERWRITEPROMPT |
 		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_NOREADONLYRETURN,
 		LoadString(IDS_BOOKMARKS_FILTER));
 
@@ -150,7 +151,7 @@ void CBookmarkDlg::OnBrowseDjvu()
 {
 	CString strFileName = (m_bHasDjVuFile ? m_strDjVuFile : _T(""));
 
-	CFileDialog dlg(true, _T("djvu"), strFileName,
+	CMyFileDialog dlg(true, _T("djvu"), strFileName,
 		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST,
 		LoadString(IDS_DJVU_FILTER));
 
@@ -214,7 +215,7 @@ void CBookmarkDlg::OnBrowseBookmarks()
 {
 	CString strFileName = (m_bHasBookmarkFile ? m_strBookmarkFile : _T(""));
 
-	CFileDialog dlg(true, _T("html"), strFileName,
+	CMyFileDialog dlg(true, _T("html"), strFileName,
 		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST,
 		LoadString(IDS_BOOKMARKS_FILTER));
 
@@ -545,7 +546,7 @@ void CBookmarkDlg::OnEmbed()
 	{
 		CString strFileName = szDrive + CString(szPath) + CString(szName) + _T(".new") + CString(szExt);
 
-		CFileDialog dlg(false, _T("djvu"), strFileName, OFN_OVERWRITEPROMPT |
+		CMyFileDialog dlg(false, _T("djvu"), strFileName, OFN_OVERWRITEPROMPT |
 			OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_NOREADONLYRETURN,
 			LoadString(IDS_DJVU_FILTER));
 

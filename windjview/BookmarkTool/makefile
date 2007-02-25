@@ -62,6 +62,7 @@ LINK_OBJS = \
 	"$(INTDIR)\BookmarkTool.obj" \
 	"$(INTDIR)\Global.obj" \
 	"$(INTDIR)\MyDropTarget.obj" \
+	"$(INTDIR)\MyFileDialog.obj" \
 	"$(INTDIR)\stdafx.obj" \
 	"$(INTDIR)\BookmarkTool.res"
 
@@ -72,6 +73,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\BookmarkTool.obj" : BookmarkTool.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\Global.obj" : Global.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDropTarget.obj" : MyDropTarget.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MyFileDialog.obj" : MyFileDialog.cpp "$(INTDIR)" $(PCH)
 
 "$(INTDIR)\stdafx.obj" $(PCH) : stdafx.cpp "$(INTDIR)"
 	@$(CPP) $(CPP_FLAGS) $(CPP_PCH_CREATE) stdafx.cpp
