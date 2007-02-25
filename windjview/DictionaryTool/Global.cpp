@@ -599,7 +599,7 @@ void MD5::Finish()
 
     // Save the length before padding
     for (i = 0; i < 8; ++i)
-		data[i] = (state->count[i >> 2] >> ((i & 3) << 3));
+		data[i] = static_cast<unsigned char>(state->count[i >> 2] >> ((i & 3) << 3));
 
     // Pad to 56 bytes mod 64.
     Append(pad, ((55 - (state->count[0] >> 3)) & 63) + 1);
@@ -608,7 +608,7 @@ void MD5::Finish()
     Append(data, 8);
 
     for (i = 0; i < 16; ++i)
-		md[i] = (state->abcd[i >> 2] >> ((i & 3) << 3));
+		md[i] = static_cast<unsigned char>(state->abcd[i >> 2] >> ((i & 3) << 3));
 
 	delete state;
 	state = NULL;
