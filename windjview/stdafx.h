@@ -85,7 +85,6 @@
 #include <map>
 #include <sstream>
 using namespace std;
-#include <vld.h>
 
 #ifdef NDEBUG
 #define NO_DEBUG
