@@ -48,88 +48,92 @@ CRenderThread::CRenderThread(DjVuSource* pSource, Observer* pOwner)
 
 CRenderThread::~CRenderThread()
 {
-	ASSERT(m_hThread == NULL);
 	m_pSource->Release();
-}
-
-void CRenderThread::Delete()
-{
-	Stop();
-	::WaitForSingleObject(m_finished, INFINITE);
 	::CloseHandle(m_hThread);
-
-	m_hThread = NULL;
-	delete this;
 }
 
 void CRenderThread::Stop()
 {
+	m_stopping.Lock();
+
 	m_stop.SetEvent();
+
+	m_lock.Lock();
+	m_jobs.clear();
+	m_jobReady.ResetEvent();
+	m_bRejectCurrentJob = true;
+	m_bPaused = true;
+	m_lock.Unlock();
+
+	m_stopping.Unlock();
 }
 
 unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 {
+	theApp.ThreadStarted();
 	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 
-	CRenderThread* pData = reinterpret_cast<CRenderThread*>(pvData);
+	CRenderThread* pThread = reinterpret_cast<CRenderThread*>(pvData);
 
-	HANDLE hEvents[] = { pData->m_jobReady.m_hObject, pData->m_stop.m_hObject };
+	HANDLE hEvents[] = { pThread->m_jobReady.m_hObject, pThread->m_stop.m_hObject };
 	while (::WaitForMultipleObjects(2, hEvents, false, INFINITE) == WAIT_OBJECT_0)
 	{
-		pData->m_lock.Lock();
+		pThread->m_lock.Lock();
 
-		if (pData->m_jobs.empty())
+		if (pThread->m_jobs.empty())
 		{
-			pData->m_lock.Unlock();
+			pThread->m_lock.Unlock();
 			continue;
 		}
 
-		Job job = pData->m_jobs.front();
-		pData->m_currentJob = job;
-		pData->m_jobs.pop_front();
-		pData->m_pages[job.nPage] = pData->m_jobs.end();
-		pData->m_lock.Unlock();
+		Job job = pThread->m_jobs.front();
+		pThread->m_currentJob = job;
+		pThread->m_jobs.pop_front();
+		pThread->m_pages[job.nPage] = pThread->m_jobs.end();
+		pThread->m_lock.Unlock();
 
 		CDIB* pBitmap = NULL;
 
 		switch (job.type)
 		{
 		case RENDER:
-			pBitmap = pData->Render(job);
+			pBitmap = pThread->Render(job);
 			break;
 
 		case DECODE:
-			pData->m_pSource->GetPage(job.nPage, pData->m_pOwner);
+			pThread->m_pSource->GetPage(job.nPage, pThread->m_pOwner);
 			break;
 
 		case READINFO:
-			pData->m_pSource->GetPageInfo(job.nPage);
+			pThread->m_pSource->GetPageInfo(job.nPage);
 			break;
 
 		case CLEANUP:
-			pData->m_pSource->RemoveFromCache(job.nPage, pData->m_pOwner);
+			pThread->m_pSource->RemoveFromCache(job.nPage, pThread->m_pOwner);
 			break;
 		}
 
-		pData->m_lock.Lock();
-		bool bNotify = (!pData->m_bRejectCurrentJob);
-		pData->m_bRejectCurrentJob = false;
-		pData->m_currentJob.nPage = -1;
-		if (!pData->m_jobs.empty() && !pData->m_bPaused)
-			pData->m_jobReady.SetEvent();
-		pData->m_lock.Unlock();
+		pThread->m_lock.Lock();
+		bool bNotify = (!pThread->m_bRejectCurrentJob);
+		pThread->m_bRejectCurrentJob = false;
+		pThread->m_currentJob.nPage = -1;
+		if (!pThread->m_jobs.empty() && !pThread->m_bPaused)
+			pThread->m_jobReady.SetEvent();
+		pThread->m_lock.Unlock();
 
+		// Cannot stop while the owner is being updated
+		pThread->m_stopping.Lock();
 		if (bNotify)
 		{
 			switch (job.type)
 			{
 			case RENDER:
-				pData->m_pOwner->OnUpdate(NULL, &BitmapMsg(PAGE_RENDERED, job.nPage, pBitmap));
+				pThread->m_pOwner->OnUpdate(NULL, &BitmapMsg(PAGE_RENDERED, job.nPage, pBitmap));
 				break;
 
 			case DECODE:
 			case READINFO:
-				pData->m_pOwner->OnUpdate(NULL, &PageMsg(PAGE_DECODED, job.nPage));
+				pThread->m_pOwner->OnUpdate(NULL, &PageMsg(PAGE_DECODED, job.nPage));
 				break;
 			}
 		}
@@ -137,13 +141,17 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 		{
 			delete pBitmap;
 		}
-
-		if (::WaitForSingleObject(pData->m_stop.m_hObject, 0) == WAIT_OBJECT_0)
-			break;
+		pThread->m_stopping.Unlock();
 	}
 
 	::CoUninitialize();
-	pData->m_finished.SetEvent();
+
+	// Ensure that a call to Stop() is finished
+	pThread->m_stopping.Lock();
+	pThread->m_stopping.Unlock();
+
+	delete pThread;
+	theApp.ThreadTerminated();
 
 	return 0;
 }

@@ -270,11 +270,10 @@ void CChildFrame::CreateNavPanes()
 		}
 	}
 
-	m_pThumbnailsView = new CThumbnailsView();
+	m_pThumbnailsView = new CThumbnailsView(pSource);
 	m_pThumbnailsView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 		| WS_HSCROLL | WS_VSCROLL, CRect(), pNavPane, 3);
 	pNavPane->AddTab(LoadString(IDS_THUMBNAILS_TAB), m_pThumbnailsView);
-	m_pThumbnailsView->SetSource(pSource);
 	m_pThumbnailsView->AddObserver(pDjVuView);
 	pDjVuView->AddObserver(m_pThumbnailsView);
 
@@ -411,10 +410,6 @@ void CChildFrame::OnClose()
 {
 	if (GetMainFrame()->IsFullscreenMode())
 		return;
-
-	// Begin process of stopping all threads simultaneously for faster closing
-	GetDjVuView()->StopDecoding();
-	GetThumbnailsView()->StopDecoding();
 
 	CMDIChildWnd::OnClose();
 

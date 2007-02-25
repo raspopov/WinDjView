@@ -385,7 +385,9 @@ void CDIB::Create(CDIB* pSource, int nBitCount)
 
 	memcpy(&pBMI->bmiColors[0], &pSource->m_pBMI->bmiColors[0], nPaletteEntries*sizeof(RGBQUAD));
 
-	Create((BITMAPINFO*)&bmih);
+	Create(pBMI);
+	free(pBMI);
+
 	if (m_hObject == NULL)
 		return;
 

@@ -30,7 +30,6 @@ class CRenderThread
 public:
 	CRenderThread(DjVuSource* pSource, Observer* pOwner);
 	void Stop();
-	void Delete();
 
 	void AddJob(int nPage, int nRotate, const CSize& size, const CDisplaySettings& displaySettings,
 		int nDisplayMode = CDjVuView::Color);
@@ -50,8 +49,8 @@ public:
 private:
 	HANDLE m_hThread, m_hStopThread;
 	CCriticalSection m_lock;
+	CCriticalSection m_stopping;
 	CEvent m_stop;
-	CEvent m_finished;
 	CEvent m_jobReady;
 	Observer* m_pOwner;
 	DjVuSource* m_pSource;

@@ -31,7 +31,6 @@ class CThumbnailsThread
 public:
 	CThumbnailsThread(DjVuSource* pSource, Observer* pOwner, bool bIdle = false);
 	void Stop();
-	void Delete();
 
 	void SetThumbnailSize(CSize szThumbnail) { m_szThumbnail = szThumbnail; }
 
@@ -44,10 +43,10 @@ public:
 	void RejectCurrentJob();
 
 private:
-	HANDLE m_hThread, m_hStopThread;
+	HANDLE m_hThread;
 	CCriticalSection m_lock;
+	CCriticalSection m_stopping;
 	CEvent m_stop;
-	CEvent m_finished;
 	CEvent m_jobReady;
 	DjVuSource* m_pSource;
 	Observer* m_pOwner;

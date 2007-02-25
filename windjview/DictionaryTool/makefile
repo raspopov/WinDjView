@@ -62,6 +62,7 @@ LINK_OBJS = \
 	"$(INTDIR)\DictionaryDlg.obj" \
 	"$(INTDIR)\DictionaryTool.obj" \
 	"$(INTDIR)\MyDropTarget.obj" \
+	"$(INTDIR)\MyFileDialog.obj" \
 	"$(INTDIR)\stdafx.obj" \
 	"$(INTDIR)\DictionaryTool.res"
 
@@ -72,6 +73,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\DictionaryDlg.obj" : DictionaryDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DictionaryTool.obj" : DictionaryTool.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDropTarget.obj" : MyDropTarget.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MyFileDialog.obj" : MyFileDialog.cpp "$(INTDIR)" $(PCH)
 
 "$(INTDIR)\stdafx.obj" $(PCH) : stdafx.cpp "$(INTDIR)"
 	@$(CPP) $(CPP_FLAGS) $(CPP_PCH_CREATE) stdafx.cpp

@@ -74,7 +74,6 @@ public:
 	int GetLayout() const { return m_nLayout; }
 	int GetRotate() const { return m_nRotate; }
 
-	void StopDecoding();
 	void RestartThread();
 	bool UpdatePageInfoFrom(CDjVuView* pFrom);
 	void CopyBitmapsFrom(CDjVuView* pFrom, bool bMove = false);

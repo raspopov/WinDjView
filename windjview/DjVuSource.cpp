@@ -627,6 +627,7 @@ bool DocSettings::DeleteAnnotation(const Annotation* pAnno, int nPage)
 
 // DjVuSource
 
+CCriticalSection DjVuSource::openDocumentsLock;
 map<CString, DjVuSource*> DjVuSource::openDocuments;
 map<MD5, DocSettings> DjVuSource::settings;
 
@@ -641,7 +642,11 @@ DjVuSource::DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DocSet
 
 	PageInfo info = GetPageInfo(0, false, true);
 	if (info.pAnt != NULL)
-		m_strPageIndex = info.pAnt->metadata["page-index"];
+	{
+		string strIndex = info.pAnt->metadata["page-index"];
+		Base64Decode(strIndex);
+		m_strPageIndex = strIndex.c_str();
+	}
 }
 
 DjVuSource::~DjVuSource()
@@ -653,8 +658,17 @@ DjVuSource::~DjVuSource()
 
 		::CloseHandle(hEvent);
 	}
+}
 
-	openDocuments.erase(m_strFileName);
+void DjVuSource::Release()
+{
+	openDocumentsLock.Lock();
+	if (InterlockedDecrement(&m_nRefCount) <= 0)
+	{
+		openDocuments.erase(m_strFileName);
+		delete this;
+	}
+	openDocumentsLock.Unlock();
 }
 
 DjVuSource* DjVuSource::FromFile(const CString& strFileName)
@@ -663,10 +677,13 @@ DjVuSource* DjVuSource::FromFile(const CString& strFileName)
 	LPTSTR pszFileName;
 	GetFullPathName(strFileName, MAX_PATH, pszName, &pszFileName);
 
-	DjVuSource* pSource = openDocuments[pszName];
-	if (pSource != NULL)
+	openDocumentsLock.Lock();
+	map<CString, DjVuSource*>::iterator itSource = openDocuments.find(pszName);
+	if (itSource != openDocuments.end())
 	{
+		DjVuSource* pSource = (*itSource).second;
 		pSource->AddRef();
+		openDocumentsLock.Unlock();
 		return pSource;
 	}
 
@@ -709,7 +726,11 @@ DjVuSource* DjVuSource::FromFile(const CString& strFileName)
 		theApp.LoadDocSettings(digest.ToString(), pSettings);
 	}
 
-	return new DjVuSource(pszName, pDoc, pSettings);
+	DjVuSource* pSource = new DjVuSource(pszName, pDoc, pSettings);
+	openDocuments.insert(make_pair(CString(pszName), pSource));
+	openDocumentsLock.Unlock();
+
+	return pSource;
 }
 
 bool DjVuSource::IsPageCached(int nPage, Observer* observer)

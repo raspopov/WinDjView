@@ -66,11 +66,13 @@ END_MESSAGE_MAP()
 
 // CThumbnailsView construction/destruction
 
-CThumbnailsView::CThumbnailsView()
+CThumbnailsView::CThumbnailsView(DjVuSource* pSource)
 	: m_bInsideUpdateView(false), m_nPageCount(0), m_bVisible(false),
-	  m_pThread(NULL), m_pIdleThread(NULL), m_nSelectedPage(-1), m_pSource(NULL),
+	  m_pThread(NULL), m_pIdleThread(NULL), m_nSelectedPage(-1), m_pSource(pSource),
 	  m_nCurrentPage(-1), m_nRotate(0), m_nPagesInRow(1), m_bInitialized(false)
 {
+	m_pSource->AddRef();
+
 	CFont systemFont;
 	CreateSystemDialogFont(systemFont);
 
@@ -94,6 +96,9 @@ CThumbnailsView::~CThumbnailsView()
 	m_bitmaps.clear();
 
 	m_dataLock.Unlock();
+
+	if (m_pSource != NULL)
+		m_pSource->Release();
 }
 
 // CThumbnailsView drawing
@@ -310,8 +315,12 @@ void CThumbnailsView::OnInitialUpdate()
 void CThumbnailsView::SetRotate(int nRotate)
 {
 	m_nRotate = nRotate;
-	m_pThread->RejectCurrentJob();
-	m_pIdleThread->RejectCurrentJob();
+
+	if (m_pThread != NULL && m_pIdleThread != NULL)
+	{
+		m_pThread->RejectCurrentJob();
+		m_pIdleThread->RejectCurrentJob();
+	}
 
 	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 	{
@@ -744,13 +753,13 @@ void CThumbnailsView::OnDestroy()
 {
 	if (m_pThread != NULL)
 	{
-		m_pThread->Delete();
+		m_pThread->Stop();
 		m_pThread = NULL;
 	}
 
 	if (m_pIdleThread != NULL)
 	{
-		m_pIdleThread->Delete();
+		m_pIdleThread->Stop();
 		m_pIdleThread = NULL;
 	}
 
@@ -962,16 +971,25 @@ void CThumbnailsView::EnsureVisible(int nPage)
 
 void CThumbnailsView::StopDecoding()
 {
-	m_pThread->Stop();
-	m_pIdleThread->Stop();
+	if (m_pThread != NULL)
+	{
+		m_pThread->Stop();
+		m_pThread = NULL;
+	}
+
+	if (m_pIdleThread != NULL)
+	{
+		m_pIdleThread->Stop();
+		m_pIdleThread = NULL;
+	}
 }
 
 void CThumbnailsView::RestartThreads()
 {
 	if (m_pThread != NULL)
-		m_pThread->Delete();
+		m_pThread->Stop();
 	if (m_pIdleThread != NULL)
-		m_pIdleThread->Delete();
+		m_pIdleThread->Stop();
 
 	m_pThread = new CThumbnailsThread(m_pSource, this);
 	m_pThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));

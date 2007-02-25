@@ -112,7 +112,7 @@ END_MESSAGE_MAP()
 // CDjViewApp construction
 
 CDjViewApp::CDjViewApp()
-	: m_bInitialized(false), m_pDjVuTemplate(NULL)
+	: m_bInitialized(false), m_pDjVuTemplate(NULL), m_nThreadCount(0)
 {
 }
 
@@ -159,7 +159,7 @@ BOOL CDjViewApp::InitInstance()
 	// Create main MDI Frame window
 	CMainFrame* pMainFrame = new CMainFrame;
 	if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
-		return FALSE;
+		return false;
 	m_pMainWnd = pMainFrame;
 	pMainFrame->SetRedraw(false);
 
@@ -200,20 +200,17 @@ BOOL CDjViewApp::InitInstance()
 	pMainFrame->SetRedraw(true);
 	pMainFrame->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 
-	// Dispatch commands specified on the command line.  Will return FALSE if
+	// Dispatch commands specified on the command line.  Will return false if
 	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
 	if (!ProcessShellCommand(cmdInfo))
 		return false;
 
 	m_bInitialized = true;
 
-	CChildFrame* pChildFrame = (CChildFrame*)pMainFrame->MDIGetActive();
-	if (pChildFrame != NULL)
-		pChildFrame->GetDjVuView()->UpdateVisiblePages();
-
 	if (m_appSettings.strVersion != CURRENT_VERSION)
 		OnAppAbout();
 
+	ThreadStarted();
 	return true;
 }
 
@@ -225,6 +222,16 @@ void CDjViewApp::EnableShellOpen()
 	m_atomSystemTopic = ::GlobalAddAtom(_T("System"));
 }
 
+void CDjViewApp::ThreadStarted()
+{
+	InterlockedIncrement(&m_nThreadCount);
+}
+
+void CDjViewApp::ThreadTerminated()
+{
+	if (InterlockedDecrement(&m_nThreadCount) <= 0)
+		m_terminated.SetEvent();
+}
 
 // CAboutDlg dialog used for App About
 
@@ -609,6 +616,10 @@ int CDjViewApp::ExitInstance()
 {
 	SaveSettings();
 
+	ThreadTerminated();
+	::WaitForSingleObject(m_terminated, INFINITE);
+
+	DataPool::close_all();
 	::CoUninitialize();
 
 	return CWinApp::ExitInstance();

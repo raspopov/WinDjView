@@ -69,6 +69,10 @@ public:
 	void SetLanguage(HINSTANCE hResources, DWORD nLanguage);
 	void SaveSettings();
 
+	// Register running threads
+	void ThreadStarted();
+	void ThreadTerminated();
+
 // Overrides
 public:
 	virtual BOOL InitInstance();
@@ -89,6 +93,9 @@ protected:
 	void LoadSettings();
 	void EnableShellOpen();
 	CDocument* FindOpenDocument(LPCTSTR lpszFileName);
+
+	CEvent m_terminated;
+	long m_nThreadCount;
 
 	// Generated message map functions
 	afx_msg void OnAppAbout();

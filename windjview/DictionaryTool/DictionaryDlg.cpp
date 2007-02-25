@@ -264,9 +264,11 @@ bool CDictionaryDlg::ExportPageIndex(const CString& strPageIndexFile)
 		pAnnoStream->seek(0);
 		GP<DjVuAnno> pDjVuAnno = DjVuAnno::create();
 		pDjVuAnno->decode(pAnnoStream);
-		GUTF8String strPageIndex = pDjVuAnno->ant->metadata["page-index"];
 
-		if (strPageIndex.length() == 0)
+		string strPageIndex = pDjVuAnno->ant->metadata["page-index"];
+		modp_b64_decode(strPageIndex);
+
+		if (strPageIndex.empty())
 		{
 			AfxMessageBox(IDS_NO_PAGE_INDEX);
 			return false;
@@ -279,7 +281,7 @@ bool CDictionaryDlg::ExportPageIndex(const CString& strPageIndexFile)
 			return false;
 		}
 
-		out << (const char*)strPageIndex;
+		out << strPageIndex;
 
 		out.close();
 
@@ -784,12 +786,18 @@ GUTF8String ReadExcelPageIndex(LPCTSTR pszFileName)
 				else
 				{
 					strResult += "/>\n";
-					for (int i = nNewLevel; i < nLevel; ++i)
+					for (int i = nLevel - 1; i >= nNewLevel; --i)
+					{
+						for (int k = 1; k < i; ++k)
+							strResult += "  ";
 						strResult += "</entry>\n";
+					}
 				}
 			}
 			nLevel = nNewLevel;
 
+			for (int k = 1; k < nLevel; ++k)
+				strResult += "  ";
 			strResult += "<entry";
 
 			if (bstrFirst.length() > 0)
@@ -845,6 +853,9 @@ void CDictionaryDlg::OnEmbed()
 		return;
 	}
 
+	string strEncodedIndex(strPageIndex);
+	modp_b64_encode(strEncodedIndex);
+
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
 	_tsplitpath(m_strDjVuFile, szDrive, szPath, szName, szExt);
 
@@ -883,6 +894,8 @@ void CDictionaryDlg::OnEmbed()
 
 	try
 	{
+		CWaitCursor wait;
+
 		GP<DjVuFile> pFile = m_pDjVuDoc->get_djvu_file(0);
 		if (pFile == NULL)
 		{
@@ -901,7 +914,7 @@ void CDictionaryDlg::OnEmbed()
 			meta = pDjVuAnno->ant->metadata;
 		}
 
-		meta["page-index"] = strPageIndex;
+		meta["page-index"] = strEncodedIndex.c_str();
 		ModifyMeta(pFile, &meta);
 
 		GURL url = GURL::Filename::UTF8(MakeUTF8String(strNewFile));

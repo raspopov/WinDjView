@@ -1326,8 +1326,11 @@ void CDjVuView::UpdatePagesCacheContinuous(bool bUpdateImages)
 
 void CDjVuView::UpdateVisiblePages()
 {
+	if (m_pRenderThread == NULL)
+		return;
+
 	CMDIChildWnd* pActive = GetMainFrame()->MDIGetActive();
-	if (!theApp.m_bInitialized || !m_bInitialized || pActive == NULL)
+	if (!m_bInitialized || pActive == NULL)
 		return;
 
 	bool bUpdateImages = (m_nType != Normal || pActive->GetActiveView() == this);
@@ -2060,7 +2063,8 @@ void CDjVuView::OnRotateLeft()
 		m_pSource->GetSettings()->nRotate = m_nRotate;
 
 	DeleteBitmaps();
-	m_pRenderThread->RejectCurrentJob();
+	if (m_pRenderThread != NULL)
+		m_pRenderThread->RejectCurrentJob();
 
 	UpdateLayout();
 
@@ -2081,7 +2085,8 @@ void CDjVuView::OnRotateRight()
 		m_pSource->GetSettings()->nRotate = m_nRotate;
 
 	DeleteBitmaps();
-	m_pRenderThread->RejectCurrentJob();
+	if (m_pRenderThread != NULL)
+		m_pRenderThread->RejectCurrentJob();
 
 	UpdateLayout();
 
@@ -2102,7 +2107,8 @@ void CDjVuView::OnRotate180()
 		m_pSource->GetSettings()->nRotate = m_nRotate;
 
 	DeleteBitmaps();
-	m_pRenderThread->RejectCurrentJob();
+	if (m_pRenderThread != NULL)
+		m_pRenderThread->RejectCurrentJob();
 
 	UpdateLayout();
 	Invalidate();
@@ -3282,7 +3288,7 @@ void CDjVuView::OnDestroy()
 {
 	if (m_pRenderThread != NULL)
 	{
-		m_pRenderThread->Delete();
+		m_pRenderThread->Stop();
 		m_pRenderThread = NULL;
 	}
 
@@ -4778,11 +4784,6 @@ void CDjVuView::OnUpdateViewZoomOut(CCmdUI* pCmdUI)
 	pCmdUI->Enable(GetZoom() > 10);
 }
 
-void CDjVuView::StopDecoding()
-{
-	m_pRenderThread->Stop();
-}
-
 void CDjVuView::OnChangeMode(UINT nID)
 {
 	switch (nID)
@@ -5048,7 +5049,8 @@ void CDjVuView::SettingsChanged()
 		m_displaySettings = *theApp.GetDisplaySettings();
 
 		DeleteBitmaps();
-		m_pRenderThread->RejectCurrentJob();
+		if (m_pRenderThread != NULL)
+			m_pRenderThread->RejectCurrentJob();
 
 		UpdateVisiblePages();
 	}
@@ -5087,7 +5089,8 @@ void CDjVuView::OnViewDisplay(UINT nID)
 		m_nDisplayMode = nDisplayMode;
 
 		DeleteBitmaps();
-		m_pRenderThread->RejectCurrentJob();
+		if (m_pRenderThread != NULL)
+			m_pRenderThread->RejectCurrentJob();
 
 		UpdateVisiblePages();
 	}
@@ -5154,7 +5157,12 @@ void CDjVuView::OnViewFullscreen()
 		return;
 	}
 
-	StopDecoding();
+	if (m_pRenderThread != NULL)
+	{
+		m_pRenderThread->Stop();
+		m_pRenderThread = NULL;
+	}
+
 	CThumbnailsView* pThumbnailsView = ((CChildFrame*)GetParentFrame())->GetThumbnailsView();
 	if (pThumbnailsView != NULL)
 		pThumbnailsView->StopDecoding();
@@ -5203,7 +5211,7 @@ void CDjVuView::OnViewFullscreen()
 void CDjVuView::RestartThread()
 {
 	if (m_pRenderThread != NULL)
-		m_pRenderThread->Delete();
+		m_pRenderThread->Stop();
 
 	m_pRenderThread = new CRenderThread(m_pSource, this);
 

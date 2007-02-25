@@ -36,14 +36,12 @@ class CThumbnailsView : public CMyScrollView, public Observable, public Observer
 	DECLARE_DYNAMIC(CThumbnailsView)
 
 public:
-	CThumbnailsView();
+	CThumbnailsView(DjVuSource* pSource);
 	virtual ~CThumbnailsView();
 
 // Attributes
 public:
 	DjVuSource* GetSource() const { return m_pSource; }
-	void SetSource(DjVuSource* pSource) { m_pSource = pSource; }
-
 	int GetCurrentPage() const { return m_nCurrentPage; }
 
 	void SetCurrentPage(int nPage);

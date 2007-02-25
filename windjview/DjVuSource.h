@@ -168,6 +168,7 @@ class DjVuSource : public RefCount
 {
 public:
 	~DjVuSource();
+	virtual void Release();
 
 	// the caller must call Release() for the object returned
 	static DjVuSource* FromFile(const CString& strFileName);
@@ -228,6 +229,7 @@ protected:
 	DocSettings* m_pSettings;
 
 	static map<CString, DjVuSource*> openDocuments;
+	static CCriticalSection openDocumentsLock;
 	static map<MD5, DocSettings> settings;
 
 private:
