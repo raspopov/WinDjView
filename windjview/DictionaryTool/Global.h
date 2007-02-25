@@ -26,19 +26,19 @@ public:
 	RefCount() : m_nRefCount(1) {}
 	virtual ~RefCount() = 0;
 
-	void AddRef()
+	virtual void AddRef()
 	{
-		++m_nRefCount;
+		InterlockedIncrement(&m_nRefCount);
 	}
 
-	void Release()
+	virtual void Release()
 	{
-		if (--m_nRefCount == 0)
+		if (InterlockedDecrement(&m_nRefCount) <= 0)
 			delete this;
 	}
 
-private:
-	int m_nRefCount;
+protected:
+	long m_nRefCount;
 };
 
 
@@ -171,8 +171,8 @@ struct MD5
 	MD5(const void* data, size_t len);
 	MD5(const MD5& md5);
 
-	void Update(const void* data, size_t len);
-	void Finalize();
+	void Append(const void* data, size_t len);
+	void Finish();
 
 	CString ToString() const;
 	bool operator==(const MD5& rhs) const
@@ -183,12 +183,15 @@ struct MD5
 private:
 	void Block(const void* data, size_t num);
 
-	struct Context;
-	Context* ctx;
+	struct State;
+	State* state;
 
 	unsigned char md[16];
 };
 
+
+string& Base64Encode(string& s);
+string& Base64Decode(string& s);
 
 inline CString LoadString(UINT nID)
 {

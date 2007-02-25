@@ -266,7 +266,7 @@ bool CDictionaryDlg::ExportPageIndex(const CString& strPageIndexFile)
 		pDjVuAnno->decode(pAnnoStream);
 
 		string strPageIndex = pDjVuAnno->ant->metadata["page-index"];
-		modp_b64_decode(strPageIndex);
+		Base64Decode(strPageIndex);
 
 		if (strPageIndex.empty())
 		{
@@ -854,7 +854,7 @@ void CDictionaryDlg::OnEmbed()
 	}
 
 	string strEncodedIndex(strPageIndex);
-	modp_b64_encode(strEncodedIndex);
+	Base64Encode(strEncodedIndex);
 
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
 	_tsplitpath(m_strDjVuFile, szDrive, szPath, szName, szExt);
