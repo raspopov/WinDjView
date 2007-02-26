@@ -181,7 +181,7 @@ struct MD5
 		{ return memcmp(md, rhs.md, sizeof(md)) < 0; }
 	
 private:
-	void Block(const void* data, size_t num);
+	void Block(const void* data);
 
 	struct State;
 	State* state;

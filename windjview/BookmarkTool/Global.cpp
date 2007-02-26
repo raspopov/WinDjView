@@ -385,8 +385,8 @@ bool MakeWString(const GUTF8String& text, wstring& result)
 struct MD5::State
 {
 	DWORD abcd[4];
-	DWORD buf[64];
 	DWORD count[2];
+	BYTE buf[64];
 
 	State()
 	{
@@ -399,7 +399,13 @@ struct MD5::State
 	}
 };
 
-static const unsigned char pad[64] = { 0x80 };
+static const unsigned char pad[64] =
+{
+	0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
 
 #define	F(b, c, d) ((((c) ^ (d)) & (b)) ^ (d))
 #define	G(b, c, d) ((((b) ^ (c)) & (d)) ^ (c))
@@ -408,27 +414,9 @@ static const unsigned char pad[64] = { 0x80 };
 
 #define ROTATE(a, n) _lrotl(a, n)
 
-#define R0(a, b, c, d, k, s, t) \
+#define STEP(f, a, b, c, d, k, s, t) \
 	{\
-		a += ((k) + (t) + F((b), (c), (d)));\
-		a = ROTATE(a, s) + b;\
-	};
-
-#define R1(a, b, c, d, k, s, t) \
-	{\
-		a += ((k) + (t) + G((b), (c), (d)));\
-		a = ROTATE(a, s) + b;\
-	};
-
-#define R2(a, b, c, d, k, s, t) \
-	{\
-		a += ((k) + (t) + H((b), (c), (d)));\
-		a = ROTATE(a, s) + b;\
-	};
-
-#define R3(a, b, c, d, k, s, t) \
-	{\
-		a += ((k) + (t) + I((b), (c), (d)));\
+		a += ((k) + (t) + f((b), (c), (d)));\
 		a = ROTATE(a, s) + b;\
 	};
 
@@ -466,88 +454,93 @@ MD5::MD5(const void* data, size_t len)
 	Finish();
 }
 
-void MD5::Block(const void* data, size_t num)
+void MD5::Block(const void* data)
 {
 	const DWORD* x = (const DWORD*) data;
 	DWORD a, b, c, d;
+
+	DWORD xbuf[16];
+	if ((reinterpret_cast<size_t>(data) & 3) != 0)
+	{
+		// Not properly aligned, need to copy the data first
+		memcpy(xbuf, data, 64);
+		x = xbuf;
+	}
 
 	a = state->abcd[0];
 	b = state->abcd[1];
 	c = state->abcd[2];
 	d = state->abcd[3];
 
-	for (; num--; x += 16)
-	{
-		R0(a, b, c, d, x[ 0],  7, 0xd76aa478L);
-		R0(d, a, b, c, x[ 1], 12, 0xe8c7b756L);
-		R0(c, d, a, b, x[ 2], 17, 0x242070dbL);
-		R0(b, c, d, a, x[ 3], 22, 0xc1bdceeeL);
-		R0(a, b, c, d, x[ 4],  7, 0xf57c0fafL);
-		R0(d, a, b, c, x[ 5], 12, 0x4787c62aL);
-		R0(c, d, a, b, x[ 6], 17, 0xa8304613L);
-		R0(b, c, d, a, x[ 7], 22, 0xfd469501L);
-		R0(a, b, c, d, x[ 8],  7, 0x698098d8L);
-		R0(d, a, b, c, x[ 9], 12, 0x8b44f7afL);
-		R0(c, d, a, b, x[10], 17, 0xffff5bb1L);
-		R0(b, c, d, a, x[11], 22, 0x895cd7beL);
-		R0(a, b, c, d, x[12],  7, 0x6b901122L);
-		R0(d, a, b, c, x[13], 12, 0xfd987193L);
-		R0(c, d, a, b, x[14], 17, 0xa679438eL);
-		R0(b, c, d, a, x[15], 22, 0x49b40821L);
-		R1(a, b, c, d, x[ 1],  5, 0xf61e2562L);
-		R1(d, a, b, c, x[ 6],  9, 0xc040b340L);
-		R1(c, d, a, b, x[11], 14, 0x265e5a51L);
-		R1(b, c, d, a, x[ 0], 20, 0xe9b6c7aaL);
-		R1(a, b, c, d, x[ 5],  5, 0xd62f105dL);
-		R1(d, a, b, c, x[10],  9, 0x02441453L);
-		R1(c, d, a, b, x[15], 14, 0xd8a1e681L);
-		R1(b, c, d, a, x[ 4], 20, 0xe7d3fbc8L);
-		R1(a, b, c, d, x[ 9],  5, 0x21e1cde6L);
-		R1(d, a, b, c, x[14],  9, 0xc33707d6L);
-		R1(c, d, a, b, x[ 3], 14, 0xf4d50d87L);
-		R1(b, c, d, a, x[ 8], 20, 0x455a14edL);
-		R1(a, b, c, d, x[13],  5, 0xa9e3e905L);
-		R1(d, a, b, c, x[ 2],  9, 0xfcefa3f8L);
-		R1(c, d, a, b, x[ 7], 14, 0x676f02d9L);
-		R1(b, c, d, a, x[12], 20, 0x8d2a4c8aL);
-		R2(a, b, c, d, x[ 5],  4, 0xfffa3942L);
-		R2(d, a, b, c, x[ 8], 11, 0x8771f681L);
-		R2(c, d, a, b, x[11], 16, 0x6d9d6122L);
-		R2(b, c, d, a, x[14], 23, 0xfde5380cL);
-		R2(a, b, c, d, x[ 1],  4, 0xa4beea44L);
-		R2(d, a, b, c, x[ 4], 11, 0x4bdecfa9L);
-		R2(c, d, a, b, x[ 7], 16, 0xf6bb4b60L);
-		R2(b, c, d, a, x[10], 23, 0xbebfbc70L);
-		R2(a, b, c, d, x[13],  4, 0x289b7ec6L);
-		R2(d, a, b, c, x[ 0], 11, 0xeaa127faL);
-		R2(c, d, a, b, x[ 3], 16, 0xd4ef3085L);
-		R2(b, c, d, a, x[ 6], 23, 0x04881d05L);
-		R2(a, b, c, d, x[ 9],  4, 0xd9d4d039L);
-		R2(d, a, b, c, x[12], 11, 0xe6db99e5L);
-		R2(c, d, a, b, x[15], 16, 0x1fa27cf8L);
-		R2(b, c, d, a, x[ 2], 23, 0xc4ac5665L);
-		R3(a, b, c, d, x[ 0],  6, 0xf4292244L);
-		R3(d, a, b, c, x[ 7], 10, 0x432aff97L);
-		R3(c, d, a, b, x[14], 15, 0xab9423a7L);
-		R3(b, c, d, a, x[ 5], 21, 0xfc93a039L);
-		R3(a, b, c, d, x[12],  6, 0x655b59c3L);
-		R3(d, a, b, c, x[ 3], 10, 0x8f0ccc92L);
-		R3(c, d, a, b, x[10], 15, 0xffeff47dL);
-		R3(b, c, d, a, x[ 1], 21, 0x85845dd1L);
-		R3(a, b, c, d, x[ 8],  6, 0x6fa87e4fL);
-		R3(d, a, b, c, x[15], 10, 0xfe2ce6e0L);
-		R3(c, d, a, b, x[ 6], 15, 0xa3014314L);
-		R3(b, c, d, a, x[13], 21, 0x4e0811a1L);
-		R3(a, b, c, d, x[ 4],  6, 0xf7537e82L);
-		R3(d, a, b, c, x[11], 10, 0xbd3af235L);
-		R3(c, d, a, b, x[ 2], 15, 0x2ad7d2bbL);
-		R3(b, c, d, a, x[ 9], 21, 0xeb86d391L);
+	STEP(F, a, b, c, d, x[ 0],  7, 0xd76aa478L);
+	STEP(F, d, a, b, c, x[ 1], 12, 0xe8c7b756L);
+	STEP(F, c, d, a, b, x[ 2], 17, 0x242070dbL);
+	STEP(F, b, c, d, a, x[ 3], 22, 0xc1bdceeeL);
+	STEP(F, a, b, c, d, x[ 4],  7, 0xf57c0fafL);
+	STEP(F, d, a, b, c, x[ 5], 12, 0x4787c62aL);
+	STEP(F, c, d, a, b, x[ 6], 17, 0xa8304613L);
+	STEP(F, b, c, d, a, x[ 7], 22, 0xfd469501L);
+	STEP(F, a, b, c, d, x[ 8],  7, 0x698098d8L);
+	STEP(F, d, a, b, c, x[ 9], 12, 0x8b44f7afL);
+	STEP(F, c, d, a, b, x[10], 17, 0xffff5bb1L);
+	STEP(F, b, c, d, a, x[11], 22, 0x895cd7beL);
+	STEP(F, a, b, c, d, x[12],  7, 0x6b901122L);
+	STEP(F, d, a, b, c, x[13], 12, 0xfd987193L);
+	STEP(F, c, d, a, b, x[14], 17, 0xa679438eL);
+	STEP(F, b, c, d, a, x[15], 22, 0x49b40821L);
+	STEP(G, a, b, c, d, x[ 1],  5, 0xf61e2562L);
+	STEP(G, d, a, b, c, x[ 6],  9, 0xc040b340L);
+	STEP(G, c, d, a, b, x[11], 14, 0x265e5a51L);
+	STEP(G, b, c, d, a, x[ 0], 20, 0xe9b6c7aaL);
+	STEP(G, a, b, c, d, x[ 5],  5, 0xd62f105dL);
+	STEP(G, d, a, b, c, x[10],  9, 0x02441453L);
+	STEP(G, c, d, a, b, x[15], 14, 0xd8a1e681L);
+	STEP(G, b, c, d, a, x[ 4], 20, 0xe7d3fbc8L);
+	STEP(G, a, b, c, d, x[ 9],  5, 0x21e1cde6L);
+	STEP(G, d, a, b, c, x[14],  9, 0xc33707d6L);
+	STEP(G, c, d, a, b, x[ 3], 14, 0xf4d50d87L);
+	STEP(G, b, c, d, a, x[ 8], 20, 0x455a14edL);
+	STEP(G, a, b, c, d, x[13],  5, 0xa9e3e905L);
+	STEP(G, d, a, b, c, x[ 2],  9, 0xfcefa3f8L);
+	STEP(G, c, d, a, b, x[ 7], 14, 0x676f02d9L);
+	STEP(G, b, c, d, a, x[12], 20, 0x8d2a4c8aL);
+	STEP(H, a, b, c, d, x[ 5],  4, 0xfffa3942L);
+	STEP(H, d, a, b, c, x[ 8], 11, 0x8771f681L);
+	STEP(H, c, d, a, b, x[11], 16, 0x6d9d6122L);
+	STEP(H, b, c, d, a, x[14], 23, 0xfde5380cL);
+	STEP(H, a, b, c, d, x[ 1],  4, 0xa4beea44L);
+	STEP(H, d, a, b, c, x[ 4], 11, 0x4bdecfa9L);
+	STEP(H, c, d, a, b, x[ 7], 16, 0xf6bb4b60L);
+	STEP(H, b, c, d, a, x[10], 23, 0xbebfbc70L);
+	STEP(H, a, b, c, d, x[13],  4, 0x289b7ec6L);
+	STEP(H, d, a, b, c, x[ 0], 11, 0xeaa127faL);
+	STEP(H, c, d, a, b, x[ 3], 16, 0xd4ef3085L);
+	STEP(H, b, c, d, a, x[ 6], 23, 0x04881d05L);
+	STEP(H, a, b, c, d, x[ 9],  4, 0xd9d4d039L);
+	STEP(H, d, a, b, c, x[12], 11, 0xe6db99e5L);
+	STEP(H, c, d, a, b, x[15], 16, 0x1fa27cf8L);
+	STEP(H, b, c, d, a, x[ 2], 23, 0xc4ac5665L);
+	STEP(I, a, b, c, d, x[ 0],  6, 0xf4292244L);
+	STEP(I, d, a, b, c, x[ 7], 10, 0x432aff97L);
+	STEP(I, c, d, a, b, x[14], 15, 0xab9423a7L);
+	STEP(I, b, c, d, a, x[ 5], 21, 0xfc93a039L);
+	STEP(I, a, b, c, d, x[12],  6, 0x655b59c3L);
+	STEP(I, d, a, b, c, x[ 3], 10, 0x8f0ccc92L);
+	STEP(I, c, d, a, b, x[10], 15, 0xffeff47dL);
+	STEP(I, b, c, d, a, x[ 1], 21, 0x85845dd1L);
+	STEP(I, a, b, c, d, x[ 8],  6, 0x6fa87e4fL);
+	STEP(I, d, a, b, c, x[15], 10, 0xfe2ce6e0L);
+	STEP(I, c, d, a, b, x[ 6], 15, 0xa3014314L);
+	STEP(I, b, c, d, a, x[13], 21, 0x4e0811a1L);
+	STEP(I, a, b, c, d, x[ 4],  6, 0xf7537e82L);
+	STEP(I, d, a, b, c, x[11], 10, 0xbd3af235L);
+	STEP(I, c, d, a, b, x[ 2], 15, 0x2ad7d2bbL);
+	STEP(I, b, c, d, a, x[ 9], 21, 0xeb86d391L);
 
-		a = (state->abcd[0] += a);
-		b = (state->abcd[1] += b);
-		c = (state->abcd[2] += c);
-		d = (state->abcd[3] += d);
-	}
+	state->abcd[0] += a;
+	state->abcd[1] += b;
+	state->abcd[2] += c;
+	state->abcd[3] += d;
 }
 
 void MD5::Append(const void *data, size_t len)
@@ -570,7 +563,7 @@ void MD5::Append(const void *data, size_t len)
     // Process an initial partial block
     if (offset)
     {
-		size_t ncopy = (offset + len > 64 ? 64 - offset : len);
+		size_t ncopy = min(64 - offset, len);
 
 		memcpy(state->buf + offset, p, ncopy);
 		if (offset + ncopy < 64)
@@ -578,12 +571,12 @@ void MD5::Append(const void *data, size_t len)
 
 		p += ncopy;
 		left -= ncopy;
-		Block(state->buf, 1);
+		Block(state->buf);
     }
 
     // Process full blocks
-    Block(p, left / 64);
-    left = (left & 63);
+	for (; left >= 64; left -= 64, p += 64)
+		Block(p);
 
     // Process a final partial block
     if (left)
@@ -601,10 +594,10 @@ void MD5::Finish()
     for (i = 0; i < 8; ++i)
 		data[i] = static_cast<unsigned char>(state->count[i >> 2] >> ((i & 3) << 3));
 
-    // Pad to 56 bytes mod 64.
+    // Pad to 56 bytes mod 64
     Append(pad, ((55 - (state->count[0] >> 3)) & 63) + 1);
 
-    // Append the length.
+    // Append the length
     Append(data, 8);
 
     for (i = 0; i < 16; ++i)
