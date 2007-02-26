@@ -1326,12 +1326,19 @@ void CDjVuView::UpdatePagesCacheContinuous(bool bUpdateImages)
 
 void CDjVuView::UpdateVisiblePages()
 {
-	CMainFrame* pFrame = (CMainFrame*) GetTopLevelFrame();
-	CMDIChildWnd* pActive = pFrame->MDIGetActive();
-	if (!m_bInitialized || pActive == NULL || m_pRenderThread->IsPaused())
+	if (!m_bInitialized || m_pRenderThread->IsPaused())
 		return;
 
-	bool bUpdateImages = (m_nType != Normal || pActive->GetActiveView() == this);
+	bool bUpdateImages = true;
+	if (m_nType == Normal)
+	{
+		CMainFrame* pFrame = (CMainFrame*) GetTopLevelFrame();
+		CMDIChildWnd* pActive = pFrame->MDIGetActive();
+		if (pActive == NULL)
+			return;
+
+		bUpdateImages = (pActive->GetActiveView() == this);
+	}
 
 	m_pRenderThread->PauseJobs();
 	m_pRenderThread->RemoveAllJobs();
