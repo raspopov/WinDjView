@@ -30,7 +30,7 @@
 #endif
 
 static const char* pszPageIndexKey = "page-index";
-static const char* pszCharTableKey = "char-table";
+static const char* pszCharMapKey = "char-map";
 static const char* pszTitleKey = "title-localized";
 
 
@@ -38,14 +38,14 @@ static const char* pszTitleKey = "title-localized";
 
 CDictionaryDlg::CDictionaryDlg(CWnd* pParent)
 	: CDialog(CDictionaryDlg::IDD, pParent), m_pSource(NULL),
-	  m_bHasPageIndexFile(false), m_bHasCharTableFile(false),
-	  m_nPageIndexAction(0), m_nCharTableAction(0)
+	  m_bHasPageIndexFile(false), m_bHasCharMapFile(false),
+	  m_nPageIndexAction(0), m_nCharMapAction(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
 	m_strDjVuFile.LoadString(IDS_BROWSE_DJVU_PROMPT);
 	m_strPageIndexFile.LoadString(IDS_BROWSE_PAGE_INDEX_PROMPT);
-	m_strCharTableFile.LoadString(IDS_BROWSE_CHARTABLE_PROMPT);
+	m_strCharMapFile.LoadString(IDS_BROWSE_CHAR_MAP_PROMPT);
 }
 
 void CDictionaryDlg::DoDataExchange(CDataExchange* pDX)
@@ -53,10 +53,10 @@ void CDictionaryDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_DJVU_FILE, m_strDjVuFile);
 	DDX_Text(pDX, IDC_PAGE_INDEX_FILE, m_strPageIndexFile);
-	DDX_Text(pDX, IDC_CHARTABLE_FILE, m_strCharTableFile);
+	DDX_Text(pDX, IDC_CHAR_MAP_FILE, m_strCharMapFile);
 	DDX_Text(pDX, IDC_TITLE, m_strTitle);
-	DDX_Radio(pDX, IDC_INDEX_DONTCHANGE, m_nPageIndexAction);
-	DDX_Radio(pDX, IDC_TABLE_DONTCHANGE, m_nCharTableAction);
+	DDX_Radio(pDX, IDC_PAGE_INDEX_DONTCHANGE, m_nPageIndexAction);
+	DDX_Radio(pDX, IDC_CHAR_MAP_DONTCHANGE, m_nCharMapAction);
 }
 
 BEGIN_MESSAGE_MAP(CDictionaryDlg, CDialog)
@@ -64,11 +64,11 @@ BEGIN_MESSAGE_MAP(CDictionaryDlg, CDialog)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_SAVE, OnSave)
 	ON_BN_CLICKED(IDC_SAVE_AS, OnSaveAs)
-	ON_BN_CLICKED(IDC_EXPORT_INDEX, OnExportPageIndex)
-	ON_BN_CLICKED(IDC_EXPORT_TABLE, OnExportCharTable)
+	ON_BN_CLICKED(IDC_EXPORT_PAGE_INDEX, OnExportPageIndex)
+	ON_BN_CLICKED(IDC_EXPORT_CHAR_MAP, OnExportCharMap)
 	ON_BN_CLICKED(IDC_BROWSE_DJVU, OnBrowseDjvu)
 	ON_BN_CLICKED(IDC_BROWSE_PAGE_INDEX, OnBrowsePageIndex)
-	ON_BN_CLICKED(IDC_BROWSE_CHARTABLE, OnBrowseCharTable)
+	ON_BN_CLICKED(IDC_BROWSE_CHAR_MAP, OnBrowseCharMap)
 	ON_WM_CTLCOLOR()
 	ON_MESSAGE_VOID(WM_KICKIDLE, OnKickIdle)
 	ON_WM_DESTROY()
@@ -157,9 +157,9 @@ void CDictionaryDlg::OnExportPageIndex()
 	}
 }
 
-void CDictionaryDlg::OnExportCharTable()
+void CDictionaryDlg::OnExportCharMap()
 {
-	if (m_pSource->GetCharTable().length() == 0)
+	if (m_pSource->GetCharMap().length() == 0)
 		return;
 
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
@@ -168,23 +168,23 @@ void CDictionaryDlg::OnExportCharTable()
 
 	CMyFileDialog dlg(false, _T("xml"), strFileName, OFN_OVERWRITEPROMPT |
 		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_NOREADONLYRETURN,
-		LoadString(IDS_CHARTABLE_FILTER_EXPORT));
+		LoadString(IDS_CHAR_MAP_FILTER_EXPORT));
 
 	CString strTitle;
-	strTitle.LoadString(IDS_EXPORT_CHARTABLE);
+	strTitle.LoadString(IDS_EXPORT_CHAR_MAP);
 	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
 
 	UINT nResult = dlg.DoModal();
 	if (nResult != IDOK)
 		return;
 
-	CString strCharTableFile = dlg.GetPathName();
+	CString strCharMapFile = dlg.GetPathName();
 
-	if (ExportCharTable(strCharTableFile) && !m_bHasCharTableFile)
+	if (ExportCharMap(strCharMapFile) && !m_bHasCharMapFile)
 	{
-		m_strCharTableFile = strCharTableFile;
-		m_strCharTableXML = m_pSource->GetCharTable();
-		m_bHasCharTableFile = true;
+		m_strCharMapFile = strCharMapFile;
+		m_strCharMapXML = m_pSource->GetCharMap();
+		m_bHasCharMapFile = true;
 		UpdateData(false);
 	}
 }
@@ -220,8 +220,8 @@ bool CDictionaryDlg::OpenDocument(const CString& strFileName)
 
 		if (m_pSource->GetPageIndex().length() == 0 && m_nPageIndexAction == 2)
 			m_nPageIndexAction = 0;
-		if (m_pSource->GetCharTable().length() == 0 && m_nCharTableAction == 2)
-			m_nCharTableAction = 0;
+		if (m_pSource->GetCharMap().length() == 0 && m_nCharMapAction == 2)
+			m_nCharMapAction = 0;
 
 		PageInfo info = m_pSource->GetPageInfo(0, false, true);
 		if (info.pAnt != NULL)
@@ -396,7 +396,7 @@ GUTF8String ReadExcelPageIndex(LPCTSTR pszFileName)
 	return strResult;
 }
 
-GUTF8String ReadExcelCharTable(LPCTSTR pszFileName)
+GUTF8String ReadExcelCharMap(LPCTSTR pszFileName)
 {
 	Excel::_ApplicationPtr pApplication;
 
@@ -405,7 +405,7 @@ GUTF8String ReadExcelCharTable(LPCTSTR pszFileName)
 
 	GUTF8String strResult;
 	strResult += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-	strResult += "<char-table>\n";
+	strResult += "<char-map>\n";
 
 	try
 	{
@@ -438,7 +438,7 @@ GUTF8String ReadExcelCharTable(LPCTSTR pszFileName)
 			strResult += " to=\"" + MakeUTF8String(wstring(bstrTo)).toEscaped() + "\"/>\n";
 		}
 
-		strResult += "</char-table>\n";
+		strResult += "</char-map>\n";
 
 		pBook->Close(VARIANT_FALSE);
 	}
@@ -486,24 +486,24 @@ bool CDictionaryDlg::OpenPageIndex(const CString& strFileName)
 	return true;
 }
 
-bool CDictionaryDlg::OpenCharTable(const CString& strFileName)
+bool CDictionaryDlg::OpenCharMap(const CString& strFileName)
 {
-	GUTF8String strCharTableXML = ReadExcelCharTable(strFileName);
-	if (strCharTableXML.length() == 0)
-		strCharTableXML = ReadRawXML(strFileName);
+	GUTF8String strCharMapXML = ReadExcelCharMap(strFileName);
+	if (strCharMapXML.length() == 0)
+		strCharMapXML = ReadRawXML(strFileName);
 
-	if (strCharTableXML.length() == 0)
+	if (strCharMapXML.length() == 0)
 	{
-		AfxMessageBox(IDS_CANNOT_OPEN_CHAR_FILE, MB_OK | MB_ICONEXCLAMATION);
+		AfxMessageBox(IDS_CANNOT_OPEN_MAP_FILE, MB_OK | MB_ICONEXCLAMATION);
 		return false;
 	}
 
-	m_bHasCharTableFile = true;
-	m_strCharTableFile = strFileName;
-	m_strCharTableXML = strCharTableXML;
+	m_bHasCharMapFile = true;
+	m_strCharMapFile = strFileName;
+	m_strCharMapXML = strCharMapXML;
 
 	OnKickIdle();
-	m_nCharTableAction = 1;
+	m_nCharMapAction = 1;
 	UpdateData(false);
 
 	return true;
@@ -528,23 +528,23 @@ void CDictionaryDlg::OnBrowsePageIndex()
 	OpenPageIndex(dlg.GetPathName());
 }
 
-void CDictionaryDlg::OnBrowseCharTable()
+void CDictionaryDlg::OnBrowseCharMap()
 {
-	CString strFileName = (m_bHasCharTableFile ? m_strCharTableFile : _T(""));
+	CString strFileName = (m_bHasCharMapFile ? m_strCharMapFile : _T(""));
 
 	CMyFileDialog dlg(true, _T("xls"), strFileName,
 		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST,
-		LoadString(IDS_CHARTABLE_FILTER));
+		LoadString(IDS_CHAR_MAP_FILTER));
 
 	CString strTitle;
-	strTitle.LoadString(IDS_BROWSE_CHARTABLE);
+	strTitle.LoadString(IDS_BROWSE_CHAR_MAP);
 	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
 
 	UINT nResult = dlg.DoModal();
 	if (nResult != IDOK)
 		return;
 
-	OpenCharTable(dlg.GetPathName());
+	OpenCharMap(dlg.GetPathName());
 }
 
 HBRUSH CDictionaryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
@@ -559,7 +559,7 @@ HBRUSH CDictionaryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	{
 		pDC->SetTextColor(::GetSysColor(COLOR_3DSHADOW));
 	}
-	if (pWnd->GetDlgCtrlID() == IDC_CHARTABLE_FILE && !m_bHasCharTableFile)
+	if (pWnd->GetDlgCtrlID() == IDC_CHAR_MAP_FILE && !m_bHasCharMapFile)
 	{
 		pDC->SetTextColor(::GetSysColor(COLOR_3DSHADOW));
 	}
@@ -569,16 +569,18 @@ HBRUSH CDictionaryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 void CDictionaryDlg::OnKickIdle()
 {
-	GetDlgItem(IDC_EXPORT_INDEX)->EnableWindow(m_pSource != NULL && m_pSource->GetPageIndex().length() > 0);
-	GetDlgItem(IDC_INDEX_REMOVE)->EnableWindow(m_pSource != NULL && m_pSource->GetPageIndex().length() > 0);
-	GetDlgItem(IDC_EXPORT_TABLE)->EnableWindow(m_pSource != NULL && m_pSource->GetCharTable().length() > 0);
-	GetDlgItem(IDC_TABLE_REMOVE)->EnableWindow(m_pSource != NULL && m_pSource->GetCharTable().length() > 0);
+	GetDlgItem(IDC_EXPORT_PAGE_INDEX)->EnableWindow(m_pSource != NULL && m_pSource->GetPageIndex().length() > 0);
+	GetDlgItem(IDC_PAGE_INDEX_REMOVE)->EnableWindow(m_pSource != NULL && m_pSource->GetPageIndex().length() > 0);
+	GetDlgItem(IDC_EXPORT_CHAR_MAP)->EnableWindow(m_pSource != NULL && m_pSource->GetCharMap().length() > 0);
+	GetDlgItem(IDC_CHAR_MAP_REMOVE)->EnableWindow(m_pSource != NULL && m_pSource->GetCharMap().length() > 0);
 
 	GetDlgItem(IDC_SAVE)->EnableWindow(m_pSource != NULL);
 	GetDlgItem(IDC_SAVE_AS)->EnableWindow(m_pSource != NULL);
 	GetDlgItem(IDC_TITLE)->EnableWindow(false); //m_pSource != NULL
-	GetDlgItem(IDC_INDEX_REPLACE)->EnableWindow(m_bHasPageIndexFile);
-	GetDlgItem(IDC_TABLE_REPLACE)->EnableWindow(m_bHasCharTableFile);
+	GetDlgItem(IDC_PAGE_INDEX_DONTCHANGE)->EnableWindow(m_pSource != NULL);
+	GetDlgItem(IDC_CHAR_MAP_DONTCHANGE)->EnableWindow(m_pSource != NULL);
+	GetDlgItem(IDC_PAGE_INDEX_REPLACE)->EnableWindow(m_bHasPageIndexFile);
+	GetDlgItem(IDC_CHAR_MAP_REPLACE)->EnableWindow(m_bHasCharMapFile);
 }
 
 bool CDictionaryDlg::ExportPageIndex(const CString& strPageIndexFile)
@@ -597,16 +599,16 @@ bool CDictionaryDlg::ExportPageIndex(const CString& strPageIndexFile)
 	return true;
 }
 
-bool CDictionaryDlg::ExportCharTable(const CString& strCharTableFile)
+bool CDictionaryDlg::ExportCharMap(const CString& strCharMapFile)
 {
-	ofstream out(strCharTableFile, ios::out);
+	ofstream out(strCharMapFile, ios::out);
 	if (!out)
 	{
 		AfxMessageBox(IDS_CANNOT_WRITE);
 		return false;
 	}
 
-	out << (const char*)m_pSource->GetCharTable();
+	out << (const char*)m_pSource->GetCharMap();
 	out.close();
 
 	AfxMessageBox(IDS_EXPORT_DONE, MB_OK | MB_ICONINFORMATION);
@@ -1090,11 +1092,6 @@ void CDictionaryDlg::SaveDocument(const CString& strFileName)
 		CWaitCursor wait;
 
 		GP<DjVuFile> pFile = m_pSource->GetDjVuDoc()->get_djvu_file(0);
-		if (pFile == NULL)
-		{
-			AfxMessageBox(IDS_NO_PAGE_INDEX);
-			return;
-		}
 
 		GMap<GUTF8String, GUTF8String> meta;
 
@@ -1118,15 +1115,15 @@ void CDictionaryDlg::SaveDocument(const CString& strFileName)
 			meta.del(pszPageIndexKey);
 		}
 
-		if (m_nCharTableAction == 1 && m_bHasCharTableFile)
+		if (m_nCharMapAction == 1 && m_bHasCharMapFile)
 		{
-			string strEncodedChars(m_strCharTableXML);
+			string strEncodedChars(m_strCharMapXML);
 			Base64Encode(strEncodedChars);
-			meta[pszCharTableKey] = strEncodedChars.c_str();
+			meta[pszCharMapKey] = strEncodedChars.c_str();
 		}
-		else if (m_nCharTableAction == 2)
+		else if (m_nCharMapAction == 2)
 		{
-			meta.del(pszCharTableKey);
+			meta.del(pszCharMapKey);
 		}
 
 		if (!m_strTitle.IsEmpty())
@@ -1236,11 +1233,11 @@ BOOL CDictionaryDlg::OnDrop(CWnd* pWnd, COleDataObject* pDataObject,
 	GetDlgItem(IDC_PAGE_INDEX_GROUP)->GetWindowRect(rcPageIndex);
 	ScreenToClient(rcPageIndex);
 
-	CRect rcCharTable;
-	GetDlgItem(IDC_CHARTABLE_GROUP)->GetWindowRect(rcCharTable);
-	ScreenToClient(rcCharTable);
+	CRect rcCharMap;
+	GetDlgItem(IDC_CHAR_MAP_GROUP)->GetWindowRect(rcCharMap);
+	ScreenToClient(rcCharMap);
 
-	if (!rcDjVu.PtInRect(point) && !rcPageIndex.PtInRect(point) && !rcCharTable.PtInRect(point))
+	if (!rcDjVu.PtInRect(point) && !rcPageIndex.PtInRect(point) && !rcCharMap.PtInRect(point))
 		return false;
 
 	HDROP hDrop = (HDROP) pDataObject->GetGlobalData(CF_HDROP);
@@ -1261,9 +1258,9 @@ BOOL CDictionaryDlg::OnDrop(CWnd* pWnd, COleDataObject* pDataObject,
 	{
 		OpenPageIndex(strPath);
 	}
-	else if (rcCharTable.PtInRect(point))
+	else if (rcCharMap.PtInRect(point))
 	{
-		OpenCharTable(strPath);
+		OpenCharMap(strPath);
 	}
 
 	return true;

@@ -34,10 +34,10 @@ public:
 	enum { IDD = IDD_DICTIONARYTOOL };
 	CString m_strDjVuFile;
 	CString m_strPageIndexFile;
-	CString m_strCharTableFile;
+	CString m_strCharMapFile;
 	CString m_strTitle;
 	int m_nPageIndexAction;
-	int m_nCharTableAction;
+	int m_nCharMapAction;
 
 // Overrides
 protected:
@@ -58,18 +58,18 @@ public:
 protected:
 	HICON m_hIcon;
 	bool m_bHasPageIndexFile;
-	bool m_bHasCharTableFile;
+	bool m_bHasCharMapFile;
 	GUTF8String m_strPageIndexXML;
-	GUTF8String m_strCharTableXML;
+	GUTF8String m_strCharMapXML;
 	CMyDropTarget m_dropTarget;
 
 	bool ExportPageIndex(const CString& strPageIndexFile);
-	bool ExportCharTable(const CString& strCharTableFile);
+	bool ExportCharMap(const CString& strCharMapFile);
 	bool OpenDocument(const CString& strFileName);
 	void CloseDocument(bool bUpdateData = true);
 	void SaveDocument(const CString& strFileName = _T(""));
 	bool OpenPageIndex(const CString& strFileName);
-	bool OpenCharTable(const CString& strFileName);
+	bool OpenCharMap(const CString& strFileName);
 
 	DjVuSource* m_pSource;
 
@@ -80,10 +80,10 @@ protected:
 	afx_msg void OnSave();
 	afx_msg void OnSaveAs();
 	afx_msg void OnExportPageIndex();
-	afx_msg void OnExportCharTable();
+	afx_msg void OnExportCharMap();
 	afx_msg void OnBrowseDjvu();
 	afx_msg void OnBrowsePageIndex();
-	afx_msg void OnBrowseCharTable();
+	afx_msg void OnBrowseCharMap();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnKickIdle();
 	afx_msg void OnDestroy();

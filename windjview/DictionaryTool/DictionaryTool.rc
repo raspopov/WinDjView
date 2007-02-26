@@ -90,25 +90,25 @@ BEGIN
                     SS_LEFTNOWORDWRAP | SS_PATHELLIPSIS | WS_GROUP,13,47,221,
                     9
     PUSHBUTTON      "...",IDC_BROWSE_PAGE_INDEX,239,43,13,12
-    CONTROL         "Don't change",IDC_INDEX_DONTCHANGE,"Button",
+    CONTROL         "Don't change",IDC_PAGE_INDEX_DONTCHANGE,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,61,59,8
-    CONTROL         "Replace",IDC_INDEX_REPLACE,"Button",BS_AUTORADIOBUTTON,
+    CONTROL         "Replace",IDC_PAGE_INDEX_REPLACE,"Button",BS_AUTORADIOBUTTON,
                     76,61,44,8
-    CONTROL         "Remove",IDC_INDEX_REMOVE,"Button",BS_AUTORADIOBUTTON,
+    CONTROL         "Remove",IDC_PAGE_INDEX_REMOVE,"Button",BS_AUTORADIOBUTTON,
                     123,61,45,8
-    PUSHBUTTON      "Export...",IDC_EXPORT_INDEX,211,57,41,14,WS_GROUP
-    GROUPBOX        "Cha&racter Table",IDC_CHARTABLE_GROUP,7,79,250,40
-    CONTROL         "File name",IDC_CHARTABLE_FILE,"Static",
+    PUSHBUTTON      "Export...",IDC_EXPORT_PAGE_INDEX,211,57,41,14,WS_GROUP
+    GROUPBOX        "Cha&racter Map",IDC_CHAR_MAP_GROUP,7,79,250,40
+    CONTROL         "File name",IDC_CHAR_MAP_FILE,"Static",
                     SS_LEFTNOWORDWRAP | SS_PATHELLIPSIS | WS_GROUP,13,90,221,
                     9
-    PUSHBUTTON      "...",IDC_BROWSE_CHARTABLE,239,86,13,12
-    CONTROL         "Don't change",IDC_TABLE_DONTCHANGE,"Button",
+    PUSHBUTTON      "...",IDC_BROWSE_CHAR_MAP,239,86,13,12
+    CONTROL         "Don't change",IDC_CHAR_MAP_DONTCHANGE,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,104,59,8
-    CONTROL         "Replace",IDC_TABLE_REPLACE,"Button",BS_AUTORADIOBUTTON,
+    CONTROL         "Replace",IDC_CHAR_MAP_REPLACE,"Button",BS_AUTORADIOBUTTON,
                     76,104,44,8
-    CONTROL         "Remove",IDC_TABLE_REMOVE,"Button",BS_AUTORADIOBUTTON,
+    CONTROL         "Remove",IDC_CHAR_MAP_REMOVE,"Button",BS_AUTORADIOBUTTON,
                     123,104,45,8
-    PUSHBUTTON      "Export...",IDC_EXPORT_TABLE,211,100,41,14,WS_GROUP
+    PUSHBUTTON      "Export...",IDC_EXPORT_CHAR_MAP,211,100,41,14,WS_GROUP
     GROUPBOX        "Properties",IDC_STATIC,7,123,250,32
     LTEXT           "&Title:",IDC_STATIC,13,137,19,9
     EDITTEXT        IDC_TITLE,34,135,216,13,ES_AUTOHSCROLL
@@ -192,7 +192,6 @@ BEGIN
     IDS_BROWSE_PAGE_INDEX   "Browse for Index"
     IDS_PAGE_INDEX_FILTER   "Excel Documents (*.xls)|*.xls|XML Documents (*.xml)|*.xml|All Files (*.*)|*.*||"
     IDS_EXPORT_PAGE_INDEX   "Export Page Index"
-    IDS_NO_PAGE_INDEX       "The selected DjVu file does not contain a page index."
     IDS_CANNOT_WRITE        "Unable to open the selected page index file for writing."
     IDS_EXPORT_ERROR        "An error occurred during export. The file was not created."
     IDS_FATAL_ERROR         "A fatal error occurred. It is recommended to close the application."
@@ -200,7 +199,7 @@ BEGIN
     IDS_LOAD_ERROR          "Unable to open the selected DjVu file."
     IDS_EXPORT_DJVU         "Save As"
     IDS_CANNOT_OPEN_INDEX_FILE 
-                            "Could not read page index from the selected file."
+                            "Could not read page index from the selected file: invalid file format."
 END
 
 STRINGTABLE DISCARDABLE 
@@ -210,22 +209,22 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_ERROR_READING_PAGE_INDEX "Invalid page index file format."
     IDS_PAGE_INDEX_FILTER_EXPORT 
                             "XML Documents (*.xml)|*.xml|All Files (*.*)|*.*||"
     IDS_ERROR_WRITING_TEMP  "Error creating a temporary file. The directory might be read only,\nor the disk may be full."
-    IDS_ERROR_WRITING_RESULT 
+    IDS_ERROR_WRITING_RESULT
                             "Error writing to the output file. The directory might be read-only,\nor the disk may be full."
     IDS_REPLACE_ERROR       "Error saving the result file. The file might be in use by other application."
     IDS_EMBEDDING_DONE      "Page index was successfully embedded into the document."
-    IDS_BROWSE_CHARTABLE_PROMPT "Please select or drop an Excel or XML file"
-    IDS_CHARTABLE_FILTER    "Excel Documents (*.xls)|*.xls|XML Documents (*.xml)|*.xml|All Files (*.*)|*.*||"
-    IDS_BROWSE_CHARTABLE    "Browse for Character Table"
-    IDS_EXPORT_CHARTABLE    "Export Character Table"
-    IDS_CHARTABLE_FILTER_EXPORT 
+    IDS_BROWSE_CHAR_MAP_PROMPT
+                            "Please select or drop an Excel or XML file"
+    IDS_CHAR_MAP_FILTER     "Excel Documents (*.xls)|*.xls|XML Documents (*.xml)|*.xml|All Files (*.*)|*.*||"
+    IDS_BROWSE_CHAR_MAP     "Browse for Character Map"
+    IDS_EXPORT_CHAR_MAP     "Export Character Map"
+    IDS_CHAR_MAP_FILTER_EXPORT
                             "XML Documents (*.xml)|*.xml|All Files (*.*)|*.*||"
-    IDS_CANNOT_OPEN_CHAR_FILE 
-                            "Could not read character table from the selected file."
+    IDS_CANNOT_OPEN_MAP_FILE
+                            "Could not read character map from the selected file: invalid file format."
 END
 
 #endif    // English (U.S.) resources

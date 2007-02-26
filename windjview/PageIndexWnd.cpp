@@ -37,7 +37,7 @@ IMPLEMENT_DYNAMIC(CPageIndexWnd, CWnd)
 
 BEGIN_MESSAGE_MAP(CPageIndexWnd, CWnd)
 	ON_NOTIFY(TVN_SELCHANGED, CPageIndexWnd::ID_LIST, OnSelChanged)
-	ON_NOTIFY(TVN_ITEMCLICKED, CPageIndexWnd::ID_LIST, OnItemClicked)
+	ON_NOTIFY(TVN_ITEMCLICKED, CPageIndexWnd::ID_LIST, OnSelChanged)
 	ON_NOTIFY(TVN_KEYDOWN, CPageIndexWnd::ID_LIST, OnKeyDownList)
 	ON_EN_CHANGE(CPageIndexWnd::ID_TEXT, OnChangeText)
 	ON_NOTIFY(NM_KEYDOWN, CPageIndexWnd::ID_TEXT, OnKeyDownText)
@@ -48,7 +48,10 @@ BEGIN_MESSAGE_MAP(CPageIndexWnd, CWnd)
 END_MESSAGE_MAP()
 
 CPageIndexWnd::CPageIndexWnd()
+	: m_bChangeInternal(false)
 {
+	for (size_t i = 0; i <= 0xffff; ++i)
+		m_charMap[i] = i;
 }
 
 CPageIndexWnd::~CPageIndexWnd()
@@ -100,17 +103,17 @@ int CPageIndexWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-inline wstring tolower(wstring str)
+inline wstring& tolower(wstring& str)
 {
 	for (wstring::iterator it = str.begin(); it != str.end(); ++it)
 		*it = towlower(*it);
 	return str;
 }
 
-const TCHAR pszTagEntry[] = _T("entry");
-const TCHAR pszAttrStartPage[] = _T("first");
-const TCHAR pszAttrLastPage[] = _T("last");
-const TCHAR pszAttrURL[] = _T("url");
+static const TCHAR pszTagEntry[] = _T("entry");
+static const TCHAR pszAttrStartPage[] = _T("first");
+static const TCHAR pszAttrLastPage[] = _T("last");
+static const TCHAR pszAttrURL[] = _T("url");
 
 int CPageIndexWnd::AddEntries(const XMLNode& parent, HTREEITEM hParent)
 {
@@ -138,8 +141,9 @@ int CPageIndexWnd::AddEntries(const XMLNode& parent, HTREEITEM hParent)
 		m_list.SetItemData(hItem, m_entries.size() - 1);
 		entry.hItem = hItem;
 
-		entry.strFirst = tolower(entry.strFirst);
-		entry.strLast = tolower(entry.strLast);
+		entry.strTextFirst = MakeCString(entry.strFirst);
+		entry.strFirst = MapCharacters(tolower(MapCharacters(entry.strFirst)));
+		entry.strLast = MapCharacters(tolower(MapCharacters(entry.strLast)));
 
 		if (AddEntries(node, hItem) > 0)
 			m_list.Expand(hItem, TVE_EXPAND);
@@ -159,6 +163,8 @@ bool CPageIndexWnd::InitPageIndex(DjVuSource* pSource)
 	if (!parser.Parse(sin))
 		return false;
 
+	InitCharacterMap(pSource->GetCharMap());
+
 	m_list.BeginBatchUpdate();
 
 	AddEntries(*parser.GetRoot(), TVI_ROOT);
@@ -172,11 +178,52 @@ bool CPageIndexWnd::InitPageIndex(DjVuSource* pSource)
 			m_sorted[k++] = &m_entries[i];
 	m_sorted.resize(k);
 
-	sort(m_sorted.begin(), m_sorted.end(), CompareEntries);
+	stable_sort(m_sorted.begin(), m_sorted.end(), CompareEntries);
 
 	m_list.EndBatchUpdate();
 
 	return !m_entries.empty();
+}
+
+static const TCHAR pszAttrFrom[] = _T("from");
+static const TCHAR pszAttrTo[] = _T("to");
+
+bool CPageIndexWnd::InitCharacterMap(const GUTF8String& strCharMap)
+{
+	if (strCharMap.length() == 0)
+		return false;
+
+	stringstream sin((const char*) strCharMap);
+	XMLParser parser;
+	if (!parser.Parse(sin))
+		return false;
+
+	const XMLNode& root = *parser.GetRoot();
+	list<XMLNode>::const_iterator it;
+	for (it = root.childElements.begin(); it != root.childElements.end(); ++it)
+	{
+		const XMLNode& node = *it;
+		if (MakeCString(node.tagName) != pszTagEntry)
+			continue;
+
+		wstring strFrom, strTo;
+		node.GetAttribute(pszAttrFrom, strFrom);
+		node.GetAttribute(pszAttrTo, strTo);
+
+		if (strFrom.length() != 1 || strTo.length() != 1)
+			continue;
+
+		m_charMap[strFrom[0]] = strTo[0];
+	}
+
+	return true;
+}
+
+wstring& CPageIndexWnd::MapCharacters(wstring& str)
+{
+	for (wstring::iterator it = str.begin(); it != str.end(); ++it)
+		*it = m_charMap[*it];
+	return str;
 }
 
 void CPageIndexWnd::GoToItem(HTREEITEM hItem)
@@ -198,21 +245,16 @@ void CPageIndexWnd::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
 	{
 		HTREEITEM hItem = pNMTreeView->itemNew.hItem;
 		if (hItem != NULL)
+		{
+			size_t nEntry = m_list.GetItemData(hItem);
+			IndexEntry& entry = m_entries[nEntry];
+
+			m_bChangeInternal = true;
+			GetDlgItem(ID_TEXT)->SetWindowText(entry.strTextFirst);
+			m_bChangeInternal = false;
+
 			GoToItem(hItem);
-	}
-
-	*pResult = 0;
-}
-
-void CPageIndexWnd::OnItemClicked(NMHDR *pNMHDR, LRESULT *pResult)
-{
-	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
-
-	if (pNMTreeView->action == TVC_BYMOUSE)
-	{
-		HTREEITEM hItem = pNMTreeView->itemNew.hItem;
-		if (hItem != NULL)
-			GoToItem(hItem);
+		}
 	}
 
 	*pResult = 0;
@@ -252,25 +294,40 @@ void CPageIndexWnd::OnKeyDownText(NMHDR *pNMHDR, LRESULT *pResult)
 
 void CPageIndexWnd::OnChangeText()
 {
+	if (m_bChangeInternal)
+		return;
+
 	CString strText;
 	GetDlgItem(ID_TEXT)->GetWindowText(strText);
 
 	wstring text;
 	MakeWString(strText, text);
-	text = tolower(text);
+
+	text = MapCharacters(tolower(MapCharacters(text)));
 
 	int left = 0, right = m_sorted.size();
 	while (left < right - 1)
 	{
 		int mid = (left + right) / 2;
-		if (m_sorted[mid]->strFirst.compare(text) <= 0)
+		if (wcscmp(m_sorted[mid]->strFirst.c_str(), text.c_str()) <= 0)
 			left = mid;
 		else
 			right = mid;
 	}
 
-	if (left > 0 && m_sorted[left - 1]->strLast.compare(text) == 0)
-		--left;
+	if (left > 0)
+	{
+		if (!m_sorted[left - 1]->strLast.empty())
+		{
+			if (wcscmp(m_sorted[left - 1]->strLast.c_str(), text.c_str()) == 0)
+				--left;
+		}
+		else
+		{
+			if (wcscmp(m_sorted[left - 1]->strFirst.c_str(), text.c_str()) == 0)
+				--left;
+		}
+	}
 
 	if (left >= 0 && left < static_cast<int>(m_sorted.size()))
 		m_list.SelectItem(m_sorted[left]->hItem);

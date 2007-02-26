@@ -191,7 +191,7 @@ public:
 
 	GP<DjVmNav> GetBookmarks() { return m_pDjVuDoc->get_djvm_nav(); }
 	const GUTF8String& GetPageIndex() { return m_strPageIndex; }
-	const GUTF8String& GetCharTable() { return m_strCharTable; }
+	const GUTF8String& GetCharMap() { return m_strCharMap; }
 	GP<DjVuDocument> GetDjVuDoc() { return m_pDjVuDoc; }
 
 	CString GetFileName() const { return m_strFileName; }
@@ -232,7 +232,7 @@ protected:
 	CCriticalSection m_lock;
 	bool m_bHasText;
 	GUTF8String m_strPageIndex;
-	GUTF8String m_strCharTable;
+	GUTF8String m_strCharMap;
 
 	vector<PageData> m_pages;
 	DocSettings* m_pSettings;

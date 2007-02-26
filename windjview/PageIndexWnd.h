@@ -42,6 +42,7 @@ protected:
 	CImageList m_imageList;
 	CFont m_font;
 	CRect m_rcText, m_rcGap, m_rcList;
+	bool m_bChangeInternal;
 
 	CMyTreeCtrl m_list;
 	CEdit m_edtText;
@@ -59,21 +60,26 @@ protected:
 	struct IndexEntry
 	{
 		wstring strFirst, strLast, strLink;
+		CString strTextFirst;
 		HTREEITEM hItem;
 	};
 
 	inline static bool CompareEntries(IndexEntry* lhs, IndexEntry* rhs)
-		{ return lhs->strFirst.compare(rhs->strFirst) < 0; }
+		{ return wcscmp(lhs->strFirst.c_str(), rhs->strFirst.c_str()) < 0; }
 
 	vector<IndexEntry> m_entries;
 	vector<IndexEntry*> m_sorted;
+
+	wstring& MapCharacters(wstring& str);
+	bool InitCharacterMap(const GUTF8String& strCharMap);
+	wchar_t m_charMap[65535];
 
 // Overrides
 protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
-// Generated message map functions
+	// Message map functions
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnItemClicked(NMHDR *pNMHDR, LRESULT *pResult);

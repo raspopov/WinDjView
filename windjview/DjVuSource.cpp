@@ -127,21 +127,21 @@ void PageInfo::DecodeText(GP<ByteStream> pTextStream)
 
 // Annotation
 
-const TCHAR pszTagAnnotation[] = _T("annotation");
-const TCHAR pszAttrBorder[] = _T("border");
-const TCHAR pszAttrBorderColor[] = _T("border-color");
-const TCHAR pszAttrBorderHideInactive[] = _T("border-hide-inactive");
-const TCHAR pszAttrFill[] = _T("fill");
-const TCHAR pszAttrFillColor[] = _T("fill-color");
-const TCHAR pszAttrFillTransparency[] = _T("fill-transparency");
-const TCHAR pszAttrComment[] = _T("comment");
-const TCHAR pszAttrURL[] = _T("url");
+static const TCHAR pszTagAnnotation[] = _T("annotation");
+static const TCHAR pszAttrBorder[] = _T("border");
+static const TCHAR pszAttrBorderColor[] = _T("border-color");
+static const TCHAR pszAttrBorderHideInactive[] = _T("border-hide-inactive");
+static const TCHAR pszAttrFill[] = _T("fill");
+static const TCHAR pszAttrFillColor[] = _T("fill-color");
+static const TCHAR pszAttrFillTransparency[] = _T("fill-transparency");
+static const TCHAR pszAttrComment[] = _T("comment");
+static const TCHAR pszAttrURL[] = _T("url");
 
-const TCHAR pszTagRect[] = _T("rect");
-const TCHAR pszAttrLeft[] = _T("left");
-const TCHAR pszAttrTop[] = _T("top");
-const TCHAR pszAttrRight[] = _T("right");
-const TCHAR pszAttrBottom[] = _T("bottom");
+static const TCHAR pszTagRect[] = _T("rect");
+static const TCHAR pszAttrLeft[] = _T("left");
+static const TCHAR pszAttrTop[] = _T("top");
+static const TCHAR pszAttrRight[] = _T("right");
+static const TCHAR pszAttrBottom[] = _T("bottom");
 
 void Annotation::UpdateBounds()
 {
@@ -309,8 +309,8 @@ void Annotation::Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate)
 
 // PageSettings
 
-const TCHAR pszTagPageSettings[] = _T("page-settings");
-const TCHAR pszAttrNumber[] = _T("number");
+static const TCHAR pszTagPageSettings[] = _T("page-settings");
+static const TCHAR pszAttrNumber[] = _T("number");
 
 GUTF8String PageSettings::GetXML() const
 {
@@ -350,13 +350,13 @@ void PageSettings::Load(const XMLNode& node)
 
 // Bookmark
 
-const TCHAR pszTagBookmark[] = _T("bookmark");
-const TCHAR pszAttrTitle[] = _T("title");
-const TCHAR pszAttrType[] = _T("type");
-const TCHAR pszAttrPage[] = _T("page");
-const TCHAR pszAttrOffsetX[] = _T("offset-x");
-const TCHAR pszAttrOffsetY[] = _T("offset-y");
-const TCHAR pszAttrMargin[] = _T("margin");
+static const TCHAR pszTagBookmark[] = _T("bookmark");
+static const TCHAR pszAttrTitle[] = _T("title");
+static const TCHAR pszAttrType[] = _T("type");
+static const TCHAR pszAttrPage[] = _T("page");
+static const TCHAR pszAttrOffsetX[] = _T("offset-x");
+static const TCHAR pszAttrOffsetY[] = _T("offset-y");
+static const TCHAR pszAttrMargin[] = _T("margin");
 
 Bookmark& Bookmark::operator=(const Bookmark& bm)
 {
@@ -458,15 +458,15 @@ void Bookmark::Load(const XMLNode& node)
 
 // DocSettings
 
-const TCHAR pszTagSettings[] = _T("settings");
-const TCHAR pszAttrStartPage[] = _T("start-page");
-const TCHAR pszAttrZoomType[] = _T("zoom-type");
-const TCHAR pszAttrZoom[] = _T("zoom");
-const TCHAR pszAttrLayout[] = _T("layout");
-const TCHAR pszAttrFirstPage[] = _T("first-page");
-const TCHAR pszAttrDisplayMode[] = _T("display-mode");
-const TCHAR pszAttrRotate[] = _T("rotate");
-const TCHAR pszTagBookmarks[] = _T("bookmarks");
+static const TCHAR pszTagSettings[] = _T("settings");
+static const TCHAR pszAttrStartPage[] = _T("start-page");
+static const TCHAR pszAttrZoomType[] = _T("zoom-type");
+static const TCHAR pszAttrZoom[] = _T("zoom");
+static const TCHAR pszAttrLayout[] = _T("layout");
+static const TCHAR pszAttrFirstPage[] = _T("first-page");
+static const TCHAR pszAttrDisplayMode[] = _T("display-mode");
+static const TCHAR pszAttrRotate[] = _T("rotate");
+static const TCHAR pszTagBookmarks[] = _T("bookmarks");
 
 DocSettings::DocSettings()
 	: nPage(-1), ptOffset(0, 0), nZoomType(-10), fZoom(100.0), nLayout(-1),
@@ -630,8 +630,8 @@ map<CString, DjVuSource*> DjVuSource::openDocuments;
 map<MD5, DocSettings> DjVuSource::settings;
 IApplication* DjVuSource::pApplication = NULL;
 
-static const char* pszPageIndexKey = "page-index";
-static const char* pszCharTableKey = "char-table";
+static const char pszPageIndexKey[] = "page-index";
+static const char pszCharMapKey[] = "char-map";
 
 DjVuSource::DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DocSettings* pSettings)
 	: m_strFileName(strFileName), m_pDjVuDoc(pDoc), m_nPageCount(0), m_bHasText(false), m_pSettings(pSettings)
@@ -649,9 +649,9 @@ DjVuSource::DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DocSet
 		Base64Decode(strPageIndex);
 		m_strPageIndex = strPageIndex.c_str();
 
-		string strCharTable = info.pAnt->metadata[pszCharTableKey];
-		Base64Decode(strCharTable);
-		m_strCharTable = strCharTable.c_str();
+		string strCharMap = info.pAnt->metadata[pszCharMapKey];
+		Base64Decode(strCharMap);
+		m_strCharMap = strCharMap.c_str();
 	}
 }
 
