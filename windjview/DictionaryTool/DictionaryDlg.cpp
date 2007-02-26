@@ -22,24 +22,30 @@
 #include "DictionaryDlg.h"
 #include "Global.h"
 #include "MyFileDialog.h"
+#include "DjVuSource.h"
+#include "XMLParser.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
+static const char* pszPageIndexKey = "page-index";
+static const char* pszCharTableKey = "char-table";
+static const char* pszTitleKey = "title-localized";
+
 
 // CDictionaryDlg dialog
 
-bool CDictionaryDlg::bPrompt = true;
-
 CDictionaryDlg::CDictionaryDlg(CWnd* pParent)
-	: CDialog(CDictionaryDlg::IDD, pParent), m_bHasDjVuFile(false),
-	  m_bHasPageIndexFile(false), m_bPrompt(bPrompt)
+	: CDialog(CDictionaryDlg::IDD, pParent), m_pSource(NULL),
+	  m_bHasPageIndexFile(false), m_bHasCharTableFile(false),
+	  m_nPageIndexAction(0), m_nCharTableAction(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
 	m_strDjVuFile.LoadString(IDS_BROWSE_DJVU_PROMPT);
 	m_strPageIndexFile.LoadString(IDS_BROWSE_PAGE_INDEX_PROMPT);
+	m_strCharTableFile.LoadString(IDS_BROWSE_CHARTABLE_PROMPT);
 }
 
 void CDictionaryDlg::DoDataExchange(CDataExchange* pDX)
@@ -47,16 +53,22 @@ void CDictionaryDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_DJVU_FILE, m_strDjVuFile);
 	DDX_Text(pDX, IDC_PAGE_INDEX_FILE, m_strPageIndexFile);
-	DDX_Check(pDX, IDC_PROMPT_FILENAME, m_bPrompt);
+	DDX_Text(pDX, IDC_CHARTABLE_FILE, m_strCharTableFile);
+	DDX_Text(pDX, IDC_TITLE, m_strTitle);
+	DDX_Radio(pDX, IDC_INDEX_DONTCHANGE, m_nPageIndexAction);
+	DDX_Radio(pDX, IDC_TABLE_DONTCHANGE, m_nCharTableAction);
 }
 
 BEGIN_MESSAGE_MAP(CDictionaryDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_EMBED, OnEmbed)
-	ON_BN_CLICKED(IDC_EXPORT, OnExport)
+	ON_BN_CLICKED(IDC_SAVE, OnSave)
+	ON_BN_CLICKED(IDC_SAVE_AS, OnSaveAs)
+	ON_BN_CLICKED(IDC_EXPORT_INDEX, OnExportPageIndex)
+	ON_BN_CLICKED(IDC_EXPORT_TABLE, OnExportCharTable)
 	ON_BN_CLICKED(IDC_BROWSE_DJVU, OnBrowseDjvu)
 	ON_BN_CLICKED(IDC_BROWSE_PAGE_INDEX, OnBrowsePageIndex)
+	ON_BN_CLICKED(IDC_BROWSE_CHARTABLE, OnBrowseCharTable)
 	ON_WM_CTLCOLOR()
 	ON_MESSAGE_VOID(WM_KICKIDLE, OnKickIdle)
 	ON_WM_DESTROY()
@@ -70,12 +82,13 @@ BOOL CDictionaryDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	// Set the icon for this dialog.
-	SetIcon(m_hIcon, true);			// Set big icon
-	SetIcon(m_hIcon, false);		// Set small icon
+	SetIcon(m_hIcon, true);	// Set big icon
+	SetIcon(m_hIcon, false); // Set small icon
 
 	m_dropTarget.Register(this);
+	OnKickIdle();
 
-	return true;  // return true unless you set the focus to a control
+	return true;
 }
 
 void CDictionaryDlg::OnPaint() 
@@ -112,8 +125,11 @@ HCURSOR CDictionaryDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-void CDictionaryDlg::OnExport()
+void CDictionaryDlg::OnExportPageIndex()
 {
+	if (m_pSource->GetPageIndex().length() == 0)
+		return;
+
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
 	_tsplitpath(m_strDjVuFile, szDrive, szPath, szName, szExt);
 	CString strFileName = szDrive + CString(szPath) + CString(szName) + CString(_T(".xml"));
@@ -132,17 +148,50 @@ void CDictionaryDlg::OnExport()
 
 	CString strPageIndexFile = dlg.GetPathName();
 
-	if (ExportPageIndex(strPageIndexFile))
+	if (ExportPageIndex(strPageIndexFile) && !m_bHasPageIndexFile)
 	{
 		m_strPageIndexFile = strPageIndexFile;
+		m_strPageIndexXML = m_pSource->GetPageIndex();
 		m_bHasPageIndexFile = true;
+		UpdateData(false);
+	}
+}
+
+void CDictionaryDlg::OnExportCharTable()
+{
+	if (m_pSource->GetCharTable().length() == 0)
+		return;
+
+	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
+	_tsplitpath(m_strDjVuFile, szDrive, szPath, szName, szExt);
+	CString strFileName = szDrive + CString(szPath) + CString(szName) + CString(_T(".chars.xml"));
+
+	CMyFileDialog dlg(false, _T("xml"), strFileName, OFN_OVERWRITEPROMPT |
+		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_NOREADONLYRETURN,
+		LoadString(IDS_CHARTABLE_FILTER_EXPORT));
+
+	CString strTitle;
+	strTitle.LoadString(IDS_EXPORT_CHARTABLE);
+	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
+
+	UINT nResult = dlg.DoModal();
+	if (nResult != IDOK)
+		return;
+
+	CString strCharTableFile = dlg.GetPathName();
+
+	if (ExportCharTable(strCharTableFile) && !m_bHasCharTableFile)
+	{
+		m_strCharTableFile = strCharTableFile;
+		m_strCharTableXML = m_pSource->GetCharTable();
+		m_bHasCharTableFile = true;
 		UpdateData(false);
 	}
 }
 
 void CDictionaryDlg::OnBrowseDjvu()
 {
-	CString strFileName = (m_bHasDjVuFile ? m_strDjVuFile : _T(""));
+	CString strFileName = (m_pSource != NULL ? m_strDjVuFile : _T(""));
 
 	CMyFileDialog dlg(true, _T("djvu"), strFileName,
 		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST,
@@ -166,15 +215,26 @@ bool CDictionaryDlg::OpenDocument(const CString& strFileName)
 	{
 		CWaitCursor wait;
 
-		GURL url = GURL::Filename::UTF8(MakeUTF8String(strFileName));
-		GP<DjVuDocument> doc = DjVuDocument::create(url);
-		doc->wait_for_complete_init();
-
+		m_pSource = DjVuSource::FromFile(strFileName);
 		m_strDjVuFile = strFileName;
-		m_bHasDjVuFile = true;
-		m_pDjVuDoc = doc;
-		UpdateData(false);
 
+		if (m_pSource->GetPageIndex().length() == 0 && m_nPageIndexAction == 2)
+			m_nPageIndexAction = 0;
+		if (m_pSource->GetCharTable().length() == 0 && m_nCharTableAction == 2)
+			m_nCharTableAction = 0;
+
+		PageInfo info = m_pSource->GetPageInfo(0, false, true);
+		if (info.pAnt != NULL)
+		{
+			m_strTitle = MakeCString(info.pAnt->metadata[pszTitleKey]);
+		}
+		else
+		{
+			m_strTitle.Empty();
+		}
+
+		UpdateData(false);
+		OnKickIdle();
 		return true;
 	}
 	catch (GException&)
@@ -191,12 +251,11 @@ bool CDictionaryDlg::OpenDocument(const CString& strFileName)
 
 void CDictionaryDlg::CloseDocument(bool bUpdateData)
 {
-	m_pDjVuDoc = NULL;
-	m_bHasDjVuFile = false;
-
-	// Close all open handles to this file
-	GURL url = GURL::Filename::UTF8(MakeUTF8String(m_strDjVuFile));
-	DataPool::load_file(url);
+	if (m_pSource != NULL)
+	{
+		m_pSource->Release();
+		m_pSource = NULL;
+	}
 
 	m_strDjVuFile.LoadString(IDS_BROWSE_DJVU_PROMPT);
 
@@ -204,11 +263,257 @@ void CDictionaryDlg::CloseDocument(bool bUpdateData)
 		UpdateData(false);
 }
 
+GUTF8String ReadRawXML(LPCTSTR pszFileName)
+{
+	ifstream in(pszFileName, ios::in);
+	if (!in)
+		return "";
+
+	istreambuf_iterator<char> begin(in), end;
+	vector<char> raw_data;
+	copy(begin, end, back_inserter(raw_data));
+	in.close();
+
+	raw_data.push_back('\0');
+	GUTF8String result(&raw_data[0]);
+
+	stringstream sin((const char*) result);
+	XMLParser parser;
+	if (!parser.Parse(sin))
+		return "";
+
+	return result;
+}
+
+GUTF8String ReadExcelPageIndex(LPCTSTR pszFileName)
+{
+	Excel::_ApplicationPtr pApplication;
+
+	if (FAILED(pApplication.CreateInstance(_T("Excel.Application"))))
+		return "";
+
+	GUTF8String strResult;
+	strResult += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	strResult += "<index>\n";
+
+	try
+	{
+		int nLevel = 1;
+		bool bFirst = true;
+		_variant_t varOption((long)DISP_E_PARAMNOTFOUND, VT_ERROR);
+
+		Excel::_WorkbookPtr pBook = pApplication->Workbooks->Open(
+				pszFileName, 0L, VARIANT_TRUE, varOption, varOption,
+				varOption, varOption, varOption, varOption,
+				varOption, varOption, varOption, varOption);
+		Excel::_WorksheetPtr pSheet = pBook->Sheets->Item[1L];
+
+		Excel::RangePtr pRange = pSheet->GetRange(_bstr_t("A1"), _bstr_t("D16384"));
+		for (long nRow = 1; nRow < 16384; ++nRow)
+		{
+			_bstr_t bstrLevel(_variant_t(pRange->Item[nRow][1L]));
+			_bstr_t bstrFirst(_variant_t(pRange->Item[nRow][2L]));
+			_bstr_t bstrLast(_variant_t(pRange->Item[nRow][3L]));
+			_bstr_t bstrURL(_variant_t(pRange->Item[nRow][4L]));
+
+			if (bstrLevel.length() == 0)
+				break;
+
+			int nNewLevel = _wtoi(bstrLevel);
+			if (bFirst)
+			{
+				if (nNewLevel <= 0 || nNewLevel > 1)
+				{
+					strResult = "";
+					break;
+				}
+				bFirst = false;
+			}
+			else
+			{
+				if (nNewLevel <= 0 || nNewLevel > nNewLevel + 1)
+				{
+					strResult = "";
+					break;
+				}
+
+				if (nNewLevel == nLevel + 1)
+					strResult += ">\n";
+				else
+				{
+					strResult += "/>\n";
+					for (int i = nLevel - 1; i >= nNewLevel; --i)
+					{
+						for (int k = 1; k < i; ++k)
+							strResult += "  ";
+						strResult += "</entry>\n";
+					}
+				}
+			}
+			nLevel = nNewLevel;
+
+			for (int k = 1; k < nLevel; ++k)
+				strResult += "  ";
+			strResult += "<entry";
+
+			if (bstrFirst.length() > 0)
+				strResult += " first=\"" + MakeUTF8String(wstring(bstrFirst)).toEscaped() + "\"";
+			if (bstrLast.length() > 0)
+				strResult += " last=\"" + MakeUTF8String(wstring(bstrLast)).toEscaped() + "\"";
+			if (bstrURL.length() > 0)
+				strResult += " url=\"" + MakeUTF8String(wstring(bstrURL)).toEscaped() + "\"";
+		}
+
+		if (bFirst)
+			strResult = "";
+
+		if (strResult.length() > 0)
+		{
+			if (!bFirst)
+			{
+				strResult += "/>\n";
+				for (int i = 1; i < nLevel; ++i)
+					strResult += "</entry>\n";
+			}
+			strResult += "</index>\n";
+		}
+
+		pBook->Close(VARIANT_FALSE);
+	}
+	catch (_com_error&)
+	{
+		strResult = "";
+	}
+
+	try
+	{
+		pApplication->Quit();
+	}
+	catch (_com_error&)
+	{
+	}
+
+	return strResult;
+}
+
+GUTF8String ReadExcelCharTable(LPCTSTR pszFileName)
+{
+	Excel::_ApplicationPtr pApplication;
+
+	if (FAILED(pApplication.CreateInstance(_T("Excel.Application"))))
+		return "";
+
+	GUTF8String strResult;
+	strResult += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	strResult += "<char-table>\n";
+
+	try
+	{
+		int nLevel = 1;
+		bool bFirst = true;
+		_variant_t varOption((long)DISP_E_PARAMNOTFOUND, VT_ERROR);
+
+		Excel::_WorkbookPtr pBook = pApplication->Workbooks->Open(
+				pszFileName, 0L, VARIANT_TRUE, varOption, varOption,
+				varOption, varOption, varOption, varOption,
+				varOption, varOption, varOption, varOption);
+		Excel::_WorksheetPtr pSheet = pBook->Sheets->Item[1L];
+
+		Excel::RangePtr pRange = pSheet->GetRange(_bstr_t("A1"), _bstr_t("D16384"));
+		for (long nRow = 1; nRow < 16384; ++nRow)
+		{
+			_bstr_t bstrFrom(_variant_t(pRange->Item[nRow][1L]));
+			_bstr_t bstrTo(_variant_t(pRange->Item[nRow][2L]));
+
+			if (bstrFrom.length() == 0)
+				break;
+
+			if (bstrFrom.length() != 1 || bstrTo.length() != 1)
+			{
+				strResult = "";
+				break;
+			}
+
+			strResult += "<entry from=\"" + MakeUTF8String(wstring(bstrFrom)).toEscaped() + "\"";
+			strResult += " to=\"" + MakeUTF8String(wstring(bstrTo)).toEscaped() + "\"/>\n";
+		}
+
+		strResult += "</char-table>\n";
+
+		pBook->Close(VARIANT_FALSE);
+	}
+	catch (_com_error&)
+	{
+		strResult = "";
+	}
+
+	try
+	{
+		pApplication->Quit();
+	}
+	catch (_com_error&)
+	{
+	}
+
+	return strResult;
+}
+
+bool CDictionaryDlg::OpenPageIndex(const CString& strFileName)
+{
+	TCHAR szInputExt[_MAX_EXT];
+	_tsplitpath(strFileName, NULL, NULL, NULL, szInputExt);
+
+	GUTF8String strPageIndexXML;
+	if (CString(szInputExt).CompareNoCase(_T(".xls")) == 0)
+		strPageIndexXML = ReadExcelPageIndex(strFileName);
+	else
+		strPageIndexXML = ReadRawXML(strFileName);
+
+	if (strPageIndexXML.length() == 0)
+	{
+		AfxMessageBox(IDS_CANNOT_OPEN_INDEX_FILE, MB_OK | MB_ICONEXCLAMATION);
+		return false;
+	}
+
+	m_bHasPageIndexFile = true;
+	m_strPageIndexFile = strFileName;
+	m_strPageIndexXML = strPageIndexXML;
+
+	OnKickIdle();
+	m_nPageIndexAction = 1;
+	UpdateData(false);
+
+	return true;
+}
+
+bool CDictionaryDlg::OpenCharTable(const CString& strFileName)
+{
+	GUTF8String strCharTableXML = ReadExcelCharTable(strFileName);
+	if (strCharTableXML.length() == 0)
+		strCharTableXML = ReadRawXML(strFileName);
+
+	if (strCharTableXML.length() == 0)
+	{
+		AfxMessageBox(IDS_CANNOT_OPEN_CHAR_FILE, MB_OK | MB_ICONEXCLAMATION);
+		return false;
+	}
+
+	m_bHasCharTableFile = true;
+	m_strCharTableFile = strFileName;
+	m_strCharTableXML = strCharTableXML;
+
+	OnKickIdle();
+	m_nCharTableAction = 1;
+	UpdateData(false);
+
+	return true;
+}
+
 void CDictionaryDlg::OnBrowsePageIndex()
 {
 	CString strFileName = (m_bHasPageIndexFile ? m_strPageIndexFile : _T(""));
 
-	CMyFileDialog dlg(true, _T("html"), strFileName,
+	CMyFileDialog dlg(true, _T("xls"), strFileName,
 		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST,
 		LoadString(IDS_PAGE_INDEX_FILTER));
 
@@ -220,20 +525,41 @@ void CDictionaryDlg::OnBrowsePageIndex()
 	if (nResult != IDOK)
 		return;
 
-	m_strPageIndexFile = dlg.GetPathName();
-	m_bHasPageIndexFile = true;
-	UpdateData(false);
+	OpenPageIndex(dlg.GetPathName());
+}
+
+void CDictionaryDlg::OnBrowseCharTable()
+{
+	CString strFileName = (m_bHasCharTableFile ? m_strCharTableFile : _T(""));
+
+	CMyFileDialog dlg(true, _T("xls"), strFileName,
+		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST,
+		LoadString(IDS_CHARTABLE_FILTER));
+
+	CString strTitle;
+	strTitle.LoadString(IDS_BROWSE_CHARTABLE);
+	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
+
+	UINT nResult = dlg.DoModal();
+	if (nResult != IDOK)
+		return;
+
+	OpenCharTable(dlg.GetPathName());
 }
 
 HBRUSH CDictionaryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
 	HBRUSH brush = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 
-	if (pWnd->GetDlgCtrlID() == IDC_DJVU_FILE && !m_bHasDjVuFile)
+	if (pWnd->GetDlgCtrlID() == IDC_DJVU_FILE && m_pSource == NULL)
 	{
 		pDC->SetTextColor(::GetSysColor(COLOR_3DSHADOW));
 	}
 	if (pWnd->GetDlgCtrlID() == IDC_PAGE_INDEX_FILE && !m_bHasPageIndexFile)
+	{
+		pDC->SetTextColor(::GetSysColor(COLOR_3DSHADOW));
+	}
+	if (pWnd->GetDlgCtrlID() == IDC_CHARTABLE_FILE && !m_bHasCharTableFile)
 	{
 		pDC->SetTextColor(::GetSysColor(COLOR_3DSHADOW));
 	}
@@ -243,67 +569,53 @@ HBRUSH CDictionaryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 void CDictionaryDlg::OnKickIdle()
 {
-	GetDlgItem(IDC_EXPORT)->EnableWindow(m_bHasDjVuFile);
-	GetDlgItem(IDC_EMBED)->EnableWindow(m_bHasPageIndexFile);
+	GetDlgItem(IDC_EXPORT_INDEX)->EnableWindow(m_pSource != NULL && m_pSource->GetPageIndex().length() > 0);
+	GetDlgItem(IDC_INDEX_REMOVE)->EnableWindow(m_pSource != NULL && m_pSource->GetPageIndex().length() > 0);
+	GetDlgItem(IDC_EXPORT_TABLE)->EnableWindow(m_pSource != NULL && m_pSource->GetCharTable().length() > 0);
+	GetDlgItem(IDC_TABLE_REMOVE)->EnableWindow(m_pSource != NULL && m_pSource->GetCharTable().length() > 0);
+
+	GetDlgItem(IDC_SAVE)->EnableWindow(m_pSource != NULL);
+	GetDlgItem(IDC_SAVE_AS)->EnableWindow(m_pSource != NULL);
+	GetDlgItem(IDC_TITLE)->EnableWindow(false); //m_pSource != NULL
+	GetDlgItem(IDC_INDEX_REPLACE)->EnableWindow(m_bHasPageIndexFile);
+	GetDlgItem(IDC_TABLE_REPLACE)->EnableWindow(m_bHasCharTableFile);
 }
 
 bool CDictionaryDlg::ExportPageIndex(const CString& strPageIndexFile)
 {
-	try
+	ofstream out(strPageIndexFile, ios::out);
+	if (!out)
 	{
-		CWaitCursor wait;
-
-		GP<DjVuImage> page = m_pDjVuDoc->get_page(0);
-		if (page == NULL)
-		{
-			AfxMessageBox(IDS_NO_PAGE_INDEX);
-			return false;
-		}
-
-		GP<ByteStream> pAnnoStream = page->get_anno();
-		pAnnoStream->seek(0);
-		GP<DjVuAnno> pDjVuAnno = DjVuAnno::create();
-		pDjVuAnno->decode(pAnnoStream);
-
-		string strPageIndex = pDjVuAnno->ant->metadata["page-index"];
-		Base64Decode(strPageIndex);
-
-		if (strPageIndex.empty())
-		{
-			AfxMessageBox(IDS_NO_PAGE_INDEX);
-			return false;
-		}
-
-		ofstream out(strPageIndexFile, ios::out);
-		if (!out)
-		{
-			AfxMessageBox(IDS_CANNOT_WRITE);
-			return false;
-		}
-
-		out << strPageIndex;
-
-		out.close();
-
-		AfxMessageBox(IDS_EXPORT_DONE, MB_OK | MB_ICONINFORMATION);
-		return true;
-	}
-	catch (GException&)
-	{
-		AfxMessageBox(IDS_EXPORT_ERROR);
+		AfxMessageBox(IDS_CANNOT_WRITE);
 		return false;
 	}
-	catch (...)
+
+	out << (const char*)m_pSource->GetPageIndex();
+	out.close();
+
+	AfxMessageBox(IDS_EXPORT_DONE, MB_OK | MB_ICONINFORMATION);
+	return true;
+}
+
+bool CDictionaryDlg::ExportCharTable(const CString& strCharTableFile)
+{
+	ofstream out(strCharTableFile, ios::out);
+	if (!out)
 	{
-		AfxMessageBox(IDS_FATAL_ERROR);
+		AfxMessageBox(IDS_CANNOT_WRITE);
 		return false;
 	}
+
+	out << (const char*)m_pSource->GetCharTable();
+	out.close();
+
+	AfxMessageBox(IDS_EXPORT_DONE, MB_OK | MB_ICONINFORMATION);
+	return true;
 }
 
 void CDictionaryDlg::OnDestroy()
 {
 	UpdateData();
-	bPrompt = !!m_bPrompt;
 
 	m_dropTarget.Revoke();
 
@@ -721,146 +1033,27 @@ bool ModifyMeta(GP<DjVuFile> pFile, GMap<GUTF8String, GUTF8String>* pMeta)
 	return bChanged;
 }
 
-GUTF8String ReadRawPageIndex(LPCTSTR pszFileName)
-{
-	ifstream in(pszFileName, ios::in);
-	if (!in)
-		return "";
-
-	istreambuf_iterator<char> begin(in), end;
-	vector<char> raw_data;
-	copy(begin, end, back_inserter(raw_data));
-	in.close();
-
-	raw_data.push_back(0);
-	return GUTF8String(&raw_data[0]);
-}
-
-GUTF8String ReadExcelPageIndex(LPCTSTR pszFileName)
-{
-	Excel::_ApplicationPtr pApplication;
-
-	if (FAILED(pApplication.CreateInstance(_T("Excel.Application"))))
-		return "";
-
-	GUTF8String strResult;
-	strResult += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-	strResult += "<index>\n";
-
-	try
-	{
-		int nLevel = 1;
-		bool bFirst = true;
-		_variant_t varOption((long)DISP_E_PARAMNOTFOUND, VT_ERROR);
-
-		Excel::_WorkbookPtr pBook = pApplication->Workbooks->Open(
-				pszFileName, 0L, VARIANT_TRUE, varOption, varOption,
-				varOption, varOption, varOption, varOption,
-				varOption, varOption, varOption, varOption);
-		Excel::_WorksheetPtr pSheet = pBook->Sheets->Item[1L];
-
-		Excel::RangePtr pRange = pSheet->GetRange(_bstr_t("A1"), _bstr_t("Z16384"));
-		for (long nRow = 1; nRow < 16384; ++nRow)
-		{
-			_bstr_t bstrLevel(_variant_t(pRange->Item[nRow][1L]));
-			_bstr_t bstrFirst(_variant_t(pRange->Item[nRow][2L]));
-			_bstr_t bstrLast(_variant_t(pRange->Item[nRow][3L]));
-			_bstr_t bstrURL(_variant_t(pRange->Item[nRow][4L]));
-
-			if (bstrLevel.length() == 0)
-				break;
-
-			int nNewLevel = _wtoi(bstrLevel);
-			if (bFirst)
-			{
-				if (nNewLevel <= 0 || nNewLevel > 1)
-					return "";
-				bFirst = false;
-			}
-			else
-			{
-				if (nNewLevel <= 0 || nNewLevel > nNewLevel + 1)
-					return "";
-				if (nNewLevel == nLevel + 1)
-					strResult += ">\n";
-				else
-				{
-					strResult += "/>\n";
-					for (int i = nLevel - 1; i >= nNewLevel; --i)
-					{
-						for (int k = 1; k < i; ++k)
-							strResult += "  ";
-						strResult += "</entry>\n";
-					}
-				}
-			}
-			nLevel = nNewLevel;
-
-			for (int k = 1; k < nLevel; ++k)
-				strResult += "  ";
-			strResult += "<entry";
-
-			if (bstrFirst.length() > 0)
-				strResult += " first=\"" + MakeUTF8String(wstring(bstrFirst)).toEscaped() + "\"";
-			if (bstrLast.length() > 0)
-				strResult += " last=\"" + MakeUTF8String(wstring(bstrLast)).toEscaped() + "\"";
-			if (bstrURL.length() > 0)
-				strResult += " url=\"" + MakeUTF8String(wstring(bstrURL)).toEscaped() + "\"";
-		}
-
-		if (!bFirst)
-		{
-			strResult += "/>\n";
-			for (int i = 1; i < nLevel; ++i)
-				strResult += "</entry>\n";
-		}
-		strResult += "</index>\n";
-
-		pBook->Close(VARIANT_FALSE);
-	}
-	catch (_com_error&)
-	{
-		return "";
-	}
-
-	try
-	{
-		pApplication->Quit();
-	}
-	catch (_com_error&)
-	{
-	}
-
-	return strResult;
-}
-
-void CDictionaryDlg::OnEmbed()
+void CDictionaryDlg::OnSave()
 {
 	UpdateData();
 
-	TCHAR szInputExt[_MAX_EXT];
-	_tsplitpath(m_strPageIndexFile, NULL, NULL, NULL, szInputExt);
+	SaveDocument(m_strDjVuFile);
+}
 
-	GUTF8String strPageIndex;
-	if (CString(szInputExt).CompareNoCase(_T(".xml")) == 0)
-		strPageIndex = ReadRawPageIndex(m_strPageIndexFile);
-	else
-		strPageIndex = ReadExcelPageIndex(m_strPageIndexFile);
+void CDictionaryDlg::OnSaveAs()
+{
+	UpdateData();
 
-	if (strPageIndex.length() == 0)
-	{
-		AfxMessageBox(IDS_CANNOT_OPEN_INDEX_FILE, MB_OK | MB_ICONEXCLAMATION);
-		return;
-	}
+	SaveDocument();
+}
 
-	string strEncodedIndex(strPageIndex);
-	Base64Encode(strEncodedIndex);
-
+void CDictionaryDlg::SaveDocument(const CString& strFileName)
+{
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
 	_tsplitpath(m_strDjVuFile, szDrive, szPath, szName, szExt);
 
-	CString strNewFile = m_strDjVuFile;
-	if (m_bPrompt)
+	CString strNewFile = strFileName;
+	if (strNewFile.IsEmpty())
 	{
 		CString strFileName = szDrive + CString(szPath) + CString(szName) + _T(".new") + CString(szExt);
 
@@ -896,7 +1089,7 @@ void CDictionaryDlg::OnEmbed()
 	{
 		CWaitCursor wait;
 
-		GP<DjVuFile> pFile = m_pDjVuDoc->get_djvu_file(0);
+		GP<DjVuFile> pFile = m_pSource->GetDjVuDoc()->get_djvu_file(0);
 		if (pFile == NULL)
 		{
 			AfxMessageBox(IDS_NO_PAGE_INDEX);
@@ -914,13 +1107,37 @@ void CDictionaryDlg::OnEmbed()
 			meta = pDjVuAnno->ant->metadata;
 		}
 
-		meta["page-index"] = strEncodedIndex.c_str();
+		if (m_nPageIndexAction == 1 && m_bHasPageIndexFile)
+		{
+			string strEncodedIndex(m_strPageIndexXML);
+			Base64Encode(strEncodedIndex);
+			meta[pszPageIndexKey] = strEncodedIndex.c_str();
+		}
+		else if (m_nPageIndexAction == 2)
+		{
+			meta.del(pszPageIndexKey);
+		}
+
+		if (m_nCharTableAction == 1 && m_bHasCharTableFile)
+		{
+			string strEncodedChars(m_strCharTableXML);
+			Base64Encode(strEncodedChars);
+			meta[pszCharTableKey] = strEncodedChars.c_str();
+		}
+		else if (m_nCharTableAction == 2)
+		{
+			meta.del(pszCharTableKey);
+		}
+
+		if (!m_strTitle.IsEmpty())
+			meta[pszTitleKey] = MakeUTF8String(m_strTitle);
+		else
+			meta.del(pszTitleKey);
+
 		ModifyMeta(pFile, &meta);
 
-		GURL url = GURL::Filename::UTF8(MakeUTF8String(strNewFile));
-
-		DataPool::load_file(url);
-		m_pDjVuDoc->write(ByteStream::create(url, "wb"), true);
+		if (!m_pSource->SaveAs(strNewFile))
+		    G_THROW(ERR_MSG("save.failed"));
 	}
 	catch (GException&)
 	{
@@ -937,11 +1154,11 @@ void CDictionaryDlg::OnEmbed()
 		return;
 	}
 
+	CString strOrigFile = (bReplace ? m_strDjVuFile : strNewFile);
+	CloseDocument(false);
+
 	if (bReplace)
 	{
-		CString strOrigFile = m_strDjVuFile;
-		CloseDocument(false);
-
 		TCHAR szTemp[_MAX_PATH];
 		if (!GetTempFileName(szDrive + CString(szPath), "DJV", 0, szTemp))
 		{
@@ -973,10 +1190,9 @@ void CDictionaryDlg::OnEmbed()
 		}
 
 		DeleteFile(szTemp);
-
-		OpenDocument(strOrigFile);
 	}
 
+	OpenDocument(strOrigFile);
 	AfxMessageBox(IDS_EMBEDDING_DONE, MB_OK | MB_ICONINFORMATION);
 }
 
@@ -1016,11 +1232,15 @@ BOOL CDictionaryDlg::OnDrop(CWnd* pWnd, COleDataObject* pDataObject,
 	GetDlgItem(IDC_DJVU_GROUP)->GetWindowRect(rcDjVu);
 	ScreenToClient(rcDjVu);
 
-	CRect rcBookmark;
-	GetDlgItem(IDC_PAGE_INDEX_GROUP)->GetWindowRect(rcBookmark);
-	ScreenToClient(rcBookmark);
+	CRect rcPageIndex;
+	GetDlgItem(IDC_PAGE_INDEX_GROUP)->GetWindowRect(rcPageIndex);
+	ScreenToClient(rcPageIndex);
 
-	if (!rcDjVu.PtInRect(point) && !rcBookmark.PtInRect(point))
+	CRect rcCharTable;
+	GetDlgItem(IDC_CHARTABLE_GROUP)->GetWindowRect(rcCharTable);
+	ScreenToClient(rcCharTable);
+
+	if (!rcDjVu.PtInRect(point) && !rcPageIndex.PtInRect(point) && !rcCharTable.PtInRect(point))
 		return false;
 
 	HDROP hDrop = (HDROP) pDataObject->GetGlobalData(CF_HDROP);
@@ -1037,11 +1257,13 @@ BOOL CDictionaryDlg::OnDrop(CWnd* pWnd, COleDataObject* pDataObject,
 	{
 		OpenDocument(strPath);
 	}
-	else if (rcBookmark.PtInRect(point))
+	else if (rcPageIndex.PtInRect(point))
 	{
-		m_strPageIndexFile = strPath;
-		m_bHasPageIndexFile = true;
-		UpdateData(false);
+		OpenPageIndex(strPath);
+	}
+	else if (rcCharTable.PtInRect(point))
+	{
+		OpenCharTable(strPath);
 	}
 
 	return true;

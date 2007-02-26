@@ -34,7 +34,7 @@
 // CRenderThread class
 
 CRenderThread::CRenderThread(DjVuSource* pSource, Observer* pOwner)
-	: m_pOwner(pOwner), m_pSource(pSource), m_bPaused(false), m_bRejectCurrentJob(false)
+	: m_pOwner(pOwner), m_pSource(pSource), m_nPaused(0), m_bRejectCurrentJob(false)
 {
 	m_pSource->AddRef();
 
@@ -62,7 +62,7 @@ void CRenderThread::Stop()
 	m_jobs.clear();
 	m_jobReady.ResetEvent();
 	m_bRejectCurrentJob = true;
-	m_bPaused = true;
+	PauseJobs();
 	m_lock.Unlock();
 
 	m_stopping.Unlock();
@@ -87,6 +87,7 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 		}
 
 		Job job = pThread->m_jobs.front();
+		pThread->m_bRejectCurrentJob = false;
 		pThread->m_currentJob = job;
 		pThread->m_jobs.pop_front();
 		pThread->m_pages[job.nPage] = pThread->m_jobs.end();
@@ -115,9 +116,8 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 
 		pThread->m_lock.Lock();
 		bool bNotify = (!pThread->m_bRejectCurrentJob);
-		pThread->m_bRejectCurrentJob = false;
 		pThread->m_currentJob.nPage = -1;
-		if (!pThread->m_jobs.empty() && !pThread->m_bPaused)
+		if (!pThread->m_jobs.empty() && !pThread->IsPaused())
 			pThread->m_jobReady.SetEvent();
 		pThread->m_lock.Unlock();
 
@@ -150,6 +150,10 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 	pThread->m_stopping.Lock();
 	pThread->m_stopping.Unlock();
 
+	// Clean page cache
+	for (int nPage = 0; nPage < pThread->m_pSource->GetPageCount(); ++nPage)
+		pThread->m_pSource->RemoveFromCache(nPage, pThread->m_pOwner);
+
 	delete pThread;
 	theApp.ThreadTerminated();
 
@@ -158,20 +162,23 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 
 void CRenderThread::PauseJobs()
 {
-	m_lock.Lock();
-	m_bPaused = true;
-	m_lock.Unlock();
+	InterlockedExchange(&m_nPaused, 1);
 }
 
 void CRenderThread::ResumeJobs()
 {
 	m_lock.Lock();
 
-	m_bPaused = false;
+	InterlockedExchange(&m_nPaused, 0);
 	if (!m_jobs.empty())
 		m_jobReady.SetEvent();
 
 	m_lock.Unlock();
+}
+
+bool CRenderThread::IsPaused()
+{
+	return (InterlockedExchangeAdd(&m_nPaused, 0) == 1);
 }
 
 void CRenderThread::RemoveFromQueue(int nPage)
@@ -260,7 +267,7 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 	}
 	catch (...)
 	{
-		ReportFatalError();
+		theApp.ReportFatalError();
 	}
 
 	CDIB* pBitmap = NULL;
@@ -348,7 +355,7 @@ void CRenderThread::AddJob(const Job& job)
 	m_jobs.push_front(job);
 	m_pages[job.nPage] = m_jobs.begin();
 
-	if (!m_bPaused)
+	if (!IsPaused())
 		m_jobReady.SetEvent();
 
 	m_lock.Unlock();

@@ -94,11 +94,11 @@ void CFullscreenWnd::Hide()
 		m_pView->DestroyWindow();
 
 		m_pOwner->GoToPage(nPage, CDjVuView::DoNotAdd);
+		m_pOwner->ResumeDecoding();
 
-		m_pOwner->RestartThread();
-		CThumbnailsView* pThumbnailsView = ((CChildFrame*)m_pOwner->GetParentFrame())->GetThumbnailsView();
-		if (pThumbnailsView != NULL)
-			pThumbnailsView->RestartThreads();
+		CThumbnailsView* pThumbnails = ((CChildFrame*)m_pOwner->GetParentFrame())->GetThumbnailsView();
+		if (pThumbnails != NULL)
+			pThumbnails->ResumeDecoding();
 
 		m_pOwner->GetTopLevelParent()->ShowWindow(SW_SHOW);
 	}

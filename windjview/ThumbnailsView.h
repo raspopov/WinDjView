@@ -51,8 +51,8 @@ public:
 	void SetRotate(int nRotate);
 	int GetRotate() const { return m_nRotate; }
 
-	void StopDecoding();
-	void RestartThreads();
+	void PauseDecoding();
+	void ResumeDecoding();
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 

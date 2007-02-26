@@ -27,7 +27,7 @@ struct IProgressInfo
 	virtual void SetRange(int nStart, int nEnd) = 0;
 	virtual void SetPos(int nPos) = 0;
 	virtual bool IsCancelled() = 0;
-	virtual void StopProgress(int nCode) = 0;
+	virtual void StopProgress(long nCode) = 0;
 	virtual DWORD_PTR GetUserData() = 0;
 };
 
@@ -49,7 +49,7 @@ public:
 
 // Operations
 public:
-	int GetResultCode() { return m_nCode; }
+	long GetResultCode();
 	void SetUserData(DWORD_PTR dwData) { m_dwUserData = dwData; }
 
 	// IProgressInfo implementation
@@ -57,7 +57,7 @@ public:
 	virtual void SetRange(int nStart, int nEnd);
 	virtual void SetPos(int nPos);
 	virtual bool IsCancelled();
-	virtual void StopProgress(int nCode);
+	virtual void StopProgress(long nCode);
 	virtual DWORD_PTR GetUserData() { return m_dwUserData; }
 
 // Overrides
@@ -72,8 +72,8 @@ protected:
 // Implementation
 protected:
 	ThreadProcEx m_pfnThreadProc;
-	DWORD_PTR m_nCancelled;
-	DWORD_PTR m_nCode;
+	long m_nCancelled;
+	long m_nCode;
 	DWORD_PTR m_dwUserData;
 	HANDLE m_hThread;
 

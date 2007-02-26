@@ -114,6 +114,7 @@ END_MESSAGE_MAP()
 CDjViewApp::CDjViewApp()
 	: m_bInitialized(false), m_pDjVuTemplate(NULL), m_nThreadCount(0)
 {
+	DjVuSource::SetApplication(this);
 }
 
 
@@ -489,7 +490,7 @@ void CDjViewApp::LoadSettings()
 	m_printSettings.bShrinkOversized = !!GetProfileInt(s_pszPrintSection, s_pszShrinkOversized, m_printSettings.bShrinkOversized);
 }
 
-void CDjViewApp::LoadDocSettings(const CString& strKey, DocSettings* pSettings)
+bool CDjViewApp::LoadDocSettings(const CString& strKey, DocSettings* pSettings)
 {
 	LPBYTE pBuf;
 	UINT nSize;
@@ -515,7 +516,10 @@ void CDjViewApp::LoadDocSettings(const CString& strKey, DocSettings* pSettings)
 			pSettings->Load(*parser.GetRoot());
 
 		delete[] pBuf;
+		return true;
 	}
+
+	return false;
 }
 
 void CDjViewApp::SaveSettings()
@@ -898,7 +902,7 @@ BOOL CDjViewApp::OnOpenRecentFile(UINT nID)
 	return true;
 }
 
-void ReportFatalError()
+void CDjViewApp::ReportFatalError()
 {
 	if (!s_bFatalError)
 	{

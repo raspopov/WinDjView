@@ -100,7 +100,7 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	}
 	catch (...)
 	{
-		ReportFatalError();
+		theApp.ReportFatalError();
 		return false;
 	}
 
@@ -155,6 +155,6 @@ void CDjVuDoc::OnSaveCopyAs()
 	}
 	catch (...)
 	{
-		ReportFatalError();
+		theApp.ReportFatalError();
 	}
 }

@@ -61,6 +61,7 @@
 #endif
 
 #include <afxpriv.h>
+#include <afxmt.h>
 
 #include <locale.h>
 #include <locale>
@@ -69,6 +70,9 @@
 #include <fstream>
 #include <string>
 #include <set>
+#include <list>
+#include <map>
+#include <sstream>
 using namespace std;
 
 #ifdef NDEBUG
@@ -84,6 +88,7 @@ using namespace std;
 
 #include "../libdjvu/DjVuDocument.h"
 #include "../libdjvu/DjVuImage.h"
+#include "../libdjvu/DjVuText.h"
 #include "../libdjvu/DataPool.h"
 #include "../libdjvu/ByteStream.h"
 #include "../libdjvu/BSByteStream.h"

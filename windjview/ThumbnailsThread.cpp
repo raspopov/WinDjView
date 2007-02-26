@@ -32,7 +32,7 @@
 // CThumbnailsThread class
 
 CThumbnailsThread::CThumbnailsThread(DjVuSource* pSource, Observer* pOwner, bool bIdle)
-	: m_pSource(pSource), m_pOwner(pOwner), m_bPaused(false), m_bRejectCurrentJob(false)
+	: m_pSource(pSource), m_pOwner(pOwner), m_nPaused(0), m_bRejectCurrentJob(false)
 {
 	m_pSource->AddRef();
 
@@ -52,15 +52,15 @@ CThumbnailsThread::~CThumbnailsThread()
 
 void CThumbnailsThread::Stop()
 {
-	m_stopping.Lock();
+	PauseJobs();
 
+	m_stopping.Lock();
 	m_stop.SetEvent();
 
 	m_lock.Lock();
 	m_jobs.clear();
 	m_jobReady.ResetEvent();
 	m_bRejectCurrentJob = true;
-	m_bPaused = true;
 	m_lock.Unlock();
 
 	m_stopping.Unlock();
@@ -85,18 +85,17 @@ unsigned int __stdcall CThumbnailsThread::RenderThreadProc(void* pvData)
 		}
 
 		Job job = pThread->m_jobs.front();
+		pThread->m_bRejectCurrentJob = false;
 		pThread->m_currentJob = job;
 		pThread->m_jobs.pop_front();
-		bool bHasMoreJobs = !pThread->m_jobs.empty();
 		pThread->m_lock.Unlock();
 
 		CDIB* pBitmap = pThread->Render(job);
 
 		pThread->m_lock.Lock();
 		bool bNotify = (!pThread->m_bRejectCurrentJob);
-		pThread->m_bRejectCurrentJob = false;
 		pThread->m_currentJob.nPage = -1;
-		if (bHasMoreJobs && !pThread->m_bPaused)
+		if (!pThread->m_jobs.empty() && !pThread->IsPaused())
 			pThread->m_jobReady.SetEvent();
 		pThread->m_lock.Unlock();
 
@@ -121,23 +120,26 @@ unsigned int __stdcall CThumbnailsThread::RenderThreadProc(void* pvData)
 
 void CThumbnailsThread::PauseJobs()
 {
-	m_lock.Lock();
-	m_bPaused = true;
-	m_lock.Unlock();
+	InterlockedExchange(&m_nPaused, 1);
 }
 
 void CThumbnailsThread::ResumeJobs()
 {
 	m_lock.Lock();
 
-	m_bPaused = false;
+	InterlockedExchange(&m_nPaused, 0);
 	if (!m_jobs.empty())
 		m_jobReady.SetEvent();
 
 	m_lock.Unlock();
 }
 
-void CThumbnailsThread::ClearQueue()
+bool CThumbnailsThread::IsPaused()
+{
+	return (InterlockedExchangeAdd(&m_nPaused, 0) == 1);
+}
+
+void CThumbnailsThread::RemoveAllJobs()
 {
 	m_lock.Lock();
 	m_jobs.clear();
@@ -198,7 +200,7 @@ void CThumbnailsThread::AddJob(int nPage, int nRotate, const CDisplaySettings& d
 
 	m_jobs.push_front(job);
 
-	if (!m_bPaused)
+	if (!IsPaused())
 		m_jobReady.SetEvent();
 
 	m_lock.Unlock();

@@ -20,6 +20,7 @@
 #pragma once
 
 #include "MyDropTarget.h"
+#include "DjVuSource.h"
 
 
 // CDictionaryDlg dialog
@@ -33,14 +34,16 @@ public:
 	enum { IDD = IDD_DICTIONARYTOOL };
 	CString m_strDjVuFile;
 	CString m_strPageIndexFile;
+	CString m_strCharTableFile;
+	CString m_strTitle;
+	int m_nPageIndexAction;
+	int m_nCharTableAction;
 
 // Overrides
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 
 public:
-	static bool bPrompt;
-
 	virtual DROPEFFECT OnDragEnter(CWnd* pWnd, COleDataObject* pDataObject,
 		DWORD dwKeyState, CPoint point);
 	virtual DROPEFFECT OnDragOver(CWnd* pWnd, COleDataObject* pDataObject,
@@ -54,25 +57,33 @@ public:
 // Implementation
 protected:
 	HICON m_hIcon;
-	bool m_bHasDjVuFile;
 	bool m_bHasPageIndexFile;
-	BOOL m_bPrompt;
+	bool m_bHasCharTableFile;
+	GUTF8String m_strPageIndexXML;
+	GUTF8String m_strCharTableXML;
 	CMyDropTarget m_dropTarget;
 
 	bool ExportPageIndex(const CString& strPageIndexFile);
+	bool ExportCharTable(const CString& strCharTableFile);
 	bool OpenDocument(const CString& strFileName);
 	void CloseDocument(bool bUpdateData = true);
+	void SaveDocument(const CString& strFileName = _T(""));
+	bool OpenPageIndex(const CString& strFileName);
+	bool OpenCharTable(const CString& strFileName);
 
-	GP<DjVuDocument> m_pDjVuDoc;
+	DjVuSource* m_pSource;
 
-// Generated message map functions
+	// Message map functions
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-	afx_msg void OnEmbed();
-	afx_msg void OnExport();
+	afx_msg void OnSave();
+	afx_msg void OnSaveAs();
+	afx_msg void OnExportPageIndex();
+	afx_msg void OnExportCharTable();
 	afx_msg void OnBrowseDjvu();
 	afx_msg void OnBrowsePageIndex();
+	afx_msg void OnBrowseCharTable();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnKickIdle();
 	afx_msg void OnDestroy();

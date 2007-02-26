@@ -1049,7 +1049,7 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRe
 	}
 	catch (...)
 	{
-		ReportFatalError();
+		theApp.ReportFatalError();
 	}
 
 	if (pm != NULL)

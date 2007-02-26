@@ -43,6 +43,7 @@ public:
 
 	void PauseJobs();
 	void ResumeJobs();
+	bool IsPaused();
 
 	void RejectCurrentJob();
 
@@ -54,8 +55,7 @@ private:
 	CEvent m_jobReady;
 	Observer* m_pOwner;
 	DjVuSource* m_pSource;
-	bool m_bPaused;
-	bool m_bRejectCurrentJob;
+	long m_nPaused;
 
 	enum JobType { RENDER, DECODE, READINFO, CLEANUP };
 
@@ -71,6 +71,7 @@ private:
 	list<Job> m_jobs;
 	vector<list<Job>::iterator> m_pages;
 	Job m_currentJob;
+	bool m_bRejectCurrentJob;
 
 	static unsigned int __stdcall RenderThreadProc(void* pvData);
 	CDIB* Render(Job& job);

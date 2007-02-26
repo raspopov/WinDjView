@@ -26,6 +26,7 @@
 #include "resource.h"       // main symbols
 #include "AppSettings.h"
 #include "Global.h"
+#include "DjVuSource.h"
 
 extern CString CURRENT_VERSION;
 
@@ -37,8 +38,6 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0
 class CDjVuDoc;
 class CMyDocTemplate;
 struct DocSettings;
-
-void ReportFatalError();
 
 void CreateSystemDialogFont(CFont& font);
 void CreateSystemIconFont(CFont& font);
@@ -53,14 +52,16 @@ bool IsFromCurrentProcess(CWnd* pWnd);
 
 // CDjViewApp
 
-class CDjViewApp : public CWinApp, public Observable
+class CDjViewApp : public CWinApp, public Observable, public IApplication
 {
 public:
 	CDjViewApp();
 
 	BOOL WriteProfileDouble(LPCTSTR pszSection, LPCTSTR pszEntry, double fValue);
 	double GetProfileDouble(LPCTSTR pszSection, LPCTSTR pszEntry, double fDefault);
-	void LoadDocSettings(const CString& strKey, DocSettings* pSettings);
+
+	virtual bool LoadDocSettings(const CString& strKey, DocSettings* pSettings);
+	virtual void ReportFatalError();
 
 	CAppSettings* GetAppSettings() { return &m_appSettings; }
 	CDisplaySettings* GetDisplaySettings() { return &m_displaySettings; }

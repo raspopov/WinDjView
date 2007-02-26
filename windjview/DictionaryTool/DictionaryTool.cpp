@@ -29,12 +29,8 @@
 // CDictionaryApp
 
 BEGIN_MESSAGE_MAP(CDictionaryApp, CWinApp)
-	ON_COMMAND(ID_HELP, CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
-
-const TCHAR* s_pszGlobalSettings = _T("Settings");
-const TCHAR* s_pszPrompt = _T("prompt");
 
 // CDictionaryApp construction
 
@@ -69,18 +65,14 @@ BOOL CDictionaryApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	SetRegistryKey(_T("Andrew Zhezherun"));
 
-	CDictionaryDlg::bPrompt = !!GetProfileInt(s_pszGlobalSettings, s_pszPrompt, true);
-
 	CDictionaryDlg dlg;
 	m_pMainWnd = &dlg;
 
 	dlg.DoModal();
 
-	WriteProfileInt(s_pszGlobalSettings, s_pszPrompt, CDictionaryDlg::bPrompt);
-
 	AfxOleTerm();
 
 	// Since the dialog has been closed, return FALSE so that we exit the
 	// application, rather than start the application's message pump.
-	return FALSE;
+	return false;
 }

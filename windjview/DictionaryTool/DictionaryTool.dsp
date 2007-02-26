@@ -162,6 +162,10 @@ SOURCE=.\DictionaryTool.rc
 # End Source File
 # Begin Source File
 
+SOURCE=.\DjVuSource.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Global.cpp
 # End Source File
 # Begin Source File
@@ -177,6 +181,10 @@ SOURCE=.\MyFileDialog.cpp
 SOURCE=.\stdafx.cpp
 # ADD CPP /Yc"stdafx.h"
 # End Source File
+# Begin Source File
+
+SOURCE=.\XMLParser.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -188,6 +196,10 @@ SOURCE=.\DictionaryDlg.h
 # Begin Source File
 
 SOURCE=.\DictionaryTool.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\DjVuSource.h
 # End Source File
 # Begin Source File
 
@@ -208,6 +220,10 @@ SOURCE=.\resource.h
 # Begin Source File
 
 SOURCE=.\stdafx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\XMLParser.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

@@ -31,7 +31,7 @@
 IMPLEMENT_DYNAMIC(CProgressDlg, CDialog)
 
 CProgressDlg::CProgressDlg(ThreadProcEx pfnThreadProc, CWnd* pParent)
-	: CDialog(CProgressDlg::IDD, pParent),
+	: CDialog(CProgressDlg::IDD, pParent), m_nCode(0), m_nCancelled(0),
 	  m_pfnThreadProc(pfnThreadProc), m_dwUserData(0), m_hThread(NULL)
 {
 }
@@ -80,19 +80,17 @@ void CProgressDlg::SetPos(int nPos)
 
 bool CProgressDlg::IsCancelled()
 {
-	DWORD_PTR nCancelled = 1;
-#if defined(InterlockedCompareExchangePointer)
-	return (InterlockedCompareExchangePointer((void**)&m_nCancelled,
-		(void*)nCancelled, (void*)nCancelled) == (void*)nCancelled);
-#else
-	return (InterlockedCompareExchange((void**)&m_nCancelled,
-		(void*)nCancelled, (void*)nCancelled) == (void*)nCancelled);
-#endif
+	return (InterlockedExchangeAdd(&m_nCancelled, 0) == 1);
 }
 
-void CProgressDlg::StopProgress(int nCode)
+long CProgressDlg::GetResultCode()
 {
-	InterlockedExchange((PLONG)&m_nCode, (LONG)nCode);
+	return InterlockedExchangeAdd(&m_nCode, 0);
+}
+
+void CProgressDlg::StopProgress(long nCode)
+{
+	InterlockedExchange(&m_nCode, nCode);
 	SendMessage(WM_ENDDIALOG, m_nCancelled ? IDCANCEL : IDOK);
 }
 
@@ -100,8 +98,6 @@ BOOL CProgressDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	m_nCancelled = 0;
-	m_nCode = 0;
 	m_progress.SetRange32(0, 1);
 	m_progress.SetPos(0);
 	m_status.SetWindowText(LoadString(IDS_PLEASE_WAIT));
@@ -120,7 +116,7 @@ void CProgressDlg::OnCancel()
 
 void CProgressDlg::OnOK()
 {
-	InterlockedExchange((PLONG)&m_nCancelled, 1L);
+	InterlockedExchange(&m_nCancelled, 1);
 }
 
 LRESULT CProgressDlg::OnEndDialog(WPARAM wParam, LPARAM lParam)

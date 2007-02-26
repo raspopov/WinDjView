@@ -35,10 +35,11 @@ public:
 	void SetThumbnailSize(CSize szThumbnail) { m_szThumbnail = szThumbnail; }
 
 	void AddJob(int nPage, int nRotate, const CDisplaySettings& displaySettings);
+	void RemoveAllJobs();
 
 	void PauseJobs();
 	void ResumeJobs();
-	void ClearQueue();
+	bool IsPaused();
 
 	void RejectCurrentJob();
 
@@ -50,7 +51,7 @@ private:
 	CEvent m_jobReady;
 	DjVuSource* m_pSource;
 	Observer* m_pOwner;
-	bool m_bPaused;
+	long m_nPaused;
 	CSize m_szThumbnail;
 
 	struct Job

@@ -770,17 +770,17 @@ void CThumbnailsView::OnDestroy()
 
 void CThumbnailsView::UpdateVisiblePages()
 {
-	if (m_pThread == NULL || m_pIdleThread == NULL)
+	if (!m_bInitialized || m_pThread->IsPaused())
 		return;
 
 	CRect rcClient;
 	GetClientRect(rcClient);
 	int nTop = GetScrollPos(SB_VERT);
 
-	m_pThread->ClearQueue();
-	m_pIdleThread->ClearQueue();
+	m_pThread->RemoveAllJobs();
+	m_pIdleThread->RemoveAllJobs();
 
-	if (m_bVisible && m_bInitialized)
+	if (m_bVisible)
 	{
 		m_pThread->PauseJobs();
 		m_pIdleThread->PauseJobs();
@@ -969,33 +969,19 @@ void CThumbnailsView::EnsureVisible(int nPage)
 	}
 }
 
-void CThumbnailsView::StopDecoding()
+void CThumbnailsView::PauseDecoding()
 {
-	if (m_pThread != NULL)
-	{
-		m_pThread->Stop();
-		m_pThread = NULL;
-	}
+	m_pThread->PauseJobs();
+	m_pThread->RemoveAllJobs();
 
-	if (m_pIdleThread != NULL)
-	{
-		m_pIdleThread->Stop();
-		m_pIdleThread = NULL;
-	}
+	m_pIdleThread->PauseJobs();
+	m_pIdleThread->RemoveAllJobs();
 }
 
-void CThumbnailsView::RestartThreads()
+void CThumbnailsView::ResumeDecoding()
 {
-	if (m_pThread != NULL)
-		m_pThread->Stop();
-	if (m_pIdleThread != NULL)
-		m_pIdleThread->Stop();
-
-	m_pThread = new CThumbnailsThread(m_pSource, this);
-	m_pThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
-
-	m_pIdleThread = new CThumbnailsThread(m_pSource, this, true);
-	m_pIdleThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
+	m_pThread->ResumeJobs();
+	m_pIdleThread->ResumeJobs();
 
 	UpdateView(TOP);
 }
