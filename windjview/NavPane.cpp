@@ -63,6 +63,8 @@ BEGIN_MESSAGE_MAP(CNavPaneWnd, CWnd)
 	ON_WM_MOUSEMOVE()
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
+	ON_WM_SETFOCUS()
+	ON_WM_MOUSEACTIVATE()
 END_MESSAGE_MAP()
 
 
@@ -592,4 +594,17 @@ void CNavPaneWnd::SetTabBorder(int nTab, bool bDrawBorder)
 		UpdateTabContents();
 		Invalidate();
 	}
+}
+
+void CNavPaneWnd::OnSetFocus(CWnd* pOldWnd)
+{
+	CWnd::OnSetFocus(pOldWnd);
+
+	if (m_nActiveTab != -1)
+		m_tabs[m_nActiveTab].pWnd->SetFocus();
+}
+
+int CNavPaneWnd::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
+{
+	return MA_NOACTIVATE;
 }

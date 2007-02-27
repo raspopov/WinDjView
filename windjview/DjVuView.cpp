@@ -40,6 +40,7 @@
 #include "AnnotationDlg.h"
 #include "BookmarkDlg.h"
 #include "MyFileDialog.h"
+#include "NavPane.h"
 
 #include "RenderThread.h"
 
@@ -170,6 +171,8 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND(ID_ANNOTATION_EDIT, OnEditAnnotation)
 	ON_COMMAND(ID_BOOKMARK_ADD, OnAddBookmark)
 	ON_COMMAND(ID_ZOOM_TO_SELECTION, OnZoomToSelection)
+	ON_COMMAND(ID_NEXT_PANE, OnSwitchFocus)
+	ON_COMMAND(ID_PREV_PANE, OnSwitchFocus)
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -756,6 +759,8 @@ void CDjVuView::ScrollToPage(int nPage, const CPoint& ptOffset, bool bMargin)
 
 	Invalidate();
 	UpdateWindow();
+
+	UpdatePageNumber();
 }
 
 void CDjVuView::DeleteBitmaps()
@@ -6089,4 +6094,20 @@ void CDjVuView::OnZoomToSelection()
 	UpdateVisiblePages();
 	UpdatePageNumber();
 	UpdateHoverAnnotation();
+}
+
+void CDjVuView::OnSwitchFocus()
+{
+	if (m_nType != Normal)
+		return;
+
+	if (GetFocus() != this)
+	{
+		SetFocus();
+		return;
+	}
+
+	CChildFrame* pFrame = ((CChildFrame*) GetParentFrame());
+	if (!pFrame->IsNavPaneHidden() && !pFrame->IsNavPaneCollapsed())
+		pFrame->GetNavPane()->SetFocus();
 }

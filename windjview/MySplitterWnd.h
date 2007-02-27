@@ -38,6 +38,7 @@ public:
 	void HideNavPane(bool bHide = true);
 	bool IsNavPaneHidden() const { return m_bNavHidden; }
 	void CollapseNavPane(bool bCollapse = true);
+	bool IsNavPaneCollapsed() const { return m_bNavCollapsed; }
 	void UpdateNavPane();
 
 	int GetSplitterWidth() { return m_cxSplitter; }
@@ -55,10 +56,9 @@ protected:
 // Implementation
 protected:
 	int m_nNavPaneWidth;
-	bool m_bCollapsed;
-
-	bool m_bAllowTracking;
+	bool m_bNavCollapsed;
 	bool m_bNavHidden;
+	bool m_bAllowTracking;
 
 	int m_cxOrigSplitter;
 	int m_cxOrigSplitterGap;

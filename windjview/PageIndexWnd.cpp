@@ -38,6 +38,7 @@ IMPLEMENT_DYNAMIC(CPageIndexWnd, CWnd)
 BEGIN_MESSAGE_MAP(CPageIndexWnd, CWnd)
 	ON_NOTIFY(TVN_SELCHANGED, CPageIndexWnd::ID_LIST, OnSelChanged)
 	ON_NOTIFY(TVN_ITEMCLICKED, CPageIndexWnd::ID_LIST, OnSelChanged)
+	ON_NOTIFY(TVN_ITEMEXPANDING, CPageIndexWnd::ID_LIST, OnItemExpanding)
 	ON_NOTIFY(TVN_KEYDOWN, CPageIndexWnd::ID_LIST, OnKeyDownList)
 	ON_EN_CHANGE(CPageIndexWnd::ID_TEXT, OnChangeText)
 	ON_NOTIFY(NM_KEYDOWN, CPageIndexWnd::ID_TEXT, OnKeyDownText)
@@ -45,6 +46,8 @@ BEGIN_MESSAGE_MAP(CPageIndexWnd, CWnd)
 	ON_WM_WINDOWPOSCHANGED()
 	ON_WM_ERASEBKGND()
 	ON_WM_PAINT()
+	ON_WM_SETFOCUS()
+	ON_WM_MOUSEACTIVATE()
 END_MESSAGE_MAP()
 
 CPageIndexWnd::CPageIndexWnd()
@@ -241,20 +244,35 @@ void CPageIndexWnd::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
 
-	if (pNMTreeView->action == TVC_BYMOUSE)
+	HTREEITEM hItem = pNMTreeView->itemNew.hItem;
+	if (hItem != NULL)
 	{
-		HTREEITEM hItem = pNMTreeView->itemNew.hItem;
-		if (hItem != NULL)
+		if (!m_bChangeInternal)
 		{
+			m_bChangeInternal = true;
+
 			size_t nEntry = m_list.GetItemData(hItem);
 			IndexEntry& entry = m_entries[nEntry];
-
-			m_bChangeInternal = true;
 			GetDlgItem(ID_TEXT)->SetWindowText(entry.strTextFirst);
-			m_bChangeInternal = false;
 
-			GoToItem(hItem);
+			m_bChangeInternal = false;
 		}
+
+		if (pNMTreeView->action == TVC_BYMOUSE)
+			GoToItem(hItem);
+	}
+
+	*pResult = 0;
+}
+
+void CPageIndexWnd::OnItemExpanding(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
+	if (pNMTreeView->action == TVE_COLLAPSE)
+	{
+		// Cancel the operation
+		*pResult = 1;
+		return;
 	}
 
 	*pResult = 0;
@@ -300,6 +318,9 @@ void CPageIndexWnd::OnChangeText()
 	CString strText;
 	GetDlgItem(ID_TEXT)->GetWindowText(strText);
 
+	if (strText.IsEmpty())
+		return;
+
 	wstring text;
 	MakeWString(strText, text);
 
@@ -329,10 +350,12 @@ void CPageIndexWnd::OnChangeText()
 		}
 	}
 
+	m_bChangeInternal = true;
 	if (left >= 0 && left < static_cast<int>(m_sorted.size()))
 		m_list.SelectItem(m_sorted[left]->hItem);
 	else
 		m_list.SelectItem(NULL);
+	m_bChangeInternal = false;
 }
 
 void CPageIndexWnd::PostNcDestroy()
@@ -446,4 +469,14 @@ BOOL CPageIndexWnd::PreTranslateMessage(MSG* pMsg)
 	}
 
 	return CWnd::PreTranslateMessage(pMsg);
+}
+
+void CPageIndexWnd::OnSetFocus(CWnd* pOldWnd)
+{
+	GetDlgItem(ID_TEXT)->SetFocus();
+}
+
+int CPageIndexWnd::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
+{
+	return MA_NOACTIVATE;
 }

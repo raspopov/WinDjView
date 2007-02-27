@@ -160,6 +160,7 @@ protected:
 	bool OnScrollBy(CSize sz);
 	void CheckScrollBars(bool& bHasHorzBar, bool& bHasVertBar) const;
 	bool UpdateParameters();
+	void InitNotification(NMTREEVIEW& nmtv, UINT nCode);
 
 	// Generated message map functions
 	afx_msg void OnPaint();

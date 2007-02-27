@@ -48,6 +48,7 @@ public:
 
 	void HideNavPane(bool bHide = true);
 	bool IsNavPaneHidden() const;
+	bool IsNavPaneCollapsed() const;
 
 	CThumbnailsView* GetThumbnailsView() { return m_pThumbnailsView; }
 	CBookmarksWnd* GetBookmarks() { return m_pBookmarksWnd; }

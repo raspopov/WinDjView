@@ -83,12 +83,15 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnItemClicked(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnItemExpanding(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnKeyDownList(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnKeyDownText(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnChangeText();
 	afx_msg void OnWindowPosChanged(WINDOWPOS FAR* lpwndpos);
 	afx_msg void OnPaint();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
 	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()
 };

@@ -40,7 +40,7 @@ CMySplitterWnd::CMySplitterWnd()
 	m_cyOrigSplitterGap = m_cySplitterGap;
 
 	m_nNavPaneWidth = theApp.GetAppSettings()->nNavPaneWidth;
-	m_bCollapsed = theApp.GetAppSettings()->bNavPaneCollapsed;
+	m_bNavCollapsed = theApp.GetAppSettings()->bNavPaneCollapsed;
 	HideNavPane(theApp.GetAppSettings()->bNavPaneHidden);
 }
 
@@ -69,13 +69,13 @@ void CMySplitterWnd::StopTracking(BOOL bAccept)
 			m_nNavPaneWidth = cxCur;
 			theApp.GetAppSettings()->nNavPaneWidth = m_nNavPaneWidth;
 
-			m_bCollapsed = false;
-			theApp.GetAppSettings()->bNavPaneCollapsed = m_bCollapsed;
+			m_bNavCollapsed = false;
+			theApp.GetAppSettings()->bNavPaneCollapsed = m_bNavCollapsed;
 		}
 		else
 		{
-			m_bCollapsed = true;
-			theApp.GetAppSettings()->bNavPaneCollapsed = m_bCollapsed;
+			m_bNavCollapsed = true;
+			theApp.GetAppSettings()->bNavPaneCollapsed = m_bNavCollapsed;
 		}
 
 		UpdateNavPaneWidth(cxCur);
@@ -274,7 +274,7 @@ CNavPaneWnd* CMySplitterWnd::GetNavPane()
 
 void CMySplitterWnd::UpdateNavPane()
 {
-	UpdateNavPaneWidth(m_bCollapsed ? 0 : m_nNavPaneWidth);
+	UpdateNavPaneWidth(m_bNavCollapsed ? 0 : m_nNavPaneWidth);
 }
 
 void CMySplitterWnd::UpdateNavPaneWidth(int nWidth)
@@ -290,8 +290,8 @@ void CMySplitterWnd::UpdateNavPaneWidth(int nWidth)
 
 void CMySplitterWnd::CollapseNavPane(bool bCollapse)
 {
-	m_bCollapsed = bCollapse;
-	theApp.GetAppSettings()->bNavPaneCollapsed = m_bCollapsed;
+	m_bNavCollapsed = bCollapse;
+	theApp.GetAppSettings()->bNavPaneCollapsed = m_bNavCollapsed;
 
 	UpdateNavPane();
 }

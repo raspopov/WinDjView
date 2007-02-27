@@ -369,12 +369,9 @@ GUTF8String ReadExcelPageIndex(LPCTSTR pszFileName)
 
 		if (strResult.length() > 0)
 		{
-			if (!bFirst)
-			{
-				strResult += "/>\n";
-				for (int i = 1; i < nLevel; ++i)
-					strResult += "</entry>\n";
-			}
+			strResult += "/>\n";
+			for (int i = 1; i < nLevel; ++i)
+				strResult += "</entry>\n";
 			strResult += "</index>\n";
 		}
 
@@ -409,7 +406,7 @@ GUTF8String ReadExcelCharMap(LPCTSTR pszFileName)
 
 	try
 	{
-		int nLevel = 1;
+		int nCount = 0;
 		bool bFirst = true;
 		_variant_t varOption((long)DISP_E_PARAMNOTFOUND, VT_ERROR);
 
@@ -419,8 +416,8 @@ GUTF8String ReadExcelCharMap(LPCTSTR pszFileName)
 				varOption, varOption, varOption, varOption);
 		Excel::_WorksheetPtr pSheet = pBook->Sheets->Item[1L];
 
-		Excel::RangePtr pRange = pSheet->GetRange(_bstr_t("A1"), _bstr_t("D16384"));
-		for (long nRow = 1; nRow < 16384; ++nRow)
+		Excel::RangePtr pRange = pSheet->GetRange(_bstr_t("A1"), _bstr_t("B16384"));
+		for (long nRow = 1; nRow < 16384; ++nRow, ++nCount)
 		{
 			_bstr_t bstrFrom(_variant_t(pRange->Item[nRow][1L]));
 			_bstr_t bstrTo(_variant_t(pRange->Item[nRow][2L]));
@@ -428,17 +425,15 @@ GUTF8String ReadExcelCharMap(LPCTSTR pszFileName)
 			if (bstrFrom.length() == 0)
 				break;
 
-			if (bstrFrom.length() != 1 || bstrTo.length() != 1)
-			{
-				strResult = "";
-				break;
-			}
-
 			strResult += "<entry from=\"" + MakeUTF8String(wstring(bstrFrom)).toEscaped() + "\"";
 			strResult += " to=\"" + MakeUTF8String(wstring(bstrTo)).toEscaped() + "\"/>\n";
 		}
 
-		strResult += "</char-map>\n";
+		if (nCount == 0)
+			strResult = "";
+
+		if (strResult.length() > 0)
+			strResult += "</char-map>\n";
 
 		pBook->Close(VARIANT_FALSE);
 	}
@@ -460,6 +455,8 @@ GUTF8String ReadExcelCharMap(LPCTSTR pszFileName)
 
 bool CDictionaryDlg::OpenPageIndex(const CString& strFileName)
 {
+	CWaitCursor wait;
+
 	TCHAR szInputExt[_MAX_EXT];
 	_tsplitpath(strFileName, NULL, NULL, NULL, szInputExt);
 
@@ -488,6 +485,8 @@ bool CDictionaryDlg::OpenPageIndex(const CString& strFileName)
 
 bool CDictionaryDlg::OpenCharMap(const CString& strFileName)
 {
+	CWaitCursor wait;
+
 	GUTF8String strCharMapXML = ReadExcelCharMap(strFileName);
 	if (strCharMapXML.length() == 0)
 		strCharMapXML = ReadRawXML(strFileName);

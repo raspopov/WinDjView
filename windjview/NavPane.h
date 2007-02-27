@@ -93,6 +93,8 @@ protected:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
+	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()

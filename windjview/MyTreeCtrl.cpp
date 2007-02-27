@@ -388,10 +388,28 @@ bool CMyTreeCtrl::DeleteItem(HTREEITEM hItem)
 			pParent->pLastChild = pPrev;
 	}
 
+	NMTREEVIEW nmtv;
+	InitNotification(nmtv, TVN_DELETEITEM);
+
+	nmtv.itemOld.mask = TVIF_HANDLE | TVIF_PARAM;
+	nmtv.itemOld.hItem = (HTREEITEM) pNode;
+	nmtv.itemOld.lParam = (LPARAM) pNode->dwUserData;
+
+	GetParent()->SendMessage(WM_NOTIFY, GetDlgCtrlID(), (LPARAM) &nmtv);
+
 	if (!m_bBatchUpdate)
 		RecalcLayout();
 
 	return true;
+}
+
+void CMyTreeCtrl::InitNotification(NMTREEVIEW& nmtv, UINT nCode)
+{
+	::ZeroMemory(&nmtv, sizeof(nmtv));
+
+	nmtv.hdr.hwndFrom = GetSafeHwnd();
+	nmtv.hdr.idFrom = GetDlgCtrlID();
+	nmtv.hdr.code = nCode;
 }
 
 void CMyTreeCtrl::BeginBatchUpdate()
@@ -1169,6 +1187,30 @@ void CMyTreeCtrl::SelectNode(TreeNode* pNode, UINT nAction)
 {
 	if (m_pSelection != pNode)
 	{
+		NMTREEVIEW nmtv;
+		InitNotification(nmtv, TVN_SELCHANGING);
+		nmtv.action = nAction;
+
+		if (m_pSelection != NULL)
+		{
+			nmtv.itemOld.mask = TVIF_HANDLE | TVIF_STATE | TVIF_PARAM;
+			nmtv.itemOld.hItem = (HTREEITEM) m_pSelection;
+			nmtv.itemOld.state = TVIS_SELECTED | (!m_pSelection->bCollapsed ? TVIS_EXPANDED : 0);
+			nmtv.itemOld.lParam = (LPARAM) m_pSelection->dwUserData;
+		}
+
+		if (pNode != NULL)
+		{
+			nmtv.itemNew.mask = TVIF_HANDLE | TVIF_STATE | TVIF_PARAM;
+			nmtv.itemNew.hItem = (HTREEITEM) pNode;
+			nmtv.itemNew.state = (!pNode->bCollapsed ? TVIS_EXPANDED : 0);
+			nmtv.itemNew.lParam = (LPARAM) pNode->dwUserData;
+		}
+
+		// The parent can cancel selection change by returning true
+		if (GetParent()->SendMessage(WM_NOTIFY, GetDlgCtrlID(), (LPARAM) &nmtv))
+			return;
+
 		TreeNode* pOldSel = m_pSelection;
 
 		if (m_pSelection != NULL)
@@ -1181,13 +1223,7 @@ void CMyTreeCtrl::SelectNode(TreeNode* pNode, UINT nAction)
 		if (pNode != NULL)
 			EnsureVisible(pNode);
 
-		// Notify parent
-		NMTREEVIEW nmtv;
-		::ZeroMemory(&nmtv, sizeof(nmtv));
-
-		nmtv.hdr.hwndFrom = GetSafeHwnd();
-		nmtv.hdr.idFrom = GetDlgCtrlID();
-		nmtv.hdr.code = TVN_SELCHANGED;
+		InitNotification(nmtv, TVN_SELCHANGED);
 		nmtv.action = nAction;
 
 		if (pOldSel != NULL)
@@ -1212,12 +1248,7 @@ void CMyTreeCtrl::SelectNode(TreeNode* pNode, UINT nAction)
 	{
 		// Still send a notification message
 		NMTREEVIEW nmtv;
-		::ZeroMemory(&nmtv, sizeof(nmtv));
-
-		nmtv.hdr.hwndFrom = GetSafeHwnd();
-		nmtv.hdr.idFrom = GetDlgCtrlID();
-		nmtv.hdr.code = TVN_ITEMCLICKED;
-		nmtv.action = nAction;
+		InitNotification(nmtv, TVN_ITEMCLICKED);
 
 		nmtv.itemNew.mask = TVIF_HANDLE | TVIF_STATE | TVIF_PARAM;
 		nmtv.itemNew.hItem = (HTREEITEM) pNode;
@@ -1232,7 +1263,33 @@ void CMyTreeCtrl::SelectNode(TreeNode* pNode, UINT nAction)
 
 void CMyTreeCtrl::ExpandNode(TreeNode* pNode, bool bExpand)
 {
+	if (pNode->bCollapsed == !bExpand)
+		return;
+
+	NMTREEVIEW nmtv;
+	InitNotification(nmtv, TVN_ITEMEXPANDING);
+	nmtv.action = (bExpand ? TVE_EXPAND : TVE_COLLAPSE);
+
+	nmtv.itemNew.mask = TVIF_HANDLE | TVIF_STATE | TVIF_PARAM;
+	nmtv.itemNew.hItem = (HTREEITEM) pNode;
+	nmtv.itemNew.state = (pNode == m_pSelection ? TVIS_SELECTED : 0) | (!pNode->bCollapsed ? TVIS_EXPANDED : 0);
+	nmtv.itemNew.lParam = (LPARAM) pNode->dwUserData;
+
+	// The parent can cancel expanding/collapsing by returning true
+	if (GetParent()->SendMessage(WM_NOTIFY, GetDlgCtrlID(), (LPARAM) &nmtv))
+		return;
+
 	pNode->bCollapsed = !bExpand;
+
+	InitNotification(nmtv, TVN_ITEMEXPANDED);
+	nmtv.action = (bExpand ? TVE_EXPAND : TVE_COLLAPSE);
+
+	nmtv.itemNew.mask = TVIF_HANDLE | TVIF_STATE | TVIF_PARAM;
+	nmtv.itemNew.hItem = (HTREEITEM) pNode;
+	nmtv.itemNew.state = (pNode == m_pSelection ? TVIS_SELECTED : 0) | (!pNode->bCollapsed ? TVIS_EXPANDED : 0);
+	nmtv.itemNew.lParam = (LPARAM) pNode->dwUserData;
+
+	GetParent()->SendMessage(WM_NOTIFY, GetDlgCtrlID(), (LPARAM) &nmtv);
 
 	if (!m_bBatchUpdate)
 	{

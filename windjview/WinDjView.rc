@@ -429,6 +429,7 @@ BEGIN
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
     VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
+    VK_TAB,         ID_NEXT_PANE,           VIRTKEY, NOINVERT
     "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
 END
 

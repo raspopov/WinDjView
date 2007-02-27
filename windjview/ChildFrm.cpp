@@ -320,6 +320,11 @@ bool CChildFrame::IsNavPaneHidden() const
 	return m_wndSplitter.IsNavPaneHidden();
 }
 
+bool CChildFrame::IsNavPaneCollapsed() const
+{
+	return m_wndSplitter.IsNavPaneCollapsed();
+}
+
 void CChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
 	// update our parent window first
