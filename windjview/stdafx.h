@@ -38,30 +38,43 @@
 #define _WIN32_WINDOWS	0x0410
 #endif
 
+#ifdef NDEBUG
+#define NO_DEBUG
+#endif
+
+#ifndef _DEBUG
+// Don's use secure standard library from VC++ 2005
+#define _SECURE_SCL 0
+#endif
+
 #if (_MSC_VER < 1300)
 #pragma warning(disable: 4200 4786)
 #endif
 
-#define WM_ENDDIALOG (WM_APP+6)
+#define WM_ENDDIALOG (WM_APP + 6)
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
-#define _CRT_SECURE_NO_DEPRECATE // Turn off warnings in VC++ 2005
 
-// turns off MFC's hiding of some common and often safely ignored warning messages
-#define _AFX_ALL_WARNINGS
+// Turn off warnings in VC++ 2005
+#define _CRT_SECURE_NO_DEPRECATE
+#define _CRT_NONSTDC_NO_DEPRECATE
 
 #define _WIN32_DCOM
 
-#include <afxwin.h>         // MFC core and standard components
-#include <afxext.h>         // MFC extensions
+// turns off MFC's hiding of some common and often safely ignored warning messages
+#define _AFX_ALL_WARNINGS
+#pragma warning(push)
+#pragma warning(disable: 4244 4812)
+
+#include <afxwin.h>
+#include <afxext.h>
 #include <afxcview.h>
 #include <afxinet.h>
 #include <afxdlgs.h>
-
-#include <afxdtctl.h>		// MFC support for Internet Explorer 4 Common Controls
-#ifndef _AFX_NO_AFXCMN_SUPPORT
-#include <afxcmn.h>			// MFC support for Windows Common Controls
-#endif // _AFX_NO_AFXCMN_SUPPORT
+#include <afxdtctl.h>
+#include <afxcmn.h>
+#include <afxmt.h>
+#include <afxpriv.h>
 
 #if (_MFC_VER > 0x0600)
 #include <../src/mfc/afximpl.h>
@@ -69,10 +82,9 @@
 #include <../src/afximpl.h>
 #endif
 
-#include <afxpriv.h>
-#include <winspool.h>
-#include <afxmt.h>
+#pragma warning(pop)
 
+#include <winspool.h>
 #include <process.h>
 #include <locale.h>
 #include <string>
@@ -85,10 +97,6 @@
 #include <map>
 #include <sstream>
 using namespace std;
-
-#ifdef NDEBUG
-#define NO_DEBUG
-#endif
 
 #define HAS_WCTYPE 1
 #define THREADMODEL 0
@@ -107,9 +115,15 @@ using namespace std;
 #include "libdjvu/DjVuText.h"
 #include "libdjvu/DjVmNav.h"
 
-#if (_MSC_VER < 1300)
+#ifndef DWORD_PTR
 #define DWORD_PTR UINT_PTR
+#endif
+
+#ifndef IDC_HAND
 #define IDC_HAND MAKEINTRESOURCE(32649)
+#endif
+
+#ifndef COLOR_HOTLIGHT
 #define COLOR_HOTLIGHT 26
 #endif
 

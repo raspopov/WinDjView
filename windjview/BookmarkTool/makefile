@@ -26,7 +26,7 @@ PCH = "$(INTDIR)\BookmarkTool.pch"
 CPP_PCH = /Yu"stdafx.h"
 CPP_PCH_CREATE = /Yc"stdafx.h"
 
-CPP_FLAGS = $(CPP_FLAGS) /nologo /MT /W3 /GX /Ox /Ob2 /Ot /Oi /Og /G6 /GL /GR \
+CPP_FLAGS = $(CPP_FLAGS) /nologo /MT /W3 /EHsc /O2 /GL /GR /Zc:wchar_t- \
             /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Fp$(PCH) /Fo"$(INTDIR)/" /c
 
 LINK_FLAGS = $(LINK_FLAGS) "..\libdjvu\$(LIBDJVU)" \

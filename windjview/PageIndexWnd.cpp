@@ -462,10 +462,9 @@ BOOL CPageIndexWnd::PreTranslateMessage(MSG* pMsg)
 		CPoint point((DWORD) pMsg->lParam);
 
 		CWnd* pWnd = WindowFromPoint(point);
-		if (pWnd != this && !IsChild(pWnd) && IsFromCurrentProcess(pWnd))
-			pWnd->SendMessage(WM_MOUSEWHEEL, pMsg->wParam, pMsg->lParam);
-
-		return true;
+		if (pWnd != this && IsFromCurrentProcess(pWnd) && 
+				pWnd->SendMessage(WM_MOUSEWHEEL, pMsg->wParam, pMsg->lParam) != 0)
+			return true;
 	}
 
 	return CWnd::PreTranslateMessage(pMsg);
