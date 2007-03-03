@@ -84,7 +84,7 @@ protected:
 	int m_nPagesInRow;
 
 	CCriticalSection m_dataLock;
-	list<CDIB*> m_bitmaps;
+	set<CDIB*> m_bitmaps;
 
 	CDisplaySettings m_displaySetting;
 	void SettingsChanged();

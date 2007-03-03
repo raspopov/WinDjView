@@ -919,7 +919,7 @@ CRect FindContentRect(GP<DjVuImage> pImage)
 }
 
 void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRect& rcFullPage,
-	double fPrinterMMx, double fPrinterMMy, CPrintSettings& settings, bool bPreview)
+	double fPrinterMMx, double fPrinterMMy, CPrintSettings& settings, GRect* pSelRect, bool bPreview)
 {
 	if (pImage == NULL)
 		return;
@@ -931,7 +931,12 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRe
 	CPoint ptSrcOffset(0, 0);
 	CSize szDjVuPage(szImage);
 
-	if (settings.bClipContent)
+	if (pSelRect != NULL)
+	{
+		ptSrcOffset = CPoint(pSelRect->xmin, pSelRect->ymin);
+		szDjVuPage = CSize(pSelRect->width(), pSelRect->height());
+	}
+	else if (settings.bClipContent)
 	{
 		CRect rcContent = FindContentRect(pImage);
 		ptSrcOffset = rcContent.TopLeft();
@@ -997,7 +1002,7 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRe
 		return;
 
 	GRect rect, rectAll;
-	if (settings.bClipContent || !bPreview)
+	if (settings.bClipContent || pSelRect != NULL || !bPreview)
 	{
 		if (nTotalRotate % 2 == 0)
 			rect = GRect(ptSrcOffset.x, ptSrcOffset.y, szDjVuPage.cx, szDjVuPage.cy);
@@ -1057,7 +1062,7 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRe
 		if (nTotalRotate != 0)
 			pm = pm->rotate(nTotalRotate);
 
-		if (settings.bClipContent && bPreview)
+		if ((settings.bClipContent || pSelRect != NULL) && bPreview)
 		{
 			// Scale the pixmap to needed size
 			GRect rcDest(0, 0, szScaled.cx, szScaled.cy);
@@ -1081,7 +1086,7 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRe
 		if (nTotalRotate != 0)
 			bm = bm->rotate(nTotalRotate);
 
-		if (settings.bClipContent && bPreview)
+		if ((settings.bClipContent || pSelRect != NULL) && bPreview)
 		{
 			// Scale the bitmap to needed size
 			GRect rcDest(0, 0, szScaled.cx, szScaled.cy);
@@ -1185,7 +1190,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 	CSize szPaper(nPageWidth, nPageHeight);
 
 	CRect rcOddPage = CRect(CPoint(0, 0), szPaper), rcEvenPage = rcOddPage;
-	if (printSettings.bTwoPages)
+	if (printSettings.bTwoPages && !dlg.IsPrintSelection())
 	{
 		if (printSettings.bLandscape)
 		{
@@ -1251,7 +1256,11 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 			pImage = pSource->GetPage(nPage, NULL);
 		if (pImage != NULL)
 		{
-			PrintPage(&dcPrint, pImage, nRotate, nMode, rcOddPage, fPrinterMMx, fPrinterMMy, printSettings);
+			GRect* pSelRect = NULL;
+			if (dlg.IsPrintSelection())
+				pSelRect = &dlg.m_rcSelection;
+
+			PrintPage(&dcPrint, pImage, nRotate, nMode, rcOddPage, fPrinterMMx, fPrinterMMy, printSettings, pSelRect);
 		}
 
 		pImage = NULL;

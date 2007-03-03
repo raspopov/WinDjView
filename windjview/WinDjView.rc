@@ -476,7 +476,7 @@ BEGIN
                     BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,364,77,52,
                     9
     CONTROL         "Portra&it",IDC_PORTRAIT,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,174,112,53,11
+                    WS_GROUP | WS_TABSTOP,174,112,53,11
     CONTROL         "Lan&dscape",IDC_LANDSCAPE,"Button",BS_AUTORADIOBUTTON,
                     174,128,53,11
     LTEXT           "Number of &copies:",IDC_STATIC,304,111,62,11
@@ -486,9 +486,11 @@ BEGIN
     CONTROL         "Collate",IDC_COLLATE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,379,128,37,11
     CONTROL         "&All",IDC_RANGE_ALL,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,14,166,37,11
+                    WS_GROUP | WS_TABSTOP,14,166,37,11
     CONTROL         "C&urrent page",IDC_RANGE_CURRENT,"Button",
                     BS_AUTORADIOBUTTON,14,180,59,11
+    CONTROL         "Selection",IDC_RANGE_SELECTION,"Button",
+                    BS_AUTORADIOBUTTON,84,180,59,11
     CONTROL         "Pa&ges:",IDC_RANGE_PAGES,"Button",BS_AUTORADIOBUTTON,14,
                     194,37,11
     EDITTEXT        IDC_PAGE_RANGES,56,193,95,12,ES_AUTOHSCROLL | WS_GROUP

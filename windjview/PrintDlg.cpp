@@ -40,9 +40,10 @@ IMPLEMENT_DYNAMIC(CPrintDlg, CDialog)
 CPrintDlg::CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, int nMode, CWnd* pParent)
 	: CDialog(CPrintDlg::IDD, pParent),
 	  m_strPages(_T("")), m_bPrintToFile(FALSE), m_strType(_T("")), m_strLocation(_T("")),
-	  m_strComment(_T("")), m_nRangeType(0), m_pPrinter(NULL), m_hPrinter(NULL),
+	  m_strComment(_T("")), m_nRangeType(AllPages), m_pPrinter(NULL), m_hPrinter(NULL),
 	  m_pPaper(NULL), m_bReverse(false), m_pDoc(pDoc), m_pSource(pDoc->GetSource()),
-	  m_nCurPage(nPage), m_nRotate(nRotate), m_nMode(nMode), m_bPrinterCanCollate(false)
+	  m_nCurPage(nPage), m_nRotate(nRotate), m_nMode(nMode), m_bPrinterCanCollate(false),
+	  m_bHasSelection(false)
 {
 }
 
@@ -124,9 +125,7 @@ BEGIN_MESSAGE_MAP(CPrintDlg, CDialog)
 	ON_CBN_SELCHANGE(IDC_COMBO_PRINTER, OnChangePrinter)
 	ON_BN_CLICKED(IDC_LANDSCAPE, OnUpdateDialogData)
 	ON_BN_CLICKED(IDC_PORTRAIT, OnUpdateDialogData)
-	ON_BN_CLICKED(IDC_RANGE_ALL, OnPrintRange)
-	ON_BN_CLICKED(IDC_RANGE_CURRENT, OnPrintRange)
-	ON_BN_CLICKED(IDC_RANGE_PAGES, OnPrintRange)
+	ON_CONTROL_RANGE(BN_CLICKED, IDC_RANGE_ALL, IDC_RANGE_PAGES, OnPrintRange)
 	ON_BN_CLICKED(IDC_SCALE_TO_FIT, OnUpdateDialogData)
 	ON_BN_CLICKED(IDC_SHRINK_OVERSIZED, OnUpdateDialogData)
 	ON_BN_CLICKED(IDC_IGNORE_MARGINS, OnUpdateDialogData)
@@ -266,16 +265,20 @@ void CPrintDlg::OnOK()
 
 	// Parse page range
 	m_pages.clear();
-	if (m_nRangeType == 0)
+	if (m_nRangeType == AllPages)
 	{
 		for (int i = 1; i <= m_pSource->GetPageCount(); ++i)
 			m_pages.push_back(i);
 	}
-	else if (m_nRangeType == 1)
+	else if (m_nRangeType == CurrentPage)
 	{
 		m_pages.push_back(m_nCurPage + 1);
 		if (m_settings.bTwoPages && m_nCurPage < m_pSource->GetPageCount() - 1)
 			m_pages.push_back(m_nCurPage + 2);
+	}
+	else if (m_nRangeType == CurrentSelection)
+	{
+		m_pages.push_back(m_nCurPage + 1);
 	}
 	else
 	{
@@ -283,16 +286,16 @@ void CPrintDlg::OnOK()
 			return;
 	}
 
-	bool bAllPages = (m_cboPagesInRange.GetCurSel() == 0) || m_nRangeType == 1;
-	bool bOddPages = (m_cboPagesInRange.GetCurSel() == 1) && m_nRangeType != 1;
-	bool bEvenPages = (m_cboPagesInRange.GetCurSel() == 2) && m_nRangeType != 1;
+	bool bAllPages = (m_cboPagesInRange.GetCurSel() == 0) || m_nRangeType == CurrentPage || m_nRangeType == CurrentSelection;
+	bool bOddPages = (m_cboPagesInRange.GetCurSel() == 1) && (m_nRangeType == AllPages || m_nRangeType == CustomRange);
+	bool bEvenPages = (m_cboPagesInRange.GetCurSel() == 2) && (m_nRangeType == AllPages || m_nRangeType == CustomRange);
 	int i = 1;
 	int inc = (m_settings.bTwoPages ? 2 : 1);
 
 	for (size_t j = 0; j < m_pages.size(); j += inc, ++i)
 	{
 		int nFirst = m_pages[j];
-		if (!m_settings.bTwoPages)
+		if (!m_settings.bTwoPages || IsPrintSelection())
 		{
 			if (bAllPages || bOddPages && (nFirst % 2) == 1 || bEvenPages && (nFirst % 2) == 0)
 				m_arrPages.push_back(make_pair(nFirst, 0));
@@ -390,10 +393,15 @@ void CPrintDlg::OnPaint()
 				nOffsetBottom * szPage.cy / nPhysicalHeight);
 		}
 
-		if (!m_settings.bTwoPages)
+		if (IsPrintSelection())
 		{
 			PrintPage(&m_offscreenDC, m_pCurPage, m_nRotate, m_nMode,
-				rcPage, fScreenMM, fScreenMM, m_settings, true);
+				rcPage, fScreenMM, fScreenMM, m_settings, &m_rcSelection, true);
+		}
+		else if (!m_settings.bTwoPages)
+		{
+			PrintPage(&m_offscreenDC, m_pCurPage, m_nRotate, m_nMode,
+				rcPage, fScreenMM, fScreenMM, m_settings, NULL, true);
 		}
 		else
 		{
@@ -427,10 +435,10 @@ void CPrintDlg::PreviewTwoPages(CDC* pDC, const CRect& rcPage, const CSize& szPa
 		rcSecondHalf.top = rcFirstHalf.bottom;
 	}
 
-	PrintPage(pDC, m_pCurPage, m_nRotate, m_nMode, rcFirstHalf, fScreenMM, fScreenMM, m_settings, true);
+	PrintPage(pDC, m_pCurPage, m_nRotate, m_nMode, rcFirstHalf, fScreenMM, fScreenMM, m_settings, NULL, true);
 
 	if (m_pNextPage != NULL)
-		PrintPage(pDC, m_pNextPage, m_nRotate, m_nMode, rcSecondHalf, fScreenMM, fScreenMM, m_settings, true);
+		PrintPage(pDC, m_pNextPage, m_nRotate, m_nMode, rcSecondHalf, fScreenMM, fScreenMM, m_settings, NULL, true);
 }
 
 void CPrintDlg::OnChangePagesPerSheet()
@@ -447,7 +455,7 @@ void CPrintDlg::OnChangePagesPerSheet()
 	UpdateData(false);
 	UpdateDevMode();
 
-	InvalidateRect(m_rcPreview, 0);
+	InvalidateRect(m_rcPreview, false);
 	UpdateWindow();
 }
 
@@ -620,6 +628,9 @@ void CPrintDlg::OnPrintRange()
 		return;
 
 	UpdateData();
+
+	InvalidateRect(m_rcPreview, false);
+	UpdateWindow();
 }
 
 
@@ -688,8 +699,9 @@ void CPrintDlg::OnKickIdle()
 	GetDlgItem(IDC_RANGE_ALL)->EnableWindow(bOk);
 	GetDlgItem(IDC_RANGE_CURRENT)->EnableWindow(bOk);
 	GetDlgItem(IDC_RANGE_PAGES)->EnableWindow(bOk);
+	GetDlgItem(IDC_RANGE_SELECTION)->EnableWindow(bOk && m_bHasSelection);
 
-	GetDlgItem(IDC_PAGE_RANGES)->EnableWindow(bOk && m_nRangeType == 2);
+	GetDlgItem(IDC_PAGE_RANGES)->EnableWindow(bOk && m_nRangeType == CustomRange);
 
 	GetDlgItem(IDC_SCALE)->EnableWindow(bOk && !m_settings.bScaleToFit);
 	GetDlgItem(IDC_SHRINK_OVERSIZED)->EnableWindow(bOk && !m_settings.bScaleToFit);
@@ -699,7 +711,7 @@ void CPrintDlg::OnKickIdle()
 	GetDlgItem(IDC_POSITION_TOP)->EnableWindow(bOk && !m_settings.bCenterImage);
 	GetDlgItem(IDC_POSITION_LEFT)->EnableWindow(bOk && !m_settings.bCenterImage);
 	GetDlgItem(IDC_CENTER_IMAGE)->EnableWindow(bOk);
-	GetDlgItem(IDC_CLIP_CONTENT)->EnableWindow(bOk);
+	GetDlgItem(IDC_CLIP_CONTENT)->EnableWindow(bOk && m_nRangeType != CurrentSelection);
 
 	GetDlgItem(IDC_MARGIN_LEFT)->EnableWindow(bOk);
 	GetDlgItem(IDC_MARGIN_TOP)->EnableWindow(bOk);
@@ -707,11 +719,11 @@ void CPrintDlg::OnKickIdle()
 	GetDlgItem(IDC_MARGIN_BOTTOM)->EnableWindow(bOk);
 
 	m_cboPaper.EnableWindow(bOk);
-	m_cboPagesInRange.EnableWindow(bOk);
-	m_cboPagesPerSheet.EnableWindow(bOk);
+	m_cboPagesInRange.EnableWindow(bOk && m_nRangeType != CurrentPage && m_nRangeType != CurrentSelection);
+	m_cboPagesPerSheet.EnableWindow(bOk && m_nRangeType != CurrentSelection);
 
 	GetDlgItem(IDOK)->EnableWindow(bOk);
-	GetDlgItem(IDC_REVERSE)->EnableWindow(bOk);
+	GetDlgItem(IDC_REVERSE)->EnableWindow(bOk && m_nRangeType != CurrentSelection);
 	GetDlgItem(IDC_PROPERTIES)->EnableWindow(bOk);
 }
 

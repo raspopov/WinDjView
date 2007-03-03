@@ -55,6 +55,10 @@ public:
 	typedef vector<pair<int, int> > PageArr;
 	PageArr m_arrPages;
 
+	bool m_bHasSelection;
+	GRect m_rcSelection;
+	bool IsPrintSelection() const { return m_bHasSelection && m_nRangeType == CurrentSelection; }
+
 	CDjVuDoc* GetDocument() const { return m_pDoc; }
 	int GetRotate() const { return m_nRotate; }
 	int GetMode() const { return m_nMode; }
@@ -64,6 +68,14 @@ public:
 	BOOL m_bPrintToFile;
 
 protected:
+	enum RangeType
+	{
+		AllPages = 0,
+		CurrentPage = 1,
+		CurrentSelection = 2,
+		CustomRange = 3
+	};
+
 	CString m_strType;
 	CString m_strLocation;
 	CString m_strComment;

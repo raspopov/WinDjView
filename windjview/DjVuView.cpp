@@ -208,7 +208,7 @@ CDjVuView::~CDjVuView()
 
 	m_dataLock.Lock();
 
-	for (list<CDIB*>::iterator it = m_bitmaps.begin(); it != m_bitmaps.end(); ++it)
+	for (set<CDIB*>::iterator it = m_bitmaps.begin(); it != m_bitmaps.end(); ++it)
 		delete *it;
 	m_bitmaps.clear();
 
@@ -324,9 +324,9 @@ void CDjVuView::OnDraw(CDC* pDC)
 	}
 
 	// Draw rectangle selection
-	if (m_nSelectionPage != -1 && m_rcSelectionRect.width() > 1 && m_rcSelectionRect.height() > 1)
+	if (m_nSelectionPage != -1 && m_rcSelection.width() > 1 && m_rcSelection.height() > 1)
 	{
-		CRect rcSel = TranslatePageRect(m_nSelectionPage, m_rcSelectionRect);
+		CRect rcSel = TranslatePageRect(m_nSelectionPage, m_rcSelection);
 		rcSel.InflateRect(0, 0, 1, 1);
 		InvertFrame(&m_offscreenDC, rcSel - ptScrollPos);
 	}
@@ -1807,7 +1807,7 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	if ((m_nLayout == Continuous || m_nLayout == ContinuousFacing) && szScroll.cy != 0)
 		UpdatePageSizes(GetScrollPos(SB_VERT), szScroll.cy);
 
-	if (!OnScrollBy(szScroll) && (m_nLayout == SinglePage || m_nLayout == Facing))
+	if (!OnScrollBy(szScroll))
 	{
 		if (bNextPage && IsViewNextpageEnabled())
 		{
@@ -1817,8 +1817,9 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		{
 			CPoint ptScroll = GetScrollPosition();
 			OnViewPreviouspage();
-			OnScrollBy(CPoint(ptScroll.x, m_szDisplay.cy) - GetScrollPosition());
-			Invalidate();
+
+			if (m_nLayout == SinglePage || m_nLayout == Facing)
+				OnScrollBy(CPoint(ptScroll.x, m_szDisplay.cy) - GetScrollPosition());
 		}
 	}
 
@@ -2375,10 +2376,10 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 		m_ptStart = ScreenToDjVu(m_nStartPage, pt);
 
 		m_nSelectionPage = m_nStartPage;
-		m_rcSelectionRect.xmin = m_ptStart.x;
-		m_rcSelectionRect.xmax = m_ptStart.x + 1;
-		m_rcSelectionRect.ymin = m_ptStart.y - 1;
-		m_rcSelectionRect.ymax = m_ptStart.y;
+		m_rcSelection.xmin = m_ptStart.x;
+		m_rcSelection.xmax = m_ptStart.x + 1;
+		m_rcSelection.ymin = m_ptStart.y - 1;
+		m_rcSelection.ymax = m_ptStart.y;
 
 		ShowCursor();
 		SetCapture();
@@ -2557,7 +2558,7 @@ void CDjVuView::StopDragging()
 
 		if (m_bDraggingRect)
 		{
-			if (m_rcSelectionRect.width() <= 1 || m_rcSelectionRect.height() <= 1)
+			if (m_rcSelection.width() <= 1 || m_rcSelection.height() <= 1)
 				m_nSelectionPage = -1;
 			m_bDraggingRect = false;
 		}
@@ -2729,17 +2730,17 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 		CPoint pt = point + GetScrollPosition() - page.ptOffset;
 		CPoint ptCurrent = ScreenToDjVu(m_nStartPage, pt, true);
 
-		CRect rcDisplay = TranslatePageRect(m_nSelectionPage, m_rcSelectionRect);
+		CRect rcDisplay = TranslatePageRect(m_nSelectionPage, m_rcSelection);
 		rcDisplay.OffsetRect(-GetScrollPosition());
 		rcDisplay.InflateRect(0, 0, 1, 1);
 		InvalidateRect(rcDisplay);
 
-		m_rcSelectionRect.xmin = min(ptCurrent.x, m_ptStart.x);
-		m_rcSelectionRect.xmax = max(ptCurrent.x, m_ptStart.x) + 1;
-		m_rcSelectionRect.ymin = min(ptCurrent.y, m_ptStart.y) - 1;
-		m_rcSelectionRect.ymax = max(ptCurrent.y, m_ptStart.y);
+		m_rcSelection.xmin = min(ptCurrent.x, m_ptStart.x);
+		m_rcSelection.xmax = max(ptCurrent.x, m_ptStart.x) + 1;
+		m_rcSelection.ymin = min(ptCurrent.y, m_ptStart.y) - 1;
+		m_rcSelection.ymax = max(ptCurrent.y, m_ptStart.y);
 
-		rcDisplay = TranslatePageRect(m_nSelectionPage, m_rcSelectionRect);
+		rcDisplay = TranslatePageRect(m_nSelectionPage, m_rcSelection);
 		rcDisplay.OffsetRect(-GetScrollPosition());
 		rcDisplay.InflateRect(0, 0, 1, 1);
 		InvalidateRect(rcDisplay);
@@ -2822,6 +2823,12 @@ void CDjVuView::SelectTextRange(int nPage, int nStart, int nEnd,
 void CDjVuView::OnFilePrint()
 {
 	CPrintDlg dlg(GetDocument(), m_nPage, m_nRotate, m_nDisplayMode);
+	if (m_nSelectionPage != -1)
+	{
+		dlg.m_bHasSelection = true;
+		dlg.m_rcSelection = m_rcSelection;
+	}
+
 	if (dlg.DoModal() == IDOK)
 	{
 		ASSERT(dlg.m_hPrinter != NULL && dlg.m_pPrinter != NULL && dlg.m_pPaper != NULL);
@@ -3244,18 +3251,15 @@ void CDjVuView::OnPageInformation()
 LRESULT CDjVuView::OnPageRendered(WPARAM wParam, LPARAM lParam)
 {
 	int nPage = (int)wParam;
+	CDIB* pBitmap = reinterpret_cast<CDIB*>(lParam);
+
+	m_dataLock.Lock();
+	m_bitmaps.erase(pBitmap);
+	m_dataLock.Unlock();
+
 	OnPageDecoded(nPage, true);
 
 	Page& page = m_pages[nPage];
-
-	m_dataLock.Lock();
-	list<CDIB*>::iterator it;
-	memcpy(&it, &lParam, sizeof(LPARAM));
-
-	CDIB* pBitmap = *it;
-	m_bitmaps.erase(it);
-	m_dataLock.Unlock();
-
 	page.DeleteBitmap();
 	page.pBitmap = pBitmap;
 	page.bBitmapRendered = true;
@@ -3274,16 +3278,13 @@ void CDjVuView::PageDecoded(int nPage)
 
 void CDjVuView::PageRendered(int nPage, CDIB* pDIB)
 {
-	m_dataLock.Lock();
-
-	m_bitmaps.push_front(pDIB);
-	list<CDIB*>::iterator it = m_bitmaps.begin();
-
-	LPARAM lParam;
-	VERIFY(sizeof(it) == sizeof(LPARAM));
-	memcpy(&lParam, &it, sizeof(LPARAM));
-
-	m_dataLock.Unlock();
+	LPARAM lParam = reinterpret_cast<LPARAM>(pDIB);
+	if (pDIB != NULL)
+	{
+		m_dataLock.Lock();
+		m_bitmaps.insert(pDIB);
+		m_dataLock.Unlock();
+	}
 
 	if (m_nPendingPage == nPage)
 		SendMessage(WM_PAGE_RENDERED, nPage, lParam);
@@ -3811,7 +3812,7 @@ void CDjVuView::OnExportPage(UINT nID)
 
 	if (nID == ID_EXPORT_SELECTION)
 	{
-		CRect rcCrop = TranslatePageRect(nPage, m_rcSelectionRect, false);
+		CRect rcCrop = TranslatePageRect(nPage, m_rcSelection, false);
 		CDIB* pCropped = pBitmap->Crop(rcCrop);
 		delete pBitmap;
 		pBitmap = pCropped;
@@ -5802,7 +5803,7 @@ void CDjVuView::OnHighlight(UINT nID)
 	if (m_nSelectionPage != -1)
 	{
 		Annotation anno = annoTemplate;
-		anno.rects.push_back(m_rcSelectionRect);
+		anno.rects.push_back(m_rcSelection);
 		anno.UpdateBounds();
 
 		nAnnoPage = m_nSelectionPage;
@@ -5985,7 +5986,7 @@ bool CDjVuView::CreateBookmarkFromSelection(Bookmark& bookmark)
 	{
 		bookmark.nLinkType = Bookmark::View;
 		bookmark.nPage = m_nSelectionPage;
-		bookmark.ptOffset = CPoint(m_rcSelectionRect.xmin, m_rcSelectionRect.ymax);
+		bookmark.ptOffset = CPoint(m_rcSelection.xmin, m_rcSelection.ymax);
 		bookmark.bMargin = true;
 		return true;
 	}
@@ -6072,13 +6073,13 @@ void CDjVuView::OnZoomToSelection()
 	CScreenDC dcScreen;
 	int nLogPixels = dcScreen.GetDeviceCaps(LOGPIXELSX);
 
-	double fScale = min(1.0*rcClient.Width()/m_rcSelectionRect.width(),
-			1.0*rcClient.Height()/m_rcSelectionRect.height());
+	double fScale = min(1.0*rcClient.Width()/m_rcSelection.width(),
+			1.0*rcClient.Height()/m_rcSelection.height());
 	double fZoom = 100.0*fScale*page.info.nDPI/nLogPixels;
 
 	ZoomTo(ZoomPercent, fZoom);
 
-	CRect rcSel = TranslatePageRect(m_nSelectionPage, m_rcSelectionRect);
+	CRect rcSel = TranslatePageRect(m_nSelectionPage, m_rcSelection);
 	CPoint ptOffset = rcSel.TopLeft();
 
 	rcSel -= GetScrollPosition();

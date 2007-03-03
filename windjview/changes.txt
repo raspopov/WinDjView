@@ -3,15 +3,16 @@ Copyright (C) 2004-2007 Andrew Zhezherun
 ----------------------------------------
 
 Changes in version 0.5 (2007-??-??):
-! Added rectangle tool: can be used to create an annotation,
-  to zoom in or to export selected region to a bitmap file.
 ! Implemented user-created bookmarks and annotations.
+! Added rectangle tool: can be used to create an annotation,
+  to zoom in, to print selected region or to export it to a bitmap file.
 + Open page and view settings can be restored when opening a file.
 + Page number can be specified when opening files via command line.
 + Back/Forward keys on multimedia keyboards now work as Alt+arrows.
 + Added option to invert colors.
 + Reorganized Settings dialog.
 + Added option to change display units (centimeters, millimeters, inches).
+* Improved interface responsiveness when opening and closing documents.
 * Improvements for files with large shared dictionaries:
   * Reduced memory usage.
   * Fixed interface stalls.

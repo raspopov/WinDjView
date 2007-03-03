@@ -179,7 +179,7 @@ protected:
 	COffscreenDC m_offscreenDC;
 
 	CCriticalSection m_dataLock;
-	list<CDIB*> m_bitmaps;
+	set<CDIB*> m_bitmaps;
 
 	int m_nPage, m_nPageCount;
 	int m_nPendingPage;
@@ -323,7 +323,7 @@ protected:
 	void GetNormalizedText(wstring& text, bool bSelected = false, int nMaxLength = -1);
 	bool m_bHasSelection;
 	int m_nSelectionPage;
-	GRect m_rcSelectionRect;
+	GRect m_rcSelection;
 
 	int m_nClickedPage;
 	bool m_bDragging, m_bDraggingPage, m_bDraggingText, m_bDraggingRect, m_bDraggingLink;

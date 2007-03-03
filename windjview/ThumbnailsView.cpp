@@ -91,7 +91,7 @@ CThumbnailsView::~CThumbnailsView()
 
 	m_dataLock.Lock();
 
-	for (list<CDIB*>::iterator it = m_bitmaps.begin(); it != m_bitmaps.end(); ++it)
+	for (set<CDIB*>::iterator it = m_bitmaps.begin(); it != m_bitmaps.end(); ++it)
 		delete *it;
 	m_bitmaps.clear();
 
@@ -828,24 +828,20 @@ void CThumbnailsView::UpdatePage(int nPage, CThumbnailsThread* pThread)
 LRESULT CThumbnailsView::OnThumbnailRendered(WPARAM wParam, LPARAM lParam)
 {
 	int nPage = (int)wParam;
-
-	Page& page = m_pages[nPage];
+	CDIB* pBitmap = reinterpret_cast<CDIB*>(lParam);
 
 	m_dataLock.Lock();
-	list<CDIB*>::iterator it;
-	memcpy(&it, &lParam, sizeof(LPARAM));
-
-	CDIB* pBitmap = *it;
-	m_bitmaps.erase(it);
+	m_bitmaps.erase(pBitmap);
 	m_dataLock.Unlock();
 
+	Page& page = m_pages[nPage];
 	page.DeleteBitmap();
+	page.bRendered = true;
 	if (pBitmap != NULL)
 	{
 		page.pBitmap = CLightweightDIB::Create(pBitmap);
 		delete pBitmap;
 	}
-	page.bRendered = true;
 
 	RecalcPageRects(nPage);
 
@@ -861,16 +857,13 @@ void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 	{
 		const BitmapMsg* msg = static_cast<const BitmapMsg*>(message);
 
-		m_dataLock.Lock();
-
-		m_bitmaps.push_front(msg->pDIB);
-		list<CDIB*>::iterator it = m_bitmaps.begin();
-
-		LPARAM lParam;
-		VERIFY(sizeof(it) == sizeof(LPARAM));
-		memcpy(&lParam, &it, sizeof(LPARAM));
-
-		m_dataLock.Unlock();
+		LPARAM lParam = reinterpret_cast<LPARAM>(msg->pDIB);
+		if (msg->pDIB != NULL)
+		{
+			m_dataLock.Lock();
+			m_bitmaps.insert(msg->pDIB);
+			m_dataLock.Unlock();
+		}
 
 		PostMessage(WM_THUMBNAIL_RENDERED, msg->nPage, lParam);
 	}

@@ -115,7 +115,8 @@ CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip, const CDisplaySettings& dis
 CDIB* RenderEmpty(const CSize& szBitmap, const CDisplaySettings& displaySettings);
 
 void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRect& rcPage,
-	double fPrinterMMx, double fPrinterMMy, CPrintSettings& settings, bool bPreview = false);
+	double fPrinterMMx, double fPrinterMMy, CPrintSettings& settings,
+	GRect* pSelRect = NULL, bool bPreview = false);
 
 unsigned int __stdcall PrintThreadProc(void* pvData);
 
