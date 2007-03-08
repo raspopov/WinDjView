@@ -68,6 +68,7 @@ LINK_OBJS = \
 	"$(INTDIR)\FullscreenWnd.obj" \
 	"$(INTDIR)\Global.obj" \
 	"$(INTDIR)\GotoPageDlg.obj" \
+	"$(INTDIR)\InstallDicDlg.obj" \
 	"$(INTDIR)\MainFrm.obj" \
 	"$(INTDIR)\MagnifyWnd.obj" \
 	"$(INTDIR)\MyBitmapButton.obj" \
@@ -119,6 +120,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\FullscreenWnd.obj" : FullscreenWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\Global.obj" : Global.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\GotoPageDlg.obj" : GotoPageDlg.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\InstallDicDlg.obj" : InstallDicDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MainFrm.obj" : MainFrm.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MagnifyWnd.obj" : MagnifyWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyBitmapButton.obj" : MyBitmapButton.cpp "$(INTDIR)" $(PCH)
