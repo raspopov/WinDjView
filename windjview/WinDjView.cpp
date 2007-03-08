@@ -1007,14 +1007,14 @@ void CDjViewApp::LoadDictionaries()
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME];
 	if (theShellAPI.pSHGetFolderPath != NULL)
 	{
-		if (SUCCEEDED(theShellAPI.pSHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, SHGFP_TYPE_CURRENT, szFolder)))
+		if (SUCCEEDED(theShellAPI.pSHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szFolder)))
 		{
 			_tsplitpath(szFolder, szDrive, szPath, szName, NULL);
 			CString strPathName = szDrive + CString(szPath) + szName + CString(_T("\\WinDjView\\Dictionaries\\"));
 			LoadDictionaries(strPathName);
 		}
 
-		if (SUCCEEDED(theShellAPI.pSHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, szFolder)))
+		if (SUCCEEDED(theShellAPI.pSHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, szFolder)))
 		{
 			_tsplitpath(szFolder, szDrive, szPath, szName, NULL);
 			CString strPathName = szDrive + CString(szPath) + szName + CString(_T("\\WinDjView\\Dictionaries\\"));
@@ -1169,8 +1169,8 @@ bool CDjViewApp::InstallDictionary(CDjVuDoc* pDoc, bool bAllUsers, bool bKeepOri
 		{
 			if (theShellAPI.pSHGetFolderPath != NULL)
 			{
-				if (!SUCCEEDED(theShellAPI.pSHGetFolderPath(NULL, CSIDL_COMMON_APPDATA | CSIDL_FLAG_CREATE,
-						NULL, SHGFP_TYPE_CURRENT, szFolder)))
+				if (!SUCCEEDED(theShellAPI.pSHGetFolderPath(NULL,
+						CSIDL_COMMON_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, szFolder)))
 					return false;
 			}
 			else if (theShellAPI.pSHGetSpecialFolderPath != NULL)
@@ -1186,8 +1186,8 @@ bool CDjViewApp::InstallDictionary(CDjVuDoc* pDoc, bool bAllUsers, bool bKeepOri
 		{
 			if (theShellAPI.pSHGetFolderPath != NULL)
 			{
-				if (!SUCCEEDED(theShellAPI.pSHGetFolderPath(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE,
-						NULL, SHGFP_TYPE_CURRENT, szFolder)))
+				if (!SUCCEEDED(theShellAPI.pSHGetFolderPath(NULL,
+						CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, szFolder)))
 					return false;
 			}
 			else if (theShellAPI.pSHGetSpecialFolderPath != NULL)
