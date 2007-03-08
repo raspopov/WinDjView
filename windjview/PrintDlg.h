@@ -139,7 +139,7 @@ protected:
 	afx_msg void OnChangePagesPerSheet();
 	afx_msg void OnChangePaper();
 	afx_msg void OnChangePrinter();
-	afx_msg void OnPrintRange();
+	afx_msg void OnPrintRange(UINT nID);
 	afx_msg void OnCopiesUpDown(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnKickIdle();
 	afx_msg void OnProperties();

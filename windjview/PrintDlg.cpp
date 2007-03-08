@@ -471,7 +471,7 @@ void CPrintDlg::OnChangePaper()
 	UpdateData(false);
 	UpdateDevMode();
 
-	InvalidateRect(m_rcPreview, 0);
+	InvalidateRect(m_rcPreview, false);
 	UpdateWindow();
 }
 
@@ -565,6 +565,8 @@ void CPrintDlg::OnChangePrinter()
 	UpdateDevMode();
 
 	OnChangePaper();
+
+	OnKickIdle();
 }
 
 void CPrintDlg::LoadPaperTypes()
@@ -622,7 +624,7 @@ void CPrintDlg::LoadPaperTypes()
 		m_cboPaper.SetCurSel(0);
 }
 
-void CPrintDlg::OnPrintRange()
+void CPrintDlg::OnPrintRange(UINT nID)
 {
 	if (m_pPrinter == NULL)
 		return;
@@ -631,8 +633,9 @@ void CPrintDlg::OnPrintRange()
 
 	InvalidateRect(m_rcPreview, false);
 	UpdateWindow();
-}
 
+	OnKickIdle();
+}
 
 void CPrintDlg::OnCopiesUpDown(NMHDR* pNMHDR, LRESULT* pResult)
 {
@@ -657,6 +660,8 @@ void CPrintDlg::OnCopiesUpDown(NMHDR* pNMHDR, LRESULT* pResult)
 	UpdateDevMode();
 
 	*pResult = 0;
+
+	OnKickIdle();
 }
 
 void CPrintDlg::OnProperties()
@@ -739,8 +744,10 @@ void CPrintDlg::OnUpdateDialogData()
 	UpdateData(false);
 	UpdateDevMode();
 
-	InvalidateRect(m_rcPreview, 0);
+	InvalidateRect(m_rcPreview, false);
 	UpdateWindow();
+
+	OnKickIdle();
 }
 
 void CPrintDlg::UpdateDevMode()
