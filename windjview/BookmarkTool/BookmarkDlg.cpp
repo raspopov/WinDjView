@@ -294,7 +294,7 @@ void FixWhitespace(wstring& text)
 	result.reserve(text.length());
 
 	int nStart = 0;
-	while (nStart < text.length() && text[nStart] <= 0x20)
+	while (nStart < static_cast<int>(text.length()) && text[nStart] <= 0x20)
 		++nStart;
 	int nEnd = text.length() - 1;
 	while (nEnd >= nStart && text[nEnd] <= 0x20)
