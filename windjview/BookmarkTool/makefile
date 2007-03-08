@@ -60,10 +60,12 @@ clean:
 LINK_OBJS = \
 	"$(INTDIR)\BookmarkDlg.obj" \
 	"$(INTDIR)\BookmarkTool.obj" \
+	"$(INTDIR)\DjVuSource.obj" \
 	"$(INTDIR)\Global.obj" \
 	"$(INTDIR)\MyDropTarget.obj" \
 	"$(INTDIR)\MyFileDialog.obj" \
 	"$(INTDIR)\stdafx.obj" \
+	"$(INTDIR)\XMLParser.obj" \
 	"$(INTDIR)\BookmarkTool.res"
 
 $(OUT) : "$(INTDIR)" $(LINK_OBJS)
@@ -71,9 +73,11 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 
 "$(INTDIR)\BookmarkDlg.obj" : BookmarkDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\BookmarkTool.obj" : BookmarkTool.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\DjVuSource.obj" : DjVuSource.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\Global.obj" : Global.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDropTarget.obj" : MyDropTarget.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyFileDialog.obj" : MyFileDialog.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\XMLParser.obj" : XMLParser.cpp "$(INTDIR)" $(PCH)
 
 "$(INTDIR)\stdafx.obj" $(PCH) : stdafx.cpp "$(INTDIR)"
 	@$(CPP) $(CPP_FLAGS) $(CPP_PCH_CREATE) stdafx.cpp

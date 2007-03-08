@@ -101,6 +101,7 @@ GUTF8String MakeUTF8String(const wstring& strText);
 #define ANNOTATION_DELETED 16
 #define BOOKMARK_CLICKED 17
 #define VIEW_INITIALIZED 18
+#define SOURCE_RELEASED 19
 
 class CDIB;
 struct Bookmark;

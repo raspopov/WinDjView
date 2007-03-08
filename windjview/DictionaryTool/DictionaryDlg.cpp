@@ -616,8 +616,7 @@ bool CDictionaryDlg::ExportCharMap(const CString& strCharMapFile)
 
 void CDictionaryDlg::OnDestroy()
 {
-	UpdateData();
-
+	CloseDocument(false);
 	m_dropTarget.Revoke();
 
 	CDialog::OnDestroy();
@@ -1208,11 +1207,15 @@ DROPEFFECT CDictionaryDlg::OnDragOver(CWnd* pWnd, COleDataObject* pDataObject,
 	GetDlgItem(IDC_DJVU_GROUP)->GetWindowRect(rcDjVu);
 	ScreenToClient(rcDjVu);
 
-	CRect rcBookmark;
-	GetDlgItem(IDC_PAGE_INDEX_GROUP)->GetWindowRect(rcBookmark);
-	ScreenToClient(rcBookmark);
+	CRect rcPageIndex;
+	GetDlgItem(IDC_PAGE_INDEX_GROUP)->GetWindowRect(rcPageIndex);
+	ScreenToClient(rcPageIndex);
 
-	if (rcDjVu.PtInRect(point) || rcBookmark.PtInRect(point))
+	CRect rcCharMap;
+	GetDlgItem(IDC_CHAR_MAP_GROUP)->GetWindowRect(rcCharMap);
+	ScreenToClient(rcCharMap);
+
+	if (rcDjVu.PtInRect(point) || rcPageIndex.PtInRect(point) || rcCharMap.PtInRect(point))
 		return DROPEFFECT_LINK;
 
 	return DROPEFFECT_NONE;

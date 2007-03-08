@@ -35,6 +35,7 @@ public:
 		  tagName(node.tagName), text(node.text), attributes(node.attributes) {}
 	~XMLNode()
 		{ delete pchildren; }
+	XMLNode& operator=(const XMLNode& node);
 
 	wstring tagName;
 	wstring text;

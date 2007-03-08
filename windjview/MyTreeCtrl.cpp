@@ -405,7 +405,7 @@ bool CMyTreeCtrl::DeleteItem(HTREEITEM hItem)
 
 void CMyTreeCtrl::InitNotification(NMTREEVIEW& nmtv, UINT nCode)
 {
-	::ZeroMemory(&nmtv, sizeof(nmtv));
+	ZeroMemory(&nmtv, sizeof(nmtv));
 
 	nmtv.hdr.hwndFrom = GetSafeHwnd();
 	nmtv.hdr.idFrom = GetDlgCtrlID();
@@ -830,7 +830,7 @@ void CMyTreeCtrl::UpdateHoverNode(const CPoint& point)
 	{
 		TRACKMOUSEEVENT tme;
 
-		::ZeroMemory(&tme, sizeof(tme));
+		ZeroMemory(&tme, sizeof(tme));
 		tme.cbSize = sizeof(tme);
 		tme.dwFlags = TME_LEAVE;
 		tme.hwndTrack = m_hWnd;
@@ -1583,7 +1583,7 @@ BOOL CMyTreeCtrl::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lPa
 		{
 			TRACKMOUSEEVENT tme;
 
-			::ZeroMemory(&tme, sizeof(tme));
+			ZeroMemory(&tme, sizeof(tme));
 			tme.cbSize = sizeof(tme);
 			tme.dwFlags = TME_LEAVE;
 			tme.hwndTrack = m_hWnd;

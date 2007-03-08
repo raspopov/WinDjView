@@ -22,46 +22,39 @@
 #include "BookmarkDlg.h"
 #include "Global.h"
 #include "MyFileDialog.h"
+#include "DjVuSource.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-struct Bookmark
-{
-	vector<Bookmark> children;
-	string name;
-	string url;
-};
-
 
 // CBookmarkDlg dialog
 
-bool CBookmarkDlg::bPrompt = true;
-
 CBookmarkDlg::CBookmarkDlg(CWnd* pParent)
-	: CDialog(CBookmarkDlg::IDD, pParent), m_bHasDjVuFile(false),
-	  m_bHasBookmarkFile(false), m_bPrompt(bPrompt)
+	: CDialog(CBookmarkDlg::IDD, pParent), m_pSource(NULL),
+	  m_bHasBookmarksFile(false), m_pBookmarks(NULL), m_nBookmarksAction(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
 	m_strDjVuFile.LoadString(IDS_BROWSE_DJVU_PROMPT);
-	m_strBookmarkFile.LoadString(IDS_BROWSE_BOOKMARKS_PROMPT);
+	m_strBookmarksFile.LoadString(IDS_BROWSE_BOOKMARKS_PROMPT);
 }
 
 void CBookmarkDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_DJVU_FILE, m_strDjVuFile);
-	DDX_Text(pDX, IDC_BOOKMARK_FILE, m_strBookmarkFile);
-	DDX_Check(pDX, IDC_PROMPT_FILENAME, m_bPrompt);
+	DDX_Text(pDX, IDC_BOOKMARKS_FILE, m_strBookmarksFile);
+	DDX_Radio(pDX, IDC_BOOKMARKS_DONTCHANGE, m_nBookmarksAction);
 }
 
 BEGIN_MESSAGE_MAP(CBookmarkDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_EMBED, OnEmbed)
-	ON_BN_CLICKED(IDC_EXPORT, OnExport)
+	ON_BN_CLICKED(IDC_SAVE, OnSave)
+	ON_BN_CLICKED(IDC_SAVE_AS, OnSaveAs)
+	ON_BN_CLICKED(IDC_EXPORT_BOOKMARKS, OnExportBookmarks)
 	ON_BN_CLICKED(IDC_BROWSE_DJVU, OnBrowseDjvu)
 	ON_BN_CLICKED(IDC_BROWSE_BOOKMARKS, OnBrowseBookmarks)
 	ON_WM_CTLCOLOR()
@@ -77,12 +70,13 @@ BOOL CBookmarkDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	// Set the icon for this dialog.
-	SetIcon(m_hIcon, true);			// Set big icon
-	SetIcon(m_hIcon, false);		// Set small icon
+	SetIcon(m_hIcon, true);	// Set big icon
+	SetIcon(m_hIcon, false); // Set small icon
 
 	m_dropTarget.Register(this);
+	OnKickIdle();
 
-	return true;  // return true unless you set the focus to a control
+	return true;
 }
 
 void CBookmarkDlg::OnPaint() 
@@ -119,8 +113,11 @@ HCURSOR CBookmarkDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-void CBookmarkDlg::OnExport()
+void CBookmarkDlg::OnExportBookmarks()
 {
+	if (m_pSource->GetBookmarks() == NULL)
+		return;
+
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
 	_tsplitpath(m_strDjVuFile, szDrive, szPath, szName, szExt);
 	CString strFileName = szDrive + CString(szPath) + CString(szName) + CString(_T(".html"));
@@ -137,19 +134,20 @@ void CBookmarkDlg::OnExport()
 	if (nResult != IDOK)
 		return;
 
-	CString strBookmarkFile = dlg.GetPathName();
+	CString strBookmarksFile = dlg.GetPathName();
 
-	if (ExportBookmarks(strBookmarkFile))
+	if (ExportBookmarks(strBookmarksFile) && !m_bHasBookmarksFile)
 	{
-		m_strBookmarkFile = strBookmarkFile;
-		m_bHasBookmarkFile = true;
+		m_strBookmarksFile = strBookmarksFile;
+		m_pBookmarks = m_pSource->GetBookmarks();
+		m_bHasBookmarksFile = true;
 		UpdateData(false);
 	}
 }
 
 void CBookmarkDlg::OnBrowseDjvu()
 {
-	CString strFileName = (m_bHasDjVuFile ? m_strDjVuFile : _T(""));
+	CString strFileName = (m_pSource != NULL ? m_strDjVuFile : _T(""));
 
 	CMyFileDialog dlg(true, _T("djvu"), strFileName,
 		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST,
@@ -173,15 +171,14 @@ bool CBookmarkDlg::OpenDocument(const CString& strFileName)
 	{
 		CWaitCursor wait;
 
-		GURL url = GURL::Filename::UTF8(MakeUTF8String(strFileName));
-		GP<DjVuDocument> doc = DjVuDocument::create(url);
-		doc->wait_for_complete_init();
-
+		m_pSource = DjVuSource::FromFile(strFileName);
 		m_strDjVuFile = strFileName;
-		m_bHasDjVuFile = true;
-		m_pDjVuDoc = doc;
-		UpdateData(false);
 
+		if (m_pSource->GetBookmarks() != NULL && m_nBookmarksAction == 2)
+			m_nBookmarksAction = 0;
+
+		UpdateData(false);
+		OnKickIdle();
 		return true;
 	}
 	catch (GException&)
@@ -198,12 +195,11 @@ bool CBookmarkDlg::OpenDocument(const CString& strFileName)
 
 void CBookmarkDlg::CloseDocument(bool bUpdateData)
 {
-	m_pDjVuDoc = NULL;
-	m_bHasDjVuFile = false;
-
-	// Close all open handles to this file
-	GURL url = GURL::Filename::UTF8(MakeUTF8String(m_strDjVuFile));
-	DataPool::load_file(url);
+	if (m_pSource != NULL)
+	{
+		m_pSource->Release();
+		m_pSource = NULL;
+	}
 
 	m_strDjVuFile.LoadString(IDS_BROWSE_DJVU_PROMPT);
 
@@ -211,193 +207,12 @@ void CBookmarkDlg::CloseDocument(bool bUpdateData)
 		UpdateData(false);
 }
 
-void CBookmarkDlg::OnBrowseBookmarks()
+struct DjVuBookmark
 {
-	CString strFileName = (m_bHasBookmarkFile ? m_strBookmarkFile : _T(""));
-
-	CMyFileDialog dlg(true, _T("html"), strFileName,
-		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST,
-		LoadString(IDS_BOOKMARKS_FILTER));
-
-	CString strTitle;
-	strTitle.LoadString(IDS_BROWSE_BOOKMARKS);
-	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
-
-	UINT nResult = dlg.DoModal();
-	if (nResult != IDOK)
-		return;
-
-	m_strBookmarkFile = dlg.GetPathName();
-	m_bHasBookmarkFile = true;
-	UpdateData(false);
-}
-
-HBRUSH CBookmarkDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
-{
-	HBRUSH brush = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
-
-	if (pWnd->GetDlgCtrlID() == IDC_DJVU_FILE && !m_bHasDjVuFile)
-	{
-		pDC->SetTextColor(::GetSysColor(COLOR_3DSHADOW));
-	}
-	if (pWnd->GetDlgCtrlID() == IDC_BOOKMARK_FILE && !m_bHasBookmarkFile)
-	{
-		pDC->SetTextColor(::GetSysColor(COLOR_3DSHADOW));
-	}
-
-	return brush;
-}
-
-void CBookmarkDlg::OnKickIdle()
-{
-	GP<DjVmNav> nav;
-	if (m_pDjVuDoc != NULL)
-		nav = m_pDjVuDoc->get_djvm_nav();
-
-	GetDlgItem(IDC_EXPORT)->EnableWindow(m_bHasDjVuFile && nav != NULL);
-	GetDlgItem(IDC_EMBED)->EnableWindow(m_bHasBookmarkFile);
-}
-
-string html_unescape(string str)
-{
-	size_t pos = 0;
-	while ((pos = str.find("&lt;", pos)) != string::npos)
-		str.replace(pos, 4, "<");
-
-	pos = 0;
-	while ((pos = str.find("&gt;", pos)) != string::npos)
-		str.replace(pos, 4, ">");
-
-	pos = 0;
-	while ((pos = str.find("&quot;", pos)) != string::npos)
-		str.replace(pos, 6, "\"");
-
-	pos = 0;
-	while ((pos = str.find("&amp;", pos)) != string::npos)
-		str.replace(pos, 5, "&");
-
-	return str;
-}
-
-string html_escape(string str)
-{
-	size_t pos = 0;
-	while ((pos = str.find("&", pos)) != string::npos)
-		str.replace(pos++, 1, "&amp;");
-
-	pos = 0;
-	while ((pos = str.find("<", pos)) != string::npos)
-		str.replace(pos++, 1, "&lt;");
-
-	pos = 0;
-	while ((pos = str.find(">", pos)) != string::npos)
-		str.replace(pos++, 1, "&gt;");
-
-	pos = 0;
-	while ((pos = str.find("\"", pos)) != string::npos)
-		str.replace(pos++, 1, "&quot;");
-
-	return str;
-}
-
-ofstream& operator<<(ofstream& out, GP<DjVmNav> nav)
-{
-	out << "<html>" << endl << "<head>" << endl
-		<< "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">" << endl
-		<< "</head>" << endl << "<body>" << endl << "<ul>" << endl;
-
-	stack<int> count, cur;
-	count.push(nav->getBookMarkCount());
-	cur.push(0);
-
-	for (int pos = 0; pos < nav->getBookMarkCount(); ++pos)
-	{
-		GP<DjVmNav::DjVuBookMark> bm;
-		nav->getBookMark(bm, pos);
-
-		for (size_t i = 0; i < count.size() - 1; ++i)
-			out << "  ";
-
-		out << "<li><a href=\"" << html_escape((const char*)bm->url) << "\">"
-			<< html_escape((const char*)bm->displayname) << "</a>" << endl;
-
-		++cur.top();
-
-		if (bm->count > 0)
-		{
-			count.push(bm->count);
-			cur.push(0);
-
-			for (size_t i = 0; i < count.size() - 1; ++i)
-				out << "  ";
-
-			out << "<ul>" << endl;
-		}
-
-		while (cur.top() >= count.top())
-		{
-			for (size_t i = 0; i < count.size() - 1; ++i)
-				out << "  ";
-
-			out << "</ul>" << endl;
-
-			count.pop();
-			cur.pop();
-		}
-	}
-
-	out << "</ul>" << endl << "</body>" << endl << "</html>" << endl;
-	return out;
-}
-
-bool CBookmarkDlg::ExportBookmarks(const CString& strBookmarkFile)
-{
-	try
-	{
-		CWaitCursor wait;
-
-		GP<DjVmNav> nav = m_pDjVuDoc->get_djvm_nav();
-		if (nav == NULL)
-		{
-			AfxMessageBox(IDS_NO_BOOKMARKS);
-			return false;
-		}
-
-		ofstream out(strBookmarkFile, ios::out);
-		if (!out)
-		{
-			AfxMessageBox(IDS_CANNOT_WRITE);
-			return false;
-		}
-
-		out << nav;
-
-		out.close();
-
-		AfxMessageBox(IDS_EXPORT_DONE, MB_OK | MB_ICONINFORMATION);
-		return true;
-	}
-	catch (GException&)
-	{
-		AfxMessageBox(IDS_EXPORT_ERROR);
-		return false;
-	}
-	catch (...)
-	{
-		AfxMessageBox(IDS_FATAL_ERROR);
-		return false;
-	}
-}
-
-void CBookmarkDlg::OnDestroy()
-{
-	UpdateData();
-	bPrompt = !!m_bPrompt;
-
-	m_dropTarget.Revoke();
-
-	CDialog::OnDestroy();
-}
+	vector<DjVuBookmark> children;
+	GUTF8String name;
+	GUTF8String url;
+};
 
 inline string tolower(string str)
 {
@@ -406,9 +221,112 @@ inline string tolower(string str)
 	return str;
 }
 
-bool read_bookmarks(const string& data, vector<Bookmark>& bookmarks)
+GUTF8String HTMLEscape(const GUTF8String& str)
 {
-	stack<Bookmark*> parents;
+	if (str.length() == 0)
+		return "";
+
+	bool modified = false;
+	char* ret;
+	GPBuffer<char> gret(ret, str.length() * 7);
+	ret[0] = 0;
+	char* retptr=ret;
+	const char* start = str;
+	const char* s = start;
+	const char* last = s;
+	const char* end = s + str.length();
+	GP<GStringRep> special;
+	for (unsigned long w; (w = GStringRep::UTF8toUCS4((const unsigned char*&)s, end)); last = s)
+	{
+		char const* ss = 0;
+		switch (w)
+		{
+		case '<':
+			ss = "&lt;";
+			break;
+		case '>':
+			ss = "&gt;";
+			break;
+		case '&':
+			ss = "&amp;";
+			break;
+		case '\"':
+			ss="&quot;";
+			break;
+		}
+
+		if (ss)
+		{
+			modified = true;
+			if (s != start)
+			{
+				size_t len = (size_t) last - (size_t) start;
+				strncpy(retptr, start, len);
+				retptr += len;
+				start = s;
+			}
+			if (ss[0])
+			{
+				size_t len = strlen(ss);
+				strcpy(retptr, ss);
+				retptr += len;
+			}
+		}
+	}
+
+	GUTF8String retval;
+	if (modified)
+	{
+		strcpy(retptr, start);
+		retval = ret;
+	}
+	else
+	{
+		retval = str;
+	}
+
+	return retval;
+}
+
+void FixWhitespace(wstring& text)
+{
+	wstring result;
+	result.reserve(text.length());
+
+	int nStart = 0;
+	while (nStart < text.length() && text[nStart] <= 0x20)
+		++nStart;
+	int nEnd = text.length() - 1;
+	while (nEnd >= nStart && text[nEnd] <= 0x20)
+		--nEnd;
+
+	bool bHadSpace = false;
+	for (int nCur = nStart; nCur <= nEnd; ++nCur)
+	{
+		if (text[nCur] <= 0x20)
+		{
+			if (!bHadSpace)
+			{
+				bHadSpace = true;
+				result += text.substr(nStart, nCur - nStart) + L" ";
+			}
+		}
+		else if (bHadSpace)
+		{
+			bHadSpace = false;
+			nStart = nCur;
+		}
+	}
+
+	if (!bHadSpace)
+		result += text.substr(nStart, nEnd + 1 - nStart);
+
+	text.swap(result);
+}
+
+bool ReadBookmarks(const string& data, vector<DjVuBookmark>& bookmarks)
+{
+	stack<DjVuBookmark*> parents;
 
 	string data_lc = tolower(data);
 
@@ -422,7 +340,7 @@ bool read_bookmarks(const string& data, vector<Bookmark>& bookmarks)
 	{
 		if (pos_link < pos_list && pos_link < pos_list_end)
 		{
-			Bookmark bookmark;
+			DjVuBookmark bookmark;
 
 			string url;
 			size_t pos = data_lc.find("href", pos_link);
@@ -443,7 +361,11 @@ bool read_bookmarks(const string& data, vector<Bookmark>& bookmarks)
 					return false;
 				}
 
-				bookmark.url = html_unescape(data.substr(pos + 1, pos_end - pos - 1));
+				bookmark.url = GUTF8String(data.substr(pos + 1, pos_end - pos - 1).c_str()).fromEscaped();
+
+				wstring str;
+				MakeWString(bookmark.url, str);
+				bookmark.url = MakeUTF8String(str);
 			}
 
 			pos = pos_rbracket;
@@ -458,7 +380,13 @@ bool read_bookmarks(const string& data, vector<Bookmark>& bookmarks)
 				return false;
 			}
 
-			bookmark.name = html_unescape(data.substr(pos + 1, pos_end - pos - 1));
+			bookmark.name = GUTF8String(data.substr(pos + 1, pos_end - pos - 1).c_str()).fromEscaped();
+
+			wstring str;
+			MakeWString(bookmark.name, str);
+
+			FixWhitespace(str);
+			bookmark.name = MakeUTF8String(str);
 
 			if (parents.empty())
 				bookmarks.push_back(bookmark);
@@ -494,34 +422,32 @@ bool read_bookmarks(const string& data, vector<Bookmark>& bookmarks)
 	return true;
 }
 
-void create_djvu_bookmarks(const vector<Bookmark>& bookmarks, GP<DjVmNav> nav)
+void InitDjVmNav(const vector<DjVuBookmark>& bookmarks, GP<DjVmNav> nav)
 {
 	for (size_t i = 0; i < bookmarks.size(); ++i)
 	{
-		const Bookmark& bookmark = bookmarks[i];
+		const DjVuBookmark& bookmark = bookmarks[i];
 		GP<DjVmNav::DjVuBookMark> djvu_bm = DjVmNav::DjVuBookMark::create(
-			bookmark.children.size(),
-			bookmark.name.c_str(),
-			bookmark.url.c_str());
+			bookmark.children.size(), bookmark.name, bookmark.url);
 
 		nav->append(djvu_bm);
 
-		create_djvu_bookmarks(bookmark.children, nav);
+		InitDjVmNav(bookmark.children, nav);
 	}
 }
 
-void CBookmarkDlg::OnEmbed()
+bool CBookmarkDlg::OpenBookmarks(const CString& strFileName)
 {
-	UpdateData();
+	CWaitCursor wait;
 
-	ifstream in(m_strBookmarkFile, ios::in);
+	ifstream in(strFileName, ios::in);
 	if (!in)
 	{
-		AfxMessageBox(IDS_CANNOT_OPEN_BOOKMARK_FILE, MB_OK | MB_ICONEXCLAMATION);
-		return;
+		AfxMessageBox(IDS_CANNOT_OPEN_BOOKMARKS_FILE, MB_OK | MB_ICONEXCLAMATION);
+		return false;
 	}
 
-	vector<Bookmark> bookmarks;
+	vector<DjVuBookmark> bookmarks;
 
 	istreambuf_iterator<char> begin(in), end;
 	vector<char> raw_data;
@@ -532,17 +458,180 @@ void CBookmarkDlg::OnEmbed()
 	string data = &raw_data[0];
 	raw_data.clear();
 
-	if (!read_bookmarks(data, bookmarks))
+	if (!ReadBookmarks(data, bookmarks))
 	{
 		AfxMessageBox(IDS_ERROR_READING_BOOKMARKS, MB_OK | MB_ICONEXCLAMATION);
-		return;
+		return false;
 	}
 
+	m_pBookmarks = DjVmNav::create();
+	InitDjVmNav(bookmarks, m_pBookmarks);
+
+	m_bHasBookmarksFile = true;
+	m_strBookmarksFile = strFileName;
+
+	OnKickIdle();
+	m_nBookmarksAction = 1;
+	UpdateData(false);
+
+	return true;
+}
+
+void CBookmarkDlg::OnBrowseBookmarks()
+{
+	CString strFileName = (m_bHasBookmarksFile ? m_strBookmarksFile : _T(""));
+
+	CMyFileDialog dlg(true, _T("html"), strFileName,
+		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST,
+		LoadString(IDS_BOOKMARKS_FILTER));
+
+	CString strTitle;
+	strTitle.LoadString(IDS_BROWSE_BOOKMARKS);
+	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
+
+	UINT nResult = dlg.DoModal();
+	if (nResult != IDOK)
+		return;
+
+	OpenBookmarks(dlg.GetPathName());
+}
+
+HBRUSH CBookmarkDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	HBRUSH brush = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+
+	if (pWnd->GetDlgCtrlID() == IDC_DJVU_FILE && m_pSource == NULL)
+	{
+		pDC->SetTextColor(::GetSysColor(COLOR_3DSHADOW));
+	}
+	if (pWnd->GetDlgCtrlID() == IDC_BOOKMARKS_FILE && !m_bHasBookmarksFile)
+	{
+		pDC->SetTextColor(::GetSysColor(COLOR_3DSHADOW));
+	}
+
+	return brush;
+}
+
+void CBookmarkDlg::OnKickIdle()
+{
+	GetDlgItem(IDC_EXPORT_BOOKMARKS)->EnableWindow(m_pSource != NULL && m_pSource->GetBookmarks() != NULL);
+	GetDlgItem(IDC_BOOKMARKS_REMOVE)->EnableWindow(m_pSource != NULL && m_pSource->GetBookmarks() != NULL);
+	GetDlgItem(IDC_SAVE)->EnableWindow(m_pSource != NULL);
+	GetDlgItem(IDC_SAVE_AS)->EnableWindow(m_pSource != NULL);
+
+	GetDlgItem(IDC_BOOKMARKS_DONTCHANGE)->EnableWindow(m_pSource != NULL);
+	GetDlgItem(IDC_BOOKMARKS_REPLACE)->EnableWindow(m_bHasBookmarksFile);
+}
+
+ofstream& operator<<(ofstream& out, GP<DjVmNav> nav)
+{
+	out << "<html>\n<head>\n"
+		<< "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n"
+		<< "</head>\n<body>\n<ul>\n";
+
+	int nCount = nav->getBookMarkCount();
+
+	stack<int> count, cur;
+	count.push(nCount);
+	cur.push(0);
+
+	const GPList<DjVmNav::DjVuBookMark>& bookmarks = nav->getBookMarkList();
+	GPosition pos = bookmarks;
+
+	for (int k = 0; k < nCount && !!pos; ++k, ++pos)
+	{
+		const GP<DjVmNav::DjVuBookMark> bm = bookmarks[pos];
+
+		for (size_t i = 0; i < count.size() - 1; ++i)
+			out << "  ";
+
+		wstring strURL;
+		MakeWString(bm->url, strURL);
+
+		wstring strName;
+		MakeWString(bm->displayname, strName);
+		FixWhitespace(strName);
+
+		out << "<li><a";
+		if (!strURL.empty())
+			out << " href=\"" << (const char*) HTMLEscape(MakeUTF8String(strURL)) << "\"";
+		out << ">" << (const char*) HTMLEscape(MakeUTF8String(strName)) << "</a>\n";
+
+		++cur.top();
+
+		if (bm->count > 0)
+		{
+			count.push(bm->count);
+			cur.push(0);
+
+			for (size_t i = 0; i < count.size() - 1; ++i)
+				out << "  ";
+
+			out << "<ul>\n";
+		}
+
+		while (cur.top() >= count.top())
+		{
+			for (size_t i = 0; i < count.size() - 1; ++i)
+				out << "  ";
+
+			out << "</ul>\n";
+
+			count.pop();
+			cur.pop();
+		}
+	}
+
+	out << "</ul>\n</body>\n</html>\n";
+	return out;
+}
+
+bool CBookmarkDlg::ExportBookmarks(const CString& strBookmarksFile)
+{
+	ofstream out(strBookmarksFile, ios::out);
+	if (!out)
+	{
+		AfxMessageBox(IDS_CANNOT_WRITE);
+		return false;
+	}
+
+	out << m_pSource->GetBookmarks();
+
+	out.close();
+
+	AfxMessageBox(IDS_EXPORT_DONE, MB_OK | MB_ICONINFORMATION);
+	return true;
+}
+
+void CBookmarkDlg::OnDestroy()
+{
+	CloseDocument(false);
+	m_dropTarget.Revoke();
+
+	CDialog::OnDestroy();
+}
+
+void CBookmarkDlg::OnSave()
+{
+	UpdateData();
+
+	SaveDocument(m_strDjVuFile);
+}
+
+void CBookmarkDlg::OnSaveAs()
+{
+	UpdateData();
+
+	SaveDocument();
+}
+
+void CBookmarkDlg::SaveDocument(const CString& strFileName)
+{
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
 	_tsplitpath(m_strDjVuFile, szDrive, szPath, szName, szExt);
 
-	CString strNewFile = m_strDjVuFile;
-	if (m_bPrompt)
+	CString strNewFile = strFileName;
+	if (strNewFile.IsEmpty())
 	{
 		CString strFileName = szDrive + CString(szPath) + CString(szName) + _T(".new") + CString(szExt);
 
@@ -574,21 +663,22 @@ void CBookmarkDlg::OnEmbed()
 		strNewFile = szNewName;
 	}
 
-	GP<DjVmNav> nav = NULL;
-	if (!bookmarks.empty())
-	{
-		nav = DjVmNav::create();
-		create_djvu_bookmarks(bookmarks, nav);
-	}
 
 	try
 	{
-		m_pDjVuDoc->set_djvm_nav(nav);
+		CWaitCursor wait;
 
-		GURL url = GURL::Filename::UTF8(MakeUTF8String(strNewFile));
+		if (m_nBookmarksAction == 1 && m_bHasBookmarksFile)
+		{
+			m_pSource->GetDjVuDoc()->set_djvm_nav(m_pBookmarks);
+		}
+		else if (m_nBookmarksAction == 2)
+		{
+			m_pSource->GetDjVuDoc()->set_djvm_nav(NULL);
+		}
 
-		DataPool::load_file(url);
-		m_pDjVuDoc->write(ByteStream::create(url, "wb"), true);
+		if (!m_pSource->SaveAs(strNewFile))
+		    G_THROW(ERR_MSG("save.failed"));
 	}
 	catch (GException&)
 	{
@@ -605,18 +695,16 @@ void CBookmarkDlg::OnEmbed()
 		return;
 	}
 
+	CString strOrigFile = (bReplace ? m_strDjVuFile : strNewFile);
+	CloseDocument(false);
+
 	if (bReplace)
 	{
-		CString strOrigFile = m_strDjVuFile;
-		CloseDocument(false);
-
 		TCHAR szTemp[_MAX_PATH];
 		if (!GetTempFileName(szDrive + CString(szPath), "DJV", 0, szTemp))
 		{
 			DeleteFile(strNewFile);
 			AfxMessageBox(IDS_ERROR_WRITING_TEMP);
-
-			OpenDocument(strOrigFile);
 			return;
 		}
 		DeleteFile(szTemp);
@@ -643,10 +731,9 @@ void CBookmarkDlg::OnEmbed()
 		}
 
 		DeleteFile(szTemp);
-
-		OpenDocument(strOrigFile);
 	}
 
+	OpenDocument(strOrigFile);
 	AfxMessageBox(IDS_EMBEDDING_DONE, MB_OK | MB_ICONINFORMATION);
 }
 
@@ -667,7 +754,7 @@ DROPEFFECT CBookmarkDlg::OnDragOver(CWnd* pWnd, COleDataObject* pDataObject,
 	ScreenToClient(rcDjVu);
 
 	CRect rcBookmark;
-	GetDlgItem(IDC_BOOKMARK_GROUP)->GetWindowRect(rcBookmark);
+	GetDlgItem(IDC_BOOKMARKS_GROUP)->GetWindowRect(rcBookmark);
 	ScreenToClient(rcBookmark);
 
 	if (rcDjVu.PtInRect(point) || rcBookmark.PtInRect(point))
@@ -687,7 +774,7 @@ BOOL CBookmarkDlg::OnDrop(CWnd* pWnd, COleDataObject* pDataObject,
 	ScreenToClient(rcDjVu);
 
 	CRect rcBookmark;
-	GetDlgItem(IDC_BOOKMARK_GROUP)->GetWindowRect(rcBookmark);
+	GetDlgItem(IDC_BOOKMARKS_GROUP)->GetWindowRect(rcBookmark);
 	ScreenToClient(rcBookmark);
 
 	if (!rcDjVu.PtInRect(point) && !rcBookmark.PtInRect(point))
@@ -709,9 +796,7 @@ BOOL CBookmarkDlg::OnDrop(CWnd* pWnd, COleDataObject* pDataObject,
 	}
 	else if (rcBookmark.PtInRect(point))
 	{
-		m_strBookmarkFile = strPath;
-		m_bHasBookmarkFile = true;
-		UpdateData(false);
+		OpenBookmarks(strPath);
 	}
 
 	return true;

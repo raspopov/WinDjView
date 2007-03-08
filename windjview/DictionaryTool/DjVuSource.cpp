@@ -653,6 +653,9 @@ DjVuSource::DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DocSet
 		Base64Decode(strCharMap);
 		m_strCharMap = strCharMap.c_str();
 	}
+
+	if (pApplication != NULL)
+		m_pDicInfo = pApplication->GetDictionaryInfo(strFileName);
 }
 
 DjVuSource::~DjVuSource()
@@ -670,6 +673,8 @@ DjVuSource::~DjVuSource()
 	// Close open files
 	GURL url = GURL::Filename::UTF8(MakeUTF8String(m_strFileName));
 	DataPool::load_file(url);
+
+	UpdateObservers(SOURCE_RELEASED);
 }
 
 void DjVuSource::Release()

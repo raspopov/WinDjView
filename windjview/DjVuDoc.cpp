@@ -24,6 +24,7 @@
 #include "DjVuDoc.h"
 #include "DjVuView.h"
 #include "MyFileDialog.h"
+#include "InstallDicDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -36,6 +37,10 @@ IMPLEMENT_DYNCREATE(CDjVuDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(CDjVuDoc, CDocument)
 	ON_COMMAND(ID_FILE_SAVE_COPY_AS, OnSaveCopyAs)
+	ON_COMMAND(ID_FILE_EXPORT_TEXT, OnFileExportText)
+	ON_UPDATE_COMMAND_UI(ID_FILE_EXPORT_TEXT, OnUpdateFileExportText)
+	ON_COMMAND(ID_FILE_INSTALL, OnFileInstall)
+	ON_UPDATE_COMMAND_UI(ID_FILE_INSTALL, OnUpdateFileInstall)
 END_MESSAGE_MAP()
 
 
@@ -156,5 +161,96 @@ void CDjVuDoc::OnSaveCopyAs()
 	catch (...)
 	{
 		theApp.ReportFatalError();
+	}
+}
+
+void CDjVuDoc::OnFileExportText()
+{
+	CString strPathName = m_pSource->GetFileName();
+	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
+	_tsplitpath(strPathName, szDrive, szPath, szName, szExt);
+	CString strFileName = szName + CString(_T(".txt"));
+
+	CMyFileDialog dlg(false, _T("txt"), strFileName, OFN_OVERWRITEPROMPT |
+		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
+		LoadString(IDS_TEXT_FILTER));
+
+	CString strTitle;
+	strTitle.LoadString(IDS_EXPORT_TEXT);
+	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
+
+	if (dlg.DoModal() != IDOK)
+		return;
+
+	CWaitCursor wait;
+
+	strFileName = dlg.GetPathName();
+	wstring wtext;
+	GetDjVuView()->GetNormalizedText(wtext);
+	CString strText = MakeCString(wtext);
+
+	CFile file;
+	if (file.Open(strFileName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive))
+	{
+#ifdef _UNICODE
+		// Get ANSI text
+		int nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+			strText, -1, NULL, 0, NULL, NULL);
+		LPSTR pszText = new CHAR[nSize];
+		::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+			strText, -1, pszText, nSize, NULL, NULL);
+
+		file.Write(pszText, strlen(pszText));
+		delete[] pszText;
+#else
+		file.Write(strText, strText.GetLength());
+#endif
+		file.Close();
+	}
+}
+
+void CDjVuDoc::OnUpdateFileExportText(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(m_pSource->HasText());
+
+	if (m_pSource->GetPageIndex().length() > 0
+			&& (m_pSource->GetDictionaryInfo() == NULL ||
+					!AfxComparePath(m_pSource->GetDictionaryInfo()->strPathName, m_pSource->GetFileName()))
+			&& pCmdUI->m_pMenu->GetMenuItemID(pCmdUI->m_nIndex + 1) != ID_FILE_INSTALL)
+	{
+		pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex + 1, MF_BYPOSITION | MF_STRING,
+				ID_FILE_INSTALL, LoadString(IDS_FILE_INSTALL));
+		pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
+	}
+}
+
+void CDjVuDoc::OnFileInstall()
+{
+	bool bExists = m_pSource->GetDictionaryInfo() != NULL;
+
+	CInstallDicDlg dlg(bExists ? IDD_INSTALL_DIC_REPLACE : IDD_INSTALL_DIC);
+
+	if (dlg.DoModal() == IDOK)
+	{
+		// dlg.m_nChoice will be equal to 0, if this is an IDD_INSTALL_DIC_REPLACE dialog
+		// But this doesn't matter, because in this case the bAllUsers argument of
+		// InstallDictionary will be unused (previous dictionary is always replaced if exists).
+
+		CWaitCursor wait;
+		if (!theApp.InstallDictionary(this, dlg.m_nChoice == 1, !!dlg.m_bKeepOriginal))
+			AfxMessageBox(IDS_INSTALLATION_FAILED, MB_ICONEXCLAMATION | MB_OK);
+		else
+			AfxMessageBox(IDS_INSTALLATION_SUCCEEDED, MB_ICONEXCLAMATION | MB_OK);
+	}
+}
+
+void CDjVuDoc::OnUpdateFileInstall(CCmdUI* pCmdUI)
+{
+	if (m_pSource->GetPageIndex().length() == 0 || m_pSource->GetDictionaryInfo() != NULL
+			&& AfxComparePath(m_pSource->GetDictionaryInfo()->strPathName, m_pSource->GetFileName()))
+	{
+		pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
+		pCmdUI->m_nIndex--;
+		pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
 	}
 }

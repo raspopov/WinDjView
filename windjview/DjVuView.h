@@ -81,6 +81,7 @@ public:
 
 	CSize GetPageSize(int nPage) const { return m_pages[nPage].GetSize(m_nRotate); }
 	int GetPageDPI(int nPage) const { return m_pages[nPage].info.nDPI; }
+	void GetNormalizedText(wstring& text, bool bSelected = false, int nMaxLength = -1);
 
 	void UpdateKeyboard(UINT nKey, bool bDown);
 	void UpdateVisiblePages();
@@ -320,7 +321,6 @@ protected:
 	void GetTextPosFromBottom(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos) const;
 	void FindSelectionZones(DjVuSelection& list, DjVuTXT* pText, int nStart, int nEnd) const;
 	void SelectTextRange(int nPage, int nStart, int nEnd, bool& bInfoLoaded, CWaitCursor*& pWaitCursor);
-	void GetNormalizedText(wstring& text, bool bSelected = false, int nMaxLength = -1);
 	bool m_bHasSelection;
 	int m_nSelectionPage;
 	GRect m_rcSelection;
@@ -405,8 +405,6 @@ protected:
 	afx_msg void OnUpdateMode(CCmdUI* pCmdUI);
 	afx_msg void OnEditCopy();
 	afx_msg void OnUpdateEditCopy(CCmdUI* pCmdUI);
-	afx_msg void OnFileExportText();
-	afx_msg void OnUpdateFileExportText(CCmdUI* pCmdUI);
 	afx_msg void OnViewDisplay(UINT nID);
 	afx_msg void OnUpdateViewDisplay(CCmdUI* pCmdUI);
 	afx_msg void OnViewFullscreen();

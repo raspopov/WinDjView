@@ -171,11 +171,22 @@ GUTF8String MakeUTF8String(const CString& strText)
 	LPCWSTR pszUnicodeText = strText;
 #else
 	nSize = ::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)strText, -1, NULL, 0);
+	if (nSize == 0)
+		return "";
+
 	LPWSTR pszUnicodeText = new WCHAR[nSize];
 	::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)strText, -1, pszUnicodeText, nSize);
 #endif
 
 	nSize = ::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, NULL, 0, NULL, NULL);
+	if (nSize == 0)
+	{
+#ifndef _UNICODE
+		delete[] pszUnicodeText;
+#endif
+		return "";
+	}
+
 	LPSTR pszTextUTF8 = new CHAR[nSize];
 	::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, pszTextUTF8, nSize, NULL, NULL);
 
@@ -242,6 +253,9 @@ GUTF8String MakeUTF8String(const wstring& strText)
 	LPCWSTR pszUnicodeText = (LPCWSTR)strText.c_str();
 
 	int nSize = ::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, NULL, 0, NULL, NULL);
+	if (nSize == 0)
+		return "";
+
 	LPSTR pszTextUTF8 = new CHAR[nSize];
 	::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, pszTextUTF8, nSize, NULL, NULL);
 
@@ -269,7 +283,7 @@ CString MakeCString(const GUTF8String& text)
 	// Only Windows XP supports checking for invalid characters in UTF8 encoding
 	// inside MultiByteToWideChar function
 	if (IsWinXPOrLater())
-		dwFlags = MB_ERR_INVALID_CHARS;
+		dwFlags |= MB_ERR_INVALID_CHARS;
 
 	// Make our own check anyway
 	if (!IsValidUTF8(text))
@@ -293,6 +307,12 @@ CString MakeCString(const GUTF8String& text)
 		// Prepare ANSI text
 		nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
 			pszUnicodeText, -1, NULL, 0, NULL, NULL);
+		if (nSize == 0)
+		{
+			delete[] pszUnicodeText;
+			return "";
+		}
+
 		::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
 			pszUnicodeText, -1, strResult.GetBuffer(nSize), nSize, NULL, NULL);
 		strResult.ReleaseBuffer();
@@ -319,6 +339,9 @@ CString MakeCString(const wstring& text)
 	// Prepare ANSI text
 	int nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
 		pszUnicodeText, -1, NULL, 0, NULL, NULL);
+	if (nSize == 0)
+		return "";
+
 	::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
 		pszUnicodeText, -1, strResult.GetBuffer(nSize), nSize, NULL, NULL);
 	strResult.ReleaseBuffer();
@@ -335,9 +358,14 @@ void MakeWString(const CString& strText, wstring& result)
 	result = (const wchar_t*)pszText;
 #else
 	int nSize = ::MultiByteToWideChar(CP_ACP, 0, pszText, -1, NULL, 0);
-	result.resize(nSize - 1);
-	if (nSize > 1)
-		::MultiByteToWideChar(CP_ACP, 0, pszText, -1, (LPWSTR)result.data(), nSize);
+	if (nSize > 0)
+	{
+		result.resize(nSize - 1);
+		if (nSize > 1)
+			::MultiByteToWideChar(CP_ACP, 0, pszText, -1, (LPWSTR)result.data(), nSize);
+	}
+	else
+		result.erase();
 #endif
 }
 
@@ -358,7 +386,7 @@ bool MakeWString(const GUTF8String& text, wstring& result)
 	// Only Windows XP supports checking for invalid characters in UTF8 encoding
 	// inside MultiByteToWideChar function
 	if (IsWinXPOrLater())
-		dwFlags = MB_ERR_INVALID_CHARS;
+		dwFlags |= MB_ERR_INVALID_CHARS;
 
 	// Make our own check anyway
 	int nSize;
@@ -372,9 +400,10 @@ bool MakeWString(const GUTF8String& text, wstring& result)
 	}
 	else
 	{
-		result.resize(text.length());
-		for (int i = 0; i < static_cast<int>(text.length()); ++i)
-			result[i] = static_cast<unsigned char>(text[i]);
+		int nSize = ::MultiByteToWideChar(CP_ACP, 0, (LPCSTR) text, -1, NULL, 0);
+		result.resize(nSize - 1);
+		if (nSize > 1)
+			::MultiByteToWideChar(CP_ACP, 0, (LPCSTR) text, -1, (LPWSTR) result.data(), nSize);
 		return true;
 	}
 }

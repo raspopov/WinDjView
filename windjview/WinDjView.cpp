@@ -98,6 +98,11 @@ const TCHAR* s_pszShrinkOversized = _T("shrink");
 const TCHAR* s_pszDocumentsSection = _T("Documents");
 const TCHAR* s_pszSettings = _T("settings");
 
+const TCHAR* s_pszDictionariesSection = _T("Dictionaries");
+const TCHAR* s_pszFileTimeLow = _T("modified-l");
+const TCHAR* s_pszFileTimeHigh = _T("modified-h");
+
+
 // CDjViewApp
 
 BEGIN_MESSAGE_MAP(CDjViewApp, CWinApp)
@@ -112,7 +117,8 @@ END_MESSAGE_MAP()
 // CDjViewApp construction
 
 CDjViewApp::CDjViewApp()
-	: m_bInitialized(false), m_pDjVuTemplate(NULL), m_nThreadCount(0)
+	: m_bInitialized(false), m_pDjVuTemplate(NULL), m_nThreadCount(0),
+	  m_pPendingSource(NULL)
 {
 	DjVuSource::SetApplication(this);
 }
@@ -184,6 +190,8 @@ BOOL CDjViewApp::InitInstance()
 
 	if (m_appSettings.bRestoreAssocs)
 		RegisterShellFileTypes();
+
+	LoadDictionaries();
 
 	// Parse command line for standard shell commands, DDE, file open
 	CCommandLineInfo cmdInfo;
@@ -598,22 +606,44 @@ void CDjViewApp::SaveSettings()
 		const DocSettings& settings = (*it).second;
 		GUTF8String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + settings.GetXML();
 
-		GP<ByteStream> raw = ByteStream::create();
-
-		GP<ByteStream> compressed = BSByteStream::create(raw, 128);
-		compressed->writall((const char*) xml, xml.length());
-		compressed = NULL;
-
-		UINT nSize = raw->size();
-		if (nSize > 0)
-		{
-			LPBYTE pBuf = new BYTE[nSize];
-			raw->readat(pBuf, nSize, 0);
-
-			WriteProfileBinary(s_pszDocumentsSection + CString(_T("\\")) + strKey, s_pszSettings, pBuf, nSize);
-			delete[] pBuf;
-		}
+		WriteProfileCompressed(s_pszDocumentsSection + CString(_T("\\")) + strKey, s_pszSettings,
+				(const char*) xml, xml.length());
 	}
+
+	map<CString, DictionaryInfo>::iterator itDic;
+	for (itDic = m_dictionaries.begin(); itDic != m_dictionaries.end(); ++itDic)
+	{
+		CString strKey = (*itDic).second.strFileName;
+		DictionaryInfo& info = (*itDic).second;
+
+		WriteProfileInt(s_pszDictionariesSection + CString(_T("\\")) + strKey,
+				s_pszFileTimeLow, info.ftModified.dwLowDateTime);
+		WriteProfileInt(s_pszDictionariesSection + CString(_T("\\")) + strKey,
+				s_pszFileTimeHigh, info.ftModified.dwHighDateTime);
+	}
+}
+
+BOOL CDjViewApp::WriteProfileCompressed(LPCTSTR pszSection, LPCTSTR pszEntry, LPCVOID pvData, DWORD dwLength)
+{
+	BOOL bResult = false;
+
+	GP<ByteStream> raw = ByteStream::create();
+
+	GP<ByteStream> compressed = BSByteStream::create(raw, 128);
+	compressed->writall(pvData, dwLength);
+	compressed = NULL;
+
+	UINT nSize = raw->size();
+	if (nSize > 0)
+	{
+		LPBYTE pBuf = new BYTE[nSize];
+		raw->readat(pBuf, nSize, 0);
+
+		bResult = WriteProfileBinary(pszSection, pszEntry, pBuf, nSize);
+		delete[] pBuf;
+	}
+
+	return bResult;
 }
 
 int CDjViewApp::ExitInstance()
@@ -912,6 +942,399 @@ void CDjViewApp::ReportFatalError()
 			ExitProcess(1);
 		}
 	}
+}
+
+struct ShellAPI
+{
+	ShellAPI();
+	~ShellAPI();
+
+	typedef HRESULT (WINAPI* pfnSHGetFolderPath)(HWND hwndOwner, int nFolder,
+		HANDLE hToken, DWORD dwFlags, LPTSTR pszPath);
+	typedef BOOL (WINAPI* pfnSHGetSpecialFolderPath)(HWND hwndOwner, LPTSTR lpszPath,
+		int nFolder, BOOL fCreate);
+
+	pfnSHGetFolderPath pSHGetFolderPath;
+	pfnSHGetSpecialFolderPath pSHGetSpecialFolderPath;
+
+	bool IsLoaded() const { return hShell32 != NULL; }
+	HINSTANCE hShell32, hSHFolder;
+};
+
+static ShellAPI theShellAPI;
+
+ShellAPI::ShellAPI()
+	: pSHGetFolderPath(NULL), pSHGetSpecialFolderPath(NULL),
+	  hShell32(NULL), hSHFolder(NULL)
+{
+	hShell32 = ::LoadLibrary(_T("shell32.dll"));
+	if (hShell32 != NULL)
+	{
+#ifdef UNICODE
+		pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hShell32, "SHGetFolderPathW");
+		pSHGetSpecialFolderPath = (pfnSHGetSpecialFolderPath) ::GetProcAddress(hShell32, "SHGetSpecialFolderPathW");
+#else
+		pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hShell32, "SHGetFolderPathA");
+		pSHGetSpecialFolderPath = (pfnSHGetSpecialFolderPath) ::GetProcAddress(hShell32, "SHGetSpecialFolderPathA");
+#endif
+
+		if (pSHGetFolderPath == NULL)
+		{
+			hSHFolder = ::LoadLibrary(_T("shfolder.dll"));
+			if (hSHFolder != NULL)
+			{
+#ifdef UNICODE
+				pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hSHFolder, "SHGetFolderPathW");
+#else
+				pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hSHFolder, "SHGetFolderPathA");
+#endif
+			}
+		}
+	}
+}
+
+ShellAPI::~ShellAPI()
+{
+	if (hShell32 != NULL)
+		::FreeLibrary(hShell32);
+	if (hSHFolder != NULL)
+		::FreeLibrary(hSHFolder);
+}
+
+void CDjViewApp::LoadDictionaries()
+{
+	TCHAR szFolder[MAX_PATH];
+	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME];
+	if (theShellAPI.pSHGetFolderPath != NULL)
+	{
+		if (SUCCEEDED(theShellAPI.pSHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, SHGFP_TYPE_CURRENT, szFolder)))
+		{
+			_tsplitpath(szFolder, szDrive, szPath, szName, NULL);
+			CString strPathName = szDrive + CString(szPath) + szName + CString(_T("\\WinDjView\\Dictionaries\\"));
+			LoadDictionaries(strPathName);
+		}
+
+		if (SUCCEEDED(theShellAPI.pSHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, szFolder)))
+		{
+			_tsplitpath(szFolder, szDrive, szPath, szName, NULL);
+			CString strPathName = szDrive + CString(szPath) + szName + CString(_T("\\WinDjView\\Dictionaries\\"));
+			LoadDictionaries(strPathName);
+		}
+	}
+	else if (theShellAPI.pSHGetSpecialFolderPath != NULL)
+	{
+		if (theShellAPI.pSHGetSpecialFolderPath(NULL, szFolder, CSIDL_COMMON_APPDATA, false))
+		{
+			_tsplitpath(szFolder, szDrive, szPath, szName, NULL);
+			CString strPathName = szDrive + CString(szPath) + szName + CString(_T("\\WinDjView\\Dictionaries\\"));
+			LoadDictionaries(strPathName);
+		}
+
+		if (theShellAPI.pSHGetSpecialFolderPath(NULL, szFolder, CSIDL_APPDATA, false))
+		{
+			_tsplitpath(szFolder, szDrive, szPath, szName, NULL);
+			CString strPathName = szDrive + CString(szPath) + szName + CString(_T("\\WinDjView\\Dictionaries\\"));
+			LoadDictionaries(strPathName);
+		}
+	}
+
+	GetModuleFileName(theApp.m_hInstance, szFolder, _MAX_PATH);
+	_tsplitpath(szFolder, szDrive, szPath, NULL, NULL);
+	CString strPathName = szDrive + CString(szPath) + _T("Dictionaries\\");
+	LoadDictionaries(strPathName);
+
+	// Purge deleted dictionaries from registry
+	HKEY hSecKey = GetSectionKey(s_pszDictionariesSection);
+	if (hSecKey != NULL)
+	{
+		DWORD nSubKeys;
+		if (RegQueryInfoKey(hSecKey, NULL, NULL, NULL, &nSubKeys, NULL, NULL,
+				NULL, NULL, NULL, NULL, NULL) == ERROR_SUCCESS)
+		{
+			TCHAR szKey[_MAX_PATH];
+			DWORD dwSize = _MAX_PATH;
+			FILETIME ftWrite;
+			for (int nKey = static_cast<int>(nSubKeys) - 1; nKey >= 0; --nKey)
+			{
+				if (::RegEnumKeyEx(hSecKey, nKey, szKey, &dwSize, 0, NULL, NULL, &ftWrite) != ERROR_SUCCESS)
+					break;
+
+				CString strKey = szKey;
+				strKey.MakeLower();
+				if (m_dictionaries.find(strKey) == m_dictionaries.end())
+				{
+					::RegDeleteKey(hSecKey, szKey);
+				}
+			}
+		}
+
+		::RegCloseKey(hSecKey);
+	}
+}
+
+void CDjViewApp::LoadDictionaries(const CString& strDirectory)
+{
+	CString strFileMask = strDirectory + _T("*");
+	TCHAR szName[_MAX_FNAME], szExt[_MAX_EXT];
+
+	WIN32_FIND_DATA fd;
+	HANDLE hFind = FindFirstFile(strFileMask, &fd);
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			DictionaryInfo info;
+			info.strPathName = strDirectory + fd.cFileName;
+
+			if ((GetFileAttributes(info.strPathName) & FILE_ATTRIBUTE_DIRECTORY) != 0)
+				continue;
+
+			_tsplitpath(info.strPathName, NULL, NULL, szName, szExt);
+			info.strFileName = CString(szName) + szExt;
+
+			CString strKey = info.strFileName;
+			strKey.MakeLower();
+			if (m_dictionaries.find(strKey) != m_dictionaries.end())
+				continue;
+
+			LoadDictionaryInfo(info);
+			LoadDictionaryInfoFromDisk(info);
+
+			m_dictionaries.insert(make_pair(strKey, info));
+		} while (FindNextFile(hFind, &fd) != 0);
+
+		FindClose(hFind);
+	}
+}
+
+void CDjViewApp::LoadDictionaryInfo(DictionaryInfo& info)
+{
+	CString strSection = s_pszDictionariesSection + CString(_T("\\")) + info.strFileName;
+
+	info.ftModified.dwLowDateTime = GetProfileInt(strSection, s_pszFileTimeLow, 0);
+	info.ftModified.dwHighDateTime = GetProfileInt(strSection, s_pszFileTimeHigh, 0);
+}
+
+bool CDjViewApp::LoadDictionaryInfoFromDisk(DictionaryInfo& info)
+{
+	HANDLE hFile = ::CreateFile(info.strPathName, GENERIC_READ,
+			FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	if (hFile == NULL)
+		return false;
+
+	FILETIME ftModified;
+	if (!::GetFileTime(hFile, NULL, NULL, &ftModified))
+	{
+		::CloseHandle(hFile);
+		return false;
+	}
+
+	::CloseHandle(hFile);
+
+	if (memcmp(&ftModified, &info.ftModified, sizeof(FILETIME)) == 0)
+		return true;
+
+	info.ftModified = ftModified;
+
+	DjVuSource* pSource = DjVuSource::FromFile(info.strPathName);
+	if (pSource == NULL)
+		return false;
+
+	bool bIsDictionary = (pSource->GetPageIndex().length() != 0);
+
+	pSource->Release();
+	return bIsDictionary;
+}
+
+bool CDjViewApp::InstallDictionary(CDjVuDoc* pDoc, bool bAllUsers, bool bKeepOriginal)
+{
+	DjVuSource* pSource = pDoc->GetSource();
+
+	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
+	CString strPath;
+
+	if (pSource->GetDictionaryInfo() != NULL)
+	{
+		// Replacing existing dictionary. Check that this is not the same file.
+		if (AfxComparePath(pDoc->GetPathName(), pSource->GetDictionaryInfo()->strPathName))
+			return false;
+
+		_tsplitpath(pSource->GetDictionaryInfo()->strPathName, szDrive, szPath, NULL, NULL);
+		strPath = szDrive + CString(szPath);
+	}
+	else
+	{
+		TCHAR szFolder[MAX_PATH];
+		if (bAllUsers)
+		{
+			if (theShellAPI.pSHGetFolderPath != NULL)
+			{
+				if (!SUCCEEDED(theShellAPI.pSHGetFolderPath(NULL, CSIDL_COMMON_APPDATA | CSIDL_FLAG_CREATE,
+						NULL, SHGFP_TYPE_CURRENT, szFolder)))
+					return false;
+			}
+			else if (theShellAPI.pSHGetSpecialFolderPath != NULL)
+			{
+				if (!theShellAPI.pSHGetSpecialFolderPath(NULL, szFolder,
+						CSIDL_COMMON_APPDATA | CSIDL_FLAG_CREATE, false))
+					return false;
+			}
+			else
+				return false;
+		}
+		else
+		{
+			if (theShellAPI.pSHGetFolderPath != NULL)
+			{
+				if (!SUCCEEDED(theShellAPI.pSHGetFolderPath(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE,
+						NULL, SHGFP_TYPE_CURRENT, szFolder)))
+					return false;
+			}
+			else if (theShellAPI.pSHGetSpecialFolderPath != NULL)
+			{
+				if (!theShellAPI.pSHGetSpecialFolderPath(NULL, szFolder,
+						CSIDL_APPDATA | CSIDL_FLAG_CREATE, false))
+					return false;
+			}
+			else
+				return false;
+		}
+
+		_tsplitpath(szFolder, szDrive, szPath, szName, NULL);
+		strPath = szDrive + CString(szPath) + szName + _T("\\WinDjView");
+		if (!CreateDirectory(strPath, NULL))
+		{
+			if (GetLastError() != ERROR_ALREADY_EXISTS)
+				return false;
+		}
+
+		strPath += _T("\\Dictionaries");
+		if (!CreateDirectory(strPath, NULL))
+		{
+			if (GetLastError() != ERROR_ALREADY_EXISTS)
+				return false;
+		}
+
+		strPath += _T("\\");
+	}
+
+	CString strOldName = pDoc->GetPathName();
+	_tsplitpath(strOldName, NULL, NULL, szName, szExt);
+	CString strNewName = strPath + CString(szName) + szExt;
+
+	CDjVuDoc* pPrevDoc = (CDjVuDoc*) FindOpenDocument(strNewName);
+	if (pPrevDoc != NULL)
+	{
+		m_pPendingSource = pPrevDoc->GetSource();
+		m_docClosed.ResetEvent();
+
+		pPrevDoc->GetSource()->AddObserver(this);
+		pPrevDoc->OnCloseDocument();
+
+		::WaitForSingleObject(m_docClosed.m_hObject, INFINITE);
+	}
+
+	if (!pDoc->GetSource()->SaveAs(strNewName))
+		return false;
+
+	SaveSettings();
+
+	// Create and initialize DictionaryInfo for the newly installed dictionary
+	DictionaryInfo info;
+	info.strFileName = CString(szName) + szExt;
+	info.strPathName = strNewName;
+
+	LoadDictionaryInfoFromDisk(info);
+
+	CString strKey = info.strFileName;
+	strKey.MakeLower();
+
+	map<CString, DictionaryInfo>::iterator it = m_dictionaries.find(strKey);
+	bool bHadDict = it != m_dictionaries.end();
+	DictionaryInfo prevInfo;
+	if (bHadDict)
+		prevInfo = (*it).second;
+
+	m_dictionaries[strKey] = info;
+
+	// Open the new document and close the original
+	CDjVuDoc* pNewDoc = (CDjVuDoc*) OpenDocumentFile(strNewName);
+	if (pNewDoc == NULL)
+	{
+		if (bHadDict)
+			m_dictionaries[strKey] = prevInfo;
+		return false;
+	}
+
+	if (!bKeepOriginal)
+	{
+		// Document is closed immediately, but the rendering threads may still be running.
+		// So we have to postpone the deleting until the document source is released.
+		m_deleteOnRelease.insert(pDoc->GetSource());
+		pDoc->GetSource()->AddObserver(this);
+	}
+
+	pDoc->OnCloseDocument();
+
+	// Remove from recents
+	for (int i = 0; i < m_pRecentFileList->GetSize(); ++i)
+	{
+		if (AfxComparePath((*m_pRecentFileList)[i], strOldName))
+		{
+			m_pRecentFileList->Remove(i);
+			break;
+		}
+	}
+
+	return true;
+}
+
+void CDjViewApp::OnUpdate(const Observable* source, const Message* message)
+{
+	if (message->code == SOURCE_RELEASED)
+	{
+		DjVuSource* pSource = (DjVuSource*) source;
+		set<DjVuSource*>::iterator it = m_deleteOnRelease.find(pSource);
+		if (it != m_deleteOnRelease.end())
+		{
+			m_deleteOnRelease.erase(it);
+
+			// SHFileOperation needs an extra NULL character at the end
+			TCHAR pszFileToDelete[_MAX_PATH + 1];
+			_tcsncpy(pszFileToDelete, pSource->GetFileName(), _MAX_PATH);
+			pszFileToDelete[pSource->GetFileName().GetLength() + 1] = 0;
+
+			// Move to recycle bin
+			SHFILEOPSTRUCT fo;
+			ZeroMemory(&fo, sizeof(fo));
+			fo.wFunc = FO_DELETE;
+			fo.pFrom = pszFileToDelete;
+			fo.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT;
+
+			SHFileOperation(&fo);
+		}
+
+		if (pSource == m_pPendingSource)
+		{
+			m_pPendingSource = NULL;
+			m_docClosed.SetEvent();
+		}
+	}
+}
+
+DictionaryInfo* CDjViewApp::GetDictionaryInfo(const CString& strFileName)
+{
+	TCHAR szName[_MAX_FNAME], szExt[_MAX_EXT];
+	_tsplitpath(strFileName, NULL, NULL, szName, szExt);
+
+	CString strKey = CString(szName) + szExt;
+	strKey.MakeLower();
+
+	map<CString, DictionaryInfo>::iterator it = m_dictionaries.find(strKey);
+	if (it != m_dictionaries.end())
+		return &(*it).second;
+
+	return NULL;
 }
 
 bool IsFromCurrentProcess(CWnd* pWnd)

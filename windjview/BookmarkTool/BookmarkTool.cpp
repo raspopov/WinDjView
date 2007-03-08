@@ -69,14 +69,10 @@ BOOL CBookmarkApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	SetRegistryKey(_T("Andrew Zhezherun"));
 
-	CBookmarkDlg::bPrompt = !!GetProfileInt(s_pszGlobalSettings, s_pszPrompt, true);
-
 	CBookmarkDlg dlg;
 	m_pMainWnd = &dlg;
 
 	dlg.DoModal();
-
-	WriteProfileInt(s_pszGlobalSettings, s_pszPrompt, CBookmarkDlg::bPrompt);
 
 	AfxOleTerm();
 

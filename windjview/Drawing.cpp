@@ -276,7 +276,7 @@ CDIB* RenderEmpty(const CSize& szBitmap, const CDisplaySettings& displaySettings
 		++nRowLength;
 
 	LPBYTE pBits = pBitmap->GetBits();
-	memset(pBits, 0, nRowLength*szBitmap.cy);
+	ZeroMemory(pBits, nRowLength*szBitmap.cy);
 
 	return pBitmap;
 }

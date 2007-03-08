@@ -20,6 +20,7 @@
 #pragma once
 
 #include "Global.h"
+#include "XMLParser.h"
 
 
 struct XMLNode;
@@ -163,13 +164,27 @@ struct PageInfo
 	GP<DjVuTXT> pText;
 };
 
+struct DictionaryInfo
+{
+	DictionaryInfo() : bEnabled(true) {}
+
+	CString strFileName;
+	CString strPathName;
+	bool bEnabled;
+	XMLNode title;
+	XMLNode langFrom;
+	XMLNode langTo;
+	FILETIME ftModified;
+};
+
 struct IApplication
 {
 	virtual bool LoadDocSettings(const CString& strKey, DocSettings* pSettings) = 0;
+	virtual DictionaryInfo* GetDictionaryInfo(const CString& strFileName) = 0;
 	virtual void ReportFatalError() = 0;
 };
 
-class DjVuSource : public RefCount
+class DjVuSource : public RefCount, public Observable
 {
 public:
 	~DjVuSource();
@@ -198,6 +213,7 @@ public:
 	bool SaveAs(const CString& strFileName);
 
 	DocSettings* GetSettings() { return m_pSettings; }
+	DictionaryInfo* GetDictionaryInfo() { return m_pDicInfo; }
 
 	static map<MD5, DocSettings>& GetAllSettings() { return settings; }
 
@@ -236,6 +252,7 @@ protected:
 
 	vector<PageData> m_pages;
 	DocSettings* m_pSettings;
+	DictionaryInfo* m_pDicInfo;
 
 	static map<CString, DjVuSource*> openDocuments;
 	static CCriticalSection openDocumentsLock;

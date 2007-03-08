@@ -16,6 +16,8 @@
 #define IDD_SETTINGS_ASSOCS             110
 #define IDD_ANNOTATION                  111
 #define IDD_RENAME_BOOKMARK             112
+#define IDD_INSTALL_DIC                 113
+#define IDD_INSTALL_DIC_REPLACE         114
 #define IDR_MAINFRAME                   128
 #define IDR_DjVuTYPE                    129
 #define IDR_POPUP                       130
@@ -124,6 +126,9 @@
 #define IDS_PROMPT_BOOKMARK_DESTINATION 283
 #define IDS_PROMPT_BOOKMARK_DELETE      284
 #define IDS_PROMPT_ANNOTATION_DELETE    285
+#define IDS_FILE_INSTALL                286
+#define IDS_INSTALLATION_FAILED         287
+#define IDS_INSTALLATION_SUCCEEDED      288
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -206,6 +211,9 @@
 #define IDC_STATIC_MORE                 1078
 #define IDC_ADD_BOOKMARK                1079
 #define IDC_COMBO_UNITS                 1080
+#define IDC_CURRENT_USER                1082
+#define IDC_ALL_USERS                   1083
+#define IDC_KEEP_ORIGINAL               1084
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_VIEW_NEXTPAGE_SHORTCUT       32773
@@ -293,14 +301,15 @@
 #define ID_BOOKMARK_ADD                 33143
 #define ID_ZOOM_TO_SELECTION            33144
 #define ID_VIEW_SIDEBAR                 33145
+#define ID_FILE_INSTALL                 33146
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        286
-#define _APS_NEXT_COMMAND_VALUE         33146
-#define _APS_NEXT_CONTROL_VALUE         1082
-#define _APS_NEXT_SYMED_VALUE           113
+#define _APS_NEXT_RESOURCE_VALUE        289
+#define _APS_NEXT_COMMAND_VALUE         33147
+#define _APS_NEXT_CONTROL_VALUE         1085
+#define _APS_NEXT_SYMED_VALUE           115
 #endif
 #endif

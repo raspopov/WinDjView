@@ -409,7 +409,7 @@ void CMyColorPicker::OnMouseMove(UINT nFlags, CPoint point)
 
 		TRACKMOUSEEVENT tme;
 
-		::ZeroMemory(&tme, sizeof(tme));
+		ZeroMemory(&tme, sizeof(tme));
 		tme.cbSize = sizeof(tme);
 		tme.dwFlags = TME_LEAVE;
 		tme.hwndTrack = m_hWnd;

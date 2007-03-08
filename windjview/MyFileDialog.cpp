@@ -51,7 +51,7 @@ int CMyFileDialog::DoModal()
 	ASSERT(AfxIsValidAddress(m_ofn.lpstrFile, m_ofn.nMaxFile));
 	DWORD nOffset = lstrlen(m_ofn.lpstrFile) + 1;
 	ASSERT(nOffset <= m_ofn.nMaxFile);
-	memset(m_ofn.lpstrFile + nOffset, 0, (m_ofn.nMaxFile - nOffset)*sizeof(TCHAR));
+	ZeroMemory(m_ofn.lpstrFile + nOffset, (m_ofn.nMaxFile - nOffset)*sizeof(TCHAR));
 
 	// WINBUG: This is a special case for the file open/save dialog,
 	//  which sometimes pumps while it is coming up but before it has
@@ -74,7 +74,7 @@ int CMyFileDialog::DoModal()
 	else
 		AfxHookWindowCreate(this);
 
-	memset(&m_ofnEx, 0, sizeof(m_ofnEx));
+	ZeroMemory(&m_ofnEx, sizeof(m_ofnEx));
 	if (IsWin2kOrLater())
 	{
 		m_ofnEx.lStructSize = sizeof(m_ofnEx);

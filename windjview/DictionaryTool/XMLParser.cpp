@@ -23,7 +23,6 @@
 #include <istream>
 #include <streambuf>
 #include <string>
-using namespace std;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -40,6 +39,19 @@ inline bool IsNameChar(int c)
 	return IsNameStart(c) || c >= '0' && c <= '9' || c == '-' || c == '.' || c == 0xb7;
 }
 
+
+XMLNode& XMLNode::operator=(const XMLNode& node)
+{
+	if (&node != this)
+	{
+		childElements = node.childElements;
+		tagName = node.tagName;
+		text = node.text;
+		attributes = node.attributes;
+	}
+
+	return *this;
+}
 
 const wstring* XMLNode::GetAttribute(const CString& name) const
 {

@@ -21,6 +21,8 @@
 
 #include "MyDropTarget.h"
 
+class DjVuSource;
+
 
 // CBookmarkDlg dialog
 
@@ -32,15 +34,14 @@ public:
 // Dialog Data
 	enum { IDD = IDD_BOOKMARKTOOL };
 	CString m_strDjVuFile;
-	CString m_strBookmarkFile;
+	CString m_strBookmarksFile;
+	int m_nBookmarksAction;
 
 // Overrides
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 
 public:
-	static bool bPrompt;
-
 	virtual DROPEFFECT OnDragEnter(CWnd* pWnd, COleDataObject* pDataObject,
 		DWORD dwKeyState, CPoint point);
 	virtual DROPEFFECT OnDragOver(CWnd* pWnd, COleDataObject* pDataObject,
@@ -55,22 +56,25 @@ public:
 protected:
 	HICON m_hIcon;
 	bool m_bHasDjVuFile;
-	bool m_bHasBookmarkFile;
-	BOOL m_bPrompt;
+	bool m_bHasBookmarksFile;
+	GP<DjVmNav> m_pBookmarks;
 	CMyDropTarget m_dropTarget;
 
 	bool ExportBookmarks(const CString& strBookmarkFile);
 	bool OpenDocument(const CString& strFileName);
 	void CloseDocument(bool bUpdateData = true);
+	void SaveDocument(const CString& strFileName = _T(""));
+	bool OpenBookmarks(const CString& strFileName);
 
-	GP<DjVuDocument> m_pDjVuDoc;
+	DjVuSource* m_pSource;
 
 // Generated message map functions
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-	afx_msg void OnEmbed();
-	afx_msg void OnExport();
+	afx_msg void OnSave();
+	afx_msg void OnSaveAs();
+	afx_msg void OnExportBookmarks();
 	afx_msg void OnBrowseDjvu();
 	afx_msg void OnBrowseBookmarks();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);

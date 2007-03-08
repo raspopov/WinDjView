@@ -202,6 +202,10 @@ SOURCE=.\GotoPageDlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\InstallDicDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MagnifyWnd.cpp
 # End Source File
 # Begin Source File
@@ -388,6 +392,10 @@ SOURCE=.\Global.h
 # Begin Source File
 
 SOURCE=.\GotoPageDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\InstallDicDlg.h
 # End Source File
 # Begin Source File
 

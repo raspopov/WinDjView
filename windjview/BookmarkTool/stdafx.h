@@ -60,6 +60,7 @@
 #include <afxole.h>
 #include <afxdtctl.h>
 #include <afxcmn.h>
+#include <afxmt.h>
 #include <afxpriv.h>
 
 #if (_MFC_VER > 0x0600)
@@ -77,6 +78,8 @@
 #include <fstream>
 #include <string>
 #include <set>
+#include <list>
+#include <map>
 using namespace std;
 
 #ifdef NDEBUG
@@ -93,5 +96,7 @@ using namespace std;
 #include "../libdjvu/DjVuDocument.h"
 #include "../libdjvu/DjVuImage.h"
 #include "../libdjvu/DjVmNav.h"
+#include "../libdjvu/DjVuText.h"
 #include "../libdjvu/DataPool.h"
 #include "../libdjvu/ByteStream.h"
+#include "../libdjvu/IFFByteStream.h"

@@ -52,15 +52,17 @@ bool IsFromCurrentProcess(CWnd* pWnd);
 
 // CDjViewApp
 
-class CDjViewApp : public CWinApp, public Observable, public IApplication
+class CDjViewApp : public CWinApp, public Observable, public IApplication, public Observer
 {
 public:
 	CDjViewApp();
 
 	BOOL WriteProfileDouble(LPCTSTR pszSection, LPCTSTR pszEntry, double fValue);
 	double GetProfileDouble(LPCTSTR pszSection, LPCTSTR pszEntry, double fDefault);
+	BOOL WriteProfileCompressed(LPCTSTR pszSection, LPCTSTR pszEntry, LPCVOID pvData, DWORD dwLength);
 
 	virtual bool LoadDocSettings(const CString& strKey, DocSettings* pSettings);
+	virtual DictionaryInfo* GetDictionaryInfo(const CString& strFileName);
 	virtual void ReportFatalError();
 
 	CAppSettings* GetAppSettings() { return &m_appSettings; }
@@ -69,6 +71,8 @@ public:
 
 	void SetLanguage(HINSTANCE hResources, DWORD nLanguage);
 	void SaveSettings();
+
+	bool InstallDictionary(CDjVuDoc* pDoc, bool bAllUsers, bool bKeepOriginal);
 
 	// Register running threads
 	void ThreadStarted();
@@ -81,6 +85,8 @@ public:
 	bool RegisterShellFileTypes();
 
 	CDjVuDoc* OpenDocument(LPCTSTR lpszFileName, const GUTF8String& strPage, bool bAddToHistory = true);
+
+	virtual void OnUpdate(const Observable* source, const Message* message);
 
 	bool m_bInitialized;
 	CMyDocTemplate* m_pDjVuTemplate;
@@ -97,6 +103,15 @@ protected:
 
 	CEvent m_terminated;
 	long m_nThreadCount;
+	CEvent m_docClosed;
+	DjVuSource* m_pPendingSource;
+
+	set<DjVuSource*> m_deleteOnRelease;
+	map<CString, DictionaryInfo> m_dictionaries;
+	void LoadDictionaries();
+	void LoadDictionaries(const CString& strDirectory);
+	void LoadDictionaryInfo(DictionaryInfo& info);
+	bool LoadDictionaryInfoFromDisk(DictionaryInfo& info);
 
 	// Generated message map functions
 	afx_msg void OnAppAbout();

@@ -55,5 +55,9 @@ protected:
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
 	afx_msg void OnSaveCopyAs();
+	afx_msg void OnFileExportText();
+	afx_msg void OnUpdateFileExportText(CCmdUI* pCmdUI);
+	afx_msg void OnFileInstall();
+	afx_msg void OnUpdateFileInstall(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 };

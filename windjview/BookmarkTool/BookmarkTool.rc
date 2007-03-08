@@ -68,39 +68,37 @@ IDR_MAINFRAME           ICON    DISCARDABLE     "res\\BookmarkTool.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// 24
-//
-
-IDR_MANIFEST            24      MOVEABLE PURE   "res\\BookmarkTool.manifest"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Dialog
 //
 
-IDD_BOOKMARKTOOL DIALOGEX 0, 0, 323, 93
+IDD_BOOKMARKTOOL DIALOGEX 0, 0, 323, 98
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | 
     WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "DjVu Bookmark Tool"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "Close",IDOK,266,43,50,14
-    PUSHBUTTON      "Embed",IDC_EMBED,266,7,50,14
-    PUSHBUTTON      "Export",IDC_EXPORT,266,25,50,14
-    RTEXT           "DjVu Bookmark Tool 2.0 (C) 2005-2007 Andrew Zhezherun",
-                    IDC_STATIC,7,79,309,8
-    GROUPBOX        "DjVu File",IDC_DJVU_GROUP,7,7,250,24
+    GROUPBOX        "&DjVu File",IDC_DJVU_GROUP,7,7,250,24
     CONTROL         "File name",IDC_DJVU_FILE,"Static",SS_LEFTNOWORDWRAP | 
                     SS_PATHELLIPSIS | WS_GROUP,13,18,221,9
     PUSHBUTTON      "...",IDC_BROWSE_DJVU,239,15,13,12
-    GROUPBOX        "Bookmark File",IDC_BOOKMARK_GROUP,7,35,250,24
-    CONTROL         "File name",IDC_BOOKMARK_FILE,"Static",SS_LEFTNOWORDWRAP | 
-                    SS_PATHELLIPSIS | WS_GROUP,13,46,221,9
+    GROUPBOX        "&Bookmarks",IDC_BOOKMARKS_GROUP,7,35,250,40
+    CONTROL         "File name",IDC_BOOKMARKS_FILE,"Static",
+                    SS_LEFTNOWORDWRAP | SS_PATHELLIPSIS | WS_GROUP,13,47,221,
+                    9
     PUSHBUTTON      "...",IDC_BROWSE_BOOKMARKS,239,43,13,12
-    CONTROL         "Do not overwrite the original DjVu file (prompt for new filename)",
-                    IDC_PROMPT_FILENAME,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,65,250,9
+    CONTROL         "Don't change",IDC_BOOKMARKS_DONTCHANGE,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,61,59,8
+    CONTROL         "Replace",IDC_BOOKMARKS_REPLACE,"Button",
+                    BS_AUTORADIOBUTTON,76,61,44,8
+    CONTROL         "Remove",IDC_BOOKMARKS_REMOVE,"Button",
+                    BS_AUTORADIOBUTTON,123,61,45,8
+    PUSHBUTTON      "Export...",IDC_EXPORT_BOOKMARKS,211,57,41,14,WS_GROUP
+    RTEXT           "DjVu Bookmark Tool 2.0 (C) 2005-2007 Andrew Zhezherun",
+                    IDC_STATIC,7,83,309,8
+    DEFPUSHBUTTON   "&Close",IDOK,266,7,50,14
+    PUSHBUTTON      "&Save",IDC_SAVE,266,25,50,14
+    PUSHBUTTON      "Save &As...",IDC_SAVE_AS,266,43,50,14
 END
 
 
@@ -163,7 +161,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 316
         TOPMARGIN, 7
-        BOTTOMMARGIN, 86
+        BOTTOMMARGIN, 91
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -190,7 +188,7 @@ BEGIN
     IDS_EXPORT_DONE         "Export was completed successfully."
     IDS_LOAD_ERROR          "Unable to open the selected DjVu file."
     IDS_EXPORT_DJVU         "Save As"
-    IDS_CANNOT_OPEN_BOOKMARK_FILE 
+    IDS_CANNOT_OPEN_BOOKMARKS_FILE 
                             "Unable to open the selected bookmark file for reading."
 END
 

@@ -156,8 +156,6 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_MODE_DRAG, ID_MODE_SELECT_RECT, OnUpdateMode)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
-	ON_COMMAND(ID_FILE_EXPORT_TEXT, OnFileExportText)
-	ON_UPDATE_COMMAND_UI(ID_FILE_EXPORT_TEXT, OnUpdateFileExportText)
 	ON_COMMAND_RANGE(ID_DISPLAY_COLOR, ID_DISPLAY_FOREGROUND, OnViewDisplay)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_DISPLAY_COLOR, ID_DISPLAY_FOREGROUND, OnUpdateViewDisplay)
 	ON_COMMAND(ID_VIEW_GOTO_PAGE, OnViewGotoPage)
@@ -4417,7 +4415,7 @@ void CDjVuView::UpdateHoverAnnotation(const CPoint& point)
 
 			TRACKMOUSEEVENT tme;
 
-			::ZeroMemory(&tme, sizeof(tme));
+			ZeroMemory(&tme, sizeof(tme));
 			tme.cbSize = sizeof(tme);
 			tme.dwFlags = TME_LEAVE;
 			tme.hwndTrack = m_hWnd;
@@ -4991,63 +4989,12 @@ void CDjVuView::GetNormalizedText(wstring& text, bool bSelected, int nMaxLength)
 		if (nMaxLength >= 0 && static_cast<int>(text.length()) >= nMaxLength)
 			break;
 	}
-}
 
-void CDjVuView::OnFileExportText()
-{
-	CString strPathName = m_pSource->GetFileName();
-	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
-	_tsplitpath(strPathName, szDrive, szPath, szName, szExt);
-	CString strFileName = szName + CString(_T(".txt"));
-
-	CMyFileDialog dlg(false, _T("txt"), strFileName, OFN_OVERWRITEPROMPT |
-		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
-		LoadString(IDS_TEXT_FILTER));
-
-	CString strTitle;
-	strTitle.LoadString(IDS_EXPORT_TEXT);
-	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
-
-	if (dlg.DoModal() != IDOK)
-		return;
-
-	CWaitCursor wait;
-
-	strFileName = dlg.GetPathName();
-	wstring wtext;
-	GetNormalizedText(wtext);
-	CString strText = MakeCString(wtext);
-
-	CFile file;
-	if (file.Open(strFileName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive))
-	{
-#ifdef _UNICODE
-		// Get ANSI text
-		int nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-			strText, -1, NULL, 0, NULL, NULL);
-		LPSTR pszText = new CHAR[nSize];
-		::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-			strText, -1, pszText, nSize, NULL, NULL);
-
-		file.Write(pszText, strlen(pszText));
-		delete[] pszText;
-#else
-		file.Write(strText, strText.GetLength());
-#endif
-		file.Close();
-	}
-
-	// Page information could be updated in GetNormalizedText
 	if (m_bNeedUpdate)
 	{
 		UpdateLayout();
 		m_bNeedUpdate = false;
 	}
-}
-
-void CDjVuView::OnUpdateFileExportText(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(m_pSource->HasText());
 }
 
 void CDjVuView::SettingsChanged()
