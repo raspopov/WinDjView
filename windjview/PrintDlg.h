@@ -37,6 +37,26 @@ public:
 	enum { IDD = IDD_PRINT };
 
 public:
+	struct Printer
+	{
+		CString strPrinterName;
+		CString strDriverName;
+		CString strPortName;
+		CString strComment;
+
+		// Device capabilities
+		bool bCanCollate;
+		DWORD nMaxCopies;
+
+		// Device capabilities that depend on current paper type
+		int nPhysicalWidth;
+		int nPhysicalHeight;
+		int nOffsetLeft;
+		int nOffsetTop;
+		int nUserWidth;
+		int nUserHeight;
+	};
+
 	struct Paper
 	{
 		Paper(const CString& name, WORD code, const CSize& sz)
@@ -47,7 +67,7 @@ public:
 		CSize size;
 	};
 
-	PRINTER_INFO_2* m_pPrinter;
+	Printer* m_pPrinter;
 	DEVMODE* m_pDevMode;
 	Paper* m_pPaper;
 	HANDLE m_hPrinter;
@@ -76,9 +96,6 @@ protected:
 		CustomRange = 3
 	};
 
-	CString m_strType;
-	CString m_strLocation;
-	CString m_strComment;
 	CString m_strPages;
 	int m_nRangeType;
 	BOOL m_bReverse;
@@ -103,9 +120,6 @@ protected:
 
 // Implementation
 protected:
-	bool m_bPrinterCanCollate;
-	DWORD m_nMaxCopies;
-
 	vector<BYTE> m_printerData;
 	vector<BYTE> m_devModeData;
 	vector<Paper> m_paperSizes;
@@ -116,6 +130,7 @@ protected:
 	CDjVuDoc* m_pDoc;
 	DjVuSource* m_pSource;
 	GP<DjVuImage> m_pCurPage, m_pNextPage;
+	bool m_bDrawPreview;
 	int m_nCurPage;
 	int m_nRotate;
 	int m_nMode;
@@ -131,9 +146,7 @@ protected:
 	void UpdateDevMode();
 	void PreviewTwoPages(CDC* pDC, const CRect& rcPage, const CSize& szPaper, double fScreenMM);
 
-	friend unsigned int __stdcall PrintThreadProc(void* pvData);
-
-// Generated message map functions
+	// Message map functions
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
 	afx_msg void OnChangePagesPerSheet();
@@ -141,7 +154,7 @@ protected:
 	afx_msg void OnChangePrinter();
 	afx_msg void OnPrintRange(UINT nID);
 	afx_msg void OnCopiesUpDown(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnKickIdle();
+	afx_msg void OnUpdateControls();
 	afx_msg void OnProperties();
 	afx_msg void OnUpdateDialogData();
 	DECLARE_MESSAGE_MAP()

@@ -86,6 +86,11 @@ BOOL CFindDlg::OnInitDialog()
 	return true;
 }
 
+CMainFrame* CFindDlg::GetMainFrame()
+{
+	return (CMainFrame*) GetParent();
+}
+
 void CFindDlg::OnOK()
 {
 	if (!UpdateData())
@@ -93,19 +98,19 @@ void CFindDlg::OnOK()
 
 	UpdateSearchHistory();
 
-	((CMainFrame*) GetParent())->SetMessageText(AFX_IDS_IDLEMESSAGE);
+	GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
 	GetParent()->SendMessage(WM_COMMAND, ID_FIND_STRING);
 }
 
 void CFindDlg::OnCancel()
 {
-	((CMainFrame*) GetParent())->SetMessageText(AFX_IDS_IDLEMESSAGE);
+	GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
 	ShowWindow(SW_HIDE);
 }
 
 void CFindDlg::OnClose()
 {
-	((CMainFrame*) GetParent())->SetMessageText(AFX_IDS_IDLEMESSAGE);
+	GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
 	ShowWindow(SW_HIDE);
 }
 
@@ -119,7 +124,7 @@ void CFindDlg::OnFindAll()
 	SetStatusText(LoadString(IDS_SEARCHING));
 	GetDlgItem(IDC_SEARCH_STATUS)->ShowWindow(SW_SHOW);
 
-	((CMainFrame*) GetParent())->SetMessageText(AFX_IDS_IDLEMESSAGE);
+	GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
 	GetParent()->SendMessage(WM_COMMAND, ID_FIND_ALL);
 
 	GetDlgItem(IDC_SEARCH_STATUS)->ShowWindow(SW_HIDE);

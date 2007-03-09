@@ -697,45 +697,56 @@ void CMainFrame::OnUpdateViewForward(CCmdUI* pCmdUI)
 	}
 }
 
-void CMainFrame::AddToHistory(CDjVuView* pView)
+bool CMainFrame::AddToHistory(CDjVuView* pView, bool bAlwaysEnableBack)
 {
 	HistoryPos pos;
 	pos.strFileName = pView->GetDocument()->GetPathName();
 	pView->CreateBookmarkFromView(pos.bmView);
 	pos.bookmark = pos.bmView;
 
-	AddToHistory(pos);
+	if (AddToHistory(pos))
+		return true;
+	else if (!bAlwaysEnableBack)
+		return false;
+	else
+	{
+		++m_historyPos;
+		return true;
+	}
 }
 
-void CMainFrame::AddToHistory(CDjVuView* pView, int nPage)
+bool CMainFrame::AddToHistory(CDjVuView* pView, int nPage)
 {
 	HistoryPos pos;
 	pos.strFileName = pView->GetDocument()->GetPathName();
 	pView->CreateBookmarkFromView(pos.bmView);
 	pView->CreateBookmarkFromPage(pos.bookmark, nPage);
 
-	AddToHistory(pos);
+	return AddToHistory(pos);
 }
 
-void CMainFrame::AddToHistory(CDjVuView* pView, const Bookmark& bookmark)
+bool CMainFrame::AddToHistory(CDjVuView* pView, const Bookmark& bookmark)
 {
 	HistoryPos pos;
 	pos.strFileName = pView->GetDocument()->GetPathName();
 	pView->CreateBookmarkFromView(pos.bmView);
 	pos.bookmark = bookmark;
 
-	AddToHistory(pos);
+	return AddToHistory(pos);
 }
 
-void CMainFrame::AddToHistory(const HistoryPos& pos)
+bool CMainFrame::AddToHistory(const HistoryPos& pos)
 {
 	ASSERT(pos.bmView.nLinkType == Bookmark::View);
 
-	if (!m_history.empty() && pos == *m_historyPos)
-		return;
-
 	if (!m_history.empty())
 	{
+		if (m_historyPos == m_history.end())
+			--m_historyPos;
+
+		if (pos == *m_historyPos)
+			return false;
+
 		++m_historyPos;
 		m_history.erase(m_historyPos, m_history.end());
 	}
@@ -744,6 +755,7 @@ void CMainFrame::AddToHistory(const HistoryPos& pos)
 
 	m_historyPos = m_history.end();
 	--m_historyPos;
+	return true;
 }
 
 void CMainFrame::OnUpdateStatusAdjust(CCmdUI* pCmdUI)
@@ -972,7 +984,7 @@ LRESULT CALLBACK CMainFrame::KeyboardProc(int nCode, WPARAM wParam, LPARAM lPara
 		if (bPressed != bWasPressed)
 		{
 			bWasPressed = bPressed;
-			GetMainFrame()->PostMessage(WM_UPDATE_KEYBOARD, VK_SHIFT, bPressed);
+			GetMainWnd()->PostMessage(WM_UPDATE_KEYBOARD, VK_SHIFT, bPressed);
 		}
 	}
 	else if (nCode == HC_ACTION && wParam == VK_CONTROL)
@@ -983,7 +995,7 @@ LRESULT CALLBACK CMainFrame::KeyboardProc(int nCode, WPARAM wParam, LPARAM lPara
 		if (bPressed != bWasPressed)
 		{
 			bWasPressed = bPressed;
-			GetMainFrame()->PostMessage(WM_UPDATE_KEYBOARD, VK_CONTROL, bPressed);
+			GetMainWnd()->PostMessage(WM_UPDATE_KEYBOARD, VK_CONTROL, bPressed);
 		}
 	}
 

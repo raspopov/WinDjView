@@ -68,6 +68,7 @@ public:
 	CAppSettings* GetAppSettings() { return &m_appSettings; }
 	CDisplaySettings* GetDisplaySettings() { return &m_displaySettings; }
 	CPrintSettings* GetPrintSettings() { return &m_printSettings; }
+	Annotation* GetAnnoTemplate() { return &m_annoTemplate; }
 
 	void SetLanguage(HINSTANCE hResources, DWORD nLanguage);
 	void SaveSettings();
@@ -96,6 +97,7 @@ protected:
 	CAppSettings m_appSettings;
 	CDisplaySettings m_displaySettings;
 	CPrintSettings m_printSettings;
+	Annotation m_annoTemplate;
 
 	void LoadSettings();
 	void EnableShellOpen();

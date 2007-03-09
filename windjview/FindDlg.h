@@ -19,6 +19,8 @@
 
 #pragma once
 
+class CMainFrame;
+
 
 // CFindDlg dialog
 
@@ -31,6 +33,7 @@ public:
 	virtual ~CFindDlg();
 
 	void SetStatusText(const CString& strStatus);
+	CMainFrame* GetMainFrame();
 
 // Dialog Data
 	enum { IDD = IDD_FIND };

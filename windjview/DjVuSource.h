@@ -23,19 +23,18 @@
 #include "XMLParser.h"
 
 
-struct XMLNode;
-
 typedef GList<DjVuTXT::Zone*> DjVuSelection;
 
 struct Annotation
 {
 	Annotation()
 		: bHideInactiveBorder(false), nBorderType(BorderNone), crBorder(RGB(0, 0, 0)),
-		  nFillType(FillNone), crFill(RGB(255, 255, 255)), fTransparency(0.75) {}
+		  nFillType(FillSolid), crFill(RGB(255, 255, 0)), fTransparency(0.75) {}
 
 	void UpdateBounds();
 	GUTF8String GetXML() const;
 	void Load(const XMLNode& node);
+	void Fix();
 
 	enum BorderType
 	{

@@ -20,6 +20,7 @@
 #pragma once
 
 #include "MySplitterWnd.h"
+class CMainFrame;
 class CDjVuView;
 class CNavPaneWnd;
 class CThumbnailsView;
@@ -42,6 +43,7 @@ public:
 	virtual void ActivateFrame(int nCmdShow = -1);
 	CDjVuView* GetDjVuView();
 	CNavPaneWnd* GetNavPane();
+	CMainFrame* GetMainFrame();
 	virtual CDocument* GetActiveDocument();
 	void CreateNavPanes();
 	void SaveStartupPage();

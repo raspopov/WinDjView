@@ -129,6 +129,8 @@
 #define IDS_FILE_INSTALL                286
 #define IDS_INSTALLATION_FAILED         287
 #define IDS_INSTALLATION_SUCCEEDED      288
+#define IDS_ERROR_PARSING_RANGE         289
+#define IDS_PATH_TOO_LONG				290
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -307,7 +309,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        289
+#define _APS_NEXT_RESOURCE_VALUE        291
 #define _APS_NEXT_COMMAND_VALUE         33147
 #define _APS_NEXT_CONTROL_VALUE         1085
 #define _APS_NEXT_SYMED_VALUE           115

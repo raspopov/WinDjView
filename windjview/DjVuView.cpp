@@ -179,7 +179,7 @@ CDjVuView::CDjVuView()
 	: m_nPage(-1), m_nPageCount(0), m_nZoomType(ZoomPercent), m_fZoom(100.0),
 	  m_nLayout(SinglePage), m_nRotate(0), m_bDragging(false), m_pSource(NULL),
 	  m_pRenderThread(NULL), m_bInsideUpdateLayout(false), m_bClick(false),
-	  m_evtRendered(false, true), m_nPendingPage(-1), m_nClickedPage(-1),
+	  m_pageRendered(false, true), m_nPendingPage(-1), m_nClickedPage(-1),
 	  m_nMode(Drag), m_bHasSelection(false), m_nDisplayMode(Color), m_bShiftDown(false),
 	  m_bNeedUpdate(false), m_bCursorHidden(false), m_bDraggingPage(false),
 	  m_bDraggingText(false), m_bFirstPageAlone(false), m_bInitialized(false),
@@ -666,6 +666,19 @@ void CDjVuView::ReadDisplayMode(GP<DjVuANT> pAnt)
 	}
 }
 
+CMainFrame* CDjVuView::GetMainFrame() const
+{
+	if (m_nType == Normal)
+		return (CMainFrame*) GetTopLevelFrame();
+	else if (m_nType == Fullscreen)
+		return ((CFullscreenWnd*) GetTopLevelParent())->GetOwner()->GetMainFrame();
+	else if (m_nType == Magnify)
+		return ((CMagnifyWnd*) GetTopLevelParent())->GetOwner()->GetMainFrame();
+
+	ASSERT(false);
+	return GetMainWnd();
+}
+
 BOOL CDjVuView::OnEraseBkgnd(CDC* pDC)
 {
 	return true;
@@ -680,7 +693,7 @@ void CDjVuView::RenderPage(int nPage, int nTimeout, bool bUpdateWindow)
 	Page& page = m_pages[nPage];
 
 	m_nPendingPage = nPage;
-	m_evtRendered.ResetEvent();
+	m_pageRendered.ResetEvent();
 
 	if (m_nLayout == SinglePage || m_nLayout == Facing)
 	{
@@ -710,7 +723,7 @@ void CDjVuView::RenderPage(int nPage, int nTimeout, bool bUpdateWindow)
 	UpdateVisiblePages();
 
 	if (nTimeout != -1 && !m_pages[nPage].bBitmapRendered)
-		::WaitForSingleObject(m_evtRendered, nTimeout);
+		::WaitForSingleObject(m_pageRendered, nTimeout);
 	m_nPendingPage = -1;
 
 	UpdatePageNumber();
@@ -1171,7 +1184,7 @@ void CDjVuView::UpdatePageCache(int nPage, const CRect& rcClient, bool bUpdateIm
 		if (page.pBitmap == NULL || page.szBitmap != page.pBitmap->GetSize() && bUpdateImages)
 		{
 			if (m_nType == Magnify)
-				CopyBitmapFrom(GetMainFrame()->GetMagnifyWnd()->GetOwner(), nPage);
+				CopyBitmapFrom(((CMagnifyWnd*) GetTopLevelParent())->GetOwner(), nPage);
 
 			m_pRenderThread->AddJob(nPage, m_nRotate, page.szBitmap, m_displaySettings, m_nDisplayMode);
 			InvalidatePage(nPage);
@@ -1214,7 +1227,7 @@ void CDjVuView::UpdatePageCacheSingle(int nPage, bool bUpdateImages)
 		if (page.pBitmap == NULL || page.szBitmap != page.pBitmap->GetSize() && bUpdateImages)
 		{
 			if (m_nType == Magnify)
-				CopyBitmapFrom(GetMainFrame()->GetMagnifyWnd()->GetOwner(), nPage);
+				CopyBitmapFrom(((CMagnifyWnd*) GetTopLevelParent())->GetOwner(), nPage);
 
 			m_pRenderThread->AddJob(nPage, m_nRotate, page.szBitmap, m_displaySettings, m_nDisplayMode);
 			InvalidatePage(nPage);
@@ -1256,7 +1269,7 @@ void CDjVuView::UpdatePageCacheFacing(int nPage, bool bUpdateImages)
 		if (page.pBitmap == NULL || page.szBitmap != page.pBitmap->GetSize() && bUpdateImages)
 		{
 			if (m_nType == Magnify)
-				CopyBitmapFrom(GetMainFrame()->GetMagnifyWnd()->GetOwner(), nPage);
+				CopyBitmapFrom(((CMagnifyWnd*) GetTopLevelParent())->GetOwner(), nPage);
 
 			m_pRenderThread->AddJob(nPage, m_nRotate, page.szBitmap, m_displaySettings, m_nDisplayMode);
 			InvalidatePage(nPage);
@@ -1335,8 +1348,7 @@ void CDjVuView::UpdateVisiblePages()
 	bool bUpdateImages = true;
 	if (m_nType == Normal)
 	{
-		CMainFrame* pFrame = (CMainFrame*) GetTopLevelFrame();
-		CMDIChildWnd* pActive = pFrame->MDIGetActive();
+		CMDIChildWnd* pActive = GetMainFrame()->MDIGetActive();
 		if (pActive == NULL)
 			return;
 
@@ -2127,6 +2139,8 @@ void CDjVuView::OnRotate180()
 
 void CDjVuView::OnViewFirstpage()
 {
+	GetMainFrame()->AddToHistory(this);
+
 	if (m_nLayout == SinglePage || m_nLayout == Facing)
 	{
 		RenderPage(0);
@@ -2141,6 +2155,8 @@ void CDjVuView::OnViewFirstpage()
 		UpdateVisiblePages();
 		UpdatePageNumber();
 	}
+
+	GetMainFrame()->AddToHistory(this);
 }
 
 void CDjVuView::OnViewLastpage()
@@ -3261,7 +3277,7 @@ LRESULT CDjVuView::OnPageRendered(WPARAM wParam, LPARAM lParam)
 	page.DeleteBitmap();
 	page.pBitmap = pBitmap;
 	page.bBitmapRendered = true;
-	m_evtRendered.SetEvent();
+	m_pageRendered.SetEvent();
 	
 	if (InvalidatePage(nPage))
 		UpdateWindow();
@@ -3292,6 +3308,9 @@ void CDjVuView::PageRendered(int nPage, CDIB* pDIB)
 
 void CDjVuView::OnDestroy()
 {
+	if (m_nType == Normal)
+		GetMainFrame()->AddToHistory(this, true);
+
 	if (m_pRenderThread != NULL)
 	{
 		m_pRenderThread->Stop();
@@ -4654,45 +4673,43 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nAddToHistory)
 			strPathName = strPathName.Mid(7);
 
 		// Try as absolute path
-		bool bOk = false;
-		CFile file;
-		if (file.Open(strPathName, CFile::modeRead | CFile::shareDenyWrite))
-		{
-			file.Close();
-			bOk = true;
-		}
-		else
+		bool bExists = true;
+		if (!FileExists(strPathName))
 		{
 			// Try as relative path
 			CString strCurrentPath = m_pSource->GetFileName();
 			_tsplitpath(strCurrentPath, szDrive, szDir, NULL, NULL);
 
 			strPathName = CString(szDrive) + CString(szDir) + strPathName;
-			if (file.Open(strPathName, CFile::modeRead | CFile::shareDenyWrite))
-			{
-				file.Close();
-				bOk = true;
-			}
+			if (!FileExists(strPathName))
+				bExists = false;
 		}
 
-		if (bOk)
+		if (bExists)
 		{
-			if ((nAddToHistory & AddSource) != 0)
+			if (AfxComparePath(m_pSource->GetFileName(), strPathName))
 			{
-				if (m_nType == Fullscreen)
-				{
-					CFullscreenWnd* pFullscreenWnd = ((CMainFrame*) GetTopLevelFrame())->GetFullscreenWnd();
-					CDjVuView* pOwner = pFullscreenWnd->GetOwner();
-
-					pFullscreenWnd->Hide();
-
-					GetMainFrame()->AddToHistory(pOwner);
-				}
-				else
-					GetMainFrame()->AddToHistory(this);
+				GoToURL(strPage, nAddToHistory);
 			}
+			else
+			{
+				if ((nAddToHistory & AddSource) != 0)
+				{
+					if (m_nType == Fullscreen)
+					{
+						CFullscreenWnd* pFullscreenWnd = (CFullscreenWnd*) GetTopLevelParent();
+						CDjVuView* pOwner = pFullscreenWnd->GetOwner();
 
-			theApp.OpenDocument(strPathName, strPage);
+						pFullscreenWnd->Hide();
+
+						GetMainFrame()->AddToHistory(pOwner);
+					}
+					else
+						GetMainFrame()->AddToHistory(this);
+				}
+
+				theApp.OpenDocument(strPathName, strPage);
+			}
 			return;
 		}
 	}
@@ -5732,16 +5749,24 @@ void CDjVuView::OnHighlight(UINT nID)
 
 	CAnnotationDlg dlg(IDS_CREATE_ANNOTATION);
 
+	dlg.m_nBorderType = theApp.GetAnnoTemplate()->nBorderType;
+	dlg.m_crBorder = theApp.GetAnnoTemplate()->crBorder;
+	dlg.m_bHideInactive = theApp.GetAnnoTemplate()->bHideInactiveBorder;
+	dlg.m_nFillType = theApp.GetAnnoTemplate()->nFillType;
+	dlg.m_crFill = theApp.GetAnnoTemplate()->crFill;
+	dlg.m_nTransparency = static_cast<int>(theApp.GetAnnoTemplate()->fTransparency * 100.0 + 0.5);
+
 	if (dlg.DoModal() != IDOK)
 		return;
 
-	Annotation annoTemplate;
-	annoTemplate.nBorderType = dlg.m_nBorderType;
-	annoTemplate.crBorder = dlg.m_crBorder;
-	annoTemplate.bHideInactiveBorder = !!dlg.m_bHideInactive;
-	annoTemplate.nFillType = dlg.m_nFillType;
-	annoTemplate.crFill = dlg.m_crFill;
-	annoTemplate.fTransparency = dlg.m_nTransparency / 100.0;
+	theApp.GetAnnoTemplate()->nBorderType = dlg.m_nBorderType;
+	theApp.GetAnnoTemplate()->crBorder = dlg.m_crBorder;
+	theApp.GetAnnoTemplate()->bHideInactiveBorder = !!dlg.m_bHideInactive;
+	theApp.GetAnnoTemplate()->nFillType = dlg.m_nFillType;
+	theApp.GetAnnoTemplate()->crFill = dlg.m_crFill;
+	theApp.GetAnnoTemplate()->fTransparency = dlg.m_nTransparency / 100.0;
+
+	Annotation annoTemplate = *theApp.GetAnnoTemplate();
 	annoTemplate.strComment = MakeUTF8String(dlg.m_strComment);
 
 	Annotation* pNewAnno = NULL;
@@ -5793,11 +5818,11 @@ void CDjVuView::OnHighlight(UINT nID)
 		CFrameWnd* pFrame;
 		if (m_nType == Fullscreen)
 		{
-			CFullscreenWnd* pFullscreenWnd = GetMainFrame()->GetFullscreenWnd();
-			pFrame = pFullscreenWnd->GetOwner()->GetParentFrame();
+			pFrame = ((CFullscreenWnd*) GetTopLevelParent())->GetOwner()->GetParentFrame();
 		}
 		else
 		{
+			ASSERT(m_nType == Normal);
 			pFrame = GetParentFrame();
 		}
 
@@ -5840,6 +5865,13 @@ void CDjVuView::OnEditAnnotation()
 
 	if (dlg.DoModal() == IDOK)
 	{
+		theApp.GetAnnoTemplate()->nBorderType = dlg.m_nBorderType;
+		theApp.GetAnnoTemplate()->crBorder = dlg.m_crBorder;
+		theApp.GetAnnoTemplate()->bHideInactiveBorder = !!dlg.m_bHideInactive;
+		theApp.GetAnnoTemplate()->nFillType = dlg.m_nFillType;
+		theApp.GetAnnoTemplate()->crFill = dlg.m_crFill;
+		theApp.GetAnnoTemplate()->fTransparency = dlg.m_nTransparency / 100.0;
+
 		m_pClickedAnno->nBorderType = dlg.m_nBorderType;
 		m_pClickedAnno->crBorder = dlg.m_crBorder;
 		m_pClickedAnno->bHideInactiveBorder = !!dlg.m_bHideInactive;
@@ -5886,11 +5918,11 @@ void CDjVuView::OnAddBookmark()
 		CFrameWnd* pFrame;
 		if (m_nType == Fullscreen)
 		{
-			CFullscreenWnd* pFullscreenWnd = GetMainFrame()->GetFullscreenWnd();
-			pFrame = pFullscreenWnd->GetOwner()->GetParentFrame();
+			pFrame = ((CFullscreenWnd*) GetTopLevelParent())->GetOwner()->GetParentFrame();
 		}
 		else
 		{
+			ASSERT(m_nType == Normal);
 			pFrame = GetParentFrame();
 		}
 

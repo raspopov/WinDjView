@@ -306,6 +306,14 @@ void Annotation::Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate)
 	UpdateBounds();
 }
 
+void Annotation::Fix()
+{
+	if (nBorderType < BorderNone || nBorderType > BorderXOR)
+		nBorderType = BorderNone;
+	if (nFillType < FillNone || nFillType > FillXOR)
+		nFillType = FillSolid;
+}
+
 
 // PageSettings
 

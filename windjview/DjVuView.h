@@ -26,6 +26,7 @@
 #include "DjVuDoc.h"
 #include "DjVuSource.h"
 
+class CMainFrame;
 class CPrintDlg;
 class CRenderThread;
 
@@ -51,6 +52,7 @@ protected: // create from serialization only
 public:
 	CDjVuDoc* GetDocument() const;
 	void SetDocument(CDjVuDoc* pDocument) { m_pDocument = pDocument; }
+	CMainFrame* GetMainFrame() const;
 
 // Operations
 public:
@@ -171,7 +173,7 @@ protected:
 	CToolTipCtrl m_toolTip;
 	CString m_strToolTip;
 	CRenderThread* m_pRenderThread;
-	CEvent m_evtRendered;
+	CEvent m_pageRendered;
 	bool m_bShiftDown, m_bControlDown;
 	bool m_bNeedUpdate;
 	UINT m_nTimerID;

@@ -1145,7 +1145,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 	CPrintSettings& printSettings = dlg.m_settings;
 
 	size_t nPages = dlg.m_arrPages.size();
-	if (printSettings.nCopies > 1 && printSettings.bCollate && !dlg.m_bPrinterCanCollate)
+	if (printSettings.nCopies > 1 && printSettings.bCollate && !dlg.m_pPrinter->bCanCollate)
 	{
 		// We will do collation ourselves
 		nPages *= printSettings.nCopies;
@@ -1157,7 +1157,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 
 	// Printing
 	CDC dcPrint;
-	dcPrint.CreateDC(dlg.m_pPrinter->pDriverName, dlg.m_pPrinter->pPrinterName, NULL, dlg.m_pDevMode);
+	dcPrint.CreateDC(dlg.m_pPrinter->strDriverName, dlg.m_pPrinter->strPrinterName, NULL, dlg.m_pDevMode);
 
 	if (dcPrint.m_hDC == NULL)
 	{
@@ -1237,8 +1237,8 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 			return 0;
 		}
 
-		int nPage = dlg.m_arrPages[i % dlg.m_pages.size()].first - 1;
-		int nSecondPage = dlg.m_arrPages[i % dlg.m_pages.size()].second - 1;
+		int nPage = dlg.m_arrPages[i].first - 1;
+		int nSecondPage = dlg.m_arrPages[i].second - 1;
 
 		if ((nPage < 0 || nPage >= pSource->GetPageCount()) &&
 				(!printSettings.bTwoPages || nSecondPage < 0 || nSecondPage >= pSource->GetPageCount()))

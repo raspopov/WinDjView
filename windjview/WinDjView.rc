@@ -1301,6 +1301,8 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_INSTALLATION_SUCCEEDED "Dictionary was installed successfully."
+    IDS_ERROR_PARSING_RANGE "Printing range is invalid."
+    IDS_PATH_TOO_LONG       "Failed to open document: the path is too long.\n%s"
 END
 
 #endif    // English (U.S.) resources

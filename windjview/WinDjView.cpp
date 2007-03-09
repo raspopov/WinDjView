@@ -81,6 +81,14 @@ const TCHAR* s_pszVersion = _T("version");
 const TCHAR* s_pszLanguage = _T("language");
 const TCHAR* s_pszMatchCase = _T("match-case");
 
+const TCHAR* s_pszAnnotationsSection = _T("Annotations");
+const TCHAR* s_pszHideInactiveBorder = _T("hide-inactive");
+const TCHAR* s_pszBorderType = _T("border-type");
+const TCHAR* s_pszBorderColor = _T("border-color");
+const TCHAR* s_pszFillType = _T("fill-type");
+const TCHAR* s_pszFillColor = _T("fill-color");
+const TCHAR* s_pszTransparency = _T("transparency");
+
 const TCHAR* s_pszSearchSection = _T("Search History");
 const TCHAR* s_pszFindStringPrefix = _T("string");
 
@@ -464,6 +472,14 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.bMatchCase = !!GetProfileInt(s_pszGlobalSection, s_pszMatchCase, m_appSettings.bMatchCase);
 	m_appSettings.strVersion = GetProfileString(s_pszGlobalSection, s_pszVersion, CURRENT_VERSION);
 
+	m_annoTemplate.bHideInactiveBorder = !!GetProfileInt(s_pszAnnotationsSection, s_pszHideInactiveBorder, m_annoTemplate.bHideInactiveBorder);
+	m_annoTemplate.nBorderType = GetProfileInt(s_pszAnnotationsSection, s_pszBorderType, m_annoTemplate.nBorderType);
+	m_annoTemplate.crBorder = GetProfileInt(s_pszAnnotationsSection, s_pszBorderColor, m_annoTemplate.crBorder);
+	m_annoTemplate.nFillType = GetProfileInt(s_pszAnnotationsSection, s_pszFillType, m_annoTemplate.nFillType);
+	m_annoTemplate.crFill = GetProfileInt(s_pszAnnotationsSection, s_pszFillColor, m_annoTemplate.crFill);
+	m_annoTemplate.fTransparency = GetProfileDouble(s_pszAnnotationsSection, s_pszTransparency, m_annoTemplate.fTransparency);
+	m_annoTemplate.Fix();
+
 	for (int nItem = 0; nItem < CAppSettings::HistorySize; ++nItem)
 	{
 		CString strItem = GetProfileString(s_pszSearchSection,
@@ -561,6 +577,13 @@ void CDjViewApp::SaveSettings()
 	WriteProfileString(s_pszGlobalSection, s_pszVersion, CURRENT_VERSION);
 	WriteProfileInt(s_pszGlobalSection, s_pszLanguage, m_appSettings.nLanguage);
 	WriteProfileInt(s_pszGlobalSection, s_pszMatchCase, m_appSettings.bMatchCase);
+
+	WriteProfileInt(s_pszAnnotationsSection, s_pszHideInactiveBorder, m_annoTemplate.bHideInactiveBorder);
+	WriteProfileInt(s_pszAnnotationsSection, s_pszBorderType, m_annoTemplate.nBorderType);
+	WriteProfileInt(s_pszAnnotationsSection, s_pszBorderColor, m_annoTemplate.crBorder);
+	WriteProfileInt(s_pszAnnotationsSection, s_pszFillType, m_annoTemplate.nFillType);
+	WriteProfileInt(s_pszAnnotationsSection, s_pszFillColor, m_annoTemplate.crFill);
+	WriteProfileDouble(s_pszAnnotationsSection, s_pszTransparency, m_annoTemplate.fTransparency);
 
 	list<CString>::iterator itHist;
 	int nItem = 0;
@@ -808,10 +831,9 @@ void CDjViewApp::OnFileSettings()
 
 CDjVuDoc* CDjViewApp::OpenDocument(LPCTSTR lpszPathName, const GUTF8String& strPage, bool bAddToHistory)
 {
-	CDjVuDoc* pDoc = (CDjVuDoc*)FindOpenDocument(lpszPathName);
-	if (pDoc == NULL)
-		pDoc = (CDjVuDoc*)OpenDocumentFile(lpszPathName);
-
+	bool bAlreadyOpen = false;
+	CDjVuDoc* pDoc = (CDjVuDoc*) ((CMyDocManager*) m_pDocManager)->OpenDocumentFile(
+			lpszPathName, false, &bAlreadyOpen);
 	if (pDoc == NULL)
 		return NULL;
 
@@ -819,17 +841,14 @@ CDjVuDoc* CDjViewApp::OpenDocument(LPCTSTR lpszPathName, const GUTF8String& strP
 	CFrameWnd* pFrame = pView->GetParentFrame();
 	pFrame->ActivateFrame();
 
+	int nAddToHistory = (bAddToHistory ? CDjVuView::AddTarget : 0);
+	if (bAddToHistory && bAlreadyOpen)
+		nAddToHistory |= CDjVuView::AddSource;
+
+	if (strPage.length() > 0)
+		pView->GoToURL(strPage, nAddToHistory);
 	if (bAddToHistory)
-	{
-		if (strPage.length() > 0)
-		{
-			pView->GoToURL(strPage, CDjVuView::AddTarget);
-		}
-		else
-		{
-			((CMainFrame*) pView->GetTopLevelFrame())->AddToHistory(pView);
-		}
-	}
+		pView->GetMainFrame()->AddToHistory(pView);
 
 	return pDoc;
 }
@@ -846,10 +865,11 @@ CDocument* CDjViewApp::FindOpenDocument(LPCTSTR lpszFileName)
 		*lpszLast = 0;
 
 	if (!AfxFullPath(szPath, szTemp))
-	{
-		ASSERT(FALSE);
 		return NULL; // We won't open the file. MFC requires paths with length < _MAX_PATH
-	}
+
+	TCHAR szLinkName[_MAX_PATH];
+	if (AfxResolveShortcut(GetMainWnd(), szPath, szLinkName, _MAX_PATH))
+		lstrcpy(szPath, szLinkName);
 
 	POSITION pos = GetFirstDocTemplatePosition();
 	while (pos != NULL)
@@ -903,7 +923,7 @@ void CDjViewApp::SetLanguage(HINSTANCE hResources, DWORD nLanguage)
 
 BOOL CDjViewApp::OnOpenRecentFile(UINT nID)
 {
-	// Fixed MFC's CWinApp::OnOpenRecentFile
+	// Fixed MFC: CWinApp::OnOpenRecentFile
 	// Always moves the file to the top of the recents list
 
 	ASSERT_VALID(this);
@@ -926,7 +946,7 @@ BOOL CDjViewApp::OnOpenRecentFile(UINT nID)
 		AddToRecentFileList(pDoc->GetPathName());
 
 		CDjVuView* pView = pDoc->GetDjVuView();
-		((CMainFrame*) pView->GetTopLevelFrame())->AddToHistory(pView);
+		pView->GetMainFrame()->AddToHistory(pView);
 	}
 
 	return true;

@@ -106,11 +106,11 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 		if (!m_bActivating)
 			pView->UpdateVisiblePages();
 
-		((CMainFrame*) GetMDIFrame())->OnUpdate(pView, &Message(VIEW_ACTIVATED));
+		GetMainFrame()->OnUpdate(pView, &Message(VIEW_ACTIVATED));
 	}
 	else if (pActivateWnd == NULL)
 	{
-		((CMainFrame*) GetMDIFrame())->OnUpdate(NULL, &Message(VIEW_ACTIVATED));
+		GetMainFrame()->OnUpdate(NULL, &Message(VIEW_ACTIVATED));
 	}
 }
 
@@ -499,4 +499,9 @@ void CChildFrame::OnNcPaint()
 		return;
 
 	CMDIChildWnd::OnNcPaint();
+}
+
+CMainFrame* CChildFrame::GetMainFrame()
+{
+	return (CMainFrame*) GetMDIFrame();
 }

@@ -143,63 +143,137 @@ BOOL CMyDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle,
 	fileName.ReleaseBuffer();
 	return nResult == IDOK;
 }
-/*
+
 CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName)
 {
+	return OpenDocumentFile(lpszFileName, true);
+}
+
+CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHistory, bool* pbAlreadyOpen)
+{
+	// From MFC: CDocManager::OpenDocumentFile
+
+	CString strFileName = lpszFileName;
+
+	strFileName.TrimLeft();
+	strFileName.TrimRight();
+	if (strFileName[0] == '\"')
+		strFileName.Delete(0);
+	int nPos = strFileName.ReverseFind('\"');
+	if (nPos != -1)
+		strFileName.Delete(nPos);
+
+	CString strQuery, strPage;
+	nPos = strFileName.Find('?');
+	if (nPos != -1)
+	{
+		strQuery = strFileName.Mid(nPos + 1);
+		strFileName = strFileName.Left(nPos);
+	}
+
+	bool bPathTooLong = false;
+	TCHAR szPath[_MAX_PATH];
+	if (!AfxFullPath(szPath, strFileName))
+		bPathTooLong = true;
+
+	if (bPathTooLong || !FileExists(szPath))
+	{
+		// Try extracting page number
+		nPos = strFileName.ReverseFind('#');
+		if (nPos != -1)
+		{
+			strPage = strFileName.Mid(nPos + 1);
+			strFileName = strFileName.Left(nPos);
+
+			if (!AfxFullPath(szPath, strFileName))
+				bPathTooLong = true;
+		}
+	}
+
+	if (bPathTooLong)
+	{
+		AfxMessageBox(FormatString(IDS_PATH_TOO_LONG, szPath), MB_ICONEXCLAMATION | MB_OK);
+		return NULL;
+	}
+
+	TCHAR szLinkName[_MAX_PATH];
+	if (AfxResolveShortcut(AfxGetApp()->GetMainWnd(), szPath, szLinkName, _MAX_PATH))
+		lstrcpy(szPath, szLinkName);
+
 	// find the highest confidence
 	CDocTemplate::Confidence bestMatch = CDocTemplate::noAttempt;
 	CDocTemplate* pBestTemplate = NULL;
+	CDocument* pOpenDocument = NULL;
 
-	TCHAR szPath[_MAX_PATH], szTemp[_MAX_PATH];
-	ASSERT(lstrlen(lpszFileName) < _countof(szPath));
-	if (lpszFileName[0] == '\"')
-		++lpszFileName;
-	lstrcpyn(szTemp, lpszFileName, _MAX_PATH);
-	LPTSTR lpszLast = _tcsrchr(szTemp, '\"');
-	if (lpszLast != NULL)
-		*lpszLast = 0;
-
-	if (!AfxFullPath(szPath, szTemp))
-	{
-		ASSERT(FALSE);
-		return NULL; // We won't open the file. MFC requires paths with length < _MAX_PATH
-	}
-
-	POSITION pos = GetFirstDocTemplatePosition();
+	POSITION pos = m_templateList.GetHeadPosition();
 	while (pos != NULL)
 	{
-		CDocTemplate* pTemplate = GetNextDocTemplate(pos);
+		CDocTemplate* pTemplate = (CDocTemplate*)m_templateList.GetNext(pos);
 		ASSERT_KINDOF(CDocTemplate, pTemplate);
 
-		CDocument* pDocument = NULL;
-		CDocTemplate::Confidence match = pTemplate->MatchDocType(szPath, pDocument);
-		if (match == CDocTemplate::yesAlreadyOpen && pDocument != NULL)
-		{
-			CDjVuView* pView = (CDjVuDoc*)pDocument->GetDjVuView();
-			CFrameWnd* pFrame = pView->GetParentFrame();
-			pFrame->ActivateFrame();
-
-			if (pFrame != GetMainFrame())
-				GetMainFrame()->ActivateFrame();
-
-			return pDocument;
-		}
-		else if (match > bestMatch)
+		CDocTemplate::Confidence match;
+		ASSERT(pOpenDocument == NULL);
+		match = pTemplate->MatchDocType(szPath, pOpenDocument);
+		if (match > bestMatch)
 		{
 			bestMatch = match;
 			pBestTemplate = pTemplate;
 		}
+		if (match == CDocTemplate::yesAlreadyOpen)
+			break;
 	}
 
-	if (pBestTemplate == NULL)
+	if (pOpenDocument != NULL)
 	{
-		AfxMessageBox(AFX_IDP_FAILED_TO_OPEN_DOC);
-		return NULL;
+		POSITION pos = pOpenDocument->GetFirstViewPosition();
+		if (pos != NULL)
+		{
+			CView* pView = pOpenDocument->GetNextView(pos);
+			ASSERT_VALID(pView);
+
+			CFrameWnd* pFrame = pView->GetParentFrame();
+			ASSERT(pFrame);
+			pFrame->ActivateFrame();
+
+			CFrameWnd* pAppFrame = pFrame->GetTopLevelFrame();
+			if (pFrame != pAppFrame)
+				pAppFrame->ActivateFrame();
+		}
+		else
+			TRACE(_T("Error: Can not find a view for document to activate.\n"));
 	}
 
-	return pBestTemplate->OpenDocumentFile(szPath);
+	if (pOpenDocument == NULL)
+	{
+		if (pBestTemplate == NULL)
+		{
+			AfxMessageBox(AFX_IDP_FAILED_TO_OPEN_DOC);
+			return NULL;
+		}
+
+		pOpenDocument = pBestTemplate->OpenDocumentFile(szPath);
+	}
+
+	if (pOpenDocument != NULL)
+	{
+		if (pbAlreadyOpen != NULL)
+			*pbAlreadyOpen = (bestMatch == CDocTemplate::yesAlreadyOpen);
+
+		CDjVuDoc* pDoc = (CDjVuDoc*) pOpenDocument;
+		CDjVuView* pView = pDoc->GetDjVuView();
+
+		int nAddToHistory = (bAddToHistory ? CDjVuView::AddTarget : 0);
+		if (bAddToHistory && bestMatch == CDocTemplate::yesAlreadyOpen)
+			nAddToHistory |= CDjVuView::AddSource;
+
+		if (!strPage.IsEmpty())
+			pView->GoToURL(MakeUTF8String("#" + strPage), nAddToHistory);
+		if (bAddToHistory)
+			pView->GetMainFrame()->AddToHistory(pView);
+	}
+
+	return pOpenDocument;
 }
-*/
 
 void CMyDocManager::OnFileOpen()
 {
@@ -215,6 +289,6 @@ void CMyDocManager::OnFileOpen()
 	if (pDoc != NULL)
 	{
 		CDjVuView* pView = pDoc->GetDjVuView();
-		((CMainFrame*) pView->GetTopLevelFrame())->AddToHistory(pView);
+		pView->GetMainFrame()->AddToHistory(pView);
 	}
 }

@@ -105,7 +105,7 @@ void CMyDocTemplate::InitialUpdateFrame(CFrameWnd* pFrame, CDocument* pDoc, BOOL
 	pChildFrm->SaveStartupPage();
 
 	CDjVuView* pView = pChildFrm->GetDjVuView();
-	pView->AddObserver((CMainFrame*) pFrame->GetTopLevelFrame());
+	pView->AddObserver(pView->GetMainFrame());
 
 	pChildFrm->CreateNavPanes();
 

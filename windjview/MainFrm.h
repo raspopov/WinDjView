@@ -48,9 +48,9 @@ public:
 public:
 	void HilightStatusMessage(LPCTSTR pszMessage);
 
-	void AddToHistory(CDjVuView* pView);
-	void AddToHistory(CDjVuView* pView, int nPage);
-	void AddToHistory(CDjVuView* pView, const Bookmark& bookmark);
+	bool AddToHistory(CDjVuView* pView, bool bAlwaysEnableBack = false);
+	bool AddToHistory(CDjVuView* pView, int nPage);
+	bool AddToHistory(CDjVuView* pView, const Bookmark& bookmark);
 
 	CFullscreenWnd* GetFullscreenWnd();
 	bool IsFullscreenMode();
@@ -115,7 +115,7 @@ protected:
 	list<HistoryPos> m_history;
 	list<HistoryPos>::iterator m_historyPos;
 	void GoToHistoryPos(const HistoryPos& pos);
-	void AddToHistory(const HistoryPos& pos);
+	bool AddToHistory(const HistoryPos& pos);
 
 	struct LanguageInfo
 	{
@@ -168,7 +168,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 };
 
-inline CMainFrame* GetMainFrame()
+inline CMainFrame* GetMainWnd()
 {
-	return static_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
+	return (CMainFrame*) AfxGetApp()->GetMainWnd();
 }
