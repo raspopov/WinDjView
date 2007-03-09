@@ -54,6 +54,7 @@ void CPrintDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_CENTER_IMAGE, m_settings.bCenterImage);
+	DDX_Check(pDX, IDC_AUTO_ROTATE, m_settings.bAutoRotate);
 	DDX_Check(pDX, IDC_CLIP_CONTENT, m_settings.bClipContent);
 	DDX_Check(pDX, IDC_SHRINK_OVERSIZED, m_settings.bShrinkOversized);
 	DDX_Check(pDX, IDC_SCALE_TO_FIT, m_settings.bScaleToFit);
@@ -68,23 +69,24 @@ void CPrintDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMBO_PAPER, m_cboPaper);
 	DDX_Control(pDX, IDC_COMBO_PAGESPERSHEET, m_cboPagesPerSheet);
 	DDX_Control(pDX, IDC_COMBO_PAGESINRANGE, m_cboPagesInRange);
+
 	DDX_Control(pDX, IDC_EDIT_COPIES, m_edtCopies);
+	DDX_Control(pDX, IDC_SCALE, m_edtScale);
+	DDX_MyText(pDX, IDC_EDIT_COPIES, m_settings.nCopies, 1);
+	DDX_MyText(pDX, IDC_SCALE, m_settings.fScale, 100.0, _T("%"));
+
+	DDX_Control(pDX, IDC_POSITION_LEFT, m_edtPosLeft);
+	DDX_Control(pDX, IDC_POSITION_TOP, m_edtPosTop);
 	DDX_Control(pDX, IDC_MARGIN_BOTTOM, m_edtMarginBottom);
 	DDX_Control(pDX, IDC_MARGIN_TOP, m_edtMarginTop);
 	DDX_Control(pDX, IDC_MARGIN_LEFT, m_edtMarginLeft);
 	DDX_Control(pDX, IDC_MARGIN_RIGHT, m_edtMarginRight);
-	DDX_Control(pDX, IDC_POSITION_LEFT, m_edtPosLeft);
-	DDX_Control(pDX, IDC_POSITION_TOP, m_edtPosTop);
-	DDX_Control(pDX, IDC_SCALE, m_edtScale);
-
-	DDX_MyText(pDX, IDC_SCALE, m_settings.fScale, 100.0, _T("%"));
-	DDX_MyText(pDX, IDC_POSITION_LEFT, m_settings.fPosLeft);
-	DDX_MyText(pDX, IDC_POSITION_TOP, m_settings.fPosTop);
-	DDX_MyText(pDX, IDC_MARGIN_BOTTOM, m_settings.fMarginBottom);
-	DDX_MyText(pDX, IDC_MARGIN_TOP, m_settings.fMarginTop);
-	DDX_MyText(pDX, IDC_MARGIN_LEFT, m_settings.fMarginLeft);
-	DDX_MyText(pDX, IDC_MARGIN_RIGHT, m_settings.fMarginRight);
-	DDX_MyText(pDX, IDC_EDIT_COPIES, m_settings.nCopies, 1);
+	DDX_Units(pDX, IDC_POSITION_LEFT, m_settings.fPosLeft, CAppSettings::Millimeters);
+	DDX_Units(pDX, IDC_POSITION_TOP, m_settings.fPosTop, CAppSettings::Millimeters);
+	DDX_Units(pDX, IDC_MARGIN_BOTTOM, m_settings.fMarginBottom, CAppSettings::Millimeters);
+	DDX_Units(pDX, IDC_MARGIN_TOP, m_settings.fMarginTop, CAppSettings::Millimeters);
+	DDX_Units(pDX, IDC_MARGIN_LEFT, m_settings.fMarginLeft, CAppSettings::Millimeters);
+	DDX_Units(pDX, IDC_MARGIN_RIGHT, m_settings.fMarginRight, CAppSettings::Millimeters);
 
 	if (!pDX->m_bSaveAndValidate)
 	{
@@ -128,20 +130,21 @@ void CPrintDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CPrintDlg, CDialog)
 	ON_WM_PAINT()
-	ON_BN_CLICKED(IDC_CENTER_IMAGE, OnUpdateDialogData)
-	ON_BN_CLICKED(IDC_CLIP_CONTENT, OnUpdateDialogData)
 	ON_CBN_SELCHANGE(IDC_COMBO_PAGESPERSHEET, OnChangePagesPerSheet)
 	ON_CBN_SELCHANGE(IDC_COMBO_PAPER, OnChangePaper)
 	ON_CBN_SELCHANGE(IDC_COMBO_PRINTER, OnChangePrinter)
+	ON_BN_CLICKED(IDC_PROPERTIES, OnProperties)
+	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_COPIES, OnCopiesUpDown)
+	ON_CONTROL_RANGE(BN_CLICKED, IDC_RANGE_ALL, IDC_RANGE_PAGES, OnPrintRange)
 	ON_BN_CLICKED(IDC_LANDSCAPE, OnUpdateDialogData)
 	ON_BN_CLICKED(IDC_PORTRAIT, OnUpdateDialogData)
-	ON_CONTROL_RANGE(BN_CLICKED, IDC_RANGE_ALL, IDC_RANGE_PAGES, OnPrintRange)
+	ON_BN_CLICKED(IDC_COLLATE, OnUpdateDialogData)
+	ON_BN_CLICKED(IDC_CENTER_IMAGE, OnUpdateDialogData)
+	ON_BN_CLICKED(IDC_AUTO_ROTATE, OnUpdateDialogData)
+	ON_BN_CLICKED(IDC_CLIP_CONTENT, OnUpdateDialogData)
 	ON_BN_CLICKED(IDC_SCALE_TO_FIT, OnUpdateDialogData)
 	ON_BN_CLICKED(IDC_SHRINK_OVERSIZED, OnUpdateDialogData)
 	ON_BN_CLICKED(IDC_IGNORE_MARGINS, OnUpdateDialogData)
-	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_COPIES, OnCopiesUpDown)
-	ON_BN_CLICKED(IDC_PROPERTIES, OnProperties)
-	ON_MESSAGE_VOID(WM_KICKIDLE, OnUpdateControls)
 	ON_EN_KILLFOCUS(IDC_EDIT_COPIES, OnUpdateDialogData)
 	ON_EN_KILLFOCUS(IDC_MARGIN_LEFT, OnUpdateDialogData)
 	ON_EN_KILLFOCUS(IDC_MARGIN_TOP, OnUpdateDialogData)
@@ -150,7 +153,7 @@ BEGIN_MESSAGE_MAP(CPrintDlg, CDialog)
 	ON_EN_KILLFOCUS(IDC_POSITION_LEFT, OnUpdateDialogData)
 	ON_EN_KILLFOCUS(IDC_POSITION_TOP, OnUpdateDialogData)
 	ON_EN_KILLFOCUS(IDC_SCALE, OnUpdateDialogData)
-	ON_BN_CLICKED(IDC_COLLATE, OnUpdateDialogData)
+	ON_MESSAGE_VOID(WM_KICKIDLE, OnUpdateControls)
 END_MESSAGE_MAP()
 
 
@@ -163,12 +166,6 @@ BOOL CPrintDlg::OnInitDialog()
 	ASSERT(m_hPrinter == NULL);
 
 	m_edtCopies.SetInteger();
-	m_edtPosLeft.SetReal();
-	m_edtPosTop.SetReal();
-	m_edtMarginLeft.SetReal();
-	m_edtMarginTop.SetReal();
-	m_edtMarginRight.SetReal();
-	m_edtMarginBottom.SetReal();
 	m_edtScale.SetReal();
 	m_edtScale.SetPercent();
 
@@ -332,6 +329,15 @@ void CPrintDlg::OnOK()
 	if (m_bReverse)
 		reverse(m_arrPages.begin(), m_arrPages.end());
 
+	if (m_hPrinter != NULL)
+		::ClosePrinter(m_hPrinter);
+
+	if (m_pPrinter != NULL)
+	{
+		delete m_pPrinter;
+		m_pPrinter = NULL;
+	}
+
 	CDialog::OnOK();
 }
 
@@ -341,6 +347,12 @@ void CPrintDlg::OnCancel()
 
 	if (m_hPrinter != NULL)
 		::ClosePrinter(m_hPrinter);
+
+	if (m_pPrinter != NULL)
+	{
+		delete m_pPrinter;
+		m_pPrinter = NULL;
+	}
 
 	CDialog::OnCancel();
 }

@@ -956,6 +956,12 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRe
 					   static_cast<int>(settings.fMarginRight*fPrinterMMx),
 					   static_cast<int>(settings.fMarginBottom*fPrinterMMy));
 
+	if (settings.bAutoRotate && (rcPage.Width() - rcPage.Height())*(szDjVuPage.cx - szDjVuPage.cy) < 0)
+	{
+		nTotalRotate = (nTotalRotate + 3) % 4;
+		swap(szDjVuPage.cx, szDjVuPage.cy);
+	}
+
 	double fSourceMM = pImage->get_dpi() / 25.4;
 
 	CSize szScaled;

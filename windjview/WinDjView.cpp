@@ -100,8 +100,11 @@ const TCHAR* s_pszMarginBottom = _T("m-bottom");
 const TCHAR* s_pszPosLeft = _T("left");
 const TCHAR* s_pszPosTop = _T("top");
 const TCHAR* s_pszCenterImage = _T("center");
-const TCHAR* s_pszIgnoreMargins = _T("no-margins");
+const TCHAR* s_pszAutoRotate = _T("auto-rotate");
+const TCHAR* s_pszClipContent = _T("clip-content");
+const TCHAR* s_pszScaleToFit = _T("fit");
 const TCHAR* s_pszShrinkOversized = _T("shrink");
+const TCHAR* s_pszIgnoreMargins = _T("no-margins");
 
 const TCHAR* s_pszDocumentsSection = _T("Documents");
 const TCHAR* s_pszSettings = _T("settings");
@@ -510,8 +513,11 @@ void CDjViewApp::LoadSettings()
 	m_printSettings.fPosLeft = GetProfileDouble(s_pszPrintSection, s_pszPosLeft, m_printSettings.fPosLeft);
 	m_printSettings.fPosTop = GetProfileDouble(s_pszPrintSection, s_pszPosTop, m_printSettings.fPosTop);
 	m_printSettings.bCenterImage = !!GetProfileInt(s_pszPrintSection, s_pszCenterImage, m_printSettings.bCenterImage);
-	m_printSettings.bIgnorePrinterMargins = !!GetProfileInt(s_pszPrintSection, s_pszIgnoreMargins, m_printSettings.bIgnorePrinterMargins);
+	m_printSettings.bAutoRotate = !!GetProfileInt(s_pszPrintSection, s_pszAutoRotate, m_printSettings.bAutoRotate);
+	m_printSettings.bClipContent = !!GetProfileInt(s_pszPrintSection, s_pszClipContent, m_printSettings.bClipContent);
+	m_printSettings.bScaleToFit = !!GetProfileInt(s_pszPrintSection, s_pszScaleToFit, m_printSettings.bScaleToFit);
 	m_printSettings.bShrinkOversized = !!GetProfileInt(s_pszPrintSection, s_pszShrinkOversized, m_printSettings.bShrinkOversized);
+	m_printSettings.bIgnorePrinterMargins = !!GetProfileInt(s_pszPrintSection, s_pszIgnoreMargins, m_printSettings.bIgnorePrinterMargins);
 }
 
 bool CDjViewApp::LoadDocSettings(const CString& strKey, DocSettings* pSettings)
@@ -618,8 +624,11 @@ void CDjViewApp::SaveSettings()
 	WriteProfileDouble(s_pszPrintSection, s_pszPosLeft, m_printSettings.fPosLeft);
 	WriteProfileDouble(s_pszPrintSection, s_pszPosTop, m_printSettings.fPosTop);
 	WriteProfileInt(s_pszPrintSection, s_pszCenterImage, m_printSettings.bCenterImage);
-	WriteProfileInt(s_pszPrintSection, s_pszIgnoreMargins, m_printSettings.bIgnorePrinterMargins);
+	WriteProfileInt(s_pszPrintSection, s_pszAutoRotate, m_printSettings.bAutoRotate);
+	WriteProfileInt(s_pszPrintSection, s_pszClipContent, m_printSettings.bClipContent);
+	WriteProfileInt(s_pszPrintSection, s_pszScaleToFit, m_printSettings.bScaleToFit);
 	WriteProfileInt(s_pszPrintSection, s_pszShrinkOversized, m_printSettings.bShrinkOversized);
+	WriteProfileInt(s_pszPrintSection, s_pszIgnoreMargins, m_printSettings.bIgnorePrinterMargins);
 
 	const map<MD5, DocSettings>& settings = DjVuSource::GetAllSettings();
 	for (map<MD5, DocSettings>::const_iterator it = settings.begin(); it != settings.end(); ++it)

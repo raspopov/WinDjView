@@ -71,7 +71,7 @@ struct CPrintSettings
 		fPosLeft(0.0), fPosTop(0.0), bCenterImage(true), bClipContent(false),
 		fScale(100.0), bShrinkOversized(true), bScaleToFit(false),
 		bIgnorePrinterMargins(false), nCopies(1), bCollate(false),
-		bLandscape(false), bTwoPages(false), nPaperCode(0) {}
+		bAutoRotate(false), bLandscape(false), bTwoPages(false), nPaperCode(0) {}
 
 	double fMarginLeft;
 	double fMarginTop;
@@ -81,14 +81,16 @@ struct CPrintSettings
 	double fPosLeft;
 	double fPosTop;
 	BOOL bCenterImage;
+	BOOL bAutoRotate;
 	BOOL bClipContent;
 
-	double fScale;
-	BOOL bShrinkOversized;
 	BOOL bScaleToFit;
+	BOOL bShrinkOversized;
 	BOOL bIgnorePrinterMargins;
 
 	// The following settings are not stored in registry
+	double fScale;
+
 	DWORD nCopies;
 	BOOL bCollate;
 

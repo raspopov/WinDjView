@@ -9,9 +9,10 @@ Changes in version 0.5 (2007-??-??):
 + Open page and view settings can be restored when opening a file.
 + Page number can be specified when opening files via command line.
 + Back/Forward keys on multimedia keyboards now work as Alt+arrows.
-+ Added option to invert colors.
 + Reorganized Settings dialog.
++ Added option to invert colors.
 + Added option to change display units (centimeters, millimeters, inches).
++ Added option to auto-rotate pages when printing.
 * Improved interface responsiveness when opening and closing documents.
 * Improvements for files with large shared dictionaries:
   * Reduced memory usage.

@@ -18,6 +18,7 @@
 // $Id$
 
 #include "stdafx.h"
+#include "WinDjView.h"
 #include "MyEdit.h"
 
 #ifdef _DEBUG
@@ -29,8 +30,8 @@
 
 IMPLEMENT_DYNAMIC(CMyEdit, CEdit)
 CMyEdit::CMyEdit()
+	: m_nType(EditNormal), m_nUnits(theApp.GetAppSettings()->nUnits), m_fValue(0.0)
 {
-	m_nType = EditNormal;
 }
 
 CMyEdit::~CMyEdit()
@@ -40,12 +41,37 @@ CMyEdit::~CMyEdit()
 
 BEGIN_MESSAGE_MAP(CMyEdit, CEdit)
 	ON_WM_CHAR()
+	ON_WM_KILLFOCUS()
+	ON_WM_SETFOCUS()
 END_MESSAGE_MAP()
 
 
 
 // CMyEdit message handlers
 
+void AFXAPI DDX_Units(CDataExchange* pDX, int nIDC, double& fValue, int nUnits)
+{
+	HWND hWndCtrl = pDX->PrepareCtrl(nIDC);
+	ASSERT(hWndCtrl != NULL);                
+    
+	CMyEdit* pEdit = (CMyEdit*) CWnd::FromHandle(hWndCtrl);
+	if (pDX->m_bSaveAndValidate)
+	{
+		ASSERT(pEdit->GetType() == CMyEdit::EditUnits);
+
+		pEdit->UpdateValue();
+		int nDisplayUnits = pEdit->GetUnits();
+		fValue = pEdit->GetValue() * CAppSettings::unitsPerInch[nUnits] / CAppSettings::unitsPerInch[nDisplayUnits];
+    }
+	else
+	{
+		pEdit->SetUnits();
+
+		int nDisplayUnits = pEdit->GetUnits();
+		double fConvValue = fValue * CAppSettings::unitsPerInch[nDisplayUnits] / CAppSettings::unitsPerInch[nUnits];
+		pEdit->SetValue(fConvValue, nDisplayUnits);
+	}
+}
 
 void CMyEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
@@ -65,4 +91,69 @@ void CMyEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 	}
 
 	CEdit::OnChar(nChar, nRepCnt, nFlags);
+}
+
+void CMyEdit::OnKillFocus(CWnd* pNewWnd)
+{
+	if (m_nType == EditUnits)
+		UpdateValue();
+
+	CEdit::OnKillFocus(pNewWnd);
+}
+
+void CMyEdit::OnSetFocus(CWnd* pOldWnd)
+{
+	SetSel(0, -1);
+
+	CEdit::OnSetFocus(pOldWnd);
+}
+
+void CMyEdit::UpdateValue()
+{
+	CString strText;
+	GetWindowText(strText);
+
+	CString strAllUnitsLoc = LoadString(IDS_UNITS_SHORT);
+	CString strAllUnitsEng;
+	::LoadString(AfxGetInstanceHandle(), IDS_UNITS_SHORT, strAllUnitsEng.GetBuffer(256), 256);
+	strAllUnitsEng.ReleaseBuffer();
+
+	TCHAR* pEnd = NULL;
+	double fValue = _tcstod(strText, &pEnd);
+	if (pEnd == (LPCTSTR) strText)
+	{
+		SetValue(0, theApp.GetAppSettings()->nUnits);
+		return;
+	}
+
+	CString strUnits = pEnd;
+	strUnits.TrimLeft();
+	strUnits.TrimRight();
+
+	for (int nUnits = CAppSettings::Centimeters; nUnits <= CAppSettings::Inches; ++nUnits)
+	{
+		CString strUnitsLoc, strUnitsEng;
+		AfxExtractSubString(strUnitsLoc, strAllUnitsLoc, nUnits, ',');
+		AfxExtractSubString(strUnitsEng, strAllUnitsEng, nUnits, ',');
+
+		if (_tcsicmp(strUnitsLoc, strUnits) == 0 || _tcsicmp(strUnitsEng, strUnits) == 0)
+		{
+			SetValue(fValue, nUnits);
+			return;
+		}
+	}
+
+	SetValue(fValue, theApp.GetAppSettings()->nUnits);
+}
+
+void CMyEdit::SetValue(double fValue, int nUnits)
+{
+	m_fValue = static_cast<int>(fValue * 100.0 + 0.5) / 100.0;
+	m_nUnits = nUnits;
+	if (m_nUnits < CAppSettings::Centimeters || m_nUnits > CAppSettings::Inches)
+		m_nUnits = theApp.GetAppSettings()->nUnits;
+
+	CString strUnits;
+	AfxExtractSubString(strUnits, LoadString(IDS_UNITS_SHORT), nUnits, ',');
+	SetWindowText(FormatString(_T("%s %s"), FormatDouble(m_fValue), strUnits));
 }

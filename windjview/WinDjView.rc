@@ -494,14 +494,16 @@ BEGIN
     CONTROL         "Pa&ges:",IDC_RANGE_PAGES,"Button",BS_AUTORADIOBUTTON,14,
                     194,37,11
     EDITTEXT        IDC_PAGE_RANGES,56,193,95,12,ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "L&eft:",IDC_STATIC,174,168,21,9
-    EDITTEXT        IDC_POSITION_LEFT,198,166,38,12,ES_AUTOHSCROLL
-    LTEXT           "T&op:",IDC_STATIC,174,186,21,9
-    EDITTEXT        IDC_POSITION_TOP,198,184,38,12,ES_AUTOHSCROLL
+    LTEXT           "L&eft:",IDC_STATIC,174,168,18,9
+    EDITTEXT        IDC_POSITION_LEFT,193,166,32,12,ES_AUTOHSCROLL
+    LTEXT           "T&op:",IDC_STATIC,230,168,18,9
+    EDITTEXT        IDC_POSITION_TOP,250,166,32,12,ES_AUTOHSCROLL
     CONTROL         "Center i&mage",IDC_CENTER_IMAGE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,198,202,57,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,193,188,57,9
+    CONTROL         "Auto-rotate",IDC_AUTO_ROTATE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,193,202,57,9
     CONTROL         "Clip content",IDC_CLIP_CONTENT,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,198,216,55,9
+                    WS_TABSTOP,193,216,55,9
     LTEXT           "&Scale:",IDC_STATIC,304,168,21,9
     EDITTEXT        IDC_SCALE,331,166,38,12,ES_AUTOHSCROLL
     CONTROL         "Scale to fit media",IDC_SCALE_TO_FIT,"Button",
@@ -544,15 +546,13 @@ BEGIN
                     WS_VISIBLE,14,20,138,115
     GROUPBOX        "Orientation",IDC_STATIC,167,98,122,51
     GROUPBOX        "Preview",IDC_STATIC,7,7,153,142
-    GROUPBOX        "Margins (millimeters)",IDC_STATIC,7,237,153,49
+    GROUPBOX        "Margins",IDC_STATIC,7,237,153,49
     GROUPBOX        "Paper",IDC_STATIC,167,237,122,49
     LTEXT           "Enter page numbers and/or page ranges separated by commas. Example: 1,3,5-9",
                     IDC_STATIC,16,210,137,17
     GROUPBOX        "Print options",IDC_STATIC,296,237,129,49
     GROUPBOX        "Position",IDC_STATIC,167,154,122,78
     GROUPBOX        "Scaled print size",IDC_STATIC,296,154,129,78
-    LTEXT           "mm",IDC_STATIC,242,168,21,9
-    LTEXT           "mm",IDC_STATIC,242,186,21,9
     CTEXT           "Paper size",IDC_STATIC_PAPER,14,138,138,8
 END
 

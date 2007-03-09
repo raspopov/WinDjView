@@ -130,7 +130,7 @@
 #define IDS_INSTALLATION_FAILED         287
 #define IDS_INSTALLATION_SUCCEEDED      288
 #define IDS_ERROR_PARSING_RANGE         289
-#define IDS_PATH_TOO_LONG				290
+#define IDS_PATH_TOO_LONG               290
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -163,6 +163,7 @@
 #define IDC_STATIC_PAPER                1030
 #define IDC_CLIP_CONTENT                1031
 #define IDC_PROGRESS                    1032
+#define IDC_AUTO_ROTATE                 1032
 #define IDC_IGNORE_MARGINS              1033
 #define IDC_STATIC_TEXT                 1034
 #define IDC_REVERSE                     1035

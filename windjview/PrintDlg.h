@@ -96,6 +96,7 @@ protected:
 		CustomRange = 3
 	};
 
+	// Dialog data
 	CString m_strPages;
 	int m_nRangeType;
 	BOOL m_bReverse;
@@ -104,13 +105,13 @@ protected:
 	CComboBox m_cboPagesPerSheet;
 	CComboBox m_cboPagesInRange;
 	CMyEdit m_edtCopies;
+	CMyEdit m_edtScale;
 	CMyEdit m_edtMarginBottom;
 	CMyEdit m_edtMarginTop;
 	CMyEdit m_edtMarginLeft;
 	CMyEdit m_edtMarginRight;
 	CMyEdit m_edtPosLeft;
 	CMyEdit m_edtPosTop;
-	CMyEdit m_edtScale;
 
 // Overrides
 protected:

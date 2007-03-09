@@ -20,6 +20,8 @@
 #pragma once
 
 
+void AFXAPI DDX_Units(CDataExchange* pDX, int nIDC, double& fValue, int nUnits);
+
 // CMyEdit
 
 class CMyEdit : public CEdit
@@ -36,20 +38,35 @@ public:
 	void SetInteger() { m_nType = EditInteger; }
 	void SetReal() { m_nType = EditReal; }
 	void SetPercent(bool bPercent = true) { m_bPercent = bPercent; }
+	void SetUnits() { m_nType = EditUnits; }
 
-// Implementation
-protected:
 	enum EditType
 	{
 		EditNormal,
 		EditInteger,
-		EditReal
+		EditReal,
+		EditUnits
 	};
+
+	int GetType() const { return m_nType; }
+
+	void UpdateValue();
+	int GetUnits() const { return m_nUnits; }
+	double GetValue() const { return m_fValue; }
+	void SetValue(double fValue, int nUnits);
+
+// Implementation
+protected:
 	EditType m_nType;
 	bool m_bPercent;
 
-// Generated message map functions
+	double m_fValue;
+	int m_nUnits;
+
+	// Message map functions
 	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnKillFocus(CWnd* pNewWnd);
+	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	DECLARE_MESSAGE_MAP()
 };
 
