@@ -1249,6 +1249,7 @@ void CMyTreeCtrl::SelectNode(TreeNode* pNode, UINT nAction)
 		// Still send a notification message
 		NMTREEVIEW nmtv;
 		InitNotification(nmtv, TVN_ITEMCLICKED);
+		nmtv.action = nAction;
 
 		nmtv.itemNew.mask = TVIF_HANDLE | TVIF_STATE | TVIF_PARAM;
 		nmtv.itemNew.hItem = (HTREEITEM) pNode;
