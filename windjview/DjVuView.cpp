@@ -863,14 +863,14 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 		GetClientRect(rcClient);
 
 		// Save page and offset to restore after changes
-		int nAnchorPage;
+		int nAnchorPage = -1;
 		CPoint ptAnchorOffset;
 		CPoint ptTop = GetScrollPosition();
 
 		if (updateType == TOP)
 		{
 			nAnchorPage = CalcTopPage();
-			ptAnchorOffset = ptTop - m_pages[nAnchorPage].ptOffset;
+			ptAnchorOffset = ScreenToDjVu(nAnchorPage, ptTop - m_pages[nAnchorPage].ptOffset, false);
 		}
 		else if (updateType == BOTTOM)
 		{
@@ -882,7 +882,7 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 				++nPage;
 
 			nAnchorPage = nPage;
-			ptAnchorOffset = ptBottom - m_pages[nAnchorPage].ptOffset;
+			ptAnchorOffset = ScreenToDjVu(nAnchorPage, ptBottom - m_pages[nAnchorPage].ptOffset, false);
 		}
 
 		for (int i = 0; i < 3; ++i)
@@ -950,13 +950,19 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 			SetScrollSizesNoRepaint(m_szDisplay, szDevPage, szDevLine);
 		}
 
+		if (nAnchorPage != -1)
+		{
+			GRect rect(ptAnchorOffset.x, ptAnchorOffset.y);
+			ptAnchorOffset = TranslatePageRect(nAnchorPage, rect, true, false).TopLeft();
+		}
+
 		if (updateType == TOP)
 		{
-			ScrollToPositionNoRepaint(m_pages[nAnchorPage].ptOffset + ptAnchorOffset);
+			ScrollToPositionNoRepaint(ptAnchorOffset);
 		}
 		else if (updateType == BOTTOM)
 		{
-			ScrollToPositionNoRepaint(m_pages[nAnchorPage].ptOffset + ptAnchorOffset - rcClient.Size());
+			ScrollToPositionNoRepaint(ptAnchorOffset - rcClient.Size());
 		}
 
 		if (updateType != RECALC)
@@ -972,14 +978,14 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 		GetClientRect(rcClient);
 
 		// Save page and offset to restore after changes
-		int nAnchorPage;
+		int nAnchorPage = -1;
 		CPoint ptAnchorOffset;
 		CPoint ptTop = GetScrollPosition();
 
 		if (updateType == TOP)
 		{
 			nAnchorPage = CalcTopPage();
-			ptAnchorOffset = ptTop - m_pages[nAnchorPage].ptOffset;
+			ptAnchorOffset = ScreenToDjVu(nAnchorPage, ptTop - m_pages[nAnchorPage].ptOffset, false);
 		}
 		else if (updateType == BOTTOM)
 		{
@@ -991,7 +997,7 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 				++nPage;
 
 			nAnchorPage = nPage - (nPage % 2);
-			ptAnchorOffset = ptBottom - m_pages[nAnchorPage].ptOffset;
+			ptAnchorOffset = ScreenToDjVu(nAnchorPage, ptBottom - m_pages[nAnchorPage].ptOffset, false);
 		}
 
 		for (int i = 0; i < 3; ++i)
@@ -1114,13 +1120,19 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 			SetScrollSizesNoRepaint(m_szDisplay, szDevPage, szDevLine);
 		}
 
+		if (nAnchorPage != -1)
+		{
+			GRect rect(ptAnchorOffset.x, ptAnchorOffset.y);
+			ptAnchorOffset = TranslatePageRect(nAnchorPage, rect, true, false).TopLeft();
+		}
+
 		if (updateType == TOP)
 		{
-			ScrollToPositionNoRepaint(m_pages[nAnchorPage].ptOffset + ptAnchorOffset);
+			ScrollToPositionNoRepaint(ptAnchorOffset);
 		}
 		else if (updateType == BOTTOM)
 		{
-			ScrollToPositionNoRepaint(m_pages[nAnchorPage].ptOffset + ptAnchorOffset - rcClient.Size());
+			ScrollToPositionNoRepaint(ptAnchorOffset - rcClient.Size());
 		}
 
 		if (updateType != RECALC)

@@ -1260,7 +1260,7 @@ bool CDjViewApp::InstallDictionary(CDjVuDoc* pDoc, bool bAllUsers, bool bKeepOri
 		pPrevDoc->GetSource()->AddObserver(this);
 		pPrevDoc->OnCloseDocument();
 
-		::WaitForSingleObject(m_docClosed.m_hObject, INFINITE);
+		::WaitForSingleObject(m_docClosed, INFINITE);
 	}
 
 	if (!pDoc->GetSource()->SaveAs(strNewName))

@@ -2,7 +2,6 @@
 // Microsoft Developer Studio generated include file.
 // Used by WinDjView.rc
 //
-#define IDR_MANIFEST                    1
 #define IDD_ABOUTBOX                    100
 #define IDD_PRINT                       101
 #define IDD_PROGRESS                    102
@@ -20,22 +19,22 @@
 #define IDD_INSTALL_DIC_REPLACE         114
 #define IDR_MAINFRAME                   128
 #define IDR_DjVuTYPE                    129
-#define IDR_POPUP                       130
-#define IDC_CURSOR_HAND                 131
-#define IDC_CURSOR_DRAG                 132
-#define IDC_CURSOR_LINK                 133
-#define IDC_CURSOR_MAGNIFY              134
-#define IDC_CURSOR_PAN_UR               135
-#define IDC_CURSOR_PAN_ALL              136
-#define IDC_CURSOR_PAN_D                137
-#define IDC_CURSOR_PAN_DL               138
-#define IDC_CURSOR_PAN_DR               139
-#define IDC_CURSOR_PAN_L                140
-#define IDC_CURSOR_PAN_LR               141
-#define IDC_CURSOR_PAN_R                142
-#define IDC_CURSOR_PAN_U                143
-#define IDC_CURSOR_PAN_UD               144
-#define IDC_CURSOR_PAN_UL               145
+#define IDR_POPUP                       131
+#define IDC_CURSOR_HAND                 132
+#define IDC_CURSOR_DRAG                 133
+#define IDC_CURSOR_LINK                 134
+#define IDC_CURSOR_MAGNIFY              135
+#define IDC_CURSOR_PAN_UR               136
+#define IDC_CURSOR_PAN_ALL              137
+#define IDC_CURSOR_PAN_D                138
+#define IDC_CURSOR_PAN_DL               139
+#define IDC_CURSOR_PAN_DR               140
+#define IDC_CURSOR_PAN_L                141
+#define IDC_CURSOR_PAN_LR               142
+#define IDC_CURSOR_PAN_R                143
+#define IDC_CURSOR_PAN_U                144
+#define IDC_CURSOR_PAN_UD               145
+#define IDC_CURSOR_PAN_UL               146
 #define IDB_PAN_ANCHOR                  149
 #define IDB_HOURGLASS                   150
 #define IDB_CLOSE                       151
