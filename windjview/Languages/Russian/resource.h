@@ -2,7 +2,6 @@
 // Microsoft Developer Studio generated include file.
 // Used by WinDjViewRU.rc
 //
-#define IDR_MANIFEST                    1
 #define IDD_ABOUTBOX                    100
 #define IDD_PRINT                       101
 #define IDD_PROGRESS                    102
@@ -14,30 +13,33 @@
 #define IDD_SETTINGS_GENERAL            108
 #define IDD_SETTINGS_DISPLAY            109
 #define IDD_SETTINGS_ASSOCS             110
-#define IDD_HIGHLIGHT                   111
+#define IDD_ANNOTATION                  111
+#define IDD_RENAME_BOOKMARK             112
+#define IDD_INSTALL_DIC                 113
+#define IDD_INSTALL_DIC_REPLACE         114
 #define IDR_MAINFRAME                   128
 #define IDR_DjVuTYPE                    129
-#define IDR_POPUP                       130
-#define IDC_CURSOR_HAND                 131
-#define IDC_CURSOR_DRAG                 132
-#define IDC_CURSOR_LINK                 133
-#define IDC_CURSOR_MAGNIFY              134
-#define IDC_CURSOR_PAN_UR               135
-#define IDC_CURSOR_PAN_ALL              136
-#define IDC_CURSOR_PAN_D                137
-#define IDC_CURSOR_PAN_DL               138
-#define IDC_CURSOR_PAN_DR               139
-#define IDC_CURSOR_PAN_L                140
-#define IDC_CURSOR_PAN_LR               141
-#define IDC_CURSOR_PAN_R                142
-#define IDC_CURSOR_PAN_U                143
-#define IDC_CURSOR_PAN_UD               144
-#define IDC_CURSOR_PAN_UL               145
-#define IDB_PAN_ANCHOR                  146
-#define IDB_HOURGLASS                   147
-#define IDB_CLOSE                       148
-#define IDB_BOOKMARKS                   149
-#define IDB_DONATE                      150
+#define IDR_POPUP                       131
+#define IDC_CURSOR_HAND                 132
+#define IDC_CURSOR_DRAG                 133
+#define IDC_CURSOR_LINK                 134
+#define IDC_CURSOR_MAGNIFY              135
+#define IDC_CURSOR_PAN_UR               136
+#define IDC_CURSOR_PAN_ALL              137
+#define IDC_CURSOR_PAN_D                138
+#define IDC_CURSOR_PAN_DL               139
+#define IDC_CURSOR_PAN_DR               140
+#define IDC_CURSOR_PAN_L                141
+#define IDC_CURSOR_PAN_LR               142
+#define IDC_CURSOR_PAN_R                143
+#define IDC_CURSOR_PAN_U                144
+#define IDC_CURSOR_PAN_UD               145
+#define IDC_CURSOR_PAN_UL               146
+#define IDB_PAN_ANCHOR                  149
+#define IDB_HOURGLASS                   150
+#define IDB_CLOSE                       151
+#define IDB_BOOKMARKS                   152
+#define IDB_DONATE                      153
 #define IDS_BOOKMARKS_TAB               200
 #define IDS_ASSOCIATE_SUCCESSFUL        201
 #define IDS_ASSOCIATE_FAILED            202
@@ -96,8 +98,7 @@
 #define IDS_TOOLTIP_HIDE                255
 #define IDS_NOT_VALID_DOCUMENT          256
 #define IDS_PRINTING_FAILED             257
-#define IDS_PAPER_SIZE_MM               258
-#define IDS_CENTIMETER                  259
+#define IDS_PAPER_SIZE                  258
 #define IDS_VERSION_INFO                260
 #define IDS_VERSION_ABOUT               261
 #define IDS_CURRENT_VERSION             262
@@ -113,16 +114,33 @@
 #define IDS_CUSTOM_BOOKMARKS_TAB        272
 #define IDS_BOOKMARK_MORE               273
 #define IDS_BOOKMARK_LESS               274
+#define IDS_UNITS_FULL                  275
+#define IDS_UNITS_SHORT                 276
+#define IDS_EDIT_ANNOTATION             277
+#define IDS_CREATE_ANNOTATION           278
+#define IDS_BOOKMARK_SELECTION          279
+#define IDS_BOOKMARK_ANNOTATION         280
+#define IDS_BOOKMARK_VIEW               281
+#define IDS_RENAME_BOOKMARK             282
+#define IDS_PROMPT_BOOKMARK_DESTINATION 283
+#define IDS_PROMPT_BOOKMARK_DELETE      284
+#define IDS_PROMPT_ANNOTATION_DELETE    285
+#define IDS_FILE_INSTALL                286
+#define IDS_INSTALLATION_FAILED         287
+#define IDS_INSTALLATION_SUCCEEDED      288
+#define IDS_ERROR_PARSING_RANGE         289
+#define IDS_PATH_TOO_LONG               290
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
 #define IDC_RANGE_ALL                   1003
-#define IDC_RANGE_PAGES                 1004
-#define IDC_PAGE_RANGES                 1005
-#define IDC_RANGE_CURRENT               1006
-#define IDC_SPIN_COPIES                 1007
-#define IDC_EDIT_COPIES                 1008
-#define IDC_COLLATE                     1009
+#define IDC_RANGE_CURRENT               1004
+#define IDC_RANGE_SELECTION             1005
+#define IDC_RANGE_PAGES                 1006
+#define IDC_PAGE_RANGES                 1007
+#define IDC_SPIN_COPIES                 1008
+#define IDC_EDIT_COPIES                 1009
+#define IDC_COLLATE                     1010
 #define IDC_STATIC_TYPE                 1011
 #define IDC_STATIC_LOCATION             1012
 #define IDC_STATIC_COMMENT              1013
@@ -144,6 +162,7 @@
 #define IDC_STATIC_PAPER                1030
 #define IDC_CLIP_CONTENT                1031
 #define IDC_PROGRESS                    1032
+#define IDC_AUTO_ROTATE                 1032
 #define IDC_IGNORE_MARGINS              1033
 #define IDC_STATIC_TEXT                 1034
 #define IDC_REVERSE                     1035
@@ -186,7 +205,6 @@
 #define IDC_FILL_COLOR                  1070
 #define IDC_PROPERTIES                  1071
 #define IDC_FIND_ALL                    1072
-#define IDC_URL                         1073
 #define IDC_COMMENT                     1074
 #define IDC_PAGENUM                     1075
 #define IDC_BOOKMARK_TITLE              1075
@@ -194,8 +212,14 @@
 #define IDC_STATIC_LESS                 1077
 #define IDC_STATIC_MORE                 1078
 #define IDC_ADD_BOOKMARK                1079
+#define IDC_COMBO_UNITS                 1080
+#define IDC_CURRENT_USER                1082
+#define IDC_ALL_USERS                   1083
+#define IDC_KEEP_ORIGINAL               1084
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
+#define ID_VIEW_NEXTPAGE_SHORTCUT       32773
+#define ID_VIEW_PREVIOUSPAGE_SHORTCUT   32774
 #define ID_ZOOM_50                      32777
 #define ID_ZOOM_75                      32778
 #define ID_ZOOM_100                     32779
@@ -213,13 +237,17 @@
 #define ID_ROTATE_180                   32794
 #define ID_VIEW_FIRSTPAGE               32797
 #define ID_VIEW_LASTPAGE                32798
+#define ID_VIEW_FIRSTPAGE_SHORTCUT      32799
+#define ID_VIEW_LASTPAGE_SHORTCUT       32800
 #define ID_PAGE_INFORMATION             32809
 #define ID_VIEW_LAYOUT                  32810
 #define ID_FILE_SETTINGS                32813
 #define ID_EXPORT_PAGE                  32815
 #define ID_EXPORT_SELECTION             32816
 #define ID_VIEW_BACK                    32819
+#define ID_VIEW_BACK_SHORTCUT           32819
 #define ID_VIEW_FORWARD                 32820
+#define ID_VIEW_FORWARD_SHORTCUT        32820
 #define ID_WINDOW_ACTIVATE_FIRST        32826
 #define ID_WINDOW_ACTIVATE_1            32827
 #define ID_WINDOW_ACTIVATE_2            32828
@@ -257,9 +285,10 @@
 #define ID_LAYOUT_FACING                33118
 #define ID_LAYOUT_CONTINUOUS_FACING     33119
 #define ID_LAYOUT_FIRSTPAGE_ALONE       33120
-#define ID_HIGHLIGHT_SEL                33124
-#define ID_HIGHLIGHT_EDIT               33130
-#define ID_HIGHLIGHT_DELETE             33131
+#define ID_HIGHLIGHT_SELECTION          33124
+#define ID_HIGHLIGHT_TEXT               33125
+#define ID_ANNOTATION_EDIT              33130
+#define ID_ANNOTATION_DELETE            33131
 #define ID_FIND_STRING                  33132
 #define ID_EXPAND_PANE                  33133
 #define ID_COLLAPSE_PANE                33134
@@ -269,14 +298,20 @@
 #define ID_INDICATOR_MODE               33138
 #define ID_FIND_ALL                     33139
 #define ID_BOOKMARK_DELETE              33140
+#define ID_BOOKMARK_RENAME              33141
+#define ID_BOOKMARK_SETDESTINATION      33142
+#define ID_BOOKMARK_ADD                 33143
+#define ID_ZOOM_TO_SELECTION            33144
+#define ID_VIEW_SIDEBAR                 33145
+#define ID_FILE_INSTALL                 33146
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        273
-#define _APS_NEXT_COMMAND_VALUE         33143
-#define _APS_NEXT_CONTROL_VALUE         1080
-#define _APS_NEXT_SYMED_VALUE           112
+#define _APS_NEXT_RESOURCE_VALUE        291
+#define _APS_NEXT_COMMAND_VALUE         33147
+#define _APS_NEXT_CONTROL_VALUE         1085
+#define _APS_NEXT_SYMED_VALUE           115
 #endif
 #endif

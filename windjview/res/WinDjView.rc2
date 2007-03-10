@@ -6,8 +6,9 @@
 #endif
 
 
-#define IDR_MANIFEST 1
+#ifndef AFX_RESOURCE_DLL
 
+#define IDR_MANIFEST 1
 #ifndef RT_MANIFEST
 #define RT_MANIFEST 24
 #endif
@@ -18,3 +19,5 @@
 //
 
 IDR_MANIFEST   RT_MANIFEST   MOVEABLE PURE   "res\\WinDjView.manifest"
+
+#endif // AFX_RESOURCE_DLL

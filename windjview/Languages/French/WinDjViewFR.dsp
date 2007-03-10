@@ -38,18 +38,18 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "WINDJVIEWRU_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "WINDJVIEWFR_EXPORTS" /YX /FD /c
+# ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "WINDJVIEWRU_EXPORTS" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "WINDJVIEWFR_EXPORTS" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD BASE RSC /l 0x1809 /d "NDEBUG"
+# ADD BASE RSC /l 0x40c /d "NDEBUG" /d "AFX_RESOURCE_DLL" /d "AFX_TARG_FRA"
 # ADD RSC /l 0x40c /d "NDEBUG" /d "AFX_RESOURCE_DLL" /d "AFX_TARG_FRA"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /pdb:none /machine:I386 /noentry
+# ADD BASE LINK32 /nologo /dll /pdb:none /machine:I386 /noentry
+# ADD LINK32 /nologo /dll /pdb:none /machine:I386 /noentry
 # Begin Target
 
 # Name "WinDjViewFR - Win32 Release"
@@ -165,9 +165,5 @@ SOURCE=..\..\res\WinDjView.ico
 SOURCE=..\..\res\WinDjView.rc2
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=..\..\res\WinDjView.manifest
-# End Source File
 # End Target
 # End Project
