@@ -865,12 +865,14 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 		// Save page and offset to restore after changes
 		int nAnchorPage = -1;
 		CPoint ptAnchorOffset;
+		CPoint ptDjVuOffset;
+		CSize szPrevBitmap;
 		CPoint ptTop = GetScrollPosition();
 
 		if (updateType == TOP)
 		{
 			nAnchorPage = CalcTopPage();
-			ptAnchorOffset = ScreenToDjVu(nAnchorPage, ptTop - m_pages[nAnchorPage].ptOffset, false);
+			ptAnchorOffset = ptTop - m_pages[nAnchorPage].ptOffset;
 		}
 		else if (updateType == BOTTOM)
 		{
@@ -882,7 +884,13 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 				++nPage;
 
 			nAnchorPage = nPage;
-			ptAnchorOffset = ScreenToDjVu(nAnchorPage, ptBottom - m_pages[nAnchorPage].ptOffset, false);
+			ptAnchorOffset = ptBottom - m_pages[nAnchorPage].ptOffset;
+		}
+
+		if (nAnchorPage != -1)
+		{
+			ptDjVuOffset = ScreenToDjVu(nAnchorPage, ptAnchorOffset, false);
+			szPrevBitmap = m_pages[nAnchorPage].szBitmap;
 		}
 
 		for (int i = 0; i < 3; ++i)
@@ -952,17 +960,25 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 
 		if (nAnchorPage != -1)
 		{
-			GRect rect(ptAnchorOffset.x, ptAnchorOffset.y);
-			ptAnchorOffset = TranslatePageRect(nAnchorPage, rect, true, false).TopLeft();
+			GRect rect(ptDjVuOffset.x, ptDjVuOffset.y);
+			CPoint ptNewOffset = TranslatePageRect(nAnchorPage, rect, true, false).TopLeft()
+					- m_pages[nAnchorPage].ptOffset;
+			if (m_pages[nAnchorPage].szBitmap != szPrevBitmap)
+			{
+				if (ptAnchorOffset.x >= 0)
+					ptAnchorOffset.x = ptNewOffset.x;
+				if (ptAnchorOffset.y >= 0)
+					ptAnchorOffset.y = ptNewOffset.y;
+			}
 		}
 
 		if (updateType == TOP)
 		{
-			ScrollToPositionNoRepaint(ptAnchorOffset);
+			ScrollToPositionNoRepaint(m_pages[nAnchorPage].ptOffset + ptAnchorOffset);
 		}
 		else if (updateType == BOTTOM)
 		{
-			ScrollToPositionNoRepaint(ptAnchorOffset - rcClient.Size());
+			ScrollToPositionNoRepaint(m_pages[nAnchorPage].ptOffset + ptAnchorOffset - rcClient.Size());
 		}
 
 		if (updateType != RECALC)
@@ -3355,6 +3371,7 @@ LRESULT CDjVuView::OnPageDecoded(WPARAM wParam, LPARAM lParam)
 		if ((lParam || m_nTimerID == 0) && (m_nLayout == Continuous || m_nLayout == ContinuousFacing))
 		{
 			UpdateLayout();
+			Invalidate();
 			m_bNeedUpdate = false;
 		}
 		else
@@ -3506,6 +3523,7 @@ void CDjVuView::UpdatePagesFromBottom(int nTop, int nBottom)
 	if (m_bNeedUpdate)
 	{
 		UpdateLayout(BOTTOM);
+		Invalidate();
 		m_bNeedUpdate = false;
 	}
 
@@ -3561,6 +3579,7 @@ bool CDjVuView::UpdatePagesFromTop(int nTop, int nBottom)
 	if (m_bNeedUpdate)
 	{
 		UpdateLayout(TOP);
+		Invalidate();
 		m_bNeedUpdate = false;
 	}
 
@@ -3950,6 +3969,7 @@ void CDjVuView::OnFindString()
 				if (m_bNeedUpdate)
 				{
 					UpdateLayout();
+					Invalidate();
 					m_bNeedUpdate = false;
 				}
 
@@ -4002,6 +4022,7 @@ void CDjVuView::OnFindString()
 	if (m_bNeedUpdate)
 	{
 		UpdateLayout();
+		Invalidate();
 		m_bNeedUpdate = false;
 	}
 
@@ -4081,6 +4102,7 @@ void CDjVuView::OnFindAll()
 	if (m_bNeedUpdate)
 	{
 		UpdateLayout();
+		Invalidate();
 		m_bNeedUpdate = false;
 	}
 
@@ -5022,6 +5044,7 @@ void CDjVuView::GetNormalizedText(wstring& text, bool bSelected, int nMaxLength)
 	if (m_bNeedUpdate)
 	{
 		UpdateLayout();
+		Invalidate();
 		m_bNeedUpdate = false;
 	}
 }
@@ -5113,7 +5136,10 @@ void CDjVuView::GoToSelection(int nPage, int nStartPos, int nEndPos, int nAddToH
 	SelectTextRange(nPage, nStartPos, nEndPos, bInfoLoaded, pWaitCursor);
 
 	if (bInfoLoaded)
+	{
 		UpdateLayout();
+		Invalidate();
+	}
 
 	if (!IsSelectionVisible(nPage, page.selection))
 	{
@@ -5183,6 +5209,7 @@ void CDjVuView::OnViewFullscreen()
 	pView->SetFocus();
 
 	pView->UpdateLayout();
+	pView->UpdateWindow();
 }
 
 void CDjVuView::ResumeDecoding()
@@ -5191,6 +5218,7 @@ void CDjVuView::ResumeDecoding()
 
 	UpdateLayout();
 	UpdateVisiblePages();
+	Invalidate();
 }
 
 int CDjVuView::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
@@ -5288,7 +5316,10 @@ void CDjVuView::OnLButtonDblClk(UINT nFlags, CPoint point)
 		SelectTextRange(nPage, nPos, nPos + 1, bInfoLoaded, pWaitCursor);
 
 		if (bInfoLoaded)
+		{
 			UpdateLayout();
+			Invalidate();
+		}
 
 		if (pWaitCursor != NULL)
 			delete pWaitCursor;
@@ -5328,6 +5359,7 @@ void CDjVuView::OnTimer(UINT nIDEvent)
 	if (m_bNeedUpdate)
 	{
 		UpdateLayout();
+		Invalidate();
 		m_bNeedUpdate = false;
 	}
 
@@ -5612,7 +5644,10 @@ void CDjVuView::UpdateMagnifyWnd()
 		nPage = m_nPage;
 
 	if (pView->UpdatePageInfoFrom(this))
+	{
 		pView->UpdateLayout();
+		pView->UpdateWindow();
+	}
 
 	if (pView->m_nLayout == SinglePage || pView->m_nLayout == Facing)
 	{
