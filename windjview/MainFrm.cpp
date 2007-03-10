@@ -1016,17 +1016,6 @@ void CMainFrame::OnDestroy()
 		m_pMagnifyWnd = NULL;
 	}
 
-	if (m_pFindDlg != NULL)
-	{
-		m_pFindDlg->UpdateData();
-		theApp.GetAppSettings()->strFind = m_pFindDlg->m_strFind;
-		theApp.GetAppSettings()->bMatchCase = !!m_pFindDlg->m_bMatchCase;
-
-		m_pFindDlg->DestroyWindow();
-		delete m_pFindDlg;
-		m_pFindDlg = NULL;
-	}
-
 	theApp.RemoveObserver(this);
 	::UnhookWindowsHookEx(hHook);
 
@@ -1282,6 +1271,17 @@ void CMainFrame::OnClose()
 					MB_ICONEXCLAMATION | MB_YESNO) != IDYES)
 				return;
 		}
+	}
+
+	if (m_pFindDlg != NULL)
+	{
+		m_pFindDlg->UpdateData();
+		theApp.GetAppSettings()->strFind = m_pFindDlg->m_strFind;
+		theApp.GetAppSettings()->bMatchCase = !!m_pFindDlg->m_bMatchCase;
+
+		m_pFindDlg->DestroyWindow();
+		delete m_pFindDlg;
+		m_pFindDlg = NULL;
 	}
 
 	CMDIFrameWnd::OnClose();
