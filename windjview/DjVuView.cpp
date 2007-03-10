@@ -880,7 +880,7 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 
 			int nPage = CalcTopPage();
 			while (nPage < m_nPageCount - 1 &&
-					ptBottom.y >= m_pages[nPage].ptOffset.y + m_pages[nPage].szBitmap.cy)
+					ptBottom.y > m_pages[nPage].rcDisplay.bottom)
 				++nPage;
 
 			nAnchorPage = nPage;
@@ -996,6 +996,8 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 		// Save page and offset to restore after changes
 		int nAnchorPage = -1;
 		CPoint ptAnchorOffset;
+		CPoint ptDjVuOffset;
+		CSize szPrevBitmap;
 		CPoint ptTop = GetScrollPosition();
 
 		if (updateType == TOP)
@@ -1014,6 +1016,12 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 
 			nAnchorPage = nPage - (nPage % 2);
 			ptAnchorOffset = ScreenToDjVu(nAnchorPage, ptBottom - m_pages[nAnchorPage].ptOffset, false);
+		}
+
+		if (nAnchorPage != -1)
+		{
+			ptDjVuOffset = ScreenToDjVu(nAnchorPage, ptAnchorOffset, false);
+			szPrevBitmap = m_pages[nAnchorPage].szBitmap;
 		}
 
 		for (int i = 0; i < 3; ++i)
@@ -1138,17 +1146,25 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 
 		if (nAnchorPage != -1)
 		{
-			GRect rect(ptAnchorOffset.x, ptAnchorOffset.y);
-			ptAnchorOffset = TranslatePageRect(nAnchorPage, rect, true, false).TopLeft();
+			GRect rect(ptDjVuOffset.x, ptDjVuOffset.y);
+			CPoint ptNewOffset = TranslatePageRect(nAnchorPage, rect, true, false).TopLeft()
+					- m_pages[nAnchorPage].ptOffset;
+			if (m_pages[nAnchorPage].szBitmap != szPrevBitmap)
+			{
+				if (ptAnchorOffset.x >= 0)
+					ptAnchorOffset.x = ptNewOffset.x;
+				if (ptAnchorOffset.y >= 0)
+					ptAnchorOffset.y = ptNewOffset.y;
+			}
 		}
 
 		if (updateType == TOP)
 		{
-			ScrollToPositionNoRepaint(ptAnchorOffset);
+			ScrollToPositionNoRepaint(m_pages[nAnchorPage].ptOffset + ptAnchorOffset);
 		}
 		else if (updateType == BOTTOM)
 		{
-			ScrollToPositionNoRepaint(ptAnchorOffset - rcClient.Size());
+			ScrollToPositionNoRepaint(m_pages[nAnchorPage].ptOffset + ptAnchorOffset - rcClient.Size());
 		}
 
 		if (updateType != RECALC)
