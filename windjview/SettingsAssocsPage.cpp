@@ -19,6 +19,7 @@
 
 #include "stdafx.h"
 #include "WinDjView.h"
+#include "AppSettings.h"
 #include "SettingsAssocsPage.h"
 
 
@@ -53,7 +54,7 @@ BEGIN_MESSAGE_MAP(CSettingsAssocsPage, CPropertyPage)
 END_MESSAGE_MAP()
 
 
-// CSettingsDlg message handlers
+// CSettingsAssocsPage message handlers
 
 void CSettingsAssocsPage::OnAssociate()
 {

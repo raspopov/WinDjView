@@ -2,6 +2,8 @@
 // Microsoft Developer Studio generated include file.
 // Used by DictionaryTool.rc
 //
+#define ID_ADD                          3
+#define ID_REMOVE                       4
 #define IDD_DICTIONARYTOOL              100
 #define IDR_MAINFRAME                   128
 #define IDS_DJVU_FILTER                 129
@@ -24,8 +26,11 @@
 #define IDS_REPLACE_ERROR               148
 #define IDS_EMBEDDING_DONE              149
 #define IDS_BROWSE_CHAR_MAP_PROMPT      150
+#define IDD_LOCALIZED                   150
 #define IDS_CHAR_MAP_FILTER             151
+#define IDD_ADD_STRING                  151
 #define IDS_BROWSE_CHAR_MAP             152
+#define IDR_ISO_CODES                   152
 #define IDS_EXPORT_CHAR_MAP             153
 #define IDS_CHAR_MAP_FILTER_EXPORT      154
 #define IDS_CANNOT_OPEN_MAP_FILE        155
@@ -51,14 +56,21 @@
 #define IDC_CHAR_MAP_DONTCHANGE         1018
 #define IDC_CHAR_MAP_REPLACE            1019
 #define IDC_CHAR_MAP_REMOVE             1020
+#define IDC_TITLE_LOCALIZED             1021
+#define IDC_FROM_LOCALIZED              1023
+#define IDC_TO_LOCALIZED                1025
+#define IDC_LANG_FROM                   1026
+#define IDC_LANG_TO                     1027
+#define IDC_LIST                        1027
+#define IDC_LOCALIZATION                1028
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        150
+#define _APS_NEXT_RESOURCE_VALUE        153
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1015
+#define _APS_NEXT_CONTROL_VALUE         1029
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

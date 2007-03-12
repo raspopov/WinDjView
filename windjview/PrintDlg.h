@@ -154,7 +154,7 @@ protected:
 	afx_msg void OnChangePaper();
 	afx_msg void OnChangePrinter();
 	afx_msg void OnPrintRange(UINT nID);
-	afx_msg void OnCopiesUpDown(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnCopiesUpDown(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnUpdateControls();
 	afx_msg void OnProperties();
 	afx_msg void OnUpdateDialogData();

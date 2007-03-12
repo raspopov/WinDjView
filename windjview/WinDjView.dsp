@@ -298,6 +298,10 @@ SOURCE=.\SettingsAssocsPage.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\SettingsDictPage.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\SettingsDisplayPage.cpp
 # End Source File
 # Begin Source File
@@ -491,6 +495,10 @@ SOURCE=.\SettingsAssocsPage.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\SettingsDictPage.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\SettingsDisplayPage.h
 # End Source File
 # Begin Source File
@@ -540,6 +548,10 @@ SOURCE=.\res\bookmarks.bmp
 # Begin Source File
 
 SOURCE=.\res\close.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\dictbar.bmp
 # End Source File
 # Begin Source File
 

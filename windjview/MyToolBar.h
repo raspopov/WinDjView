@@ -19,12 +19,13 @@
 
 #pragma once
 
-
+#include "Global.h"
 #include "MyTheme.h"
+
 
 // CMyToolBar
 
-class CMyToolBar : public CToolBar
+class CMyToolBar : public CToolBar, public Observer
 {
 	DECLARE_DYNAMIC(CMyToolBar)
 
@@ -37,7 +38,19 @@ public:
 	void EraseNonClient();
 	virtual void DoPaint(CDC* pDC);
 
+	void InsertLabel(int nPos, UINT nID, CFont* pFont);
+
+	virtual void OnUpdate(const Observable* source, const Message* message);
+
 protected:
+	struct Label
+	{
+		UINT nID;
+		CString strText;
+		CFont* pFont;
+	};
+	vector<Label> m_labels;
+
 	HTHEME m_hTheme;
 	afx_msg void OnNcPaint();
 	afx_msg void OnDestroy();
@@ -45,5 +58,6 @@ protected:
 	afx_msg void OnThemeChanged();
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
 };

@@ -960,8 +960,6 @@ BEGIN
     IDS_TOOLTIP_HIDE        "Esconder"
     IDS_NOT_VALID_DOCUMENT  "\nEste não é um documento DjVu válido."
     IDS_PRINTING_FAILED     "Falhou a impressão do documento. Poderá existir um problema\n com a impressora ou com o controlador da impressora."
-    IDS_PAPER_SIZE_MM       "%s x %s mm"
-    IDS_CENTIMETER          "cm"
     IDS_VERSION_INFO        "WinDjView %s\npor Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
     IDS_CURRENT_VERSION     "0.4.3"

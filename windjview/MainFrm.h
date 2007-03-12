@@ -29,8 +29,6 @@ class CDjVuView;
 class CFullscreenWnd;
 class CMagnifyWnd;
 
-#define WM_UPDATE_KEYBOARD (WM_APP + 4)
-
 
 class CMainFrame : public CMDIFrameWnd, public Observer
 {
@@ -56,8 +54,8 @@ public:
 	bool IsFullscreenMode();
 	CMagnifyWnd* GetMagnifyWnd();
 
-	void SetStartupLanguage();
 	int GetDocumentCount();
+	void UpdateToolbars();
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -81,20 +79,27 @@ protected:
 	// control bar embedded members
 	CMyStatusBar m_wndStatusBar;
 	CMyToolBar m_wndToolBar;
+	CMyToolBar m_wndDictBar;
+	CImageList m_imageListDict;
+
+	void InitToolBar();
+	void InitDictBar();
+	void UpdateDictComboContent();
+	int m_nCurDict;
 
 	CFullscreenWnd* m_pFullscreenWnd;
 	CMagnifyWnd* m_pMagnifyWnd;
 
-	CMyComboBox m_cboPage, m_cboZoom;
+	CMyComboBox m_cboPage, m_cboZoom, m_cboDict;
+	CMyComboBoxEx m_cboLookup;
 	void UpdatePageCombo(const CDjVuView* pView);
 	void UpdateZoomCombo(const CDjVuView* pView);
-
-	static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
-	static HHOOK hHook;
+	void UpdateDictCombo(const CDjVuView* pView);
 
 	void UpdateSettings();
+	void LanguageChanged();
 
-	CFont m_font;
+	CFont m_font, m_boldFont;
 
 	struct HistoryPos
 	{
@@ -117,20 +122,6 @@ protected:
 	void GoToHistoryPos(const HistoryPos& pos);
 	bool AddToHistory(const HistoryPos& pos);
 
-	struct LanguageInfo
-	{
-		DWORD nLanguage;
-		CString strLanguage;
-		CString strLibraryPath;
-		HINSTANCE hInstance;
-		bool bEnabled;
-	};
-	vector<LanguageInfo> m_languages;
-	int m_nLanguage;
-	void LoadLanguages();
-	void SetLanguage(UINT nLanguage);
-	void LanguageChanged();
-
 protected:
 	// Generated message map functions
 	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
@@ -139,12 +130,15 @@ protected:
 	afx_msg void OnViewToolbar();
 	afx_msg void OnViewStatusBar();
 	afx_msg void OnViewSidebar();
+	afx_msg void OnViewDictBar();
 	afx_msg void OnUpdateViewSidebar(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateViewDictBar(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateViewStatusBar(CCmdUI* pCmdUI);
 	afx_msg void OnChangePage();
 	afx_msg void OnChangePageEdit();
 	afx_msg void OnChangeZoom();
 	afx_msg void OnChangeZoomEdit();
-	afx_msg void OnCancelChangePageZoom();
+	afx_msg void OnCancelChange();
 	afx_msg LRESULT OnDDEExecute(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnEditFind();
 	afx_msg void OnUpdateEditFind(CCmdUI *pCmdUI);
@@ -159,12 +153,19 @@ protected:
 	afx_msg void OnUpdateStatusPage(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateStatusSize(CCmdUI* pCmdUI);
 	afx_msg void OnDestroy();
-	afx_msg LRESULT OnUpdateKeyboard(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnSetLanguage(UINT nID);
-	afx_msg void OnUpdateLanguageList(CCmdUI *pCmdUI);
-	afx_msg void OnUpdateLanguage(CCmdUI *pCmdUI);
 	afx_msg void OnClose();
 	afx_msg LRESULT OnAppCommand(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnLookup();
+	afx_msg void OnLookupFocus();
+	afx_msg void OnChangeDictionary();
+	afx_msg void OnDictionaryInfo();
+	afx_msg void OnDictionaryNext();
+	afx_msg void OnDictionaryPrev();
+	afx_msg void OnUpdateDictionaryInfo(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateDictionaryNext(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateDictionaryPrev(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateDictionaryLookup(CCmdUI* pCmdUI);
+	afx_msg void OnIdleUpdateCmdUI();
 	DECLARE_MESSAGE_MAP()
 };
 

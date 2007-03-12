@@ -162,7 +162,7 @@ void CBookmarksWnd::GoToBookmark(HTREEITEM hItem)
 	}
 }
 
-void CBookmarksWnd::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
+void CBookmarksWnd::OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
 
@@ -176,7 +176,7 @@ void CBookmarksWnd::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult = 0;
 }
 
-void CBookmarksWnd::OnItemClicked(NMHDR *pNMHDR, LRESULT *pResult)
+void CBookmarksWnd::OnItemClicked(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
 
@@ -190,7 +190,7 @@ void CBookmarksWnd::OnItemClicked(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult = 0;
 }
 
-void CBookmarksWnd::OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult)
+void CBookmarksWnd::OnKeyDown(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	LPNMTVKEYDOWN pTVKeyDown = reinterpret_cast<LPNMTVKEYDOWN>(pNMHDR);
 

@@ -20,7 +20,7 @@
 #pragma once
 
 #include "Global.h"
-#include "XMLParser.h"
+struct XMLNode;
 
 
 typedef GList<DjVuTXT::Zone*> DjVuSelection;
@@ -165,21 +165,43 @@ struct PageInfo
 
 struct DictionaryInfo
 {
-	DictionaryInfo() : bEnabled(true) {}
+	DictionaryInfo() : bEnabled(true), bInstalled(false) {}
 
+	// Application-filled fields
 	CString strFileName;
 	CString strPathName;
-	bool bEnabled;
-	XMLNode title;
-	XMLNode langFrom;
-	XMLNode langTo;
 	FILETIME ftModified;
+	bool bEnabled;
+	bool bInstalled;
+
+	// Runtime-filled fields depending on current application language
+	CString strTitle;
+	CString strLangFrom;
+	CString strLangTo;
+
+	// Dictionary-filled fields
+	void ReadPageIndex(const GUTF8String& str, bool bEncoded = true);
+	void ReadCharMap(const GUTF8String& str, bool bEncoded = true);
+	void ReadTitle(const GUTF8String& str, bool bEncoded = true);
+	void ReadLangFrom(const GUTF8String& str, bool bEncoded = true);
+	void ReadLangTo(const GUTF8String& str, bool bEncoded = true);
+
+	GUTF8String strPageIndex;
+	GUTF8String strCharMap;
+	GUTF8String strLangFromCode, strLangToCode;
+	GUTF8String strLangFromRaw, strLangToRaw, strTitleRaw;
+
+	typedef pair<DWORD, GUTF8String> LocalizedString;
+	vector<LocalizedString> titleLoc;
+	vector<LocalizedString> langFromLoc;
+	vector<LocalizedString> langToLoc;
+	static void ReadLocalizedStrings(vector<LocalizedString>& loc, const XMLNode& node);
 };
 
 struct IApplication
 {
 	virtual bool LoadDocSettings(const CString& strKey, DocSettings* pSettings) = 0;
-	virtual DictionaryInfo* GetDictionaryInfo(const CString& strFileName) = 0;
+	virtual DictionaryInfo* GetDictionaryInfo(const CString& strFileName, bool bCheckPath = true) = 0;
 	virtual void ReportFatalError() = 0;
 };
 
@@ -204,8 +226,6 @@ public:
 	int GetPageFromId(const GUTF8String& strPageId) const;
 
 	GP<DjVmNav> GetBookmarks() { return m_pDjVuDoc->get_djvm_nav(); }
-	const GUTF8String& GetPageIndex() { return m_strPageIndex; }
-	const GUTF8String& GetCharMap() { return m_strCharMap; }
 	GP<DjVuDocument> GetDjVuDoc() { return m_pDjVuDoc; }
 
 	CString GetFileName() const { return m_strFileName; }
@@ -252,6 +272,7 @@ protected:
 	vector<PageData> m_pages;
 	DocSettings* m_pSettings;
 	DictionaryInfo* m_pDicInfo;
+	DictionaryInfo m_dicInfo;
 
 	static map<CString, DjVuSource*> openDocuments;
 	static CCriticalSection openDocumentsLock;

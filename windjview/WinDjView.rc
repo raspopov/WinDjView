@@ -122,6 +122,7 @@ IDB_BOOKMARKS           BITMAP  MOVEABLE PURE   "res\\bookmarks.bmp"
 IDB_DONATE              BITMAP  MOVEABLE PURE   "res\\donate.bmp"
 IDB_PAN_ANCHOR          BITMAP  MOVEABLE PURE   "res\\pan_anchor.bmp"
 IDB_HOURGLASS           BITMAP  DISCARDABLE     "res\\hourglass.bmp"
+IDR_DICTIONARIES_BAR    BITMAP  DISCARDABLE     "res\\dictbar.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -164,6 +165,14 @@ BEGIN
     SEPARATOR
     BUTTON      ID_ROTATE_LEFT
     BUTTON      ID_ROTATE_RIGHT
+END
+
+IDR_DICTIONARIES_BAR TOOLBAR DISCARDABLE  16, 15
+BEGIN
+    BUTTON      ID_DICTIONARY_LOOKUP
+    BUTTON      ID_DICTIONARY_PREV
+    BUTTON      ID_DICTIONARY_NEXT
+    BUTTON      ID_DICTIONARY_INFO
 END
 
 
@@ -543,9 +552,9 @@ BEGIN
     CTEXT           "Paper size",IDC_STATIC_PAPER,14,138,138,8
 END
 
-IDD_PROGRESS DIALOGEX 0, 0, 171, 61
+IDD_PROGRESS DIALOG DISCARDABLE  0, 0, 171, 61
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     DEFPUSHBUTTON   "Cancel",IDOK,60,40,50,14
     CTEXT           "Printing page 1 of 3, please wait...",IDC_STATIC_TEXT,7,
@@ -554,10 +563,10 @@ BEGIN
                     12
 END
 
-IDD_ZOOM DIALOGEX 0, 0, 119, 47
+IDD_ZOOM DIALOG DISCARDABLE  0, 0, 119, 47
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Zoom Custom"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "&Zoom To:",IDC_STATIC,13,7,35,12,SS_CENTERIMAGE
     EDITTEXT        IDC_ZOOM,51,7,55,12,ES_AUTOHSCROLL
@@ -565,7 +574,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS_GENERAL DIALOG DISCARDABLE  0, 0, 222, 124
+IDD_SETTINGS_GENERAL DIALOG DISCARDABLE  0, 0, 222, 125
 STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "General"
 FONT 8, "MS Shell Dlg"
@@ -600,7 +609,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Find"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    LTEXT           "Fi&nd what:",IDC_STATIC,7,7,35,12,SS_CENTERIMAGE
+    LTEXT           "Fi&nd what:",IDC_STATIC,7,10,35,9
     CONTROL         "",IDC_FIND,"ComboBoxEx32",CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP,47,7,173,95
     CONTROL         "Match &case",IDC_MATCH_CASE,"Button",BS_AUTOCHECKBOX | 
@@ -612,9 +621,9 @@ BEGIN
                     NOT WS_VISIBLE
 END
 
-IDD_UPDATE DIALOGEX 0, 0, 167, 34
+IDD_UPDATE DIALOG DISCARDABLE  0, 0, 167, 34
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "Checking for update. Please wait...",IDC_STATIC,39,10,
                     118,11
@@ -633,19 +642,6 @@ BEGIN
     LTEXT           "of 9999",IDC_PAGE_COUNT,89,7,27,12,SS_CENTERIMAGE
     DEFPUSHBUTTON   "OK",IDOK,9,27,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,64,27,50,14
-END
-
-IDD_SETTINGS_ASSOCS DIALOG DISCARDABLE  0, 0, 222, 124
-STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
-CAPTION "File Associations"
-FONT 8, "MS Shell Dlg"
-BEGIN
-    LTEXT           "Press to associate WinDjView with .djvu and .djv files:",
-                    -1,7,7,182,9
-    PUSHBUTTON      "&Associate",IDC_ASSOCIATE,7,19,50,14
-    CONTROL         "&Restore associations at program start",
-                    IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    7,38,208,10
 END
 
 IDD_SETTINGS_DISPLAY DIALOG DISCARDABLE  0, 0, 222, 125
@@ -674,10 +670,10 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_ANNOTATION DIALOGEX 0, 0, 200, 260
+IDD_ANNOTATION DIALOG DISCARDABLE  0, 0, 200, 260
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Edit Annotation"
-FONT 8, "MS Sans Serif", 0, 0, 0x1
+FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,30,11,163,1,
                     WS_EX_STATICEDGE
@@ -763,6 +759,31 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,133,70,50,14
     LTEXT           "A dictionary with this name is already installed in the system. Installation will replace the existing dictionary with the currently open file.",
                     IDC_STATIC,7,7,176,26
+END
+
+IDD_SETTINGS_ASSOCS DIALOG DISCARDABLE  0, 0, 222, 125
+STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "File Associations"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "Press to associate WinDjView with .djvu and .djv files:",
+                    -1,7,7,182,9
+    PUSHBUTTON      "&Associate",IDC_ASSOCIATE,7,19,50,14
+    CONTROL         "&Restore associations at program start",
+                    IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    7,38,208,10
+END
+
+IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 125
+STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Dictionaries"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | 
+                    LVS_NOSORTHEADER | WS_TABSTOP,7,18,208,100,
+                    WS_EX_CLIENTEDGE
+    LTEXT           "Installed dictionaries:",IDC_STATIC,7,7,69,9
 END
 
 
@@ -857,7 +878,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 117
+        BOTTOMMARGIN, 118
     END
 
     IDD_FIND, DIALOG
@@ -882,14 +903,6 @@ BEGIN
         RIGHTMARGIN, 116
         TOPMARGIN, 7
         BOTTOMMARGIN, 41
-    END
-
-    IDD_SETTINGS_ASSOCS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 215
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 117
     END
 
     IDD_SETTINGS_DISPLAY, DIALOG
@@ -930,6 +943,22 @@ BEGIN
         RIGHTMARGIN, 183
         TOPMARGIN, 7
         BOTTOMMARGIN, 84
+    END
+
+    IDD_SETTINGS_ASSOCS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 215
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 117
+    END
+
+    IDD_SETTINGS_DICT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 215
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 118
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1201,6 +1230,9 @@ STRINGTABLE DISCARDABLE
 BEGIN
     IDC_PAGENUM             "Select page number\nPage"
     IDC_ZOOM                "Select zoom level\nZoom"
+    IDC_LOOKUP              "Lookup the word in currently selected dictionary\nLookup Text"
+    IDC_LOOKUP_LABEL        "Lookup:"
+    IDC_DICTIONARY          "Select a dictionary from the drop-down list\nDictionary"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -1283,6 +1315,11 @@ BEGIN
     ID_BOOKMARK_ADD         "Bookmark current view, selection or annotation"
     ID_ZOOM_TO_SELECTION    "Zoom to the current selection"
     ID_VIEW_SIDEBAR         "Show or hide the sidebar\nToggle Sidebar"
+    ID_DICTIONARY_NEXT      "Lookup the word in the next dictionary\nNext Dictionary"
+    ID_DICTIONARY_PREV      "Lookup the word in the previous dictionary\nPrevious Dictionary"
+    ID_DICTIONARY_INFO      "Display information about currently selected dictionary\nDictionary Information"
+    ID_DICTIONARY_LOOKUP    "Lookup the word in currently selected dictionary\nLookup"
+    ID_VIEW_DICTBAR         "Show or hide the dictionary bar\nToggle Dictionary Bar"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -1290,6 +1327,13 @@ BEGIN
     IDS_INSTALLATION_SUCCEEDED "Dictionary was installed successfully."
     IDS_ERROR_PARSING_RANGE "Printing range is invalid."
     IDS_PATH_TOO_LONG       "Failed to open document: the path is too long.\n%s"
+    IDR_DICTIONARIES_BAR    "Di&ctionary Bar"
+    IDS_DICTBAR_TITLE       "Dictionaries"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDC_DICTIONARY_LABEL    "Dictionary:"
 END
 
 #endif    // English (U.S.) resources

@@ -41,6 +41,7 @@ CAppSettings::CAppSettings()
 
 	bToolbar = true;
 	bStatusBar = true;
+	bDictBar = true;
 
 	nDefaultZoomType = -3; // Fit page
 	fDefaultZoom = 100.0;

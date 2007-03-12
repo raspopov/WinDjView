@@ -150,6 +150,10 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\AddStringDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\DictionaryDlg.cpp
 # End Source File
 # Begin Source File
@@ -167,6 +171,10 @@ SOURCE=.\DjVuSource.cpp
 # Begin Source File
 
 SOURCE=.\Global.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\LocalizedStringDlg.cpp
 # End Source File
 # Begin Source File
 
@@ -191,6 +199,10 @@ SOURCE=.\XMLParser.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\AddStringDlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\DictionaryDlg.h
 # End Source File
 # Begin Source File
@@ -204,6 +216,10 @@ SOURCE=.\DjVuSource.h
 # Begin Source File
 
 SOURCE=.\Global.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\LocalizedStringDlg.h
 # End Source File
 # Begin Source File
 
@@ -242,5 +258,9 @@ SOURCE=.\res\DictionaryTool.manifest
 SOURCE=.\res\DictionaryTool.rc2
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=".\res\ISO-639.csv"
+# End Source File
 # End Target
 # End Project

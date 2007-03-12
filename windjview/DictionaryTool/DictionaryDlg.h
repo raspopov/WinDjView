@@ -38,6 +38,8 @@ public:
 	CString m_strTitle;
 	int m_nPageIndexAction;
 	int m_nCharMapAction;
+	CComboBox m_cboLangFrom;
+	CComboBox m_cboLangTo;
 
 // Overrides
 protected:
@@ -62,6 +64,11 @@ protected:
 	GUTF8String m_strPageIndexXML;
 	GUTF8String m_strCharMapXML;
 	CMyDropTarget m_dropTarget;
+	const Language* m_pLangFrom;
+	const Language* m_pLangTo;
+
+	map<const Language*, vector<DictionaryInfo::LocalizedString> > m_lang;
+	void Normalize(vector<DictionaryInfo::LocalizedString>& loc);
 
 	bool ExportPageIndex(const CString& strPageIndexFile);
 	bool ExportCharMap(const CString& strCharMapFile);
@@ -70,8 +77,15 @@ protected:
 	void SaveDocument(const CString& strFileName = _T(""));
 	bool OpenPageIndex(const CString& strFileName);
 	bool OpenCharMap(const CString& strFileName);
+	void InitDocProperties();
+
+	GUTF8String GetTitleXML();
+	GUTF8String GetLangFromXML();
+	GUTF8String GetLangToXML();
+	static GUTF8String GetLocalizedStringsXML(vector<DictionaryInfo::LocalizedString>& loc);
 
 	DjVuSource* m_pSource;
+	DictionaryInfo* m_pDictInfo;
 
 	// Message map functions
 	virtual BOOL OnInitDialog();
@@ -87,5 +101,10 @@ protected:
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnKickIdle();
 	afx_msg void OnDestroy();
+	afx_msg void OnSelChangeFrom();
+	afx_msg void OnSelChangeTo();
+	afx_msg void OnLocalizeTitle();
+	afx_msg void OnLocalizeLangFrom();
+	afx_msg void OnLocalizeLangTo();
 	DECLARE_MESSAGE_MAP()
 };

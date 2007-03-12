@@ -32,6 +32,7 @@
 #include "UpdateDlg.h"
 #include "ThumbnailsView.h"
 #include "BookmarksWnd.h"
+#include "PageIndexWnd.h"
 #include "XMLParser.h"
 
 #ifdef _DEBUG
@@ -51,6 +52,7 @@ const TCHAR* s_pszMaximized = _T("maximized");
 const TCHAR* s_pszChildMaximized = _T("child-maximized");
 const TCHAR* s_pszToolbar = _T("toobar");
 const TCHAR* s_pszStatusBar = _T("statusbar");
+const TCHAR* s_pszDictBar = _T("dictbar");
 const TCHAR* s_pszZoom = _T("zoom");
 const TCHAR* s_pszZoomPercent = _T("%");
 const TCHAR* s_pszLayout = _T("layout");
@@ -112,6 +114,10 @@ const TCHAR* s_pszSettings = _T("settings");
 const TCHAR* s_pszDictionariesSection = _T("Dictionaries");
 const TCHAR* s_pszFileTimeLow = _T("modified-l");
 const TCHAR* s_pszFileTimeHigh = _T("modified-h");
+const TCHAR* s_pszPageIndex = _T("page-index");
+const TCHAR* s_pszTitle = _T("title");
+const TCHAR* s_pszLangFrom = _T("lang-from");
+const TCHAR* s_pszLangTo = _T("lang-to");
 
 
 // CDjViewApp
@@ -122,14 +128,18 @@ BEGIN_MESSAGE_MAP(CDjViewApp, CWinApp)
 	ON_COMMAND(ID_FILE_SETTINGS, OnFileSettings)
 	ON_COMMAND(ID_CHECK_FOR_UPDATE, OnCheckForUpdate)
 	ON_COMMAND_EX_RANGE(ID_FILE_MRU_FILE1, ID_FILE_MRU_FILE16, OnOpenRecentFile)
+	ON_COMMAND_RANGE(ID_LANGUAGE_FIRST + 1, ID_LANGUAGE_LAST, OnSetLanguage)
+	ON_UPDATE_COMMAND_UI(ID_LANGUAGE_FIRST, OnUpdateLanguageList)
+	ON_UPDATE_COMMAND_UI_RANGE(ID_LANGUAGE_FIRST + 1, ID_LANGUAGE_LAST, OnUpdateLanguage)
 END_MESSAGE_MAP()
 
 
 // CDjViewApp construction
 
 CDjViewApp::CDjViewApp()
-	: m_bInitialized(false), m_pDjVuTemplate(NULL), m_nThreadCount(0),
-	  m_pPendingSource(NULL)
+	: m_bInitialized(false), m_pDjVuTemplate(NULL), m_nThreadCount(0), m_hHook(NULL),
+	  m_pPendingSource(NULL), m_bShiftPressed(false), m_bControlPressed(false),
+	  m_nLangIndex(0), m_nTimerID(0)
 {
 	DjVuSource::SetApplication(this);
 }
@@ -160,8 +170,11 @@ BOOL CDjViewApp::InitInstance()
 	SetRegistryKey(_T("Andrew Zhezherun"));
 
 	CURRENT_VERSION.LoadString(IDS_CURRENT_VERSION);
-	LoadStdProfileSettings(10);  // Load standard INI file options (including MRU)
+
+	LoadStdProfileSettings(10);  // Load recently open documents
 	LoadSettings();
+	LoadLanguages();
+	LoadDictionaries();
 
 	m_pDocManager = new CMyDocManager();
 
@@ -181,13 +194,7 @@ BOOL CDjViewApp::InitInstance()
 	m_pMainWnd = pMainFrame;
 	pMainFrame->SetRedraw(false);
 
-	CControlBar* pBar = pMainFrame->GetControlBar(ID_VIEW_TOOLBAR);
-	if (pBar)
-		pMainFrame->ShowControlBar(pBar, m_appSettings.bToolbar, FALSE);
-
-	pBar = pMainFrame->GetControlBar(ID_VIEW_STATUS_BAR);
-	if (pBar)
-		pMainFrame->ShowControlBar(pBar, m_appSettings.bStatusBar, FALSE);
+	pMainFrame->UpdateToolbars();
 
 	pMainFrame->SetWindowPos(NULL, m_appSettings.nWindowPosX, m_appSettings.nWindowPosY,
 				m_appSettings.nWindowWidth, m_appSettings.nWindowHeight,
@@ -202,8 +209,6 @@ BOOL CDjViewApp::InitInstance()
 	if (m_appSettings.bRestoreAssocs)
 		RegisterShellFileTypes();
 
-	LoadDictionaries();
-
 	// Parse command line for standard shell commands, DDE, file open
 	CCommandLineInfo cmdInfo;
 	ParseCommandLine(cmdInfo);
@@ -215,7 +220,7 @@ BOOL CDjViewApp::InitInstance()
 
 	// The main window has been initialized, so show and update it
 	pMainFrame->ShowWindow(m_nCmdShow);
-	pMainFrame->SetStartupLanguage();
+	SetStartupLanguage();
 
 	pMainFrame->SetRedraw(true);
 	pMainFrame->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
@@ -224,6 +229,9 @@ BOOL CDjViewApp::InitInstance()
 	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
 	if (!ProcessShellCommand(cmdInfo))
 		return false;
+
+	m_hHook = ::SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, NULL, ::GetCurrentThreadId());
+	m_nTimerID = ::SetTimer(NULL, 1, 100, TimerProc);
 
 	m_bInitialized = true;
 
@@ -453,6 +461,7 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.bChildMaximized = !!GetProfileInt(s_pszDisplaySection, s_pszChildMaximized, m_appSettings.bChildMaximized);
 	m_appSettings.bToolbar = !!GetProfileInt(s_pszDisplaySection, s_pszToolbar, m_appSettings.bToolbar);
 	m_appSettings.bStatusBar = !!GetProfileInt(s_pszDisplaySection, s_pszStatusBar, m_appSettings.bStatusBar);
+	m_appSettings.bDictBar = !!GetProfileInt(s_pszDisplaySection, s_pszDictBar, m_appSettings.bDictBar);
 	m_appSettings.nDefaultZoomType = GetProfileInt(s_pszDisplaySection, s_pszZoom, m_appSettings.nDefaultZoomType);
 	m_appSettings.fDefaultZoom = GetProfileDouble(s_pszDisplaySection, s_pszZoomPercent, m_appSettings.fDefaultZoom);
 	m_appSettings.nDefaultLayout = GetProfileInt(s_pszDisplaySection, s_pszLayout, m_appSettings.nDefaultLayout);
@@ -522,34 +531,16 @@ void CDjViewApp::LoadSettings()
 
 bool CDjViewApp::LoadDocSettings(const CString& strKey, DocSettings* pSettings)
 {
-	LPBYTE pBuf;
-	UINT nSize;
+	GUTF8String strSettings;
+	if (!GetProfileCompressed(s_pszDocumentsSection + CString(_T("\\")) + strKey, s_pszSettings, strSettings))
+		return false;
 
-	if (GetProfileBinary(s_pszDocumentsSection + CString(_T("\\")) + strKey, s_pszSettings, &pBuf, &nSize))
-	{
-		GP<ByteStream> raw = ByteStream::create(pBuf, nSize);
-		GP<ByteStream> compressed = BSByteStream::create(raw);
+	stringstream sin((const char*) strSettings);
+	XMLParser parser;
+	if (parser.Parse(sin))
+		pSettings->Load(*parser.GetRoot());
 
-		char szTemp[1024];
-		string text;
-		int nRead;
-		while ((nRead = compressed->read(szTemp, 1024)) != 0)
-		{
-			if (text.length() + nRead > text.capacity())
-				text.reserve(max(2*text.length(), text.length() + nRead));
-			text.append(szTemp, nRead);
-		}
-
-		stringstream sin(text.c_str());
-		XMLParser parser;
-		if (parser.Parse(sin))
-			pSettings->Load(*parser.GetRoot());
-
-		delete[] pBuf;
-		return true;
-	}
-
-	return false;
+	return true;
 }
 
 void CDjViewApp::SaveSettings()
@@ -562,6 +553,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySection, s_pszChildMaximized, m_appSettings.bChildMaximized);
 	WriteProfileInt(s_pszDisplaySection, s_pszToolbar, m_appSettings.bToolbar);
 	WriteProfileInt(s_pszDisplaySection, s_pszStatusBar, m_appSettings.bStatusBar);
+	WriteProfileInt(s_pszDisplaySection, s_pszDictBar, m_appSettings.bDictBar);
 	WriteProfileInt(s_pszDisplaySection, s_pszZoom, m_appSettings.nDefaultZoomType);
 	WriteProfileDouble(s_pszDisplaySection, s_pszZoomPercent, m_appSettings.fDefaultZoom);
 	WriteProfileInt(s_pszDisplaySection, s_pszLayout, m_appSettings.nDefaultLayout);
@@ -638,31 +630,34 @@ void CDjViewApp::SaveSettings()
 		const DocSettings& settings = (*it).second;
 		GUTF8String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + settings.GetXML();
 
-		WriteProfileCompressed(s_pszDocumentsSection + CString(_T("\\")) + strKey, s_pszSettings,
-				(const char*) xml, xml.length());
+		WriteProfileCompressed(s_pszDocumentsSection + CString(_T("\\")) + strKey, s_pszSettings, xml);
 	}
 
 	map<CString, DictionaryInfo>::iterator itDic;
 	for (itDic = m_dictionaries.begin(); itDic != m_dictionaries.end(); ++itDic)
 	{
-		CString strKey = (*itDic).second.strFileName;
+		CString strSection = s_pszDictionariesSection + CString(_T("\\")) + (*itDic).second.strFileName;
 		DictionaryInfo& info = (*itDic).second;
 
-		WriteProfileInt(s_pszDictionariesSection + CString(_T("\\")) + strKey,
-				s_pszFileTimeLow, info.ftModified.dwLowDateTime);
-		WriteProfileInt(s_pszDictionariesSection + CString(_T("\\")) + strKey,
-				s_pszFileTimeHigh, info.ftModified.dwHighDateTime);
+		WriteProfileInt(strSection, s_pszFileTimeLow, info.ftModified.dwLowDateTime);
+		WriteProfileInt(strSection, s_pszFileTimeHigh, info.ftModified.dwHighDateTime);
+		WriteProfileCompressed(strSection, s_pszPageIndex, info.strPageIndex);
+		WriteProfileCompressed(strSection, s_pszTitle, info.strTitleRaw);
+		WriteProfileCompressed(strSection, s_pszLangFrom, info.strLangFromRaw);
+		WriteProfileCompressed(strSection, s_pszLangTo, info.strLangToRaw);
 	}
 }
 
-BOOL CDjViewApp::WriteProfileCompressed(LPCTSTR pszSection, LPCTSTR pszEntry, LPCVOID pvData, DWORD dwLength)
+BOOL CDjViewApp::WriteProfileCompressed(LPCTSTR pszSection, LPCTSTR pszEntry, const GUTF8String& value)
 {
 	BOOL bResult = false;
+	if (value.length() == 0)
+		return bResult;
 
 	GP<ByteStream> raw = ByteStream::create();
 
 	GP<ByteStream> compressed = BSByteStream::create(raw, 128);
-	compressed->writall(pvData, dwLength);
+	compressed->writall((const char*) value, value.length());
 	compressed = NULL;
 
 	UINT nSize = raw->size();
@@ -678,9 +673,41 @@ BOOL CDjViewApp::WriteProfileCompressed(LPCTSTR pszSection, LPCTSTR pszEntry, LP
 	return bResult;
 }
 
+BOOL CDjViewApp::GetProfileCompressed(LPCTSTR pszSection, LPCTSTR pszEntry, GUTF8String& value)
+{
+	LPBYTE pBuf;
+	UINT nSize;
+
+	if (GetProfileBinary(pszSection, pszEntry, &pBuf, &nSize))
+	{
+		GP<ByteStream> raw = ByteStream::create(pBuf, nSize);
+		GP<ByteStream> compressed = BSByteStream::create(raw);
+
+		char szTemp[1024];
+		string text;
+		int nRead;
+		while ((nRead = compressed->read(szTemp, 1024)) != 0)
+		{
+			if (text.length() + nRead > text.capacity())
+				text.reserve(max(2*text.length(), text.length() + nRead));
+			text.append(szTemp, nRead);
+		}
+
+		value = text.c_str();
+
+		delete[] pBuf;
+		return true;
+	}
+
+	return false;
+}
+
 int CDjViewApp::ExitInstance()
 {
 	SaveSettings();
+
+	::KillTimer(NULL, m_nTimerID);
+	::UnhookWindowsHookEx(m_hHook);
 
 	ThreadTerminated();
 	::WaitForSingleObject(m_terminated, INFINITE);
@@ -689,6 +716,94 @@ int CDjViewApp::ExitInstance()
 	::CoUninitialize();
 
 	return CWinApp::ExitInstance();
+}
+
+void CDjViewApp::InitSearchHistory(CComboBoxEx& cboFind)
+{
+	CString strText;
+	cboFind.GetWindowText(strText);
+	cboFind.ResetContent();
+
+	list<CString>::iterator it;
+	for (it = m_appSettings.searchHistory.begin(); it != m_appSettings.searchHistory.end(); ++it)
+	{
+		COMBOBOXEXITEM item;
+		item.mask = CBEIF_TEXT;
+		item.iItem = cboFind.GetCount();
+		item.pszText = (*it).GetBuffer(0);
+		cboFind.InsertItem(&item);
+	}
+
+	cboFind.SetWindowText(strText);
+}
+
+void CDjViewApp::UpdateSearchHistory(CComboBoxEx& cboFind)
+{
+	CString strText;
+	cboFind.GetWindowText(strText);
+
+	if (strText.IsEmpty())
+		return;
+
+	cboFind.SetCurSel(-1);
+	int nItem = cboFind.FindStringExact(-1, strText);
+	if (nItem != CB_ERR)
+		cboFind.DeleteItem(nItem);
+	else if (cboFind.GetCount() >= CAppSettings::HistorySize)
+		cboFind.DeleteItem(cboFind.GetCount() - 1);
+
+	list<CString>::iterator it = find(m_appSettings.searchHistory.begin(),
+			m_appSettings.searchHistory.end(), strText);
+	if (it != m_appSettings.searchHistory.end())
+		m_appSettings.searchHistory.erase(it);
+
+	if (m_appSettings.searchHistory.size() >= CAppSettings::HistorySize)
+		m_appSettings.searchHistory.pop_back();
+
+	COMBOBOXEXITEM item;
+	item.mask = CBEIF_TEXT;
+	item.iItem = 0;
+	item.pszText = strText.GetBuffer(0);
+	cboFind.InsertItem(&item);
+	cboFind.SetCurSel(0);
+
+	m_appSettings.searchHistory.push_front(strText);
+}
+
+LRESULT CALLBACK CDjViewApp::KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	if (nCode == HC_ACTION)
+	{
+		bool bPressed = (lParam & 0x80000000) == 0;
+		if (wParam == VK_SHIFT && bPressed != theApp.m_bShiftPressed)
+		{
+			theApp.m_bShiftPressed = bPressed;
+			theApp.UpdateObservers(KeyStateChanged(VK_SHIFT, bPressed));
+		}
+		else if (wParam == VK_CONTROL && bPressed != theApp.m_bControlPressed)
+		{
+			theApp.m_bControlPressed = bPressed;
+			theApp.UpdateObservers(KeyStateChanged(VK_CONTROL, bPressed));
+		}
+	}
+
+	return ::CallNextHookEx(theApp.m_hHook, nCode, wParam, lParam);
+}
+
+void CALLBACK CDjViewApp::TimerProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dwTime)
+{
+	bool bShiftPressed = (::GetKeyState(VK_SHIFT) & 0x8000) != 0;
+	bool bControlPressed = (::GetKeyState(VK_CONTROL) & 0x8000) != 0;
+	if (bShiftPressed != theApp.m_bShiftPressed)
+	{
+		theApp.m_bShiftPressed = bShiftPressed;
+		theApp.UpdateObservers(KeyStateChanged(VK_SHIFT, bShiftPressed));
+	}
+	if (bControlPressed != theApp.m_bControlPressed)
+	{
+		theApp.m_bControlPressed = bControlPressed;
+		theApp.UpdateObservers(KeyStateChanged(VK_CONTROL, bControlPressed));
+	}
 }
 
 bool SetRegKey(LPCTSTR lpszKey, LPCTSTR lpszValue)
@@ -900,12 +1015,120 @@ void CDjViewApp::OnCheckForUpdate()
 	dlg.DoModal();
 }
 
-void CDjViewApp::SetLanguage(HINSTANCE hResources, DWORD nLanguage)
+void CDjViewApp::LoadLanguages()
 {
-	m_appSettings.bLocalized = (hResources != AfxGetInstanceHandle());
-	m_appSettings.nLanguage = nLanguage;
+	LanguageInfo english;
+	english.nLanguage = 0x409;
+	english.strLanguage = _T("&English");
+	english.hInstance = AfxGetInstanceHandle();
+	m_languages.push_back(english);
 
-	AfxSetResourceHandle(hResources);
+	CString strPathName;
+	GetModuleFileName(theApp.m_hInstance, strPathName.GetBuffer(_MAX_PATH), _MAX_PATH);
+	strPathName.ReleaseBuffer();
+
+	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
+	_tsplitpath(strPathName, szDrive, szPath, szName, szExt);
+	CString strFileName = szDrive + CString(szPath) + _T("WinDjView*.dll");
+
+	WIN32_FIND_DATA fd;
+	HANDLE hFind = FindFirstFile(strFileName, &fd);
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			DWORD dwHandle;
+			DWORD dwSize = ::GetFileVersionInfoSize(fd.cFileName, &dwHandle);
+			if (dwSize <= 0)
+				continue;
+
+			LPBYTE pVersionInfo = new BYTE[dwSize];
+			if (::GetFileVersionInfo(fd.cFileName, dwHandle, dwSize, pVersionInfo) == 0)
+			{
+				delete[] pVersionInfo;
+				continue;
+			}
+
+			DWORD* pTranslations;
+			UINT cbTranslations;
+			if (::VerQueryValue(pVersionInfo, _T("\\VarFileInfo\\Translation"),
+					(void**)&pTranslations, &cbTranslations) == 0 || cbTranslations == 0)
+			{
+				delete[] pVersionInfo;
+				continue;
+			}
+
+			DWORD nLanguage = LOWORD(*pTranslations);
+			CString strTranslation = FormatString(_T("%04x%04x"), nLanguage, HIWORD(*pTranslations));
+
+			LPCTSTR pszBuffer;
+			UINT dwLength;
+			if (::VerQueryValue(pVersionInfo, FormatString(_T("\\StringFileInfo\\%s\\FileVersion"), strTranslation).GetBuffer(0),
+					(void**)&pszBuffer, &dwLength) == 0 || dwLength == 0)
+			{
+				delete[] pVersionInfo;
+				continue;
+			}
+
+			CString strVersion(pszBuffer);
+			if (strVersion != CURRENT_VERSION)
+			{
+				delete[] pVersionInfo;
+				continue;
+			}
+
+			if (::VerQueryValue(pVersionInfo, FormatString(_T("\\StringFileInfo\\%s\\Comments"), strTranslation).GetBuffer(0),
+					(void**)&pszBuffer, &dwLength) == 0 || dwLength == 0)
+			{
+				delete[] pVersionInfo;
+				continue;
+			}
+
+			CString strLanguage(pszBuffer);
+			delete[] pVersionInfo;
+
+			LanguageInfo info;
+			info.nLanguage = nLanguage;
+			info.strLanguage = strLanguage;
+			info.strLibraryPath = szDrive + CString(szPath) + fd.cFileName;
+			info.hInstance = NULL;
+			m_languages.push_back(info);
+		} while (FindNextFile(hFind, &fd) != 0);
+
+		FindClose(hFind);
+	}
+}
+
+void CDjViewApp::OnSetLanguage(UINT nID)
+{
+	int nLangIndex = nID - ID_LANGUAGE_FIRST - 1;
+	SetLanguage(nLangIndex);
+}
+
+void CDjViewApp::SetLanguage(UINT nLangIndex)
+{
+	if (nLangIndex < 0 || nLangIndex >= m_languages.size())
+		return;
+
+	LanguageInfo& info = m_languages[nLangIndex];
+	if (info.hInstance == NULL)
+	{
+		info.hInstance = ::LoadLibrary(info.strLibraryPath);
+		if (info.hInstance == NULL)
+		{
+			AfxMessageBox(_T("Could not change the language to ") + info.strLanguage);
+			return;
+		}
+	}
+
+	m_appSettings.bLocalized = (info.hInstance != AfxGetInstanceHandle());
+	m_appSettings.nLanguage = info.nLanguage;
+
+	if (nLangIndex == m_nLangIndex)
+		return;
+
+	m_nLangIndex = nLangIndex;
+	AfxSetResourceHandle(info.hInstance);
 
 	if (m_appSettings.hDjVuMenu != NULL)
 	{
@@ -926,8 +1149,51 @@ void CDjViewApp::SetLanguage(HINSTANCE hResources, DWORD nLanguage)
 	}
 
 	m_pDjVuTemplate->UpdateTemplate();
+	UpdateDictProperties();
 
 	UpdateObservers(APP_LANGUAGE_CHANGED);
+}
+
+void CDjViewApp::OnUpdateLanguageList(CCmdUI* pCmdUI)
+{
+	if (pCmdUI->m_pMenu == NULL)
+		return;
+
+	int nIndex = pCmdUI->m_nIndex;
+	int nAdded = 0;
+
+	for (size_t i = 0; i < m_languages.size() && i < ID_LANGUAGE_LAST - ID_LANGUAGE_FIRST - 1; ++i)
+	{
+		CString strText = m_languages[i].strLanguage;
+		pCmdUI->m_pMenu->InsertMenu(ID_LANGUAGE_FIRST, MF_BYCOMMAND, ID_LANGUAGE_FIRST + i + 1, strText);
+		++nAdded;
+	}
+	pCmdUI->m_pMenu->DeleteMenu(ID_LANGUAGE_FIRST, MF_BYCOMMAND);
+
+	// update end menu count
+	pCmdUI->m_nIndex -= 1;
+	pCmdUI->m_nIndexMax += nAdded - 1;
+}
+
+void CDjViewApp::OnUpdateLanguage(CCmdUI* pCmdUI)
+{
+	int nLangIndex = pCmdUI->m_nID - ID_LANGUAGE_FIRST - 1;
+	pCmdUI->SetCheck(nLangIndex == m_nLangIndex);
+}
+
+void CDjViewApp::SetStartupLanguage()
+{
+	for (size_t i = 0; i < m_languages.size(); ++i)
+	{
+		if (theApp.GetAppSettings()->nLanguage == m_languages[i].nLanguage)
+		{
+			SetLanguage(i);
+			return;
+		}
+	}
+
+	// English by default
+	SetLanguage(0);
 }
 
 BOOL CDjViewApp::OnOpenRecentFile(UINT nID)
@@ -1099,6 +1365,9 @@ void CDjViewApp::LoadDictionaries()
 
 		::RegCloseKey(hSecKey);
 	}
+
+	UpdateDictVector();
+	UpdateDictProperties();
 }
 
 void CDjViewApp::LoadDictionaries(const CString& strDirectory)
@@ -1114,6 +1383,7 @@ void CDjViewApp::LoadDictionaries(const CString& strDirectory)
 		{
 			DictionaryInfo info;
 			info.strPathName = strDirectory + fd.cFileName;
+			info.bInstalled = true;
 
 			if ((GetFileAttributes(info.strPathName) & FILE_ATTRIBUTE_DIRECTORY) != 0)
 				continue;
@@ -1127,7 +1397,9 @@ void CDjViewApp::LoadDictionaries(const CString& strDirectory)
 				continue;
 
 			LoadDictionaryInfo(info);
-			LoadDictionaryInfoFromDisk(info);
+
+			if (!LoadDictionaryInfoFromDisk(info))
+				continue;
 
 			m_dictionaries.insert(make_pair(strKey, info));
 		} while (FindNextFile(hFind, &fd) != 0);
@@ -1142,6 +1414,16 @@ void CDjViewApp::LoadDictionaryInfo(DictionaryInfo& info)
 
 	info.ftModified.dwLowDateTime = GetProfileInt(strSection, s_pszFileTimeLow, 0);
 	info.ftModified.dwHighDateTime = GetProfileInt(strSection, s_pszFileTimeHigh, 0);
+
+	GUTF8String str;
+	if (GetProfileCompressed(strSection, s_pszPageIndex, str))
+		info.ReadPageIndex(str, false);
+	if (GetProfileCompressed(strSection, s_pszTitle, str))
+		info.ReadTitle(str, false);
+	if (GetProfileCompressed(strSection, s_pszLangFrom, str))
+		info.ReadLangFrom(str, false);
+	if (GetProfileCompressed(strSection, s_pszLangTo, str))
+		info.ReadLangTo(str, false);
 }
 
 bool CDjViewApp::LoadDictionaryInfoFromDisk(DictionaryInfo& info)
@@ -1169,7 +1451,16 @@ bool CDjViewApp::LoadDictionaryInfoFromDisk(DictionaryInfo& info)
 	if (pSource == NULL)
 		return false;
 
-	bool bIsDictionary = (pSource->GetPageIndex().length() != 0);
+	bool bIsDictionary = (pSource->GetDictionaryInfo()->strPageIndex.length() != 0);
+	info.titleLoc = pSource->GetDictionaryInfo()->titleLoc;
+	info.langFromLoc = pSource->GetDictionaryInfo()->langFromLoc;
+	info.langToLoc = pSource->GetDictionaryInfo()->langToLoc;
+	info.strLangFromCode = pSource->GetDictionaryInfo()->strLangFromCode;
+	info.strLangToCode = pSource->GetDictionaryInfo()->strLangToCode;
+	info.strTitleRaw = pSource->GetDictionaryInfo()->strTitleRaw;
+	info.strLangFromRaw = pSource->GetDictionaryInfo()->strLangFromRaw;
+	info.strLangToRaw = pSource->GetDictionaryInfo()->strLangToRaw;
+	info.strPageIndex = pSource->GetDictionaryInfo()->strPageIndex;
 
 	pSource->Release();
 	return bIsDictionary;
@@ -1182,13 +1473,14 @@ bool CDjViewApp::InstallDictionary(CDjVuDoc* pDoc, bool bAllUsers, bool bKeepOri
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
 	CString strPath;
 
-	if (pSource->GetDictionaryInfo() != NULL)
+	DictionaryInfo* pPrevInfo = theApp.GetDictionaryInfo(pDoc->GetPathName(), false);
+	if (pPrevInfo != NULL)
 	{
 		// Replacing existing dictionary. Check that this is not the same file.
-		if (AfxComparePath(pDoc->GetPathName(), pSource->GetDictionaryInfo()->strPathName))
+		if (AfxComparePath(pPrevInfo->strPathName, pDoc->GetPathName()))
 			return false;
 
-		_tsplitpath(pSource->GetDictionaryInfo()->strPathName, szDrive, szPath, NULL, NULL);
+		_tsplitpath(pPrevInfo->strPathName, szDrive, szPath, NULL, NULL);
 		strPath = szDrive + CString(szPath);
 	}
 	else
@@ -1272,6 +1564,7 @@ bool CDjViewApp::InstallDictionary(CDjVuDoc* pDoc, bool bAllUsers, bool bKeepOri
 	DictionaryInfo info;
 	info.strFileName = CString(szName) + szExt;
 	info.strPathName = strNewName;
+	info.bInstalled = true;
 
 	LoadDictionaryInfoFromDisk(info);
 
@@ -1315,6 +1608,9 @@ bool CDjViewApp::InstallDictionary(CDjVuDoc* pDoc, bool bAllUsers, bool bKeepOri
 		}
 	}
 
+	UpdateDictProperties();
+	UpdateObservers(DICT_LIST_CHANGED);
+
 	return true;
 }
 
@@ -1351,7 +1647,7 @@ void CDjViewApp::OnUpdate(const Observable* source, const Message* message)
 	}
 }
 
-DictionaryInfo* CDjViewApp::GetDictionaryInfo(const CString& strFileName)
+DictionaryInfo* CDjViewApp::GetDictionaryInfo(const CString& strFileName, bool bCheckPath)
 {
 	TCHAR szName[_MAX_FNAME], szExt[_MAX_EXT];
 	_tsplitpath(strFileName, NULL, NULL, szName, szExt);
@@ -1361,9 +1657,93 @@ DictionaryInfo* CDjViewApp::GetDictionaryInfo(const CString& strFileName)
 
 	map<CString, DictionaryInfo>::iterator it = m_dictionaries.find(strKey);
 	if (it != m_dictionaries.end())
-		return &(*it).second;
+	{
+		if (!bCheckPath || AfxComparePath(strFileName, (*it).second.strPathName))
+			return &(*it).second;
+	}
 
 	return NULL;
+}
+
+DictionaryInfo* CDjViewApp::GetDictionaryInfo(int nIndex)
+{
+	return m_dictVector[nIndex];
+}
+
+void CDjViewApp::UpdateDictVector()
+{
+	m_dictVector.clear();
+	m_dictVector.reserve(m_dictionaries.size());
+
+	map<CString, DictionaryInfo>::iterator it;
+	for (it = m_dictionaries.begin(); it != m_dictionaries.end(); ++it)
+		m_dictVector.push_back(&(*it).second);
+}
+
+void CDjViewApp::UpdateDictProperties()
+{
+	map<CString, DictionaryInfo>::iterator it;
+	for (it = m_dictionaries.begin(); it != m_dictionaries.end(); ++it)
+	{
+		DictionaryInfo& info = (*it).second;
+
+		// Find a best match for title and language strings
+		info.strTitle = FindLocalizedString(info.titleLoc, m_appSettings.nLanguage);
+		if (info.strTitle.IsEmpty())
+		{
+			info.strTitle = info.strFileName;
+			int nPos = info.strTitle.ReverseFind('.');
+			if (nPos != -1)
+			{
+				CString strExt = info.strTitle.Mid(nPos);
+				if (_tcsicmp(strExt, _T(".djvu")) == 0 || _tcsicmp(strExt, _T(".djv")) == 0)
+					info.strTitle = info.strTitle.Left(nPos);
+			}
+		}
+
+		info.strLangFrom = FindLocalizedString(info.langFromLoc, m_appSettings.nLanguage);
+		info.strLangTo = FindLocalizedString(info.langToLoc, m_appSettings.nLanguage);
+	}
+}
+
+CString CDjViewApp::FindLocalizedString(const vector<DictionaryInfo::LocalizedString>& loc, DWORD nCurrentLang)
+{
+	bool bFoundEng = false;
+	size_t nIndexEng;
+
+	for (size_t i = 0; i < loc.size(); ++i)
+	{
+		if (loc[i].first == nCurrentLang)
+			return MakeCString(loc[i].second);
+
+		if (loc[i].first == MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT))
+		{
+			bFoundEng = true;
+			nIndexEng = i;
+		}
+	}
+
+	if (bFoundEng)
+		return MakeCString(loc[nIndexEng].second);
+	else if (!loc.empty())
+		return MakeCString(loc[0].second);
+	else
+		return _T("");
+}
+
+void CDjViewApp::Lookup(const CString& strLookup, DictionaryInfo* pInfo)
+{
+	CDjVuDoc* pDoc = OpenDocument(pInfo->strPathName, "");
+	if (pDoc == NULL)
+		return;
+
+	CDjVuView* pView = pDoc->GetDjVuView();
+	CChildFrame* pFrame = (CChildFrame*) pView->GetParentFrame();
+	CPageIndexWnd* pIndex = pFrame->GetPageIndex();
+	if (pIndex == NULL)
+		return;
+
+	pIndex->Lookup(strLookup);
 }
 
 bool IsFromCurrentProcess(CWnd* pWnd)

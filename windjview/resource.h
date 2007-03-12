@@ -17,6 +17,7 @@
 #define IDD_RENAME_BOOKMARK             112
 #define IDD_INSTALL_DIC                 113
 #define IDD_INSTALL_DIC_REPLACE         114
+#define IDD_SETTINGS_DICT               115
 #define IDR_MAINFRAME                   128
 #define IDR_DjVuTYPE                    129
 #define IDR_POPUP                       131
@@ -130,6 +131,8 @@
 #define IDS_INSTALLATION_SUCCEEDED      288
 #define IDS_ERROR_PARSING_RANGE         289
 #define IDS_PATH_TOO_LONG               290
+#define IDR_DICTIONARIES_BAR            291
+#define IDS_DICTBAR_TITLE               292
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -216,6 +219,11 @@
 #define IDC_CURRENT_USER                1082
 #define IDC_ALL_USERS                   1083
 #define IDC_KEEP_ORIGINAL               1084
+#define IDC_LOOKUP                      1085
+#define IDC_LOOKUP_LABEL                1086
+#define IDC_DICTIONARY                  1087
+#define IDC_DICTIONARY_LABEL            1088
+#define IDC_LIST                        1089
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_VIEW_NEXTPAGE_SHORTCUT       32773
@@ -304,14 +312,19 @@
 #define ID_ZOOM_TO_SELECTION            33144
 #define ID_VIEW_SIDEBAR                 33145
 #define ID_FILE_INSTALL                 33146
+#define ID_DICTIONARY_NEXT              33147
+#define ID_DICTIONARY_PREV              33148
+#define ID_DICTIONARY_INFO              33149
+#define ID_DICTIONARY_LOOKUP            33150
+#define ID_VIEW_DICTBAR                 33151
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        291
-#define _APS_NEXT_COMMAND_VALUE         33147
-#define _APS_NEXT_CONTROL_VALUE         1085
-#define _APS_NEXT_SYMED_VALUE           115
+#define _APS_NEXT_RESOURCE_VALUE        293
+#define _APS_NEXT_COMMAND_VALUE         33152
+#define _APS_NEXT_CONTROL_VALUE         1090
+#define _APS_NEXT_SYMED_VALUE           116
 #endif
 #endif

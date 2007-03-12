@@ -26,6 +26,24 @@
 #include "resource.h"		// main symbols
 
 
+struct Localization
+{
+	Localization(const CString& strName_, UINT nCode_)
+		: strName(strName_), nCode(nCode_) {}
+
+	CString strName;
+	int nCode;
+};
+
+struct Language
+{
+	Language(const CString& strCode_, const CString& strName_)
+		: strCode(strCode_), strName(strName_) {}
+
+	CString strCode;
+	CString strName;
+};
+
 // CDictionaryApp
 
 class CDictionaryApp : public CWinApp
@@ -33,12 +51,24 @@ class CDictionaryApp : public CWinApp
 public:
 	CDictionaryApp();
 
+	size_t GetLocalizationCount() const { return m_loc.size(); }
+	const Localization& GetLocalization(size_t nIndex) { return m_loc[nIndex]; }
+	const Localization& GetEnglishLoc() const { return m_loc[0]; }
+
+	size_t GetLanguageCount() const { return m_lang.size(); }
+	const Language& GetLanguage(size_t nIndex) { return m_lang[nIndex]; }
+
 // Overrides
 public:
 	virtual BOOL InitInstance();
 
 // Implementation
 protected:
+	vector<Localization> m_loc;
+	vector<Language> m_lang;
+	void InitLocalizations();
+	void InitLanguages();
+
 	DECLARE_MESSAGE_MAP()
 };
 

@@ -99,7 +99,7 @@ BEGIN_MESSAGE_MAP(CSettingsDisplayPage, CPropertyPage)
 END_MESSAGE_MAP()
 
 
-// CSettingsDlg message handlers
+// CSettingsDisplayPage message handlers
 
 BOOL CSettingsDisplayPage::OnInitDialog()
 {

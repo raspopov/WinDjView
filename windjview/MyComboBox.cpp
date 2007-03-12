@@ -52,8 +52,7 @@ HBRUSH CMyComboBox::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 			m_edit.SubclassWindow(pWnd->GetSafeHwnd());
 	}
 
-	HBRUSH hbr = CComboBox::OnCtlColor(pDC, pWnd, nCtlColor);
-	return hbr;
+	return CComboBox::OnCtlColor(pDC, pWnd, nCtlColor);
 }
 
 BOOL CMyComboBox::CNotifyingEdit::PreTranslateMessage(MSG* pMsg)
@@ -76,4 +75,31 @@ BOOL CMyComboBox::CNotifyingEdit::PreTranslateMessage(MSG* pMsg)
 	}
 
 	return CMyEdit::PreTranslateMessage(pMsg);
+}
+
+// CMyComboBoxEx
+
+IMPLEMENT_DYNAMIC(CMyComboBoxEx, CComboBoxEx)
+
+CMyComboBoxEx::CMyComboBoxEx()
+{
+}
+
+CMyComboBoxEx::~CMyComboBoxEx()
+{
+}
+
+BEGIN_MESSAGE_MAP(CMyComboBoxEx, CComboBoxEx)
+	ON_WM_CTLCOLOR()
+END_MESSAGE_MAP()
+
+
+// CMyComboBox message handlers
+
+HBRUSH CMyComboBoxEx::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	if (m_edit.GetSafeHwnd() == NULL)
+		m_edit.SubclassWindow(CComboBoxEx::GetEditCtrl()->GetSafeHwnd());
+
+	return CComboBoxEx::OnCtlColor(pDC, pWnd, nCtlColor);
 }

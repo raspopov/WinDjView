@@ -56,6 +56,7 @@ BEGIN_MESSAGE_MAP(CFindDlg, CDialog)
 	ON_WM_CLOSE()
 	ON_CBN_EDITCHANGE(IDC_FIND, OnEnChangeFind)
 	ON_WM_SHOWWINDOW()
+	ON_WM_ACTIVATE()
 END_MESSAGE_MAP()
 
 
@@ -70,18 +71,7 @@ BOOL CFindDlg::OnInitDialog()
 	m_cboFind.GetComboBoxCtrl()->ModifyStyle(CBS_SORT | CBS_NOINTEGRALHEIGHT,
 			CBS_AUTOHSCROLL);
 
-	CAppSettings* pSettings = theApp.GetAppSettings();
-	list<CString>::iterator it;
-	for (it = pSettings->searchHistory.begin(); it != pSettings->searchHistory.end(); ++it)
-	{
-		COMBOBOXEXITEM item;
-		item.mask = CBEIF_TEXT;
-		item.iItem = m_cboFind.GetCount();
-		item.pszText = (*it).GetBuffer(0);
-		m_cboFind.InsertItem(&item);
-	}
-
-	m_cboFind.SetWindowText(m_strFind);
+	InitSearchHistory();
 
 	return true;
 }
@@ -143,7 +133,7 @@ void CFindDlg::OnEnChangeFind()
 void CFindDlg::UpdateButtons()
 {
 	CString strText;
-	m_cboFind.GetEditCtrl()->GetWindowText(strText);
+	m_cboFind.GetWindowText(strText);
 
 	bool bEnable = !strText.IsEmpty();
 	GetDlgItem(IDOK)->EnableWindow(bEnable);
@@ -158,34 +148,25 @@ void CFindDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 		UpdateButtons();
 }
 
+void CFindDlg::InitSearchHistory()
+{
+	m_cboFind.GetWindowText(m_strFind);
+	theApp.InitSearchHistory(m_cboFind);
+}
+
 void CFindDlg::UpdateSearchHistory()
 {
-	CAppSettings* pSettings = theApp.GetAppSettings();
 	if (!m_strFind.IsEmpty())
 	{
-		m_cboFind.SetCurSel(-1);
-		int nItem = m_cboFind.FindStringExact(-1, m_strFind);
-		if (nItem != CB_ERR)
-			m_cboFind.DeleteItem(nItem);
-		else if (m_cboFind.GetCount() >= CAppSettings::HistorySize)
-			m_cboFind.DeleteItem(m_cboFind.GetCount() - 1);
-
-		list<CString>::iterator it = find(pSettings->searchHistory.begin(),
-				pSettings->searchHistory.end(), m_strFind);
-		if (it != pSettings->searchHistory.end())
-			pSettings->searchHistory.erase(it);
-
-		if (pSettings->searchHistory.size() >= CAppSettings::HistorySize)
-			pSettings->searchHistory.pop_back();
-
-		COMBOBOXEXITEM item;
-		item.mask = CBEIF_TEXT;
-		item.iItem = 0;
-		item.pszText = m_strFind.GetBuffer(0);
-		m_cboFind.InsertItem(&item);
-		m_cboFind.SetCurSel(0);
-
-		pSettings->searchHistory.push_front(m_strFind);
-		pSettings->strFind = m_strFind;
+		theApp.UpdateSearchHistory(m_cboFind);
+		theApp.GetAppSettings()->strFind = m_strFind;
 	}
+}
+
+void CFindDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
+{
+	if (nState == WA_ACTIVE || nState == WA_CLICKACTIVE)
+		InitSearchHistory();
+
+	CDialog::OnActivate(nState, pWndOther, bMinimized);
 }

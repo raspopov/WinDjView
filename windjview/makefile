@@ -92,6 +92,7 @@ LINK_OBJS = \
 	"$(INTDIR)\Scaling.obj" \
 	"$(INTDIR)\SearchResultsView.obj" \
 	"$(INTDIR)\SettingsAssocsPage.obj" \
+	"$(INTDIR)\SettingsDictPage.obj" \
 	"$(INTDIR)\SettingsDisplayPage.obj" \
 	"$(INTDIR)\SettingsDlg.obj" \
 	"$(INTDIR)\SettingsGeneralPage.obj" \
@@ -144,6 +145,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\Scaling.obj" : Scaling.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\SearchResultsView.obj" : SearchResultsView.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\SettingsAssocsPage.obj" : SettingsAssocsPage.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\SettingsDictPage.obj" : SettingsDictPage.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\SettingsDisplayPage.obj" : SettingsDisplayPage.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\SettingsDlg.obj" : SettingsDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\SettingsGeneralPage.obj" : SettingsGeneralPage.cpp "$(INTDIR)" $(PCH)

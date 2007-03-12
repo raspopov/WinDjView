@@ -252,7 +252,7 @@ void CChildFrame::CreateNavPanes()
 		m_pBookmarksWnd->AddObserver(pDjVuView);
 	}
 
-	if (pSource->GetPageIndex().length() > 0)
+	if (pSource->GetDictionaryInfo()->strPageIndex.length() > 0)
 	{
 		m_pPageIndexWnd = new CPageIndexWnd();
 		m_pPageIndexWnd->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD,

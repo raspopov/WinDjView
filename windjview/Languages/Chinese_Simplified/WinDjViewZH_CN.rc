@@ -952,8 +952,6 @@ BEGIN
     IDS_TOOLTIP_HIDE        "隐藏"
     IDS_NOT_VALID_DOCUMENT  "\n这不是一个正确的Djvu文档。"
     IDS_PRINTING_FAILED     "无法打印该文档。可能打印机或者打印机驱动有问题。"
-    IDS_PAPER_SIZE_MM       "%s x %s 毫米"
-    IDS_CENTIMETER          "厘米"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
     IDS_CURRENT_VERSION     "0.4.3"

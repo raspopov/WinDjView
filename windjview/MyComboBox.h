@@ -35,7 +35,7 @@ public:
 	CMyComboBox();
 	virtual ~CMyComboBox();
 
-	CMyEdit& GetEditCtrl() { return m_edit; }
+	CMyEdit* GetEditCtrl() { return &m_edit; }
 
 protected:
 	class CNotifyingEdit : public CMyEdit
@@ -45,7 +45,27 @@ protected:
 
 	CNotifyingEdit m_edit;
 
-	// Generated message map functions
+	// Message map functions
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	DECLARE_MESSAGE_MAP()
+
+	friend class CMyComboBoxEx;
+};
+
+class CMyComboBoxEx : public CComboBoxEx
+{
+	DECLARE_DYNAMIC(CMyComboBoxEx)
+
+public:
+	CMyComboBoxEx();
+	virtual ~CMyComboBoxEx();
+
+	CMyEdit* GetEditCtrl() { return &m_edit; }
+
+protected:
+	CMyComboBox::CNotifyingEdit m_edit;
+
+	// Message map functions
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	DECLARE_MESSAGE_MAP()
 };

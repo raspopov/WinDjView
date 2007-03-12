@@ -66,9 +66,9 @@ protected:
 	// Message map functions
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
-	afx_msg void OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnItemClicked(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnItemClicked(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnKeyDown(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	afx_msg void OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu);
 	afx_msg void OnEnterIdle(UINT nWhy, CWnd* pWho);

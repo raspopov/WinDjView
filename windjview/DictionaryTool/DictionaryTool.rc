@@ -71,12 +71,12 @@ IDR_MAINFRAME           ICON    DISCARDABLE     "res\\DictionaryTool.ico"
 // Dialog
 //
 
-IDD_DICTIONARYTOOL DIALOGEX 0, 0, 325, 178
+IDD_DICTIONARYTOOL DIALOGEX 0, 0, 325, 215
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | 
     WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "DjVu Dictionary Tool"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     DEFPUSHBUTTON   "&Close",IDOK,264,7,54,14
     PUSHBUTTON      "&Save",IDC_SAVE,264,25,54,14
@@ -85,35 +85,71 @@ BEGIN
     CONTROL         "File name",IDC_DJVU_FILE,"Static",SS_LEFTNOWORDWRAP | 
                     SS_PATHELLIPSIS | WS_GROUP,13,18,221,9
     PUSHBUTTON      "...",IDC_BROWSE_DJVU,239,15,13,12
-    GROUPBOX        "Page &Index",IDC_PAGE_INDEX_GROUP,7,35,250,40
+    GROUPBOX        "&Page Index",IDC_PAGE_INDEX_GROUP,7,35,250,40
     CONTROL         "File name",IDC_PAGE_INDEX_FILE,"Static",
                     SS_LEFTNOWORDWRAP | SS_PATHELLIPSIS | WS_GROUP,13,47,221,
                     9
     PUSHBUTTON      "...",IDC_BROWSE_PAGE_INDEX,239,43,13,12
     CONTROL         "Don't change",IDC_PAGE_INDEX_DONTCHANGE,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,61,59,8
-    CONTROL         "Replace",IDC_PAGE_INDEX_REPLACE,"Button",BS_AUTORADIOBUTTON,
-                    76,61,44,8
-    CONTROL         "Remove",IDC_PAGE_INDEX_REMOVE,"Button",BS_AUTORADIOBUTTON,
-                    123,61,45,8
-    PUSHBUTTON      "Export...",IDC_EXPORT_PAGE_INDEX,211,57,41,14,WS_GROUP
-    GROUPBOX        "Cha&racter Map",IDC_CHAR_MAP_GROUP,7,79,250,40
-    CONTROL         "File name",IDC_CHAR_MAP_FILE,"Static",
-                    SS_LEFTNOWORDWRAP | SS_PATHELLIPSIS | WS_GROUP,13,90,221,
-                    9
+    CONTROL         "Replace",IDC_PAGE_INDEX_REPLACE,"Button",
+                    BS_AUTORADIOBUTTON,76,61,44,8
+    CONTROL         "Remove",IDC_PAGE_INDEX_REMOVE,"Button",
+                    BS_AUTORADIOBUTTON,123,61,45,8
+    PUSHBUTTON      "Export...",IDC_EXPORT_PAGE_INDEX,207,57,45,14,WS_GROUP
+    GROUPBOX        "C&haracter Map",IDC_CHAR_MAP_GROUP,7,79,250,40
+    CONTROL         "File name",IDC_CHAR_MAP_FILE,"Static",SS_LEFTNOWORDWRAP | 
+                    SS_PATHELLIPSIS | WS_GROUP,13,90,221,9
     PUSHBUTTON      "...",IDC_BROWSE_CHAR_MAP,239,86,13,12
     CONTROL         "Don't change",IDC_CHAR_MAP_DONTCHANGE,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,104,59,8
-    CONTROL         "Replace",IDC_CHAR_MAP_REPLACE,"Button",BS_AUTORADIOBUTTON,
-                    76,104,44,8
+    CONTROL         "Replace",IDC_CHAR_MAP_REPLACE,"Button",
+                    BS_AUTORADIOBUTTON,76,104,44,8
     CONTROL         "Remove",IDC_CHAR_MAP_REMOVE,"Button",BS_AUTORADIOBUTTON,
                     123,104,45,8
-    PUSHBUTTON      "Export...",IDC_EXPORT_CHAR_MAP,211,100,41,14,WS_GROUP
-    GROUPBOX        "Properties",IDC_STATIC,7,123,250,32
+    PUSHBUTTON      "Export...",IDC_EXPORT_CHAR_MAP,207,100,45,14,WS_GROUP
+    GROUPBOX        "Properties",IDC_STATIC,7,123,250,70
     LTEXT           "&Title:",IDC_STATIC,13,137,19,9
-    EDITTEXT        IDC_TITLE,34,135,216,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_TITLE,34,135,169,13,ES_AUTOHSCROLL | WS_DISABLED
+    PUSHBUTTON      "Localized...",IDC_TITLE_LOCALIZED,207,134,45,14,
+                    WS_GROUP
+    LTEXT           "&From:",IDC_STATIC,13,156,19,9
+    COMBOBOX        IDC_LANG_FROM,34,154,169,100,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Localized...",IDC_FROM_LOCALIZED,207,153,45,14,WS_GROUP
+    LTEXT           "T&o:",IDC_STATIC,13,175,19,9
+    COMBOBOX        IDC_LANG_TO,34,173,169,100,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    PUSHBUTTON      "Localized...",IDC_TO_LOCALIZED,207,172,45,14,WS_GROUP
     RTEXT           "DjVu Dictionary Tool 1.0 by Andrew Zhezherun (C) 2007",
-                    IDC_STATIC,7,163,311,8
+                    IDC_STATIC,7,200,311,8
+END
+
+IDD_LOCALIZED DIALOGEX 0, 0, 281, 100
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Localized Text"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&OK",IDOK,224,7,50,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,224,25,50,14
+    PUSHBUTTON      "&Add...",ID_ADD,224,61,50,14
+    PUSHBUTTON      "&Remove",ID_REMOVE,224,79,50,14
+    CONTROL         "List1",IDC_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_EDITLABELS | 
+                    LVS_NOSORTHEADER | WS_TABSTOP,7,7,210,86,
+                    WS_EX_CLIENTEDGE
+END
+
+IDD_ADD_STRING DIALOG DISCARDABLE  0, 0, 153, 48
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "&Localization:",IDC_STATIC,7,9,42,9
+    COMBOBOX        IDC_LOCALIZATION,52,7,94,96,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,25,27,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,79,27,50,14
 END
 
 
@@ -172,11 +208,34 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 318
         TOPMARGIN, 7
-        BOTTOMMARGIN, 171
+        BOTTOMMARGIN, 208
+    END
+
+    IDD_LOCALIZED, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 274
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 93
+    END
+
+    IDD_ADD_STRING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 146
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 41
     END
 END
 #endif    // APSTUDIO_INVOKED
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// RT_RCDATA
+//
+
+IDR_ISO_CODES           RT_RCDATA DISCARDABLE   "res\\ISO-639.csv"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -212,18 +271,17 @@ BEGIN
     IDS_PAGE_INDEX_FILTER_EXPORT 
                             "XML Documents (*.xml)|*.xml|All Files (*.*)|*.*||"
     IDS_ERROR_WRITING_TEMP  "Error creating a temporary file. The directory might be read only,\nor the disk may be full."
-    IDS_ERROR_WRITING_RESULT
+    IDS_ERROR_WRITING_RESULT 
                             "Error writing to the output file. The directory might be read-only,\nor the disk may be full."
     IDS_REPLACE_ERROR       "Error saving the result file. The file might be in use by other application."
-    IDS_EMBEDDING_DONE      "Page index was successfully embedded into the document."
-    IDS_BROWSE_CHAR_MAP_PROMPT
-                            "Please select or drop an Excel or XML file"
+    IDS_EMBEDDING_DONE      "Dictionary was saved successfully."
+    IDS_BROWSE_CHAR_MAP_PROMPT "Please select or drop an Excel or XML file"
     IDS_CHAR_MAP_FILTER     "Excel Documents (*.xls)|*.xls|XML Documents (*.xml)|*.xml|All Files (*.*)|*.*||"
     IDS_BROWSE_CHAR_MAP     "Browse for Character Map"
     IDS_EXPORT_CHAR_MAP     "Export Character Map"
-    IDS_CHAR_MAP_FILTER_EXPORT
+    IDS_CHAR_MAP_FILTER_EXPORT 
                             "XML Documents (*.xml)|*.xml|All Files (*.*)|*.*||"
-    IDS_CANNOT_OPEN_MAP_FILE
+    IDS_CANNOT_OPEN_MAP_FILE 
                             "Could not read character map from the selected file: invalid file format."
 END
 

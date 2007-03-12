@@ -39,8 +39,6 @@
 
 // CMainFrame
 
-HHOOK CMainFrame::hHook;
-
 IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWnd)
 
 BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
@@ -48,14 +46,17 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_COMMAND(ID_VIEW_TOOLBAR, OnViewToolbar)
 	ON_COMMAND(ID_VIEW_STATUS_BAR, OnViewStatusBar)
 	ON_COMMAND(ID_VIEW_SIDEBAR, OnViewSidebar)
+	ON_COMMAND(ID_VIEW_DICTBAR, OnViewDictBar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_SIDEBAR, OnUpdateViewSidebar)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_DICTBAR, OnUpdateViewDictBar)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_STATUS_BAR, OnUpdateViewStatusBar)
 	ON_WM_WINDOWPOSCHANGED()
 	ON_CBN_SELCHANGE(IDC_PAGENUM, OnChangePage)
 	ON_CONTROL(CBN_FINISHEDIT, IDC_PAGENUM, OnChangePageEdit)
-	ON_CONTROL(CBN_CANCELEDIT, IDC_PAGENUM, OnCancelChangePageZoom)
+	ON_CONTROL(CBN_CANCELEDIT, IDC_PAGENUM, OnCancelChange)
 	ON_CBN_SELCHANGE(IDC_ZOOM, OnChangeZoom)
 	ON_CONTROL(CBN_FINISHEDIT, IDC_ZOOM, OnChangeZoomEdit)
-	ON_CONTROL(CBN_CANCELEDIT, IDC_ZOOM, OnCancelChangePageZoom)
+	ON_CONTROL(CBN_CANCELEDIT, IDC_ZOOM, OnCancelChange)
 	ON_MESSAGE(WM_DDE_EXECUTE, OnDDEExecute)
 	ON_COMMAND(ID_EDIT_FIND, OnEditFind)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND, OnUpdateEditFind)
@@ -72,12 +73,21 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_PAGE, OnUpdateStatusPage)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_SIZE, OnUpdateStatusSize)
 	ON_WM_DESTROY()
-	ON_MESSAGE(WM_UPDATE_KEYBOARD, OnUpdateKeyboard)
-	ON_COMMAND_RANGE(ID_LANGUAGE_FIRST + 1, ID_LANGUAGE_LAST, OnSetLanguage)
-	ON_UPDATE_COMMAND_UI(ID_LANGUAGE_FIRST, OnUpdateLanguageList)
-	ON_UPDATE_COMMAND_UI_RANGE(ID_LANGUAGE_FIRST + 1, ID_LANGUAGE_LAST, OnUpdateLanguage)
 	ON_WM_CLOSE()
 	ON_MESSAGE(WM_APPCOMMAND, OnAppCommand)
+	ON_CBN_SETFOCUS(IDC_LOOKUP, OnLookupFocus)
+	ON_CONTROL(CBN_FINISHEDIT, IDC_LOOKUP, OnLookup)
+	ON_CONTROL(CBN_CANCELEDIT, IDC_LOOKUP, OnCancelChange)
+	ON_CBN_SELCHANGE(IDC_DICTIONARY, OnChangeDictionary)
+	ON_COMMAND(ID_DICTIONARY_INFO, OnDictionaryInfo)
+	ON_COMMAND(ID_DICTIONARY_NEXT, OnDictionaryNext)
+	ON_COMMAND(ID_DICTIONARY_PREV, OnDictionaryPrev)
+	ON_COMMAND(ID_DICTIONARY_LOOKUP, OnLookup)
+	ON_UPDATE_COMMAND_UI(ID_DICTIONARY_INFO, OnUpdateDictionaryInfo)
+	ON_UPDATE_COMMAND_UI(ID_DICTIONARY_NEXT, OnUpdateDictionaryNext)
+	ON_UPDATE_COMMAND_UI(ID_DICTIONARY_PREV, OnUpdateDictionaryPrev)
+	ON_UPDATE_COMMAND_UI(ID_DICTIONARY_LOOKUP, OnUpdateDictionaryLookup)
+	ON_MESSAGE_VOID(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -96,7 +106,7 @@ const int s_nIndicatorPage = 3;
 
 CMainFrame::CMainFrame()
 	: m_pFindDlg(NULL), m_historyPos(m_history.end()),
-	  m_pFullscreenWnd(NULL), m_pMagnifyWnd(NULL), m_nLanguage(0)
+	  m_pFullscreenWnd(NULL), m_pMagnifyWnd(NULL), m_nCurDict(CB_ERR)
 {
 }
 
@@ -110,10 +120,18 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 	
 	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT,
-		WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_FLYBY | CBRS_TOOLTIPS) ||
+			WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_FLYBY | CBRS_TOOLTIPS) ||
 		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME))
 	{
 		TRACE(_T("Failed to create toolbar\n"));
+		return -1;      // fail to create
+	}
+
+	if (!m_wndDictBar.CreateEx(this, TBSTYLE_FLAT,
+			WS_CHILD | CBRS_TOP | CBRS_GRIPPER | CBRS_FLYBY | CBRS_TOOLTIPS) ||
+		!m_wndDictBar.LoadToolBar(IDR_DICTIONARIES_BAR))
+	{
+		TRACE(_T("Failed to create dictionaries bar\n"));
 		return -1;      // fail to create
 	}
 
@@ -124,55 +142,152 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 
-	m_wndToolBar.SetHeight(30);
-	m_wndToolBar.SetWindowText(LoadString(IDS_TOOLBAR_TITLE));
-
-	int nComboPage = m_wndToolBar.CommandToIndex(ID_VIEW_NEXTPAGE) - 1;
-	m_wndToolBar.SetButtonInfo(nComboPage, IDC_PAGENUM, TBBS_SEPARATOR, 65);
-
-	CRect rcCombo;
-	m_wndToolBar.GetItemRect(nComboPage, rcCombo);
-	rcCombo.DeflateRect(3, 0);
-	rcCombo.bottom += 400;
-
 	// Create bold font for combo boxes in toolbar
-	CFont fnt;
-	CreateSystemDialogFont(fnt);
+	CreateSystemDialogFont(m_font);
+
 	LOGFONT lf;
-	fnt.GetLogFont(&lf);
-
+	m_font.GetLogFont(&lf);
 	lf.lfWeight = FW_BOLD;
-	m_font.CreateFontIndirect(&lf);
+	m_boldFont.CreateFontIndirect(&lf);
 
-	m_cboPage.Create(WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_VSCROLL
-			| CBS_DROPDOWN | CBS_AUTOHSCROLL, rcCombo, &m_wndToolBar, IDC_PAGENUM);
-	m_cboPage.SetFont(&m_font);
-	m_cboPage.SetItemHeight(-1, 16);
-	m_cboPage.GetEditCtrl().SetInteger();
-
-	int nComboZoom = m_wndToolBar.CommandToIndex(ID_ZOOM_IN) - 1;
-	m_wndToolBar.SetButtonInfo(nComboZoom, IDC_ZOOM, TBBS_SEPARATOR, 105);
-
-	m_wndToolBar.GetItemRect(nComboZoom, rcCombo);
-	rcCombo.DeflateRect(3, 0);
-	rcCombo.bottom += 400;
-
-	m_cboZoom.Create(WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_VSCROLL
-		| CBS_DROPDOWN | CBS_AUTOHSCROLL, rcCombo, &m_wndToolBar, IDC_ZOOM);
-	m_cboZoom.SetFont(&m_font);
-	m_cboZoom.SetItemHeight(-1, 16);
-	m_cboPage.GetEditCtrl().SetReal();
-	m_cboZoom.GetEditCtrl().SetPercent();
-
-	hHook = ::SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, NULL, ::GetCurrentThreadId());
-
-	LoadLanguages();
+	InitToolBar();
+	InitDictBar();
 
 	theApp.AddObserver(this);
 
 	return 0;
 }
 
+void CMainFrame::InitToolBar()
+{
+	m_wndToolBar.SetHeight(30);
+	m_wndToolBar.SetWindowText(LoadString(IDS_TOOLBAR_TITLE));
+
+	int nComboPage = m_wndToolBar.CommandToIndex(ID_VIEW_NEXTPAGE) - 1;
+	m_wndToolBar.SetButtonInfo(nComboPage, IDC_PAGENUM, TBBS_SEPARATOR, 65);
+
+	CRect rcItem;
+	m_wndToolBar.GetItemRect(nComboPage, rcItem);
+	rcItem.DeflateRect(3, 0);
+	rcItem.bottom += 400;
+
+	m_cboPage.Create(WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_VSCROLL
+			| CBS_DROPDOWN | CBS_AUTOHSCROLL, rcItem, &m_wndToolBar, IDC_PAGENUM);
+	m_cboPage.SetFont(&m_boldFont);
+	m_cboPage.SetItemHeight(-1, 16);
+	m_cboPage.GetEditCtrl()->SetInteger();
+
+	int nComboZoom = m_wndToolBar.CommandToIndex(ID_ZOOM_IN) - 1;
+	m_wndToolBar.SetButtonInfo(nComboZoom, IDC_ZOOM, TBBS_SEPARATOR, 105);
+
+	m_wndToolBar.GetItemRect(nComboZoom, rcItem);
+	rcItem.DeflateRect(3, 0);
+	rcItem.bottom += 400;
+
+	m_cboZoom.Create(WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_VSCROLL
+		| CBS_DROPDOWN | CBS_AUTOHSCROLL, rcItem, &m_wndToolBar, IDC_ZOOM);
+	m_cboZoom.SetFont(&m_boldFont);
+	m_cboZoom.SetItemHeight(-1, 16);
+	m_cboZoom.GetEditCtrl()->SetReal();
+	m_cboZoom.GetEditCtrl()->SetPercent();
+}
+
+void CMainFrame::InitDictBar()
+{
+	m_wndDictBar.SetHeight(30);
+	m_wndDictBar.SetWindowText(LoadString(IDS_DICTBAR_TITLE));
+
+	HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_DICTIONARIES_BAR),
+			IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+	CBitmap bm;
+	bm.Attach(hbm);
+
+	m_imageListDict.Create(16, 15, ILC_COLOR24 | ILC_MASK, 0, 1);
+	m_imageListDict.Add(&bm, RGB(192, 192, 192));
+	m_wndDictBar.GetToolBarCtrl().SetImageList(&m_imageListDict);
+
+	m_wndDictBar.InsertLabel(0, IDC_LOOKUP_LABEL, &m_font);
+
+	TBBUTTON btn;
+	ZeroMemory(&btn, sizeof(btn));
+	btn.iBitmap = 150;
+	btn.idCommand = IDC_LOOKUP;
+	btn.fsStyle = TBSTYLE_SEP;
+
+	CRect rcItem;
+	m_wndDictBar.GetToolBarCtrl().InsertButton(1, &btn);
+	m_wndDictBar.GetItemRect(1, rcItem);
+	rcItem.DeflateRect(3, 0);
+	rcItem.bottom += 160;
+
+	m_cboLookup.Create(WS_CHILD | WS_VISIBLE | WS_VSCROLL
+			| CBS_DROPDOWN | CBS_AUTOHSCROLL, rcItem, &m_wndDictBar, IDC_LOOKUP);
+	m_cboLookup.SetExtendedStyle(CBES_EX_CASESENSITIVE | CBES_EX_NOEDITIMAGE,
+			CBES_EX_CASESENSITIVE | CBES_EX_NOEDITIMAGE);
+	m_cboLookup.GetComboBoxCtrl()->ModifyStyle(CBS_SORT | CBS_NOINTEGRALHEIGHT, CBS_AUTOHSCROLL);
+	m_cboLookup.SetFont(&m_font);
+	m_cboLookup.SetItemHeight(-1, 16);
+
+	m_cboLookup.SetWindowText(theApp.GetAppSettings()->strFind);
+
+	btn.iBitmap = 0;
+	btn.idCommand = IDC_STATIC;
+	m_wndDictBar.GetToolBarCtrl().InsertButton(3, &btn);
+
+	m_wndDictBar.InsertLabel(4, IDC_DICTIONARY_LABEL, &m_font);
+
+	btn.iBitmap = 300;
+	btn.idCommand = IDC_DICTIONARY;
+	m_wndDictBar.GetToolBarCtrl().InsertButton(5, &btn);
+
+	m_wndDictBar.GetItemRect(5, rcItem);
+	rcItem.DeflateRect(3, 0);
+	rcItem.bottom += 160;
+
+	m_cboDict.Create(WS_CHILD | WS_VISIBLE | WS_VSCROLL
+			| CBS_DROPDOWNLIST | CBS_AUTOHSCROLL, rcItem, &m_wndDictBar, IDC_DICTIONARY);
+	m_cboDict.SetFont(&m_boldFont);
+	m_cboDict.SetItemHeight(-1, 16);
+
+	for (int i = 0; i < theApp.GetDictionaryCount(); ++i)
+	{
+		DictionaryInfo* pInfo = theApp.GetDictionaryInfo(i);
+
+		m_cboDict.InsertString(i, pInfo->strTitle);
+		m_cboDict.SetItemDataPtr(i, pInfo);
+	}
+
+	if (theApp.GetDictionaryCount() != 0)
+		m_cboDict.SetCurSel(m_nCurDict = 0);
+}
+
+void CMainFrame::UpdateDictComboContent()
+{
+	m_cboDict.ResetContent();
+
+	for (int i = 0; i < theApp.GetDictionaryCount(); ++i)
+	{
+		DictionaryInfo* pInfo = theApp.GetDictionaryInfo(i);
+
+		m_cboDict.InsertString(i, pInfo->strTitle);
+		m_cboDict.SetItemDataPtr(i, pInfo);
+	}
+
+	if (m_nCurDict >= 0 && m_nCurDict < theApp.GetDictionaryCount())
+		m_cboDict.SetCurSel(m_nCurDict);
+	else if (theApp.GetDictionaryCount() > 0)
+		m_cboDict.SetCurSel(m_nCurDict = 0);
+	else
+		m_nCurDict = CB_ERR;
+
+	CMDIChildWnd* pActive = MDIGetActive();
+	if (pActive != NULL)
+	{
+		CDjVuView* pView = (CDjVuView*)pActive->GetActiveView();
+		UpdateDictCombo(pView);
+	}
+}
+	
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
 	if (!CMDIFrameWnd::PreCreateWindow(cs))
@@ -225,19 +340,13 @@ void CMainFrame::Dump(CDumpContext& dc) const
 void CMainFrame::OnViewToolbar()
 {
 	CMDIFrameWnd::OnBarCheck(ID_VIEW_TOOLBAR);
-
-	CControlBar* pBar = GetControlBar(ID_VIEW_TOOLBAR);
-	if (pBar)
-		theApp.GetAppSettings()->bToolbar = (pBar->GetStyle() & WS_VISIBLE) != 0;
+	theApp.GetAppSettings()->bToolbar = !!m_wndToolBar.IsWindowVisible();
 }
 
 void CMainFrame::OnViewStatusBar()
 {
 	CMDIFrameWnd::OnBarCheck(ID_VIEW_STATUS_BAR);
-
-	CControlBar* pBar = GetControlBar(ID_VIEW_STATUS_BAR);
-	if (pBar)
-		theApp.GetAppSettings()->bStatusBar = (pBar->GetStyle() & WS_VISIBLE) != 0;
+	theApp.GetAppSettings()->bStatusBar = !!m_wndStatusBar.IsWindowVisible();
 }
 
 void CMainFrame::OnViewSidebar()
@@ -245,19 +354,59 @@ void CMainFrame::OnViewSidebar()
 	bool bHide = !theApp.GetAppSettings()->bNavPaneHidden;
 	theApp.GetAppSettings()->bNavPaneHidden = bHide;
 
-	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
+	CChildFrame* pFrame = (CChildFrame*) MDIGetActive();
 	if (pFrame == NULL)
 		return;
 
 	pFrame->HideNavPane(bHide);
 }
 
+void CMainFrame::OnViewDictBar()
+{
+	ShowControlBar(&m_wndDictBar, !m_wndDictBar.IsWindowVisible(), false);
+	theApp.GetAppSettings()->bDictBar = !!m_wndDictBar.IsWindowVisible();
+}
+
 void CMainFrame::OnUpdateViewSidebar(CCmdUI* pCmdUI)
 {
-	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
+	CChildFrame* pFrame = (CChildFrame*) MDIGetActive();
 
 	pCmdUI->Enable(pFrame != NULL);
 	pCmdUI->SetCheck(pFrame != NULL && !pFrame->IsNavPaneHidden());
+}
+
+void CMainFrame::OnUpdateViewDictBar(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_wndDictBar.IsWindowVisible());
+
+	if (theApp.GetDictionaryCount() == 0)
+	{
+		pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
+		pCmdUI->m_nIndex--;
+		pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
+	}
+}
+
+void CMainFrame::OnUpdateViewStatusBar(CCmdUI* pCmdUI)
+{
+	OnUpdateControlBarMenu(pCmdUI);
+
+	if (theApp.GetDictionaryCount() > 0
+			&& pCmdUI->m_pMenu->GetMenuItemID(pCmdUI->m_nIndex + 1) != ID_VIEW_DICTBAR)
+	{
+		pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex + 1, MF_BYPOSITION | MF_STRING,
+				ID_VIEW_DICTBAR, LoadString(IDR_DICTIONARIES_BAR));
+		pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
+	}
+}
+
+void CMainFrame::UpdateToolbars()
+{
+	CAppSettings* pSettings = theApp.GetAppSettings();
+
+	ShowControlBar(&m_wndToolBar, pSettings->bToolbar, false);
+	ShowControlBar(&m_wndDictBar, pSettings->bDictBar && theApp.GetDictionaryCount() > 0, false);
+	ShowControlBar(&m_wndStatusBar, pSettings->bStatusBar, false);
 }
 
 void CMainFrame::UpdateSettings()
@@ -324,11 +473,14 @@ void CMainFrame::OnChangePageEdit()
 	pView->SetFocus();
 }
 
-void CMainFrame::OnCancelChangePageZoom()
+void CMainFrame::OnCancelChange()
 {
 	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
 	if (pFrame == NULL)
+	{
+		::SetFocus(m_hWndMDIClient);
 		return;
+	}
 
 	CDjVuView* pView = pFrame->GetDjVuView();
 	pView->SetFocus();
@@ -448,6 +600,108 @@ void CMainFrame::OnChangeZoomEdit()
 	}
 
 	pView->SetFocus();
+}
+
+void CMainFrame::OnLookupFocus()
+{
+	theApp.InitSearchHistory(m_cboLookup);
+}
+
+void CMainFrame::OnLookup()
+{
+	if (m_nCurDict == CB_ERR)
+		return;
+
+	theApp.UpdateSearchHistory(m_cboLookup);
+
+	CString strLookup;
+	m_cboLookup.GetWindowText(strLookup);
+	DictionaryInfo* pInfo = (DictionaryInfo*) m_cboDict.GetItemDataPtr(m_nCurDict);
+
+	theApp.Lookup(strLookup, pInfo);
+}
+
+void CMainFrame::OnChangeDictionary()
+{
+	m_nCurDict = m_cboDict.GetCurSel();
+}
+
+void CMainFrame::OnDictionaryInfo()
+{
+	if (m_nCurDict == CB_ERR)
+		return;
+
+	DictionaryInfo* pInfo = (DictionaryInfo*) m_cboDict.GetItemDataPtr(m_nCurDict);
+	theApp.OpenDocument(pInfo->strPathName, "#1");
+}
+
+void CMainFrame::OnDictionaryNext()
+{
+	if (m_nCurDict == CB_ERR || m_nCurDict >= m_cboDict.GetCount() - 1)
+		return;
+	m_cboDict.SetCurSel(++m_nCurDict);
+
+	OnLookup();
+}
+
+void CMainFrame::OnDictionaryPrev()
+{
+	if (m_nCurDict == CB_ERR || m_nCurDict <= 0)
+		return;
+	m_cboDict.SetCurSel(--m_nCurDict);
+
+	OnLookup();
+}
+
+void CMainFrame::OnUpdateDictionaryInfo(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(m_nCurDict != CB_ERR);
+}
+
+void CMainFrame::OnUpdateDictionaryNext(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(m_nCurDict != CB_ERR && m_nCurDict < m_cboDict.GetCount() - 1);
+}
+
+void CMainFrame::OnUpdateDictionaryPrev(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(m_nCurDict != CB_ERR && m_nCurDict > 0);
+}
+
+void CMainFrame::OnUpdateDictionaryLookup(CCmdUI* pCmdUI)
+{
+	CString strLookup;
+	m_cboLookup.GetWindowText(strLookup);
+
+	pCmdUI->Enable(m_nCurDict != CB_ERR && !strLookup.IsEmpty());
+}
+
+void CMainFrame::OnIdleUpdateCmdUI()
+{
+	if (theApp.GetDictionaryCount() == 0)
+		m_wndDictBar.ShowWindow(SW_HIDE);
+
+	CMDIFrameWnd::OnIdleUpdateCmdUI();
+}
+
+void CMainFrame::UpdateDictCombo(const CDjVuView* pView)
+{
+	if (pView == NULL)
+		return;
+
+	DjVuSource* pSource = const_cast<CDjVuView*>(pView)->GetDocument()->GetSource();
+	DictionaryInfo* pInfo = pSource->GetDictionaryInfo();
+	if (!pInfo->bInstalled)
+		return;
+
+	for (int i = 0; i < m_cboDict.GetCount(); ++i)
+	{
+		if (pInfo == m_cboDict.GetItemDataPtr(i))
+		{
+			m_cboDict.SetCurSel(m_nCurDict = i);
+			return;
+		}
+	}
 }
 
 LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
@@ -636,7 +890,7 @@ int CMainFrame::GetDocumentCount()
 
 void CMainFrame::GoToHistoryPos(const HistoryPos& pos)
 {
-	CDjVuDoc* pDoc = (CDjVuDoc*) theApp.OpenDocument(pos.strFileName, "", false);
+	CDjVuDoc* pDoc = theApp.OpenDocument(pos.strFileName, "", false);
 	if (pDoc == NULL)
 		return;
 
@@ -974,34 +1228,6 @@ BOOL CMainFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO*
 	return CMDIFrameWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }
 
-LRESULT CALLBACK CMainFrame::KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
-{
-	if (nCode == HC_ACTION && wParam == VK_SHIFT)
-	{
-		static bool bWasPressed = false;
-		bool bPressed = (lParam & 0x80000000) == 0;
-
-		if (bPressed != bWasPressed)
-		{
-			bWasPressed = bPressed;
-			GetMainWnd()->PostMessage(WM_UPDATE_KEYBOARD, VK_SHIFT, bPressed);
-		}
-	}
-	else if (nCode == HC_ACTION && wParam == VK_CONTROL)
-	{
-		static bool bWasPressed = false;
-		bool bPressed = (lParam & 0x80000000) == 0;
-
-		if (bPressed != bWasPressed)
-		{
-			bWasPressed = bPressed;
-			GetMainWnd()->PostMessage(WM_UPDATE_KEYBOARD, VK_CONTROL, bPressed);
-		}
-	}
-
-	return ::CallNextHookEx(hHook, nCode, wParam, lParam);
-}
-
 void CMainFrame::OnDestroy()
 {
 	if (m_pFullscreenWnd != NULL)
@@ -1017,32 +1243,8 @@ void CMainFrame::OnDestroy()
 	}
 
 	theApp.RemoveObserver(this);
-	::UnhookWindowsHookEx(hHook);
 
 	CMDIFrameWnd::OnDestroy();
-}
-
-LRESULT CMainFrame::OnUpdateKeyboard(WPARAM wParam, LPARAM lParam)
-{
-	POSITION pos = theApp.GetFirstDocTemplatePosition();
-	while (pos != NULL)
-	{
-		CDocTemplate* pTemplate = theApp.GetNextDocTemplate(pos);
-		ASSERT_KINDOF(CDocTemplate, pTemplate);
-
-		POSITION posDoc = pTemplate->GetFirstDocPosition();
-		while (posDoc != NULL)
-		{
-			CDocument* pDoc = pTemplate->GetNextDoc(posDoc);
-			CDjVuView* pView = ((CDjVuDoc*)pDoc)->GetDjVuView();
-			pView->UpdateKeyboard(wParam, lParam != 0);
-		}
-	}
-
-	if (IsFullscreenMode())
-		m_pFullscreenWnd->GetView()->UpdateKeyboard(wParam, lParam != 0);
-
-	return 0;
 }
 
 void CMainFrame::OnUpdateFrameMenu(HMENU hMenuAlt)
@@ -1071,36 +1273,12 @@ void CMainFrame::OnUpdateFrameMenu(HMENU hMenuAlt)
 	}
 }
 
-void CMainFrame::OnSetLanguage(UINT nID)
-{
-	int nLanguage = nID - ID_LANGUAGE_FIRST - 1;
-	SetLanguage(nLanguage);
-}
-
-void CMainFrame::SetLanguage(UINT nLanguage)
-{
-	if (nLanguage < 0 || nLanguage >= m_languages.size() || nLanguage == m_nLanguage)
-		return;
-
-	LanguageInfo& info = m_languages[nLanguage];
-	if (info.hInstance == NULL)
-	{
-		info.hInstance = ::LoadLibrary(info.strLibraryPath);
-		if (info.hInstance == NULL)
-		{
-			AfxMessageBox(_T("Could not change the language to ") + info.strLanguage);
-			return;
-		}
-	}
-
-	m_nLanguage = nLanguage;
-	theApp.SetLanguage(info.hInstance, info.nLanguage);
-}
-
 void CMainFrame::LanguageChanged()
 {
 	OnUpdateFrameMenu(NULL);
 	DrawMenuBar();
+
+	UpdateDictComboContent();
 
 	m_cboZoom.ResetContent();
 
@@ -1134,129 +1312,6 @@ void CMainFrame::LanguageChanged()
 			rcNewFindDlg.Width(), rcNewFindDlg.Height());
 		m_pFindDlg->ShowWindow(bVisible ? SW_SHOWNOACTIVATE : SW_HIDE);
 		SetFocus();
-	}
-}
-
-void CMainFrame::LoadLanguages()
-{
-	LanguageInfo english;
-	english.nLanguage = 0x409;
-	english.strLanguage = _T("&English");
-	english.hInstance = AfxGetInstanceHandle();
-	m_languages.push_back(english);
-
-	CString strPathName;
-	GetModuleFileName(theApp.m_hInstance, strPathName.GetBuffer(_MAX_PATH), _MAX_PATH);
-	strPathName.ReleaseBuffer();
-
-	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
-	_tsplitpath(strPathName, szDrive, szPath, szName, szExt);
-	CString strFileName = szDrive + CString(szPath) + _T("WinDjView*.dll");
-
-	WIN32_FIND_DATA fd;
-	HANDLE hFind = FindFirstFile(strFileName, &fd);
-	if (hFind != INVALID_HANDLE_VALUE)
-	{
-		do
-		{
-			DWORD dwHandle;
-			DWORD dwSize = ::GetFileVersionInfoSize(fd.cFileName, &dwHandle);
-			if (dwSize <= 0)
-				continue;
-
-			LPBYTE pVersionInfo = new BYTE[dwSize];
-			if (::GetFileVersionInfo(fd.cFileName, dwHandle, dwSize, pVersionInfo) == 0)
-			{
-				delete[] pVersionInfo;
-				continue;
-			}
-
-			DWORD* pTranslations;
-			UINT cbTranslations;
-			if (::VerQueryValue(pVersionInfo, _T("\\VarFileInfo\\Translation"),
-					(void**)&pTranslations, &cbTranslations) == 0 || cbTranslations == 0)
-			{
-				delete[] pVersionInfo;
-				continue;
-			}
-
-			DWORD nLanguage = LOWORD(*pTranslations);
-			CString strTranslation = FormatString(_T("%04x%04x"), nLanguage, HIWORD(*pTranslations));
-
-			LPCTSTR pszBuffer;
-			UINT dwLength;
-			if (::VerQueryValue(pVersionInfo, FormatString(_T("\\StringFileInfo\\%s\\FileVersion"), strTranslation).GetBuffer(0),
-					(void**)&pszBuffer, &dwLength) == 0 || dwLength == 0)
-			{
-				delete[] pVersionInfo;
-				continue;
-			}
-
-			CString strVersion(pszBuffer);
-			if (strVersion != CURRENT_VERSION)
-			{
-				delete[] pVersionInfo;
-				continue;
-			}
-
-			if (::VerQueryValue(pVersionInfo, FormatString(_T("\\StringFileInfo\\%s\\Comments"), strTranslation).GetBuffer(0),
-					(void**)&pszBuffer, &dwLength) == 0 || dwLength == 0)
-			{
-				delete[] pVersionInfo;
-				continue;
-			}
-
-			CString strLanguage(pszBuffer);
-			delete[] pVersionInfo;
-
-			LanguageInfo info;
-			info.nLanguage = nLanguage;
-			info.strLanguage = strLanguage;
-			info.strLibraryPath = szDrive + CString(szPath) + fd.cFileName;
-			info.hInstance = NULL;
-			m_languages.push_back(info);
-		} while (FindNextFile(hFind, &fd) != 0);
-
-		FindClose(hFind);
-	}
-}
-
-void CMainFrame::OnUpdateLanguageList(CCmdUI* pCmdUI)
-{
-	if (pCmdUI->m_pMenu == NULL)
-		return;
-
-	int nIndex = pCmdUI->m_nIndex;
-	int nAdded = 0;
-
-	for (size_t i = 0; i < m_languages.size() && i < ID_LANGUAGE_LAST - ID_LANGUAGE_FIRST - 1; ++i)
-	{
-		CString strText = m_languages[i].strLanguage;
-		pCmdUI->m_pMenu->InsertMenu(ID_LANGUAGE_FIRST, MF_BYCOMMAND, ID_LANGUAGE_FIRST + i + 1, strText);
-		++nAdded;
-	}
-	pCmdUI->m_pMenu->DeleteMenu(ID_LANGUAGE_FIRST, MF_BYCOMMAND);
-
-	// update end menu count
-	pCmdUI->m_nIndex -= 1;
-	pCmdUI->m_nIndexMax += nAdded - 1;
-}
-
-void CMainFrame::OnUpdateLanguage(CCmdUI* pCmdUI)
-{
-	int nLanguage = pCmdUI->m_nID - ID_LANGUAGE_FIRST - 1;
-	pCmdUI->SetCheck(nLanguage == m_nLanguage);
-}
-
-void CMainFrame::SetStartupLanguage()
-{
-	for (size_t i = 0; i < m_languages.size(); ++i)
-	{
-		if (theApp.GetAppSettings()->nLanguage == m_languages[i].nLanguage)
-		{
-			SetLanguage(i);
-			return;
-		}
 	}
 }
 
@@ -1383,6 +1438,7 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 
 			UpdatePageCombo(pView);
 			UpdateZoomCombo(pView);
+			UpdateDictCombo(pView);
 		}
 		else
 		{
@@ -1397,5 +1453,9 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 	else if (message->code == APP_LANGUAGE_CHANGED)
 	{
 		LanguageChanged();
+	}
+	else if (message->code == DICT_LIST_CHANGED)
+	{
+		UpdateDictComboContent();
 	}
 }

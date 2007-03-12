@@ -106,7 +106,7 @@ void CSearchResultsView::HilightResult(HTREEITEM hItem)
 	UpdateObservers(SearchResultClicked(data->nPage, data->nSelStart, data->nSelEnd));
 }
 
-void CSearchResultsView::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
+void CSearchResultsView::OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
 
@@ -120,7 +120,7 @@ void CSearchResultsView::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult = 0;
 }
 
-void CSearchResultsView::OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult)
+void CSearchResultsView::OnKeyDown(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	LPNMTVKEYDOWN pTVKeyDown = reinterpret_cast<LPNMTVKEYDOWN>(pNMHDR);
 
@@ -136,7 +136,7 @@ void CSearchResultsView::OnKeyDown(NMHDR *pNMHDR, LRESULT *pResult)
 		*pResult = 1;
 }
 
-void CSearchResultsView::OnGetInfoTip(NMHDR *pNMHDR, LRESULT *pResult)
+void CSearchResultsView::OnGetInfoTip(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	LPNMTVGETINFOTIP pNMInfoTip = reinterpret_cast<LPNMTVGETINFOTIP>(pNMHDR);
 

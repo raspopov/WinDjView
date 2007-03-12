@@ -46,8 +46,8 @@ protected:
 	CMyEdit m_edtPage;
 	int m_nPageCount;
 
-// Generated message map functions
-	afx_msg void OnPageUpDown(NMHDR *pNMHDR, LRESULT *pResult);
+	// Message map functions
+	afx_msg void OnPageUpDown(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnUpdateDialogData();
 	DECLARE_MESSAGE_MAP()
 };

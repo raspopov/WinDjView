@@ -18,7 +18,9 @@
 // $Id$
 
 #include "stdafx.h"
+#include "WinDjView.h"
 #include "MyToolBar.h"
+#include "Drawing.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -44,6 +46,7 @@ BEGIN_MESSAGE_MAP(CMyToolBar, CToolBar)
 	ON_MESSAGE_VOID(WM_THEMECHANGED, OnThemeChanged)
 	ON_WM_RBUTTONDOWN()
 	ON_WM_RBUTTONUP()
+	ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, OnCustomDraw)
 END_MESSAGE_MAP()
 
 
@@ -57,11 +60,15 @@ int CMyToolBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (IsThemed())
 		m_hTheme = XPOpenThemeData(m_hWnd, L"TOOLBAR");
 
+	theApp.AddObserver(this);
+
 	return 0;
 }
 
 void CMyToolBar::OnDestroy()
 {
+	theApp.RemoveObserver(this);
+
 	if (m_hTheme != NULL)
 	{
 		XPCloseThemeData(m_hTheme);
@@ -238,4 +245,105 @@ void CMyToolBar::OnRButtonDown(UINT nFlags, CPoint point)
 void CMyToolBar::OnRButtonUp(UINT nFlags, CPoint point)
 {
 	// Just eat the message. Standard windows toolbar does some strange things after right-clicking.
+}
+
+void CMyToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	LPNMTBCUSTOMDRAW pTBCD = (LPNMTBCUSTOMDRAW) pNMHDR;
+
+	if (pTBCD->nmcd.dwDrawStage == CDDS_PREPAINT)
+	{
+		*pResult = CDRF_NOTIFYITEMDRAW;
+		return;
+	}
+
+	if (pTBCD->nmcd.dwDrawStage == CDDS_ITEMPREPAINT)
+	{
+		for (size_t nLabel = 0; nLabel < m_labels.size(); ++nLabel)
+		{
+			if (pTBCD->nmcd.dwItemSpec == m_labels[nLabel].nID)
+			{
+				Label& label = m_labels[nLabel];
+
+				CDC dc;
+				dc.Attach(pTBCD->nmcd.hdc);
+
+				CFont* pOldFont = dc.SelectObject(GetFont());
+				COLORREF crTextColor = dc.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+				int nBkMode = dc.SetBkMode(TRANSPARENT);
+
+				UINT nFlags = DT_LEFT | DT_NOPREFIX | DT_VCENTER | DT_SINGLELINE;
+				CRect rect(pTBCD->nmcd.rc);
+				rect.left += 3;
+				dc.DrawText(label.strText, rect, nFlags);
+
+				dc.SetTextColor(crTextColor);
+				dc.SetBkMode(nBkMode);
+				dc.SelectObject(pOldFont);
+
+				dc.Detach();
+
+				*pResult = CDRF_SKIPDEFAULT;
+				return;
+			}
+		}
+	}
+
+	*pResult = 0;
+}
+
+void CMyToolBar::InsertLabel(int nPos, UINT nID, CFont* pFont)
+{
+	Label label;
+	label.nID = nID;
+	label.strText = LoadString(nID);
+	label.pFont = pFont;
+	m_labels.push_back(label);
+
+	CScreenDC dcScreen;
+	CFont* pOldFont = dcScreen.SelectObject(pFont);
+	int nWidth = dcScreen.GetTextExtent(label.strText).cx + 3;
+	dcScreen.SelectObject(pOldFont);
+
+	TBBUTTON btn;
+	ZeroMemory(&btn, sizeof(btn));
+	btn.idCommand = nID;
+	btn.fsStyle = TBSTYLE_BUTTON;
+
+	TBBUTTONINFO info;
+	ZeroMemory(&info, sizeof(info));
+	info.cbSize = sizeof(info);
+	info.dwMask = TBIF_SIZE;
+	info.cx = nWidth;
+
+	GetToolBarCtrl().InsertButton(nPos, &btn);
+	GetToolBarCtrl().SetButtonInfo(nID, &info);
+}
+
+void CMyToolBar::OnUpdate(const Observable* source, const Message* message)
+{
+	if (message->code == APP_LANGUAGE_CHANGED)
+	{
+		CScreenDC dcScreen;
+		for (size_t nLabel = 0; nLabel < m_labels.size(); ++nLabel)
+		{
+			Label& label = m_labels[nLabel];
+			label.strText = LoadString(label.nID);
+
+			CFont* pOldFont = dcScreen.SelectObject(label.pFont);
+			int nWidth = dcScreen.GetTextExtent(label.strText).cx + 3;
+			dcScreen.SelectObject(pOldFont);
+
+			TBBUTTONINFO info;
+			ZeroMemory(&info, sizeof(info));
+			info.cbSize = sizeof(info);
+			info.dwMask = TBIF_SIZE;
+			info.cx = nWidth;
+
+			GetToolBarCtrl().SetButtonInfo(label.nID, &info);
+		}
+
+		if (!m_labels.empty())
+			Invalidate(false);
+	}
 }

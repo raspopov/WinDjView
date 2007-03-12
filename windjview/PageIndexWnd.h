@@ -21,6 +21,7 @@
 
 #include "BookmarksWnd.h"
 #include "MyTreeCtrl.h"
+#include "MyComboBox.h"
 class DjVuSource;
 struct XMLNode;
 
@@ -36,6 +37,7 @@ public:
 	virtual ~CPageIndexWnd();
 
 	bool InitPageIndex(DjVuSource* pSource);
+	void Lookup(const CString& strLookup);
 
 // Implementation
 protected:
@@ -45,7 +47,7 @@ protected:
 	bool m_bChangeInternal;
 
 	CMyTreeCtrl m_list;
-	CEdit m_edtText;
+	CMyComboBoxEx m_cboLookup;
 
 	enum
 	{
@@ -81,16 +83,17 @@ protected:
 
 	// Message map functions
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnItemClicked(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnItemExpanding(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnKeyDownList(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnKeyDownText(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnItemClicked(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnItemExpanding(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnKeyDownList(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnChangeText();
 	afx_msg void OnWindowPosChanged(WINDOWPOS FAR* lpwndpos);
 	afx_msg void OnPaint();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	afx_msg void OnLookupFocus();
+	afx_msg void OnFinishEditText();
 	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
 	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()

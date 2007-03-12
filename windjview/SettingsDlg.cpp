@@ -38,6 +38,9 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent)
 	AddPage(&m_pageDisplay);
 	AddPage(&m_pageAssocs);
 
+	if (theApp.GetDictionaryCount() > 0)
+		AddPage(&m_pageDict);
+
 	m_psh.dwFlags = PSH_PROPSHEETPAGE | PSH_NOAPPLYNOW;
 }
 

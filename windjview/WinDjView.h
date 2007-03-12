@@ -59,10 +59,11 @@ public:
 
 	BOOL WriteProfileDouble(LPCTSTR pszSection, LPCTSTR pszEntry, double fValue);
 	double GetProfileDouble(LPCTSTR pszSection, LPCTSTR pszEntry, double fDefault);
-	BOOL WriteProfileCompressed(LPCTSTR pszSection, LPCTSTR pszEntry, LPCVOID pvData, DWORD dwLength);
+	BOOL WriteProfileCompressed(LPCTSTR pszSection, LPCTSTR pszEntry, const GUTF8String& value);
+	BOOL GetProfileCompressed(LPCTSTR pszSection, LPCTSTR pszEntry, GUTF8String& value);
 
 	virtual bool LoadDocSettings(const CString& strKey, DocSettings* pSettings);
-	virtual DictionaryInfo* GetDictionaryInfo(const CString& strFileName);
+	virtual DictionaryInfo* GetDictionaryInfo(const CString& strFileName, bool bCheckPath = true);
 	virtual void ReportFatalError();
 
 	CAppSettings* GetAppSettings() { return &m_appSettings; }
@@ -70,10 +71,17 @@ public:
 	CPrintSettings* GetPrintSettings() { return &m_printSettings; }
 	Annotation* GetAnnoTemplate() { return &m_annoTemplate; }
 
-	void SetLanguage(HINSTANCE hResources, DWORD nLanguage);
-	void SaveSettings();
+	void InitSearchHistory(CComboBoxEx& cboFind);
+	void UpdateSearchHistory(CComboBoxEx& cboFind);
 
+	DictionaryInfo* GetDictionaryInfo(int nIndex);
+	int GetDictionaryCount() const { return static_cast<int>(m_dictVector.size()); }
+	void Lookup(const CString& strLookup, DictionaryInfo* pInfo);
+
+	CDjVuDoc* OpenDocument(LPCTSTR lpszFileName, const GUTF8String& strPage, bool bAddToHistory = true);
 	bool InstallDictionary(CDjVuDoc* pDoc, bool bAllUsers, bool bKeepOriginal);
+	void SaveSettings();
+	bool RegisterShellFileTypes();
 
 	// Register running threads
 	void ThreadStarted();
@@ -83,14 +91,10 @@ public:
 public:
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
-	bool RegisterShellFileTypes();
-
-	CDjVuDoc* OpenDocument(LPCTSTR lpszFileName, const GUTF8String& strPage, bool bAddToHistory = true);
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
 	bool m_bInitialized;
-	CMyDocTemplate* m_pDjVuTemplate;
 
 // Implementation
 protected:
@@ -99,27 +103,55 @@ protected:
 	CPrintSettings m_printSettings;
 	Annotation m_annoTemplate;
 
+	CMyDocTemplate* m_pDjVuTemplate;
+	CDocument* FindOpenDocument(LPCTSTR lpszFileName);
+
 	void LoadSettings();
 	void EnableShellOpen();
-	CDocument* FindOpenDocument(LPCTSTR lpszFileName);
 
 	CEvent m_terminated;
 	long m_nThreadCount;
 	CEvent m_docClosed;
 	DjVuSource* m_pPendingSource;
 
+	struct LanguageInfo
+	{
+		DWORD nLanguage;
+		CString strLanguage;
+		CString strLibraryPath;
+		HINSTANCE hInstance;
+	};
+	vector<LanguageInfo> m_languages;
+	int m_nLangIndex;
+	void LoadLanguages();
+	void SetLanguage(UINT nLanguage);
+	void SetStartupLanguage();
+
 	set<DjVuSource*> m_deleteOnRelease;
 	map<CString, DictionaryInfo> m_dictionaries;
+	vector<DictionaryInfo*> m_dictVector;
 	void LoadDictionaries();
 	void LoadDictionaries(const CString& strDirectory);
 	void LoadDictionaryInfo(DictionaryInfo& info);
 	bool LoadDictionaryInfoFromDisk(DictionaryInfo& info);
+	void UpdateDictVector();
+	void UpdateDictProperties();
+	static CString FindLocalizedString(const vector<DictionaryInfo::LocalizedString>& loc, DWORD nCurrentLang);
+
+	HHOOK m_hHook;
+	UINT m_nTimerID;
+	bool m_bShiftPressed, m_bControlPressed;
+	static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
+	static void CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dwTime);
 
 	// Generated message map functions
 	afx_msg void OnAppAbout();
 	afx_msg void OnFileSettings();
 	afx_msg void OnCheckForUpdate();
 	afx_msg BOOL OnOpenRecentFile(UINT nID);
+	afx_msg void OnSetLanguage(UINT nID);
+	afx_msg void OnUpdateLanguageList(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateLanguage(CCmdUI *pCmdUI);
 	DECLARE_MESSAGE_MAP()
 };
 

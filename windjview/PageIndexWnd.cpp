@@ -24,8 +24,6 @@
 #include "XMLParser.h"
 
 
-static int s_nTextHeight = 11;
-
 static int s_nRightGap = 4;
 static int s_nVertGap = 6;
 static int s_nMinTextWidth = 10;
@@ -40,8 +38,9 @@ BEGIN_MESSAGE_MAP(CPageIndexWnd, CWnd)
 	ON_NOTIFY(TVN_ITEMCLICKED, CPageIndexWnd::ID_LIST, OnSelChanged)
 	ON_NOTIFY(TVN_ITEMEXPANDING, CPageIndexWnd::ID_LIST, OnItemExpanding)
 	ON_NOTIFY(TVN_KEYDOWN, CPageIndexWnd::ID_LIST, OnKeyDownList)
-	ON_EN_CHANGE(CPageIndexWnd::ID_TEXT, OnChangeText)
-	ON_NOTIFY(NM_KEYDOWN, CPageIndexWnd::ID_TEXT, OnKeyDownText)
+	ON_CBN_SETFOCUS(CPageIndexWnd::ID_TEXT, OnLookupFocus)
+	ON_CBN_EDITCHANGE(CPageIndexWnd::ID_TEXT, OnChangeText)
+	ON_CONTROL(CBN_FINISHEDIT, CPageIndexWnd::ID_TEXT, OnFinishEditText)
 	ON_WM_CREATE()
 	ON_WM_WINDOWPOSCHANGED()
 	ON_WM_ERASEBKGND()
@@ -83,9 +82,14 @@ int CPageIndexWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	CreateSystemDialogFont(m_font);
 
-	m_edtText.Create(WS_VISIBLE | WS_TABSTOP | WS_CHILD,
-		CRect(), this, ID_TEXT);
-	m_edtText.SetFont(&m_font);
+	m_cboLookup.Create(WS_CHILD | WS_VISIBLE | WS_VSCROLL
+			| CBS_DROPDOWN | CBS_AUTOHSCROLL, CRect(0, 0, 0, 180), this, ID_TEXT);
+	m_cboLookup.SetExtendedStyle(CBES_EX_CASESENSITIVE | CBES_EX_NOEDITIMAGE,
+			CBES_EX_CASESENSITIVE | CBES_EX_NOEDITIMAGE);
+	m_cboLookup.GetComboBoxCtrl()->ModifyStyle(CBS_SORT | CBS_NOINTEGRALHEIGHT,
+			CBS_AUTOHSCROLL);
+	m_cboLookup.SetFont(&m_font);
+	m_cboLookup.SetItemHeight(-1, 16);
 
 	m_list.Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 		| TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_TRACKSELECT,
@@ -157,7 +161,7 @@ int CPageIndexWnd::AddEntries(const XMLNode& parent, HTREEITEM hParent)
 
 bool CPageIndexWnd::InitPageIndex(DjVuSource* pSource)
 {
-	GUTF8String strPageIndex = pSource->GetPageIndex();
+	GUTF8String strPageIndex = pSource->GetDictionaryInfo()->strPageIndex;
 	if (strPageIndex.length() == 0)
 		return false;
 
@@ -166,7 +170,7 @@ bool CPageIndexWnd::InitPageIndex(DjVuSource* pSource)
 	if (!parser.Parse(sin))
 		return false;
 
-	InitCharacterMap(pSource->GetCharMap());
+	InitCharacterMap(pSource->GetDictionaryInfo()->strCharMap);
 
 	m_list.BeginBatchUpdate();
 
@@ -240,7 +244,7 @@ void CPageIndexWnd::GoToItem(HTREEITEM hItem)
 	}
 }
 
-void CPageIndexWnd::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
+void CPageIndexWnd::OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
 
@@ -253,7 +257,8 @@ void CPageIndexWnd::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
 
 			size_t nEntry = m_list.GetItemData(hItem);
 			IndexEntry& entry = m_entries[nEntry];
-			GetDlgItem(ID_TEXT)->SetWindowText(entry.strTextFirst);
+			m_cboLookup.SetWindowText(entry.strTextFirst);
+			m_cboLookup.GetEditCtrl()->SetSel(entry.strTextFirst.GetLength(), -1);
 
 			m_bChangeInternal = false;
 		}
@@ -265,7 +270,7 @@ void CPageIndexWnd::OnSelChanged(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult = 0;
 }
 
-void CPageIndexWnd::OnItemExpanding(NMHDR *pNMHDR, LRESULT *pResult)
+void CPageIndexWnd::OnItemExpanding(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
 	if (pNMTreeView->action == TVE_COLLAPSE)
@@ -278,7 +283,7 @@ void CPageIndexWnd::OnItemExpanding(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult = 0;
 }
 
-void CPageIndexWnd::OnKeyDownList(NMHDR *pNMHDR, LRESULT *pResult)
+void CPageIndexWnd::OnKeyDownList(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	LPNMTVKEYDOWN pTVKeyDown = reinterpret_cast<LPNMTVKEYDOWN>(pNMHDR);
 
@@ -294,20 +299,16 @@ void CPageIndexWnd::OnKeyDownList(NMHDR *pNMHDR, LRESULT *pResult)
 		*pResult = 1;
 }
 
-void CPageIndexWnd::OnKeyDownText(NMHDR *pNMHDR, LRESULT *pResult)
+void CPageIndexWnd::OnFinishEditText()
 {
-	LPNMKEY pKeyDown = reinterpret_cast<LPNMKEY>(pNMHDR);
+	m_bChangeInternal = true;
+	theApp.UpdateSearchHistory(m_cboLookup);
+	m_cboLookup.GetEditCtrl()->SetSel(-1, -1);
+	m_bChangeInternal = false;
 
-	if (pKeyDown->nVKey == VK_RETURN)
-	{
-		HTREEITEM hItem = m_list.GetSelectedItem();
-		if (hItem != NULL)
-			GoToItem(hItem);
-
-		*pResult = 0;
-	}
-	else
-		*pResult = 1;
+	HTREEITEM hItem = m_list.GetSelectedItem();
+	if (hItem != NULL)
+		GoToItem(hItem);
 }
 
 void CPageIndexWnd::OnChangeText()
@@ -316,7 +317,7 @@ void CPageIndexWnd::OnChangeText()
 		return;
 
 	CString strText;
-	GetDlgItem(ID_TEXT)->GetWindowText(strText);
+	m_cboLookup.GetWindowText(strText);
 
 	if (strText.IsEmpty())
 		return;
@@ -358,6 +359,24 @@ void CPageIndexWnd::OnChangeText()
 	m_bChangeInternal = false;
 }
 
+void CPageIndexWnd::Lookup(const CString& strLookup)
+{
+	m_bChangeInternal = true;
+	m_cboLookup.SetWindowText(strLookup);
+	m_bChangeInternal = false;
+
+	OnChangeText();
+
+	HTREEITEM hItem = m_list.GetSelectedItem();
+	if (hItem != NULL)
+		GoToItem(hItem);
+}
+
+void CPageIndexWnd::OnLookupFocus()
+{
+	theApp.InitSearchHistory(m_cboLookup);
+}
+
 void CPageIndexWnd::PostNcDestroy()
 {
 	// Should be created on heap
@@ -371,43 +390,24 @@ void CPageIndexWnd::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 	UpdateControls();
 }
 
-inline CPoint ConvertDialogPoint(const CPoint& point, const CSize& szBaseUnits)
-{
-	CPoint result;
-
-	result.x = MulDiv(point.x, szBaseUnits.cx, 4);
-	result.y = MulDiv(point.y, szBaseUnits.cy, 8);
-
-	return result;
-}
-
 void CPageIndexWnd::UpdateControls()
 {
 	CRect rcClient;
 	GetClientRect(rcClient);
 
-	CScreenDC dcScreen;
-	CFont* pOldFont = dcScreen.SelectObject(&m_font);
+	CRect rcCombo;
+	m_cboLookup.GetWindowRect(rcCombo);
 
-	TEXTMETRIC tm;
-	dcScreen.GetTextMetrics(&tm);
-	dcScreen.SelectObject(pOldFont);
+	CSize szText(max(s_nMinTextWidth, rcClient.Width() - s_nRightGap), rcCombo.Height());
+	CPoint ptText(0, 0);
 
-	CSize szBaseUnit(tm.tmAveCharWidth, tm.tmHeight);
+	CPoint ptList(1, szText.cy + s_nVertGap + 1);
+	CSize szList(max(s_nMinTextWidth, rcClient.Width() - 1), max(s_nMinListHeight, rcClient.Height() - ptList.y));
 
-	CPoint ptText = ConvertDialogPoint(CPoint(0, s_nTextHeight), szBaseUnit);
-	CSize szText(max(s_nMinTextWidth, rcClient.Width() - s_nRightGap - 2), ptText.y - 2);
-	ptText = CPoint(1, 1);
-
-	CPoint ptList(1, szText.cy + s_nVertGap + 3);
-	CSize szList(max(s_nMinTextWidth, rcClient.Width() - 1/*s_nRightGap - 2*/),
-		max(s_nMinListHeight, rcClient.Height() - ptList.y));
-
-	m_edtText.SetWindowPos(NULL, ptText.x, ptText.y, szText.cx, szText.cy, SWP_NOACTIVATE);
+	m_cboLookup.SetWindowPos(NULL, ptText.x, ptText.y, szText.cx, szText.cy, SWP_NOACTIVATE);
 	m_list.SetWindowPos(NULL, ptList.x, ptList.y, szList.cx, szList.cy, SWP_NOACTIVATE);
 
 	m_rcText = CRect(ptText, szText);
-	m_rcText.InflateRect(1, 1);
 	m_rcList = CRect(ptList, szList);
 	m_rcList.InflateRect(1, 1);
 
@@ -434,7 +434,6 @@ void CPageIndexWnd::OnPaint()
 	dc.FillSolidRect(rcRightGap, clrBtnface);
 	dc.FillSolidRect(m_rcGap, clrBtnface);
 
-	dc.FrameRect(m_rcText, &brushShadow);
 	dc.FrameRect(m_rcList, &brushShadow);
 }
 
@@ -472,7 +471,7 @@ BOOL CPageIndexWnd::PreTranslateMessage(MSG* pMsg)
 
 void CPageIndexWnd::OnSetFocus(CWnd* pOldWnd)
 {
-	GetDlgItem(ID_TEXT)->SetFocus();
+	m_cboLookup.SetFocus();
 }
 
 int CPageIndexWnd::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)

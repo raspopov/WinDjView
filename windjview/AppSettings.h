@@ -115,6 +115,7 @@ struct CAppSettings
 
 	bool bToolbar;
 	bool bStatusBar;
+	bool bDictBar;
 
 	int nDefaultZoomType;
 	double fDefaultZoom;

@@ -23,6 +23,7 @@
 #include "SettingsGeneralPage.h"
 #include "SettingsDisplayPage.h"
 #include "SettingsAssocsPage.h"
+#include "SettingsDictPage.h"
 
 
 // CSettingsDlg dialog
@@ -38,6 +39,7 @@ public:
 	CSettingsGeneralPage m_pageGeneral;
 	CSettingsDisplayPage m_pageDisplay;
 	CSettingsAssocsPage m_pageAssocs;
+	CSettingsDictPage m_pageDict;
 
 protected:
 	CFont m_font;

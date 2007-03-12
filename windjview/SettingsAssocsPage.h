@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "AppSettings.h"
-
 
 // CSettingsAssocsPage dialog
 

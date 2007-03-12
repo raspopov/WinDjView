@@ -23,23 +23,26 @@
 #include "Global.h"
 #include "MyFileDialog.h"
 #include "DjVuSource.h"
+#include "LocalizedStringDlg.h"
 #include "XMLParser.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-static const char* pszPageIndexKey = "page-index";
-static const char* pszCharMapKey = "char-map";
-static const char* pszTitleKey = "title-localized";
+static const char pszPageIndexKey[] = "page-index";
+static const char pszCharMapKey[] = "char-map";
+static const char pszTitleKey[] = "title-localized";
+static const char pszLangFromKey[] = "language-from";
+static const char pszLangToKey[] = "language-to";
 
 
 // CDictionaryDlg dialog
 
 CDictionaryDlg::CDictionaryDlg(CWnd* pParent)
-	: CDialog(CDictionaryDlg::IDD, pParent), m_pSource(NULL),
+	: CDialog(CDictionaryDlg::IDD, pParent), m_pSource(NULL), m_pDictInfo(NULL),
 	  m_bHasPageIndexFile(false), m_bHasCharMapFile(false),
-	  m_nPageIndexAction(0), m_nCharMapAction(0)
+	  m_nPageIndexAction(0), m_nCharMapAction(0), m_pLangFrom(NULL), m_pLangTo(NULL)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -57,6 +60,8 @@ void CDictionaryDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_TITLE, m_strTitle);
 	DDX_Radio(pDX, IDC_PAGE_INDEX_DONTCHANGE, m_nPageIndexAction);
 	DDX_Radio(pDX, IDC_CHAR_MAP_DONTCHANGE, m_nCharMapAction);
+	DDX_Control(pDX, IDC_LANG_FROM, m_cboLangFrom);
+	DDX_Control(pDX, IDC_LANG_TO, m_cboLangTo);
 }
 
 BEGIN_MESSAGE_MAP(CDictionaryDlg, CDialog)
@@ -72,6 +77,11 @@ BEGIN_MESSAGE_MAP(CDictionaryDlg, CDialog)
 	ON_WM_CTLCOLOR()
 	ON_MESSAGE_VOID(WM_KICKIDLE, OnKickIdle)
 	ON_WM_DESTROY()
+	ON_CBN_SELCHANGE(IDC_LANG_FROM, OnSelChangeFrom)
+	ON_CBN_SELCHANGE(IDC_LANG_TO, OnSelChangeTo)
+	ON_BN_CLICKED(IDC_TITLE_LOCALIZED, OnLocalizeTitle)
+	ON_BN_CLICKED(IDC_FROM_LOCALIZED, OnLocalizeLangFrom)
+	ON_BN_CLICKED(IDC_TO_LOCALIZED, OnLocalizeLangTo)
 END_MESSAGE_MAP()
 
 
@@ -87,6 +97,18 @@ BOOL CDictionaryDlg::OnInitDialog()
 
 	m_dropTarget.Register(this);
 	OnKickIdle();
+
+	m_cboLangFrom.AddString(_T("(Not selected)"));
+	m_cboLangTo.AddString(_T("(Not selected)"));
+	for (size_t i = 0; i < theApp.GetLanguageCount(); ++i)
+	{
+		const Language& lang = theApp.GetLanguage(i);
+		m_cboLangFrom.AddString(lang.strName);
+		m_cboLangTo.AddString(lang.strName);
+	}
+
+	m_cboLangFrom.SetCurSel(0);
+	m_cboLangTo.SetCurSel(0);
 
 	return true;
 }
@@ -127,7 +149,7 @@ HCURSOR CDictionaryDlg::OnQueryDragIcon()
 
 void CDictionaryDlg::OnExportPageIndex()
 {
-	if (m_pSource->GetPageIndex().length() == 0)
+	if (m_pDictInfo->strPageIndex.length() == 0)
 		return;
 
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
@@ -151,7 +173,7 @@ void CDictionaryDlg::OnExportPageIndex()
 	if (ExportPageIndex(strPageIndexFile) && !m_bHasPageIndexFile)
 	{
 		m_strPageIndexFile = strPageIndexFile;
-		m_strPageIndexXML = m_pSource->GetPageIndex();
+		m_strPageIndexXML = m_pDictInfo->strPageIndex;
 		m_bHasPageIndexFile = true;
 		UpdateData(false);
 	}
@@ -159,7 +181,7 @@ void CDictionaryDlg::OnExportPageIndex()
 
 void CDictionaryDlg::OnExportCharMap()
 {
-	if (m_pSource->GetCharMap().length() == 0)
+	if (m_pDictInfo->strCharMap.length() == 0)
 		return;
 
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
@@ -183,7 +205,7 @@ void CDictionaryDlg::OnExportCharMap()
 	if (ExportCharMap(strCharMapFile) && !m_bHasCharMapFile)
 	{
 		m_strCharMapFile = strCharMapFile;
-		m_strCharMapXML = m_pSource->GetCharMap();
+		m_strCharMapXML = m_pDictInfo->strCharMap;
 		m_bHasCharMapFile = true;
 		UpdateData(false);
 	}
@@ -215,23 +237,23 @@ bool CDictionaryDlg::OpenDocument(const CString& strFileName)
 	{
 		CWaitCursor wait;
 
-		m_pSource = DjVuSource::FromFile(strFileName);
+		DjVuSource* pNewSource = DjVuSource::FromFile(strFileName);
+		if (m_pSource == pNewSource)
+			return true;
+
+		if (m_pSource != NULL)
+			m_pSource->Release();
+		m_pSource = pNewSource;
+
+		m_pDictInfo = m_pSource->GetDictionaryInfo();
 		m_strDjVuFile = strFileName;
 
-		if (m_pSource->GetPageIndex().length() == 0 && m_nPageIndexAction == 2)
+		if (m_pDictInfo->strPageIndex.length() == 0 && m_nPageIndexAction == 2)
 			m_nPageIndexAction = 0;
-		if (m_pSource->GetCharMap().length() == 0 && m_nCharMapAction == 2)
+		if (m_pDictInfo->strCharMap.length() == 0 && m_nCharMapAction == 2)
 			m_nCharMapAction = 0;
 
-		PageInfo info = m_pSource->GetPageInfo(0, false, true);
-		if (info.pAnt != NULL)
-		{
-			m_strTitle = MakeCString(info.pAnt->metadata[pszTitleKey]);
-		}
-		else
-		{
-			m_strTitle.Empty();
-		}
+		InitDocProperties();
 
 		UpdateData(false);
 		OnKickIdle();
@@ -255,12 +277,181 @@ void CDictionaryDlg::CloseDocument(bool bUpdateData)
 	{
 		m_pSource->Release();
 		m_pSource = NULL;
+		m_pDictInfo = NULL;
 	}
 
 	m_strDjVuFile.LoadString(IDS_BROWSE_DJVU_PROMPT);
 
 	if (bUpdateData)
 		UpdateData(false);
+}
+
+void CDictionaryDlg::InitDocProperties()
+{
+	m_strTitle.Empty();
+	if (!m_pDictInfo->titleLoc.empty())
+	{
+		Normalize(m_pDictInfo->titleLoc);
+		m_strTitle = MakeCString(m_pDictInfo->titleLoc[0].second);
+	}
+
+	m_pLangFrom = NULL;
+	m_pLangTo = NULL;
+	for (size_t nLang = 0; nLang < theApp.GetLanguageCount(); ++nLang)
+	{
+		const Language& lang = theApp.GetLanguage(nLang);
+		if (lang.strCode == MakeCString(m_pDictInfo->strLangFromCode))
+		{
+			m_cboLangFrom.SetCurSel(nLang + 1);
+			m_pLangFrom = &lang;
+
+			m_lang[m_pLangFrom] = m_pDictInfo->langFromLoc;
+			Normalize(m_lang[m_pLangFrom]);
+			m_lang[m_pLangFrom][0].second = lang.strName;
+		}
+
+		if (lang.strCode == MakeCString(m_pDictInfo->strLangToCode))
+		{
+			m_cboLangTo.SetCurSel(nLang + 1);
+			m_pLangTo = &lang;
+
+			m_lang[m_pLangTo] = m_pDictInfo->langToLoc;
+			Normalize(m_lang[m_pLangTo]);
+			m_lang[m_pLangTo][0].second = lang.strName;
+		}
+	}
+
+	if (m_pLangFrom == NULL)
+		m_cboLangFrom.SetCurSel(0);
+	if (m_pLangTo == NULL)
+		m_cboLangTo.SetCurSel(0);
+}
+
+void CDictionaryDlg::OnLocalizeTitle()
+{
+	CLocalizedStringDlg dlg(m_pDictInfo->titleLoc);
+	if (dlg.DoModal() == IDOK)
+	{
+		m_pDictInfo->titleLoc = dlg.m_loc;
+
+		m_strTitle.Empty();
+		if (!m_pDictInfo->titleLoc.empty())
+		{
+			Normalize(m_pDictInfo->titleLoc);
+			m_strTitle = MakeCString(m_pDictInfo->titleLoc[0].second);
+		}
+
+		UpdateData(false);
+	}
+}
+
+void CDictionaryDlg::Normalize(vector<DictionaryInfo::LocalizedString>& loc)
+{
+	set<DWORD> existing;
+	bool bHasEnglish = false;
+	size_t i = 0;
+	while (i < loc.size())
+	{
+		if (existing.find(loc[i].first) != existing.end())
+		{
+			loc.erase(loc.begin() + i);
+			continue;
+		}
+
+		existing.insert(loc[i].first);
+		if (loc[i].first == theApp.GetEnglishLoc().nCode)
+		{
+			bHasEnglish = true;
+			if (i != 0)
+			{
+				DictionaryInfo::LocalizedString str = loc[i];
+				loc.erase(loc.begin() + i);
+				loc.insert(loc.begin(), str);
+			}
+		}
+		++i;
+	}
+
+	if (!bHasEnglish)
+		loc.insert(loc.begin(), make_pair(theApp.GetEnglishLoc().nCode, GUTF8String("")));
+}
+
+void CDictionaryDlg::OnLocalizeLangFrom()
+{
+	if (m_pLangFrom == NULL)
+		return;
+
+	CLocalizedStringDlg dlg(m_lang[m_pLangFrom]);
+	if (dlg.DoModal() == IDOK)
+	{
+		m_lang[m_pLangFrom] = dlg.m_loc;
+
+		Normalize(m_lang[m_pLangFrom]);
+		m_lang[m_pLangFrom][0].second = m_pLangFrom->strName;
+	}
+}
+
+void CDictionaryDlg::OnLocalizeLangTo()
+{
+	if (m_pLangTo == NULL)
+		return;
+
+	CLocalizedStringDlg dlg(m_lang[m_pLangTo]);
+	if (dlg.DoModal() == IDOK)
+	{
+		m_lang[m_pLangTo] = dlg.m_loc;
+
+		Normalize(m_lang[m_pLangTo]);
+		m_lang[m_pLangTo][0].second = m_pLangTo->strName;
+	}
+}
+
+GUTF8String CDictionaryDlg::GetTitleXML()
+{
+	GUTF8String strResult;
+	strResult += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	strResult += "<title>\n";
+	strResult += GetLocalizedStringsXML(m_pDictInfo->titleLoc);
+	strResult += "</title>\n";
+	return strResult;
+}
+
+GUTF8String CDictionaryDlg::GetLangFromXML()
+{
+	if (m_pLangFrom == NULL)
+		return "";
+
+	GUTF8String strResult;
+	strResult += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	strResult += "<language code=\"" + MakeUTF8String(m_pLangFrom->strCode).toEscaped() + "\">\n";
+	strResult += GetLocalizedStringsXML(m_lang[m_pLangFrom]);
+	strResult += "</language>\n";
+	return strResult;
+}
+
+GUTF8String CDictionaryDlg::GetLangToXML()
+{
+	if (m_pLangTo == NULL)
+		return "";
+
+	GUTF8String strResult;
+	strResult += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	strResult += "<language code=\"" + MakeUTF8String(m_pLangTo->strCode).toEscaped() + "\">\n";
+	strResult += GetLocalizedStringsXML(m_lang[m_pLangTo]);
+	strResult += "</language>\n";
+	return strResult;
+}
+
+GUTF8String CDictionaryDlg::GetLocalizedStringsXML(vector<DictionaryInfo::LocalizedString>& loc)
+{
+	GUTF8String strResult;
+	for (size_t i = 0; i < loc.size(); ++i)
+	{
+		strResult += "<string localization=\""
+				+ MakeUTF8String(FormatString(_T("%04x"), loc[i].first)).toEscaped()
+				+ "\" value=\"" + loc[i].second.toEscaped() + "\"/>\n";
+	}
+	return strResult;
 }
 
 GUTF8String ReadRawXML(LPCTSTR pszFileName)
@@ -568,18 +759,56 @@ HBRUSH CDictionaryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 void CDictionaryDlg::OnKickIdle()
 {
-	GetDlgItem(IDC_EXPORT_PAGE_INDEX)->EnableWindow(m_pSource != NULL && m_pSource->GetPageIndex().length() > 0);
-	GetDlgItem(IDC_PAGE_INDEX_REMOVE)->EnableWindow(m_pSource != NULL && m_pSource->GetPageIndex().length() > 0);
-	GetDlgItem(IDC_EXPORT_CHAR_MAP)->EnableWindow(m_pSource != NULL && m_pSource->GetCharMap().length() > 0);
-	GetDlgItem(IDC_CHAR_MAP_REMOVE)->EnableWindow(m_pSource != NULL && m_pSource->GetCharMap().length() > 0);
+	GetDlgItem(IDC_EXPORT_PAGE_INDEX)->EnableWindow(m_pSource != NULL
+			&& m_pDictInfo->strPageIndex.length() > 0);
+	GetDlgItem(IDC_PAGE_INDEX_REMOVE)->EnableWindow(m_pSource != NULL
+			&& m_pDictInfo->strPageIndex.length() > 0);
+	GetDlgItem(IDC_EXPORT_CHAR_MAP)->EnableWindow(m_pSource != NULL
+			&& m_pDictInfo->strCharMap.length() > 0);
+	GetDlgItem(IDC_CHAR_MAP_REMOVE)->EnableWindow(m_pSource != NULL
+			&& m_pDictInfo->strCharMap.length() > 0);
 
 	GetDlgItem(IDC_SAVE)->EnableWindow(m_pSource != NULL);
 	GetDlgItem(IDC_SAVE_AS)->EnableWindow(m_pSource != NULL);
-	GetDlgItem(IDC_TITLE)->EnableWindow(false); //m_pSource != NULL
 	GetDlgItem(IDC_PAGE_INDEX_DONTCHANGE)->EnableWindow(m_pSource != NULL);
 	GetDlgItem(IDC_CHAR_MAP_DONTCHANGE)->EnableWindow(m_pSource != NULL);
 	GetDlgItem(IDC_PAGE_INDEX_REPLACE)->EnableWindow(m_bHasPageIndexFile);
 	GetDlgItem(IDC_CHAR_MAP_REPLACE)->EnableWindow(m_bHasCharMapFile);
+
+	m_cboLangFrom.EnableWindow(m_pSource != NULL);
+	m_cboLangTo.EnableWindow(m_pSource != NULL);
+
+	GetDlgItem(IDC_TITLE_LOCALIZED)->EnableWindow(m_pSource != NULL);
+	GetDlgItem(IDC_FROM_LOCALIZED)->EnableWindow(m_pSource != NULL && m_pLangFrom != NULL);
+	GetDlgItem(IDC_TO_LOCALIZED)->EnableWindow(m_pSource != NULL && m_pLangTo != NULL);
+}
+
+void CDictionaryDlg::OnSelChangeFrom()
+{
+	int nFrom = m_cboLangFrom.GetCurSel();
+	if (nFrom > 0)
+	{
+		m_pLangFrom = &(theApp.GetLanguage(nFrom - 1));
+		vector<DictionaryInfo::LocalizedString>& loc = m_lang[m_pLangFrom];
+		if (loc.empty())
+			loc.push_back(make_pair(theApp.GetEnglishLoc().nCode, MakeUTF8String(m_pLangFrom->strName)));
+	}
+	else
+		m_pLangFrom = NULL;
+}
+
+void CDictionaryDlg::OnSelChangeTo()
+{
+	int nTo = m_cboLangTo.GetCurSel();
+	if (nTo > 0)
+	{
+		m_pLangTo = &(theApp.GetLanguage(nTo - 1));
+		vector<DictionaryInfo::LocalizedString>& loc = m_lang[m_pLangTo];
+		if (loc.empty())
+			loc.push_back(make_pair(theApp.GetEnglishLoc().nCode, MakeUTF8String(m_pLangTo->strName)));
+	}
+	else
+		m_pLangTo = NULL;
 }
 
 bool CDictionaryDlg::ExportPageIndex(const CString& strPageIndexFile)
@@ -591,7 +820,7 @@ bool CDictionaryDlg::ExportPageIndex(const CString& strPageIndexFile)
 		return false;
 	}
 
-	out << (const char*)m_pSource->GetPageIndex();
+	out << (const char*) m_pDictInfo->strPageIndex;
 	out.close();
 
 	AfxMessageBox(IDS_EXPORT_DONE, MB_OK | MB_ICONINFORMATION);
@@ -607,7 +836,7 @@ bool CDictionaryDlg::ExportCharMap(const CString& strCharMapFile)
 		return false;
 	}
 
-	out << (const char*)m_pSource->GetCharMap();
+	out << (const char*)m_pDictInfo->strCharMap;
 	out.close();
 
 	AfxMessageBox(IDS_EXPORT_DONE, MB_OK | MB_ICONINFORMATION);
@@ -1124,10 +1353,35 @@ void CDictionaryDlg::SaveDocument(const CString& strFileName)
 			meta.del(pszCharMapKey);
 		}
 
-		if (!m_strTitle.IsEmpty())
-			meta[pszTitleKey] = MakeUTF8String(m_strTitle);
+		GUTF8String strTitle = GetTitleXML();
+		if (strTitle.length() > 0)
+		{
+			string strEncoded(strTitle);
+			Base64Encode(strEncoded);
+			meta[pszTitleKey] = strEncoded.c_str();
+		}
 		else
 			meta.del(pszTitleKey);
+
+		GUTF8String strLangFrom = GetLangFromXML();
+		if (strLangFrom.length() > 0)
+		{
+			string strEncoded(strLangFrom);
+			Base64Encode(strEncoded);
+			meta[pszLangFromKey] = strEncoded.c_str();
+		}
+		else
+			meta.del(pszLangFromKey);
+
+		GUTF8String strLangTo = GetLangToXML();
+		if (strLangTo.length() > 0)
+		{
+			string strEncoded(strLangTo);
+			Base64Encode(strEncoded);
+			meta[pszLangToKey] = strEncoded.c_str();
+		}
+		else
+			meta.del(pszLangToKey);
 
 		ModifyMeta(pFile, &meta);
 

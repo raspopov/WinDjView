@@ -44,6 +44,7 @@ public:
 protected:
 	void UpdateButtons();
 	void UpdateSearchHistory();
+	void InitSearchHistory();
 
 	virtual BOOL OnInitDialog();
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -53,5 +54,6 @@ protected:
 	afx_msg void OnFindAll();
 	afx_msg void OnEnChangeFind();
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
 	DECLARE_MESSAGE_MAP()
 };

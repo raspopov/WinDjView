@@ -2277,6 +2277,8 @@ void CDjVuView::ZoomTo(int nZoomType, double fZoom)
 	UpdateCursor();
 
 	UpdateObservers(ZOOM_CHANGED);
+
+	UpdateDragAction();
 }
 
 BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
@@ -2307,36 +2309,39 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 
 		int nPage = GetPageFromPoint(ptCursor);
 
-		if (!m_bControlDown && m_pHoverAnno != NULL && m_pHoverAnno->strURL.length() != 0)
-		{
-			SetCursor(hCursorLink);
-			return true;
-		}
-		else if (m_bControlDown || (m_nMode == MagnifyingGlass && !m_bShiftDown))
-		{
-			SetCursor(hCursorMagnify);
-			return true;
-		}
-		else if ((m_bShiftDown || m_nMode == Drag)
+		HCURSOR hCursor = NULL;
+		if (hCursor == NULL && (m_bDraggingMagnify || m_nType == Magnify))
+			hCursor = hCursorMagnify;
+		if (hCursor == NULL && m_bDraggingPage)
+			hCursor = hCursorDrag;
+		if (hCursor == NULL && m_bDraggingText)
+			hCursor = hCursorText;
+		if (hCursor == NULL && m_bDraggingRect)
+			hCursor = hCursorCross;
+		if (hCursor == NULL && m_bDraggingLink)
+			hCursor = hCursorLink;
+
+		if (hCursor == NULL && (m_bControlDown || (m_nMode == MagnifyingGlass && !m_bShiftDown)))
+			hCursor = hCursorMagnify;
+		if (hCursor == NULL && m_pHoverAnno != NULL && m_pHoverAnno->strURL.length() != 0)
+			hCursor = hCursorLink;
+		if (hCursor == NULL && (m_bShiftDown || m_nMode == Drag)
 				&& (m_totalDev.cx > rcClient.Width() || m_totalDev.cy > rcClient.Height()))
-		{
-			SetCursor(m_bDragging ? hCursorDrag : hCursorHand);
-			return true;
-		}
-		else if (m_nMode == Select && nPage != -1)
+			hCursor = m_bDragging ? hCursorDrag : hCursorHand;
+		if (hCursor == NULL && m_nMode == SelectRect)
+			hCursor = hCursorCross;
+		if (hCursor == NULL && m_nMode == Select && nPage != -1)
 		{
 			const Page& page = m_pages[nPage];
 			CRect rcBitmap(CPoint(page.ptOffset - GetScrollPosition()), page.szBitmap);
 
 			if (rcBitmap.PtInRect(ptCursor) && m_pages[nPage].info.bHasText)
-			{
-				SetCursor(hCursorText);
-				return true;
-			}
+				hCursor = hCursorText;
 		}
-		else if (m_nMode == SelectRect)
+
+		if (hCursor != NULL)
 		{
-			SetCursor(hCursorCross);
+			SetCursor(hCursor);
 			return true;
 		}
 	}
@@ -2346,6 +2351,12 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 
 void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 {
+	if (m_bDragging)
+	{
+		StopDragging();
+		m_nCursorTime = ::GetTickCount();
+	}
+
 	CRect rcClient;
 	GetClientRect(rcClient);
 
@@ -2353,55 +2364,49 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 	++m_nClickCount;
 	::GetCursorPos(&m_ptClick);
 
-	if (!m_bControlDown && m_pHoverAnno != NULL && m_pHoverAnno->strURL.length() != 0)
-	{
-		ShowCursor();
-		SetCapture();
-		m_bDragging = true;
-		m_bDraggingLink = true;
-		return;
-	}
-
 	if (m_bControlDown || (m_nMode == MagnifyingGlass && !m_bShiftDown))
 	{
 		UpdateHoverAnnotation(CPoint(-1, -1));
 
-		ShowCursor();
-		SetCapture();
 		m_bDragging = true;
+		m_bDraggingMagnify = true;
 
 		m_ptPrevCursor = CPoint(-1, -1);
 
 		StartMagnify();
 		UpdateMagnifyWnd();
 
-		if (hCursorMagnify == NULL)
-			hCursorMagnify = AfxGetApp()->LoadCursor(IDC_CURSOR_MAGNIFY);
-		SetCursor(hCursorMagnify);
+		SetCapture();
+		ShowCursor();
+		UpdateCursor();
+	}
+	else if (m_pHoverAnno != NULL && m_pHoverAnno->strURL.length() != 0)
+	{
+		m_bDragging = true;
+		m_bDraggingLink = true;
 
-		m_bDraggingMagnify = true;
+		SetCapture();
+		ShowCursor();
+		UpdateCursor();
 	}
 	else if ((m_bShiftDown || m_nMode == Drag)
 			&& (m_totalDev.cx > rcClient.Width() || m_totalDev.cy > rcClient.Height()))
 	{
 		UpdateHoverAnnotation(CPoint(-1, -1));
 
-		ShowCursor();
-		SetCapture();
-		m_bDragging = true;
-
 		m_nStartPage = GetPageNearPoint(point);
 		if (m_nStartPage == -1)
 			return;
 
+		m_bDragging = true;
+		m_bDraggingPage = true;
+
 		m_ptStartPos = GetScrollPosition() - m_pages[m_nStartPage].ptOffset;
 		::GetCursorPos(&m_ptStart);
 
-		if (hCursorDrag == NULL)
-			hCursorDrag = AfxGetApp()->LoadCursor(IDC_CURSOR_DRAG);
-		SetCursor(hCursorDrag);
-
-		m_bDraggingPage = true;
+		SetCapture();
+		ShowCursor();
+		UpdateCursor();
 	}
 	else if (m_nMode == Select)
 	{
@@ -2412,13 +2417,15 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 		if (m_nStartPage == -1)
 			return;
 
-		ShowCursor();
-		SetCapture();
 		m_bDragging = true;
-		m_nPrevPage = m_nStartPage;
-
-		m_nSelStartPos = GetTextPosFromPoint(m_nStartPage, point);
 		m_bDraggingText = true;
+
+		m_nPrevPage = m_nStartPage;
+		m_nSelStartPos = GetTextPosFromPoint(m_nStartPage, point);
+
+		SetCapture();
+		ShowCursor();
+		UpdateCursor();
 	}
 	else if (m_nMode == SelectRect)
 	{
@@ -2439,16 +2446,19 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 		m_rcSelection.ymin = m_ptStart.y - 1;
 		m_rcSelection.ymax = m_ptStart.y;
 
-		ShowCursor();
-		SetCapture();
 		m_bDragging = true;
 		m_bDraggingRect = true;
+
+		SetCapture();
+		ShowCursor();
+		UpdateCursor();
 	}
 	else if (m_nMode == NextPrev && !m_bShiftDown)
 	{
 		UpdateHoverAnnotation(CPoint(-1, -1));
-		SetCapture();
+
 		m_bDragging = true;
+		SetCapture();
 
 		OnViewNextpage();
 	}
@@ -2969,7 +2979,7 @@ int CDjVuView::GetPageNearPoint(CPoint point) const
 
 void CDjVuView::OnRButtonDown(UINT nFlags, CPoint point)
 {
-	if (m_nMode == NextPrev && !m_bShiftDown)
+	if (m_nMode == NextPrev && !m_bDragging && !m_bShiftDown)
 	{
 		OnViewPreviouspage();
 		return;
@@ -2980,7 +2990,7 @@ void CDjVuView::OnRButtonDown(UINT nFlags, CPoint point)
 
 void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 {
-	if (m_nMode == NextPrev)
+	if (m_nMode == NextPrev || m_bDraggingMagnify)
 		return;
 
 	if (point.x < 0 || point.y < 0)
@@ -5346,15 +5356,28 @@ void CDjVuView::OnLButtonDblClk(UINT nFlags, CPoint point)
 
 void CDjVuView::UpdateKeyboard(UINT nKey, bool bDown)
 {
+	bool bUpdate = false;
+	bool bUpdateWindow = false;
 	if (nKey == VK_SHIFT)
+	{
+		bUpdateWindow = (m_bShiftDown != bDown);
+		bUpdate = bUpdateWindow;
 		m_bShiftDown = bDown;
+	}
 	else if (nKey == VK_CONTROL)
+	{
+		bUpdate = (m_bControlDown != bDown);
 		m_bControlDown = bDown;
+	}
 
-	Invalidate();
-	UpdateWindow();
+	if (bUpdateWindow)
+	{
+		Invalidate();
+		UpdateWindow();
+	}
 
-	UpdateCursor();
+	if (bUpdate)
+		UpdateCursor();
 }
 
 void CDjVuView::OnViewGotoPage()
@@ -5776,6 +5799,11 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 		InvalidateAnno(msg->pAnno, msg->nPage);
 
 		UpdateHoverAnnotation();
+	}
+	else if (message->code == KEY_STATE_CHANGED)
+	{
+		const KeyStateChanged* msg = (const KeyStateChanged*) message;
+		UpdateKeyboard(msg->nKey, msg->bPressed);
 	}
 }
 

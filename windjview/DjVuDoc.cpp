@@ -213,9 +213,8 @@ void CDjVuDoc::OnUpdateFileExportText(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(m_pSource->HasText());
 
-	if (m_pSource->GetPageIndex().length() > 0
-			&& (m_pSource->GetDictionaryInfo() == NULL ||
-					!AfxComparePath(m_pSource->GetDictionaryInfo()->strPathName, m_pSource->GetFileName()))
+	if (m_pSource->GetDictionaryInfo()->strPageIndex.length() > 0
+			&& !m_pSource->GetDictionaryInfo()->bInstalled
 			&& pCmdUI->m_pMenu->GetMenuItemID(pCmdUI->m_nIndex + 1) != ID_FILE_INSTALL)
 	{
 		pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex + 1, MF_BYPOSITION | MF_STRING,
@@ -226,7 +225,10 @@ void CDjVuDoc::OnUpdateFileExportText(CCmdUI* pCmdUI)
 
 void CDjVuDoc::OnFileInstall()
 {
-	bool bExists = m_pSource->GetDictionaryInfo() != NULL;
+	DictionaryInfo* pInfo = theApp.GetDictionaryInfo(m_strPathName, false);
+	bool bExists = (pInfo != NULL);
+	if (bExists && AfxComparePath(pInfo->strPathName, m_strPathName))
+		return;
 
 	CInstallDicDlg dlg(bExists ? IDD_INSTALL_DIC_REPLACE : IDD_INSTALL_DIC);
 
@@ -246,8 +248,8 @@ void CDjVuDoc::OnFileInstall()
 
 void CDjVuDoc::OnUpdateFileInstall(CCmdUI* pCmdUI)
 {
-	if (m_pSource->GetPageIndex().length() == 0 || m_pSource->GetDictionaryInfo() != NULL
-			&& AfxComparePath(m_pSource->GetDictionaryInfo()->strPathName, m_pSource->GetFileName()))
+	if (m_pSource->GetDictionaryInfo()->strPageIndex.length() == 0
+			|| m_pSource->GetDictionaryInfo()->bInstalled)
 	{
 		pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
 		pCmdUI->m_nIndex--;
