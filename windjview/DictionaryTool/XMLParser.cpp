@@ -53,6 +53,48 @@ XMLNode& XMLNode::operator=(const XMLNode& node)
 	return *this;
 }
 
+GUTF8String XMLNode::ToString() const
+{
+	if (nType == TEXT)
+		return MakeUTF8String(text);
+
+	vector<char> result;
+
+	GUTF8String str = "<" + MakeUTF8String(tagName);
+	result.insert(result.end(), (const char*) str, (const char*) str + str.length());
+
+	map<wstring, wstring>::const_iterator it;
+	for (it = attributes.begin(); it != attributes.end(); ++it)
+	{
+		str = " " + MakeUTF8String((*it).first) + "=\"" + MakeUTF8String((*it).second).toEscaped() + "\"";
+		result.insert(result.end(), (const char*) str, (const char*) str + str.length());
+	}
+
+	if (!childElements.empty())
+	{
+		str = ">";
+		result.insert(result.end(), (const char*) str, (const char*) str + str.length());
+
+		list<XMLNode>::iterator it;
+		for (it = childElements.begin(); it != childElements.end(); ++it)
+		{
+			str = (*it).ToString();
+			result.insert(result.end(), (const char*) str, (const char*) str + str.length());
+		}
+
+		str = "</" + MakeUTF8String(tagName) + ">";
+		result.insert(result.end(), (const char*) str, (const char*) str + str.length());
+	}
+	else
+	{
+		str = "/>";
+		result.insert(result.end(), (const char*) str, (const char*) str + str.length());
+	}
+
+	result.push_back('\0');
+	return GUTF8String(&result[0]);
+}
+
 const wstring* XMLNode::GetAttribute(const CString& name) const
 {
 	wstring attr;
@@ -97,6 +139,20 @@ bool XMLNode::GetLongAttribute(const CString& name, long& value) const
 
 	long val;
 	if (swscanf(attr->c_str(), L"%d", &val) != 1)
+		return false;
+
+	value = val;
+	return true;
+}
+
+bool XMLNode::GetHexAttribute(const CString& name, DWORD& value) const
+{
+	const wstring* attr = GetAttribute(name);
+	if (attr == NULL)
+		return false;
+
+	DWORD val;
+	if (swscanf(attr->c_str(), L"%x", &val) != 1)
 		return false;
 
 	value = val;
@@ -256,7 +312,7 @@ void XMLParser::readName(wstring& name)
 	if (!IsNameStart(cur))
 		throw errNameExpected;
 
-	name.reserve(10);
+	name.reserve(32);
 	name.insert(name.end(), static_cast<wchar_t>(cur));
 	while (IsNameChar(nextChar()))
 		name.insert(name.end(), static_cast<wchar_t>(cur));
@@ -520,19 +576,33 @@ void XMLParser::readContents(XMLNode& node)
 			}
 
 			pushBack('<');
-			node.childElements.push_back(XMLNode());
+			node.childElements.push_back(XMLNode(XMLNode::TAG));
 			XMLNode& childNode = node.childElements.back();
 			readTag(childNode);
 			continue;
 		}
-		else if (cur == '&')
+		else 
 		{
-			node.text.insert(node.text.end(), static_cast<wchar_t>(readCharEntity()));
-		}
-		else
-		{
-			node.text.insert(node.text.end(), static_cast<wchar_t>(cur));
-			nextChar();
+			wchar_t ch;
+			if (cur != '&')
+			{
+				ch = static_cast<wchar_t>(cur);
+				nextChar();
+			}
+			else
+				ch = static_cast<wchar_t>(readCharEntity());
+
+			if (node.text.length() == node.text.capacity())
+				node.text.reserve((node.text.length() + 1) * 2);
+			node.text.insert(node.text.end(), ch);
+
+			if (node.childElements.empty() || node.childElements.back().nType != XMLNode::TEXT)
+				node.childElements.push_back(XMLNode(XMLNode::TEXT));
+
+			wstring& text = node.childElements.back().text;
+			if (text.length() == text.capacity())
+				text.reserve((text.length() + 1) * 2);
+			text.insert(text.end(), ch);
 		}
 	}
 

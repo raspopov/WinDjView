@@ -306,6 +306,14 @@ void Annotation::Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate)
 	UpdateBounds();
 }
 
+void Annotation::Fix()
+{
+	if (nBorderType < BorderNone || nBorderType > BorderXOR)
+		nBorderType = BorderNone;
+	if (nFillType < FillNone || nFillType > FillXOR)
+		nFillType = FillSolid;
+}
+
 
 // PageSettings
 
@@ -623,6 +631,115 @@ bool DocSettings::DeleteAnnotation(const Annotation* pAnno, int nPage)
 }
 
 
+// DictionaryInfo
+
+static const TCHAR pszTagString[] = _T("string");
+static const TCHAR pszAttrCode[] = _T("code");
+static const TCHAR pszAttrLocalization[] = _T("localization");
+static const TCHAR pszAttrValue[] = _T("value");
+
+void DictionaryInfo::ReadPageIndex(const GUTF8String& str, bool bEncoded)
+{
+	string strTemp = str;
+	if (bEncoded)
+		Base64Decode(strTemp);
+
+	strPageIndex = strTemp.c_str();
+}
+
+void DictionaryInfo::ReadCharMap(const GUTF8String& str, bool bEncoded)
+{
+	string strTemp = str;
+	if (bEncoded)
+		Base64Decode(strTemp);
+
+	strCharMap = strTemp.c_str();
+}
+
+void DictionaryInfo::ReadTitle(const GUTF8String& str, bool bEncoded)
+{
+	titleLoc.clear();
+
+	string strTemp = str;
+	if (bEncoded)
+		Base64Decode(strTemp);
+
+	strTitleRaw = strTemp.c_str();
+
+	stringstream sin(strTemp.c_str());
+	XMLParser parser;
+	if (parser.Parse(sin))
+		ReadLocalizedStrings(titleLoc, *parser.GetRoot());
+}
+
+void DictionaryInfo::ReadLangFrom(const GUTF8String& str, bool bEncoded)
+{
+	strLangFromCode = "";
+	langFromLoc.clear();
+
+	string strTemp = str;
+	if (bEncoded)
+		Base64Decode(strTemp);
+
+	strLangFromRaw = strTemp.c_str();
+
+	stringstream sin(strTemp.c_str());
+	XMLParser parser;
+	if (parser.Parse(sin))
+	{
+		wstring strCode;
+		if (parser.GetRoot()->GetAttribute(pszAttrCode, strCode))
+			strLangFromCode = MakeUTF8String(strCode);
+
+		ReadLocalizedStrings(langFromLoc, *parser.GetRoot());
+	}
+}
+
+void DictionaryInfo::ReadLangTo(const GUTF8String& str, bool bEncoded)
+{
+	strLangToCode = "";
+	langToLoc.clear();
+
+	string strTemp = str;
+	if (bEncoded)
+		Base64Decode(strTemp);
+
+	strLangToRaw = strTemp.c_str();
+
+	stringstream sin(strTemp.c_str());
+	XMLParser parser;
+	if (parser.Parse(sin))
+	{
+		wstring strCode;
+		if (parser.GetRoot()->GetAttribute(pszAttrCode, strCode))
+			strLangToCode = MakeUTF8String(strCode);
+
+		ReadLocalizedStrings(langToLoc, *parser.GetRoot());
+	}
+}
+
+void DictionaryInfo::ReadLocalizedStrings(vector<LocalizedString>& loc, const XMLNode& node)
+{
+	list<XMLNode>::const_iterator it;
+	for (it = node.childElements.begin(); it != node.childElements.end(); ++it)
+	{
+		const XMLNode& child = *it;
+		if (MakeCString(child.tagName) == pszTagString)
+		{
+			DWORD code;
+			if (!child.GetHexAttribute(pszAttrLocalization, code))
+				continue;
+
+			wstring value;
+			if (!child.GetAttribute(pszAttrValue, value))
+				continue;
+
+			loc.push_back(make_pair(code, MakeUTF8String(value)));
+		}
+	}
+}
+
+
 // DjVuSource
 
 CCriticalSection DjVuSource::openDocumentsLock;
@@ -632,9 +749,13 @@ IApplication* DjVuSource::pApplication = NULL;
 
 static const char pszPageIndexKey[] = "page-index";
 static const char pszCharMapKey[] = "char-map";
+static const char pszTitleKey[] = "title-localized";
+static const char pszLangFromKey[] = "language-from";
+static const char pszLangToKey[] = "language-to";
 
 DjVuSource::DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DocSettings* pSettings)
-	: m_strFileName(strFileName), m_pDjVuDoc(pDoc), m_nPageCount(0), m_bHasText(false), m_pSettings(pSettings)
+	: m_strFileName(strFileName), m_pDjVuDoc(pDoc), m_nPageCount(0), m_bHasText(false),
+	  m_pSettings(pSettings), m_pDicInfo(&m_dicInfo)
 {
 	m_nPageCount = m_pDjVuDoc->get_pages_num();
 	ASSERT(m_nPageCount > 0);
@@ -642,20 +763,22 @@ DjVuSource::DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DocSet
 	m_pages.clear();
 	m_pages.resize(m_nPageCount);
 
+	if (pApplication != NULL)
+	{
+		m_pDicInfo = pApplication->GetDictionaryInfo(strFileName);
+		if (m_pDicInfo == NULL)
+			m_pDicInfo = &m_dicInfo;
+	}
+
 	PageInfo info = GetPageInfo(0, false, true);
 	if (info.pAnt != NULL)
 	{
-		string strPageIndex = info.pAnt->metadata[pszPageIndexKey];
-		Base64Decode(strPageIndex);
-		m_strPageIndex = strPageIndex.c_str();
-
-		string strCharMap = info.pAnt->metadata[pszCharMapKey];
-		Base64Decode(strCharMap);
-		m_strCharMap = strCharMap.c_str();
+		m_pDicInfo->ReadPageIndex(info.pAnt->metadata[pszPageIndexKey]);
+		m_pDicInfo->ReadCharMap(info.pAnt->metadata[pszCharMapKey]);
+		m_pDicInfo->ReadTitle(info.pAnt->metadata[pszTitleKey]);
+		m_pDicInfo->ReadLangFrom(info.pAnt->metadata[pszLangFromKey]);
+		m_pDicInfo->ReadLangTo(info.pAnt->metadata[pszLangToKey]);
 	}
-
-	if (pApplication != NULL)
-		m_pDicInfo = pApplication->GetDictionaryInfo(strFileName);
 }
 
 DjVuSource::~DjVuSource()

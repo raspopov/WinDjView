@@ -307,7 +307,7 @@ void CDictionaryDlg::InitDocProperties()
 
 			m_lang[m_pLangFrom] = m_pDictInfo->langFromLoc;
 			Normalize(m_lang[m_pLangFrom]);
-			m_lang[m_pLangFrom][0].second = lang.strName;
+			m_lang[m_pLangFrom][0].second = MakeUTF8String(lang.strName);
 		}
 
 		if (lang.strCode == MakeCString(m_pDictInfo->strLangToCode))
@@ -317,7 +317,7 @@ void CDictionaryDlg::InitDocProperties()
 
 			m_lang[m_pLangTo] = m_pDictInfo->langToLoc;
 			Normalize(m_lang[m_pLangTo]);
-			m_lang[m_pLangTo][0].second = lang.strName;
+			m_lang[m_pLangTo][0].second = MakeUTF8String(lang.strName);
 		}
 	}
 
@@ -387,7 +387,7 @@ void CDictionaryDlg::OnLocalizeLangFrom()
 		m_lang[m_pLangFrom] = dlg.m_loc;
 
 		Normalize(m_lang[m_pLangFrom]);
-		m_lang[m_pLangFrom][0].second = m_pLangFrom->strName;
+		m_lang[m_pLangFrom][0].second = MakeUTF8String(m_pLangFrom->strName);
 	}
 }
 
@@ -402,7 +402,7 @@ void CDictionaryDlg::OnLocalizeLangTo()
 		m_lang[m_pLangTo] = dlg.m_loc;
 
 		Normalize(m_lang[m_pLangTo]);
-		m_lang[m_pLangTo][0].second = m_pLangTo->strName;
+		m_lang[m_pLangTo][0].second = MakeUTF8String(m_pLangTo->strName);
 	}
 }
 
@@ -1305,7 +1305,7 @@ void CDictionaryDlg::SaveDocument(const CString& strFileName)
 	if (bReplace)
 	{
 		TCHAR szNewName[_MAX_PATH];
-		if (!GetTempFileName(szDrive + CString(szPath), "DJV", 0, szNewName))
+		if (!GetTempFileName(szDrive + CString(szPath), _T("DJV"), 0, szNewName))
 		{
 			AfxMessageBox(IDS_ERROR_WRITING_TEMP);
 			return;
@@ -1409,7 +1409,7 @@ void CDictionaryDlg::SaveDocument(const CString& strFileName)
 	if (bReplace)
 	{
 		TCHAR szTemp[_MAX_PATH];
-		if (!GetTempFileName(szDrive + CString(szPath), "DJV", 0, szTemp))
+		if (!GetTempFileName(szDrive + CString(szPath), _T("DJV"), 0, szTemp))
 		{
 			DeleteFile(strNewFile);
 			AfxMessageBox(IDS_ERROR_WRITING_TEMP);

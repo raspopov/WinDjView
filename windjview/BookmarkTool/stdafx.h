@@ -80,6 +80,7 @@
 #include <set>
 #include <list>
 #include <map>
+#include <sstream>
 using namespace std;
 
 #ifdef NDEBUG

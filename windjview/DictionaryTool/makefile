@@ -58,10 +58,12 @@ clean:
 	@$(RSC) $(RSC_FLAGS) $<
 
 LINK_OBJS = \
-	"$(INTDIR)\Global.obj" \
+	"$(INTDIR)\AddStringDlg.obj" \
 	"$(INTDIR)\DictionaryDlg.obj" \
 	"$(INTDIR)\DictionaryTool.obj" \
 	"$(INTDIR)\DjVuSource.obj" \
+	"$(INTDIR)\Global.obj" \
+	"$(INTDIR)\LocalizedStringDlg.obj" \
 	"$(INTDIR)\MyDropTarget.obj" \
 	"$(INTDIR)\MyFileDialog.obj" \
 	"$(INTDIR)\stdafx.obj" \
@@ -71,10 +73,12 @@ LINK_OBJS = \
 $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 	@$(LINK) $(LINK_FLAGS) $(LINK_OBJS)
 
-"$(INTDIR)\Global.obj" : Global.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\AddStringDlg.obj" : MyDropTarget.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DictionaryDlg.obj" : DictionaryDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DictionaryTool.obj" : DictionaryTool.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DjVuSource.obj" : DjVuSource.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\Global.obj" : Global.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\LocalizedStringDlg.obj" : MyDropTarget.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDropTarget.obj" : MyDropTarget.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyFileDialog.obj" : MyFileDialog.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\XMLParser.obj" : XMLParser.cpp "$(INTDIR)" $(PCH)

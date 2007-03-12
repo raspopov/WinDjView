@@ -28,23 +28,33 @@ private:
 	const wstring* GetAttribute(const CString& name) const;
 
 public:
-	XMLNode()
-		: pchildren(new list<XMLNode>()), childElements(*pchildren) {}
+	XMLNode(int nType_ = TAG)
+		: pchildren(new list<XMLNode>()), childElements(*pchildren), nType(nType_) {}
 	XMLNode(const XMLNode& node)
 		: pchildren(new list<XMLNode>(node.childElements)), childElements(*pchildren),
-		  tagName(node.tagName), text(node.text), attributes(node.attributes) {}
+		  tagName(node.tagName), text(node.text), attributes(node.attributes), nType(node.nType) {}
 	~XMLNode()
 		{ delete pchildren; }
 	XMLNode& operator=(const XMLNode& node);
 
+	enum
+	{
+		TAG = 0,
+		TEXT = 1
+	};
+
+	int nType;
 	wstring tagName;
 	wstring text;
 	map<wstring, wstring> attributes;
 	list<XMLNode>& childElements;
 
+	GUTF8String ToString() const;
+
 	bool GetAttribute(const CString& name, wstring& value) const;
 	bool GetIntAttribute(const CString& name, int& value) const;
 	bool GetLongAttribute(const CString& name, long& value) const;
+	bool GetHexAttribute(const CString& name, DWORD& value) const;
 	bool GetDoubleAttribute(const CString& name, double& value) const;
 	bool GetColorAttribute(const CString& name, COLORREF& value) const;
 };

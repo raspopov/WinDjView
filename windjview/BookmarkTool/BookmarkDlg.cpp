@@ -654,7 +654,7 @@ void CBookmarkDlg::SaveDocument(const CString& strFileName)
 	if (bReplace)
 	{
 		TCHAR szNewName[_MAX_PATH];
-		if (!GetTempFileName(szDrive + CString(szPath), "DJV", 0, szNewName))
+		if (!GetTempFileName(szDrive + CString(szPath), _T("DJV"), 0, szNewName))
 		{
 			AfxMessageBox(IDS_ERROR_WRITING_TEMP);
 			return;
@@ -701,7 +701,7 @@ void CBookmarkDlg::SaveDocument(const CString& strFileName)
 	if (bReplace)
 	{
 		TCHAR szTemp[_MAX_PATH];
-		if (!GetTempFileName(szDrive + CString(szPath), "DJV", 0, szTemp))
+		if (!GetTempFileName(szDrive + CString(szPath), _T("DJV"), 0, szTemp))
 		{
 			DeleteFile(strNewFile);
 			AfxMessageBox(IDS_ERROR_WRITING_TEMP);

@@ -83,6 +83,8 @@ CString MakeCString(const GUTF8String& text);
 GUTF8String MakeUTF8String(const CString& strText);
 GUTF8String MakeUTF8String(const wstring& strText);
 
+bool FileExists(LPCTSTR lpszFileName);
+
 #define PAGE_RENDERED 1
 #define PAGE_DECODED 2
 #define LINK_CLICKED 3
@@ -102,6 +104,8 @@ GUTF8String MakeUTF8String(const wstring& strText);
 #define BOOKMARK_CLICKED 17
 #define VIEW_INITIALIZED 18
 #define SOURCE_RELEASED 19
+#define KEY_STATE_CHANGED 20
+#define DICT_LIST_CHANGED 21
 
 class CDIB;
 struct Bookmark;
@@ -163,6 +167,15 @@ struct BookmarkMsg : public Message
 		: Message(msg), pBookmark(pBookmark_) {}
 
 	const Bookmark* pBookmark;
+};
+
+struct KeyStateChanged : public Message
+{
+	KeyStateChanged(UINT nKey_, bool bPressed_)
+		: Message(KEY_STATE_CHANGED), nKey(nKey_), bPressed(bPressed_) {}
+
+	UINT nKey;
+	bool bPressed;
 };
 
 
