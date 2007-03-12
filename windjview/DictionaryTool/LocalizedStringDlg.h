@@ -53,5 +53,6 @@ protected:
 	afx_msg void OnRemove();
 	afx_msg void OnBeginEditLabel(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnEndEditLabel(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnKickIdle();
 	DECLARE_MESSAGE_MAP()
 };
