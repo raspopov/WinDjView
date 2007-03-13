@@ -258,7 +258,8 @@ wstring& CPageIndexWnd::MapCharacters(wstring& str)
 		while (l >= 0 && m_charMap[l].first[0] == *cur)
 		{
 			size_t len = m_charMap[l].first.length();
-			if (last - cur >= len && wcsncmp(m_charMap[l].first.c_str(), cur, len) == 0)
+			if (last - cur >= static_cast<int>(len)
+					&& wcsncmp(m_charMap[l].first.c_str(), cur, len) == 0)
 			{
 				cur += len;
 				result += m_charMap[l].second;
