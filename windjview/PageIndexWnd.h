@@ -67,14 +67,14 @@ protected:
 	};
 
 	inline static bool CompareEntries(IndexEntry* lhs, IndexEntry* rhs)
-		{ return wcscmp(lhs->strFirst.c_str(), rhs->strFirst.c_str()) < 0; }
+		{ return lhs->strFirst < rhs->strFirst; }
 
 	vector<IndexEntry> m_entries;
 	vector<IndexEntry*> m_sorted;
 
 	wstring& MapCharacters(wstring& str);
 	bool InitCharacterMap(const GUTF8String& strCharMap);
-	wchar_t m_charMap[65535];
+	vector<pair<wstring, wstring> > m_charMap;
 
 // Overrides
 protected:

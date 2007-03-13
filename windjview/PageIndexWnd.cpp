@@ -23,7 +23,6 @@
 #include "DjVuSource.h"
 #include "XMLParser.h"
 
-
 static int s_nRightGap = 4;
 static int s_nVertGap = 6;
 static int s_nMinTextWidth = 10;
@@ -52,8 +51,6 @@ END_MESSAGE_MAP()
 CPageIndexWnd::CPageIndexWnd()
 	: m_bChangeInternal(false)
 {
-	for (size_t i = 0; i <= 0xffff; ++i)
-		m_charMap[i] = i;
 }
 
 CPageIndexWnd::~CPageIndexWnd()
@@ -149,8 +146,8 @@ int CPageIndexWnd::AddEntries(const XMLNode& parent, HTREEITEM hParent)
 		entry.hItem = hItem;
 
 		entry.strTextFirst = MakeCString(entry.strFirst);
-		entry.strFirst = MapCharacters(tolower(MapCharacters(entry.strFirst)));
-		entry.strLast = MapCharacters(tolower(MapCharacters(entry.strLast)));
+		entry.strFirst = MapCharacters(tolower(entry.strFirst));
+		entry.strLast = MapCharacters(tolower(entry.strLast));
 
 		if (AddEntries(node, hItem) > 0)
 			m_list.Expand(hItem, TVE_EXPAND);
@@ -217,19 +214,65 @@ bool CPageIndexWnd::InitCharacterMap(const GUTF8String& strCharMap)
 		node.GetAttribute(pszAttrFrom, strFrom);
 		node.GetAttribute(pszAttrTo, strTo);
 
-		if (strFrom.length() != 1 || strTo.length() != 1)
+		if (strFrom.length() == 0 || strTo.length() == 0)
 			continue;
 
-		m_charMap[strFrom[0]] = strTo[0];
+		strFrom = tolower(strFrom);
+		strTo = tolower(strTo);
+		m_charMap.push_back(make_pair(strFrom, strTo));
 	}
+
+	sort(m_charMap.begin(), m_charMap.end());
 
 	return true;
 }
 
 wstring& CPageIndexWnd::MapCharacters(wstring& str)
 {
-	for (wstring::iterator it = str.begin(); it != str.end(); ++it)
-		*it = m_charMap[*it];
+	if (m_charMap.empty())
+		return str;
+
+	wstring result;
+	const wchar_t* cur = str.c_str();
+	const wchar_t* last = cur + str.length();
+
+	while (*cur != '\0')
+	{
+		int l = 0, r = static_cast<int>(m_charMap.size());
+		if (m_charMap[l].first > cur)
+		{
+			result += *cur++;
+			continue;
+		}
+
+		while (r - l > 1)
+		{
+			int mid = (l + r) / 2;
+			if (m_charMap[mid].first <= cur)
+				l = mid;
+			else
+				r = mid;
+		}
+
+		bool bFound = false;
+		while (l >= 0 && m_charMap[l].first[0] == *cur)
+		{
+			size_t len = m_charMap[l].first.length();
+			if (last - cur >= len && wcsncmp(m_charMap[l].first.c_str(), cur, len) == 0)
+			{
+				cur += len;
+				result += m_charMap[l].second;
+				bFound = true;
+				break;
+			}
+			--l;
+		}
+
+		if (!bFound)
+			result += *cur++;
+	}
+
+	str.swap(result);
 	return str;
 }
 
@@ -325,13 +368,13 @@ void CPageIndexWnd::OnChangeText()
 	wstring text;
 	MakeWString(strText, text);
 
-	text = MapCharacters(tolower(MapCharacters(text)));
+	text = MapCharacters(tolower(text));
 
 	int left = 0, right = m_sorted.size();
 	while (left < right - 1)
 	{
 		int mid = (left + right) / 2;
-		if (wcscmp(m_sorted[mid]->strFirst.c_str(), text.c_str()) <= 0)
+		if (m_sorted[mid]->strFirst < text)
 			left = mid;
 		else
 			right = mid;
@@ -341,12 +384,12 @@ void CPageIndexWnd::OnChangeText()
 	{
 		if (!m_sorted[left - 1]->strLast.empty())
 		{
-			if (wcscmp(m_sorted[left - 1]->strLast.c_str(), text.c_str()) == 0)
+			if (m_sorted[left - 1]->strLast == text)
 				--left;
 		}
 		else
 		{
-			if (wcscmp(m_sorted[left - 1]->strFirst.c_str(), text.c_str()) == 0)
+			if (m_sorted[left - 1]->strFirst == text)
 				--left;
 		}
 	}

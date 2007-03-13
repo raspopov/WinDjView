@@ -76,7 +76,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE |
     WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "DjVu Dictionary Tool"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "&Close",IDOK,264,7,54,14
     PUSHBUTTON      "&Save",IDC_SAVE,264,25,54,14
@@ -123,17 +123,18 @@ BEGIN
     PUSHBUTTON      "Localized...",IDC_TO_LOCALIZED,207,172,45,14,WS_GROUP
     RTEXT           "DjVu Dictionary Tool 1.0 by Andrew Zhezherun (C) 2007",
                     IDC_STATIC,7,200,311,8
+    PUSHBUTTON      "&Warnings...",IDC_WARNINGS,264,61,54,14
 END
 
 IDD_LOCALIZED DIALOGEX 0, 0, 281, 100
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Localized Text"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,224,7,50,14
     PUSHBUTTON      "&Cancel",IDCANCEL,224,25,50,14
-    PUSHBUTTON      "&Add...",ID_ADD,224,61,50,14
-    PUSHBUTTON      "&Remove",ID_REMOVE,224,79,50,14
+    PUSHBUTTON      "&Add...",IDC_ADD,224,61,50,14
+    PUSHBUTTON      "&Remove",IDC_REMOVE,224,79,50,14
     CONTROL         "List1",IDC_LIST,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_EDITLABELS | 
                     LVS_NOSORTHEADER | WS_TABSTOP,7,7,210,86,
@@ -150,6 +151,16 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,25,27,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,79,27,50,14
+END
+
+IDD_WARNINGS DIALOG DISCARDABLE  0, 0, 414, 210
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Warnings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Close",IDOK,181,189,50,14
+    EDITTEXT        IDC_WARN_LIST,7,7,400,176,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL
 END
 
 
@@ -226,6 +237,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 41
     END
+
+    IDD_WARNINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 407
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 203
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -283,6 +302,8 @@ BEGIN
                             "XML Documents (*.xml)|*.xml|All Files (*.*)|*.*||"
     IDS_CANNOT_OPEN_MAP_FILE 
                             "Could not read character map from the selected file: invalid file format."
+    IDS_EMBEDDING_DONE_WARNINGS 
+                            "Dictionary was saved with warnings. Please see the list of warnings for details."
 END
 
 #endif    // English (U.S.) resources

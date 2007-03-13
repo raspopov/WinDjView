@@ -84,6 +84,13 @@ protected:
 	GUTF8String GetLangToXML();
 	static GUTF8String GetLocalizedStringsXML(vector<DictionaryInfo::LocalizedString>& loc);
 
+	wstring& MapCharacters(wstring& str);
+	vector<pair<wstring, wstring> > m_charMap;
+	int TestEntries(const XMLNode& parent, int nEntries);
+	wstring prevFirst, prevLast;
+	vector<CString> m_warnings;
+	void TestIndex();
+
 	DjVuSource* m_pSource;
 	DictionaryInfo* m_pDictInfo;
 
@@ -106,5 +113,6 @@ protected:
 	afx_msg void OnLocalizeTitle();
 	afx_msg void OnLocalizeLangFrom();
 	afx_msg void OnLocalizeLangTo();
+	afx_msg void OnWarnings();
 	DECLARE_MESSAGE_MAP()
 };

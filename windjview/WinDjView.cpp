@@ -1682,6 +1682,9 @@ void CDjViewApp::UpdateDictVector()
 
 void CDjViewApp::UpdateDictProperties()
 {
+	map<GUTF8String, int> langMatch;
+	map<GUTF8String, CString> langNames;
+
 	map<CString, DictionaryInfo>::iterator it;
 	for (it = m_dictionaries.begin(); it != m_dictionaries.end(); ++it)
 	{
@@ -1701,12 +1704,36 @@ void CDjViewApp::UpdateDictProperties()
 			}
 		}
 
-		info.strLangFrom = FindLocalizedString(info.langFromLoc, m_appSettings.nLanguage);
-		info.strLangTo = FindLocalizedString(info.langToLoc, m_appSettings.nLanguage);
+		// Get a best match for language names from all available dictionaries
+		int nMatch;
+		CString strLang = FindLocalizedString(info.langFromLoc, m_appSettings.nLanguage, &nMatch);
+		map<GUTF8String, int>::iterator itLang = langMatch.find(info.strLangFromCode);
+		if (itLang == langMatch.end() || (*itLang).second > nMatch)
+		{
+			langMatch[info.strLangFromCode] = nMatch;
+			langNames[info.strLangFromCode] = strLang;
+		}
+
+		strLang = FindLocalizedString(info.langToLoc, m_appSettings.nLanguage, &nMatch);
+		itLang = langMatch.find(info.strLangToCode);
+		if (itLang == langMatch.end() || (*itLang).second > nMatch)
+		{
+			langMatch[info.strLangToCode] = nMatch;
+			langNames[info.strLangToCode] = strLang;
+		}
+	}
+
+	// Use consistent language names among all dictionaries
+	for (it = m_dictionaries.begin(); it != m_dictionaries.end(); ++it)
+	{
+		DictionaryInfo& info = (*it).second;
+		info.strLangFrom = langNames[info.strLangFromCode];
+		info.strLangTo = langNames[info.strLangToCode];
 	}
 }
 
-CString CDjViewApp::FindLocalizedString(const vector<DictionaryInfo::LocalizedString>& loc, DWORD nCurrentLang)
+CString CDjViewApp::FindLocalizedString(const vector<DictionaryInfo::LocalizedString>& loc,
+		DWORD nCurrentLang, int* pnMatch)
 {
 	bool bFoundEng = false;
 	size_t nIndexEng;
@@ -1714,7 +1741,11 @@ CString CDjViewApp::FindLocalizedString(const vector<DictionaryInfo::LocalizedSt
 	for (size_t i = 0; i < loc.size(); ++i)
 	{
 		if (loc[i].first == nCurrentLang)
+		{
+			if (pnMatch != NULL)
+				*pnMatch = 0;
 			return MakeCString(loc[i].second);
+		}
 
 		if (loc[i].first == MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT))
 		{
@@ -1724,11 +1755,23 @@ CString CDjViewApp::FindLocalizedString(const vector<DictionaryInfo::LocalizedSt
 	}
 
 	if (bFoundEng)
+	{
+		if (pnMatch != NULL)
+			*pnMatch = 1;
 		return MakeCString(loc[nIndexEng].second);
+	}
 	else if (!loc.empty())
+	{
+		if (pnMatch != NULL)
+			*pnMatch = 2;
 		return MakeCString(loc[0].second);
+	}
 	else
+	{
+		if (pnMatch != NULL)
+			*pnMatch = 3;
 		return _T("");
+	}
 }
 
 void CDjViewApp::Lookup(const CString& strLookup, DictionaryInfo* pInfo)

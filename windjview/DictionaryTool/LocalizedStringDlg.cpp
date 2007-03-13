@@ -49,8 +49,8 @@ void CLocalizedStringDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CLocalizedStringDlg, CDialog)
-	ON_BN_CLICKED(ID_ADD, OnAdd)
-	ON_BN_CLICKED(ID_REMOVE, OnRemove)
+	ON_BN_CLICKED(IDC_ADD, OnAdd)
+	ON_BN_CLICKED(IDC_REMOVE, OnRemove)
 	ON_NOTIFY(LVN_BEGINLABELEDIT, IDC_LIST, OnBeginEditLabel)
 	ON_NOTIFY(LVN_ENDLABELEDIT, IDC_LIST, OnEndEditLabel)
 	ON_MESSAGE_VOID(WM_KICKIDLE, OnKickIdle)
@@ -171,5 +171,5 @@ void CLocalizedStringDlg::OnEndEditLabel(NMHDR* pNMHDR, LRESULT* pResult)
 void CLocalizedStringDlg::OnKickIdle()
 {
 	POSITION pos = m_list.GetFirstSelectedItemPosition();
-	GetDlgItem(ID_REMOVE)->EnableWindow(pos != NULL);
+	GetDlgItem(IDC_REMOVE)->EnableWindow(pos != NULL);
 }

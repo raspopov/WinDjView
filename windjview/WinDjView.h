@@ -136,7 +136,8 @@ protected:
 	bool LoadDictionaryInfoFromDisk(DictionaryInfo& info);
 	void UpdateDictVector();
 	void UpdateDictProperties();
-	static CString FindLocalizedString(const vector<DictionaryInfo::LocalizedString>& loc, DWORD nCurrentLang);
+	static CString FindLocalizedString(const vector<DictionaryInfo::LocalizedString>& loc,
+			DWORD nCurrentLang, int* pnMatch = NULL);
 
 	HHOOK m_hHook;
 	UINT m_nTimerID;

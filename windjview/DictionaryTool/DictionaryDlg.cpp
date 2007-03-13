@@ -25,6 +25,7 @@
 #include "DjVuSource.h"
 #include "LocalizedStringDlg.h"
 #include "XMLParser.h"
+#include "WarningsDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -82,6 +83,7 @@ BEGIN_MESSAGE_MAP(CDictionaryDlg, CDialog)
 	ON_BN_CLICKED(IDC_TITLE_LOCALIZED, OnLocalizeTitle)
 	ON_BN_CLICKED(IDC_FROM_LOCALIZED, OnLocalizeLangFrom)
 	ON_BN_CLICKED(IDC_TO_LOCALIZED, OnLocalizeLangTo)
+	ON_BN_CLICKED(IDC_WARNINGS, OnWarnings)
 END_MESSAGE_MAP()
 
 
@@ -228,7 +230,8 @@ void CDictionaryDlg::OnBrowseDjvu()
 		return;
 
 	CString strDjVuFile = dlg.GetPathName();
-	OpenDocument(strDjVuFile);
+	if (OpenDocument(strDjVuFile))
+		m_warnings.clear();
 }
 
 bool CDictionaryDlg::OpenDocument(const CString& strFileName)
@@ -239,7 +242,7 @@ bool CDictionaryDlg::OpenDocument(const CString& strFileName)
 
 		DjVuSource* pNewSource = DjVuSource::FromFile(strFileName);
 		if (m_pSource == pNewSource)
-			return true;
+			return false;
 
 		if (m_pSource != NULL)
 			m_pSource->Release();
@@ -781,6 +784,8 @@ void CDictionaryDlg::OnKickIdle()
 	GetDlgItem(IDC_TITLE_LOCALIZED)->EnableWindow(m_pSource != NULL);
 	GetDlgItem(IDC_FROM_LOCALIZED)->EnableWindow(m_pSource != NULL && m_pLangFrom != NULL);
 	GetDlgItem(IDC_TO_LOCALIZED)->EnableWindow(m_pSource != NULL && m_pLangTo != NULL);
+
+	GetDlgItem(IDC_WARNINGS)->EnableWindow(!m_warnings.empty());
 }
 
 void CDictionaryDlg::OnSelChangeFrom()
@@ -1317,6 +1322,7 @@ void CDictionaryDlg::SaveDocument(const CString& strFileName)
 	try
 	{
 		CWaitCursor wait;
+		TestIndex();
 
 		GP<DjVuFile> pFile = m_pSource->GetDjVuDoc()->get_djvu_file(0);
 
@@ -1442,7 +1448,171 @@ void CDictionaryDlg::SaveDocument(const CString& strFileName)
 	}
 
 	OpenDocument(strOrigFile);
-	AfxMessageBox(IDS_EMBEDDING_DONE, MB_OK | MB_ICONINFORMATION);
+	if (m_warnings.empty())
+		AfxMessageBox(IDS_EMBEDDING_DONE, MB_OK | MB_ICONINFORMATION);
+	else
+		AfxMessageBox(IDS_EMBEDDING_DONE_WARNINGS, MB_OK | MB_ICONINFORMATION);
+}
+
+inline wstring& tolower(wstring& str)
+{
+	for (wstring::iterator it = str.begin(); it != str.end(); ++it)
+		*it = towlower(*it);
+	return str;
+}
+
+wstring& CDictionaryDlg::MapCharacters(wstring& str)
+{
+	if (m_charMap.empty())
+		return str;
+
+	wstring result;
+	const wchar_t* cur = str.c_str();
+	const wchar_t* last = cur + str.length();
+
+	while (*cur != '\0')
+	{
+		int l = 0, r = static_cast<int>(m_charMap.size());
+		if (m_charMap[l].first > cur)
+		{
+			result += *cur++;
+			continue;
+		}
+
+		while (r - l > 1)
+		{
+			int mid = (l + r) / 2;
+			if (m_charMap[mid].first <= cur)
+				l = mid;
+			else
+				r = mid;
+		}
+
+		bool bFound = false;
+		while (l >= 0 && m_charMap[l].first[0] == *cur)
+		{
+			size_t len = m_charMap[l].first.length();
+			if (last - cur >= len && wcsncmp(m_charMap[l].first.c_str(), cur, len) == 0)
+			{
+				cur += len;
+				result += m_charMap[l].second;
+				bFound = true;
+				break;
+			}
+			--l;
+		}
+
+		if (!bFound)
+			result += *cur++;
+	}
+
+	str.swap(result);
+	return str;
+}
+
+void CDictionaryDlg::TestIndex()
+{
+	prevFirst.erase();
+	prevLast.erase();
+	m_warnings.clear();
+	m_charMap.clear();
+
+	GUTF8String strPageIndexXML;
+	if (m_bHasPageIndexFile)
+		strPageIndexXML = m_strPageIndexXML;
+	else
+		strPageIndexXML = m_pSource->GetDictionaryInfo()->strPageIndex;
+
+	if (strPageIndexXML.length() == 0)
+		return;
+
+	GUTF8String strCharMapXML;
+	if (m_bHasCharMapFile)
+		strCharMapXML = m_strCharMapXML;
+	else
+		strCharMapXML = m_pSource->GetDictionaryInfo()->strCharMap;
+
+	if (strCharMapXML.length() != 0)
+	{
+		stringstream sin((const char*) strCharMapXML);
+		XMLParser parser;
+		if (parser.Parse(sin))
+		{
+			const XMLNode& root = *parser.GetRoot();
+			list<XMLNode>::const_iterator it;
+			for (it = root.childElements.begin(); it != root.childElements.end(); ++it)
+			{
+				const XMLNode& node = *it;
+				if (MakeCString(node.tagName) != _T("entry"))
+					continue;
+
+				wstring strFrom, strTo;
+				node.GetAttribute(_T("from"), strFrom);
+				node.GetAttribute(_T("to"), strTo);
+
+				if (strFrom.length() == 0 || strTo.length() == 0)
+					continue;
+
+				strFrom = tolower(strFrom);
+				strTo = tolower(strTo);
+				m_charMap.push_back(make_pair(strFrom, strTo));
+			}
+
+			sort(m_charMap.begin(), m_charMap.end());
+		}
+	}
+
+	stringstream sin((const char*) strPageIndexXML);
+	XMLParser parser;
+	if (parser.Parse(sin))
+		TestEntries(*parser.GetRoot(), 0);
+}
+
+int CDictionaryDlg::TestEntries(const XMLNode& parent, int nEntries)
+{
+	list<XMLNode>::const_iterator it;
+	int nCount = nEntries;
+	for (it = parent.childElements.begin(); it != parent.childElements.end(); ++it)
+	{
+		const XMLNode& node = *it;
+		if (MakeCString(node.tagName) != _T("entry"))
+			continue;
+
+		wstring strFirst, strLast;
+		node.GetAttribute(_T("first"), strFirst);
+		node.GetAttribute(_T("last"), strLast);
+		++nCount;
+
+		strFirst = MapCharacters(tolower(strFirst));
+		strLast = MapCharacters(tolower(strLast));
+
+		if (strFirst < prevFirst)
+			m_warnings.push_back(FormatString(_T("A%d is lexicographically smaller than A%d.\r\n"), nCount, nCount - 1));
+
+		if (strFirst < prevLast)
+			m_warnings.push_back(FormatString(_T("A%d is lexicographically smaller than B%d.\r\n"), nCount, nCount - 1));
+
+		if (!strLast.empty() && strFirst > strLast)
+			m_warnings.push_back(FormatString(_T("B%d is lexicographically smaller than A%d.\r\n"), nCount, nCount));
+
+		prevFirst = strFirst;
+		prevLast = strLast;
+
+		nCount = TestEntries(node, nCount);
+	}
+
+	return nCount;
+}
+
+void CDictionaryDlg::OnWarnings()
+{
+	CWarningsDlg dlg;
+	dlg.m_strWarnings.Empty();
+
+	for (size_t i = 0; i < m_warnings.size(); ++i)
+		dlg.m_strWarnings += m_warnings[i];
+
+	dlg.DoModal();
 }
 
 DROPEFFECT CDictionaryDlg::OnDragEnter(CWnd* pWnd, COleDataObject* pDataObject,
@@ -1508,7 +1678,8 @@ BOOL CDictionaryDlg::OnDrop(CWnd* pWnd, COleDataObject* pDataObject,
 
 	if (rcDjVu.PtInRect(point))
 	{
-		OpenDocument(strPath);
+		if (OpenDocument(strPath))
+			m_warnings.clear();
 	}
 	else if (rcPageIndex.PtInRect(point))
 	{

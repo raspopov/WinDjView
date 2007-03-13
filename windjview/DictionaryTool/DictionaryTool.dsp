@@ -191,6 +191,10 @@ SOURCE=.\stdafx.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\WarningsDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\XMLParser.cpp
 # End Source File
 # End Group
@@ -236,6 +240,10 @@ SOURCE=.\resource.h
 # Begin Source File
 
 SOURCE=.\stdafx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\WarningsDlg.h
 # End Source File
 # Begin Source File
 
