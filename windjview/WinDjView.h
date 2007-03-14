@@ -71,17 +71,27 @@ public:
 	CPrintSettings* GetPrintSettings() { return &m_printSettings; }
 	Annotation* GetAnnoTemplate() { return &m_annoTemplate; }
 
+	CDjVuDoc* OpenDocument(LPCTSTR lpszFileName, const GUTF8String& strPage, bool bAddToHistory = true);
+	void SaveSettings();
+	bool RegisterShellFileTypes();
+
 	void InitSearchHistory(CComboBoxEx& cboFind);
 	void UpdateSearchHistory(CComboBoxEx& cboFind);
 
-	DictionaryInfo* GetDictionaryInfo(int nIndex);
-	int GetDictionaryCount() const { return static_cast<int>(m_dictVector.size()); }
+	// Dictionary API
+	int GetDictLangsCount() const
+		{ return static_cast<int>(m_dictsByLang.size()); }
+	int GetDictionaryCount(int nLangIndex) const
+		{ return static_cast<int>(m_dictsByLang[nLangIndex].dicts.size()); }
+	CString GetLangFrom(int nLangIndex) const
+		{ return m_dictsByLang[nLangIndex].strFrom; }
+	CString GetLangTo(int nLangIndex) const
+		{ return m_dictsByLang[nLangIndex].strTo; }
+	DictionaryInfo* GetDictionaryInfo(int nLangIndex, int nIndex)
+		{ return m_dictsByLang[nLangIndex].dicts[nIndex]; }
 	void Lookup(const CString& strLookup, DictionaryInfo* pInfo);
-
-	CDjVuDoc* OpenDocument(LPCTSTR lpszFileName, const GUTF8String& strPage, bool bAddToHistory = true);
 	bool InstallDictionary(CDjVuDoc* pDoc, bool bAllUsers, bool bKeepOriginal);
-	void SaveSettings();
-	bool RegisterShellFileTypes();
+	bool UninstallDictionary(DictionaryInfo* pInfo);
 
 	// Register running threads
 	void ThreadStarted();
@@ -129,7 +139,6 @@ protected:
 
 	set<DjVuSource*> m_deleteOnRelease;
 	map<CString, DictionaryInfo> m_dictionaries;
-	vector<DictionaryInfo*> m_dictVector;
 	void LoadDictionaries();
 	void LoadDictionaries(const CString& strDirectory);
 	void LoadDictionaryInfo(DictionaryInfo& info);
@@ -138,6 +147,12 @@ protected:
 	void UpdateDictProperties();
 	static CString FindLocalizedString(const vector<DictionaryInfo::LocalizedString>& loc,
 			DWORD nCurrentLang, int* pnMatch = NULL);
+	struct DictsByLang
+	{
+		CString strFrom, strTo;
+		vector<DictionaryInfo*> dicts;
+	};
+	vector<DictsByLang> m_dictsByLang;
 
 	HHOOK m_hHook;
 	UINT m_nTimerID;

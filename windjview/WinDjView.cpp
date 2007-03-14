@@ -82,6 +82,8 @@ const TCHAR* s_pszRestoreView = _T("restore-view");
 const TCHAR* s_pszVersion = _T("version");
 const TCHAR* s_pszLanguage = _T("language");
 const TCHAR* s_pszMatchCase = _T("match-case");
+const TCHAR* s_pszCurrentLang = _T("cur-lang");
+const TCHAR* s_pszCurrentDict = _T("cur-dict");
 
 const TCHAR* s_pszAnnotationsSection = _T("Annotations");
 const TCHAR* s_pszHideInactiveBorder = _T("hide-inactive");
@@ -483,6 +485,8 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.nLanguage = GetProfileInt(s_pszGlobalSection, s_pszLanguage, m_appSettings.nLanguage);
 	m_appSettings.bMatchCase = !!GetProfileInt(s_pszGlobalSection, s_pszMatchCase, m_appSettings.bMatchCase);
 	m_appSettings.strVersion = GetProfileString(s_pszGlobalSection, s_pszVersion, CURRENT_VERSION);
+	m_appSettings.nCurLang = GetProfileInt(s_pszGlobalSection, s_pszCurrentLang, m_appSettings.nCurLang);
+	m_appSettings.nCurDict = GetProfileInt(s_pszGlobalSection, s_pszCurrentDict, m_appSettings.nCurDict);
 
 	m_annoTemplate.bHideInactiveBorder = !!GetProfileInt(s_pszAnnotationsSection, s_pszHideInactiveBorder, m_annoTemplate.bHideInactiveBorder);
 	m_annoTemplate.nBorderType = GetProfileInt(s_pszAnnotationsSection, s_pszBorderType, m_annoTemplate.nBorderType);
@@ -575,6 +579,8 @@ void CDjViewApp::SaveSettings()
 	WriteProfileString(s_pszGlobalSection, s_pszVersion, CURRENT_VERSION);
 	WriteProfileInt(s_pszGlobalSection, s_pszLanguage, m_appSettings.nLanguage);
 	WriteProfileInt(s_pszGlobalSection, s_pszMatchCase, m_appSettings.bMatchCase);
+	WriteProfileInt(s_pszGlobalSection, s_pszCurrentLang, m_appSettings.nCurLang);
+	WriteProfileInt(s_pszGlobalSection, s_pszCurrentDict, m_appSettings.nCurDict);
 
 	WriteProfileInt(s_pszAnnotationsSection, s_pszHideInactiveBorder, m_annoTemplate.bHideInactiveBorder);
 	WriteProfileInt(s_pszAnnotationsSection, s_pszBorderType, m_annoTemplate.nBorderType);
@@ -1608,6 +1614,41 @@ bool CDjViewApp::InstallDictionary(CDjVuDoc* pDoc, bool bAllUsers, bool bKeepOri
 		}
 	}
 
+	UpdateDictVector();
+	UpdateDictProperties();
+	UpdateObservers(DICT_LIST_CHANGED);
+
+	return true;
+}
+
+bool CDjViewApp::UninstallDictionary(DictionaryInfo* pInfo)
+{
+	CDjVuDoc* pPrevDoc = (CDjVuDoc*) FindOpenDocument(pInfo->strPathName);
+	if (pPrevDoc != NULL)
+	{
+		m_pPendingSource = pPrevDoc->GetSource();
+		m_docClosed.ResetEvent();
+
+		pPrevDoc->GetSource()->AddObserver(this);
+		pPrevDoc->OnCloseDocument();
+
+		::WaitForSingleObject(m_docClosed, INFINITE);
+	}
+
+	if (!MoveToTrash(pInfo->strPathName))
+		return false;
+
+	map<CString, DictionaryInfo>::iterator it;
+	for (it = m_dictionaries.begin(); it != m_dictionaries.end(); ++it)
+	{
+		if (pInfo == &(*it).second)
+		{
+			m_dictionaries.erase(it);
+			break;
+		}
+	}
+
+	UpdateDictVector();
 	UpdateDictProperties();
 	UpdateObservers(DICT_LIST_CHANGED);
 
@@ -1623,20 +1664,7 @@ void CDjViewApp::OnUpdate(const Observable* source, const Message* message)
 		if (it != m_deleteOnRelease.end())
 		{
 			m_deleteOnRelease.erase(it);
-
-			// SHFileOperation needs an extra NULL character at the end
-			TCHAR pszFileToDelete[_MAX_PATH + 1];
-			_tcsncpy(pszFileToDelete, pSource->GetFileName(), _MAX_PATH);
-			pszFileToDelete[pSource->GetFileName().GetLength() + 1] = 0;
-
-			// Move to recycle bin
-			SHFILEOPSTRUCT fo;
-			ZeroMemory(&fo, sizeof(fo));
-			fo.wFunc = FO_DELETE;
-			fo.pFrom = pszFileToDelete;
-			fo.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT;
-
-			SHFileOperation(&fo);
+			MoveToTrash(pSource->GetFileName());
 		}
 
 		if (pSource == m_pPendingSource)
@@ -1665,25 +1693,32 @@ DictionaryInfo* CDjViewApp::GetDictionaryInfo(const CString& strFileName, bool b
 	return NULL;
 }
 
-DictionaryInfo* CDjViewApp::GetDictionaryInfo(int nIndex)
-{
-	return m_dictVector[nIndex];
-}
-
 void CDjViewApp::UpdateDictVector()
 {
-	m_dictVector.clear();
-	m_dictVector.reserve(m_dictionaries.size());
+	m_dictsByLang.clear();
+
+	map<pair<GUTF8String, GUTF8String>, DictsByLang> m;
+	CString strNotSpecified = LoadString(IDS_NOT_SPECIFIED);
 
 	map<CString, DictionaryInfo>::iterator it;
 	for (it = m_dictionaries.begin(); it != m_dictionaries.end(); ++it)
-		m_dictVector.push_back(&(*it).second);
+	{
+		DictionaryInfo* pInfo = &(*it).second;
+		m[make_pair(pInfo->strLangFromCode, pInfo->strLangToCode)].dicts.push_back(pInfo);
+	}
+
+	map<pair<GUTF8String, GUTF8String>, DictsByLang>::iterator itLangs;
+	for (itLangs = m.begin(); itLangs != m.end(); ++itLangs)
+		m_dictsByLang.push_back((*itLangs).second);
 }
 
 void CDjViewApp::UpdateDictProperties()
 {
 	map<GUTF8String, int> langMatch;
 	map<GUTF8String, CString> langNames;
+
+	langNames[""] = MakeUTF8String(LoadString(IDS_NOT_SPECIFIED));
+	langMatch[""] = 0;
 
 	map<CString, DictionaryInfo>::iterator it;
 	for (it = m_dictionaries.begin(); it != m_dictionaries.end(); ++it)
@@ -1729,6 +1764,13 @@ void CDjViewApp::UpdateDictProperties()
 		DictionaryInfo& info = (*it).second;
 		info.strLangFrom = langNames[info.strLangFromCode];
 		info.strLangTo = langNames[info.strLangToCode];
+	}
+
+	for (size_t i = 0 ; i < m_dictsByLang.size(); ++i)
+	{
+		DictionaryInfo* pInfo = m_dictsByLang[i].dicts[0];
+		m_dictsByLang[i].strFrom = pInfo->strLangFrom;
+		m_dictsByLang[i].strTo = pInfo->strLangTo;
 	}
 }
 

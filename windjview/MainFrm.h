@@ -84,17 +84,19 @@ protected:
 
 	void InitToolBar();
 	void InitDictBar();
-	void UpdateDictComboContent();
-	int m_nCurDict;
 
 	CFullscreenWnd* m_pFullscreenWnd;
 	CMagnifyWnd* m_pMagnifyWnd;
 
-	CMyComboBox m_cboPage, m_cboZoom, m_cboDict;
+	CMyComboBox m_cboPage, m_cboZoom, m_cboLangs, m_cboDict;
 	CMyComboBoxEx m_cboLookup;
 	void UpdatePageCombo(const CDjVuView* pView);
 	void UpdateZoomCombo(const CDjVuView* pView);
-	void UpdateDictCombo(const CDjVuView* pView);
+	void UpdateLangAndDict(const CDjVuView* pView, bool bReset = false);
+
+	int m_nCurDict, m_nCurLang;
+	bool FindAppDictionary(DictionaryInfo* pInfo, int& nLang, int& nDict);
+	void UpdateDictCombo();
 
 	void UpdateSettings();
 	void LanguageChanged();
@@ -158,6 +160,7 @@ protected:
 	afx_msg void OnLookup();
 	afx_msg void OnLookupFocus();
 	afx_msg void OnChangeDictionary();
+	afx_msg void OnChangeLanguage();
 	afx_msg void OnDictionaryInfo();
 	afx_msg void OnDictionaryNext();
 	afx_msg void OnDictionaryPrev();

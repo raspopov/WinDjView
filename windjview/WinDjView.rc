@@ -777,13 +777,14 @@ END
 IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 125
 STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Dictionaries"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | 
                     LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | 
-                    LVS_NOSORTHEADER | WS_TABSTOP,7,18,208,100,
+                    LVS_NOSORTHEADER | WS_TABSTOP,7,18,208,82,
                     WS_EX_CLIENTEDGE
     LTEXT           "Installed dictionaries:",IDC_STATIC,7,7,69,9
+    PUSHBUTTON      "&Uninstall",IDC_UNINSTALL,7,104,50,14
 END
 
 
@@ -1329,11 +1330,16 @@ BEGIN
     IDS_PATH_TOO_LONG       "Failed to open document: the path is too long.\n%s"
     IDR_DICTIONARIES_BAR    "Di&ctionary Bar"
     IDS_DICTBAR_TITLE       "Dictionaries"
+    IDS_NOT_SPECIFIED       "Not Specified"
+    IDS_UNINSTALL_DICT      "Are you sure you want to uninstall the dictionary ""%s""?\n\nThe dictionary file will be moved to the recycle bin. To permanently delete the dictionary, empty the recycle bin."
+    IDS_UNINSTALL_FAILED    "Could not uninstall the dictionary ""%s"". To uninstall it manually, quit the application and delete the following file:\n\n%s"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDC_DICTIONARY_LABEL    "Dictionary:"
+    IDC_LANGUAGE_LIST       "Select the source and destination languages\nLanguages"
+    IDS_LANGUAGE_LIST_LABEL "Language:"
 END
 
 #endif    // English (U.S.) resources

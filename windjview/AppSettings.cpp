@@ -77,4 +77,7 @@ CAppSettings::CAppSettings()
 	if (::GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IMEASURE | LOCALE_RETURN_NUMBER,
 			(LPTSTR) &dwMeasureSys, sizeof(DWORD)))
 		nUnits = (dwMeasureSys == 1 ? Inches : Centimeters);
+
+	nCurLang = -1;
+	nCurDict = -1;
 }

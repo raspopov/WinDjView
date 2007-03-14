@@ -48,6 +48,8 @@ void CSettingsDictPage::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CSettingsDictPage, CPropertyPage)
+	ON_MESSAGE_VOID(WM_KICKIDLE, OnKickIdle)
+	ON_BN_CLICKED(IDC_UNINSTALL, OnUninstall)
 END_MESSAGE_MAP()
 
 
@@ -68,11 +70,45 @@ BOOL CSettingsDictPage::OnInitDialog()
 
 	m_list.InsertColumn(0, _T(""), LVCFMT_LEFT, rcClient.Width() - 4);
 
-	for (int nDict = 0; nDict < theApp.GetDictionaryCount(); ++nDict)
+	for (int nLang = 0; nLang < theApp.GetDictLangsCount(); ++nLang)
 	{
-		DictionaryInfo* pInfo = theApp.GetDictionaryInfo(nDict);
-		m_list.InsertItem(nDict, pInfo->strFileName);
+		for (int nDict = 0; nDict < theApp.GetDictionaryCount(nLang); ++nDict)
+		{
+			DictionaryInfo* pInfo = theApp.GetDictionaryInfo(nLang, nDict);
+			int nItem = m_list.InsertItem(m_list.GetItemCount(), pInfo->strTitle);
+			m_list.SetItemData(nItem, reinterpret_cast<DWORD>(pInfo));
+		}
 	}
 
 	return true;
+}
+
+void CSettingsDictPage::OnKickIdle()
+{
+	POSITION pos = m_list.GetFirstSelectedItemPosition();
+	GetDlgItem(IDC_UNINSTALL)->EnableWindow(pos != NULL);
+}
+
+void CSettingsDictPage::OnUninstall()
+{
+	POSITION pos = m_list.GetFirstSelectedItemPosition();
+	if (pos == NULL)
+		return;
+
+	int nItem = m_list.GetNextSelectedItem(pos);
+	DictionaryInfo* pInfo = reinterpret_cast<DictionaryInfo*>(m_list.GetItemData(nItem));
+
+	if (AfxMessageBox(FormatString(IDS_UNINSTALL_DICT, pInfo->strTitle),
+			MB_ICONQUESTION | MB_YESNO) == IDYES)
+	{
+		if (theApp.UninstallDictionary(pInfo))
+		{
+			m_list.DeleteItem(nItem);
+		}
+		else
+		{
+			AfxMessageBox(FormatString(IDS_UNINSTALL_FAILED, pInfo->strTitle, pInfo->strPathName),
+					MB_ICONEXCLAMATION | MB_OK);
+		}
+	}
 }

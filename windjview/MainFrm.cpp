@@ -79,6 +79,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_CONTROL(CBN_FINISHEDIT, IDC_LOOKUP, OnLookup)
 	ON_CONTROL(CBN_CANCELEDIT, IDC_LOOKUP, OnCancelChange)
 	ON_CBN_SELCHANGE(IDC_DICTIONARY, OnChangeDictionary)
+	ON_CBN_SELCHANGE(IDC_LANGUAGE_LIST, OnChangeLanguage)
 	ON_COMMAND(ID_DICTIONARY_INFO, OnDictionaryInfo)
 	ON_COMMAND(ID_DICTIONARY_NEXT, OnDictionaryNext)
 	ON_COMMAND(ID_DICTIONARY_PREV, OnDictionaryPrev)
@@ -105,8 +106,8 @@ const int s_nIndicatorPage = 3;
 // CMainFrame construction/destruction
 
 CMainFrame::CMainFrame()
-	: m_pFindDlg(NULL), m_historyPos(m_history.end()),
-	  m_pFullscreenWnd(NULL), m_pMagnifyWnd(NULL), m_nCurDict(CB_ERR)
+	: m_pFindDlg(NULL), m_historyPos(m_history.end()), m_pFullscreenWnd(NULL),
+	  m_pMagnifyWnd(NULL), m_nCurLang(CB_ERR), m_nCurDict(CB_ERR)
 {
 }
 
@@ -118,7 +119,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if (CMDIFrameWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
-	
+
 	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT,
 			WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_FLYBY | CBRS_TOOLTIPS) ||
 		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME))
@@ -210,7 +211,7 @@ void CMainFrame::InitDictBar()
 
 	TBBUTTON btn;
 	ZeroMemory(&btn, sizeof(btn));
-	btn.iBitmap = 150;
+	btn.iBitmap = 140;
 	btn.idCommand = IDC_LOOKUP;
 	btn.fsStyle = TBSTYLE_SEP;
 
@@ -230,17 +231,40 @@ void CMainFrame::InitDictBar()
 
 	m_cboLookup.SetWindowText(theApp.GetAppSettings()->strFind);
 
+	// Separator
 	btn.iBitmap = 0;
 	btn.idCommand = IDC_STATIC;
 	m_wndDictBar.GetToolBarCtrl().InsertButton(3, &btn);
 
-	m_wndDictBar.InsertLabel(4, IDC_DICTIONARY_LABEL, &m_font);
+	m_wndDictBar.InsertLabel(4, IDC_LANGUAGE_LIST_LABEL, &m_font);
 
-	btn.iBitmap = 300;
-	btn.idCommand = IDC_DICTIONARY;
+	// Language combo
+	btn.iBitmap = 250;
+	btn.idCommand = IDC_LANGUAGE_LIST;
 	m_wndDictBar.GetToolBarCtrl().InsertButton(5, &btn);
 
 	m_wndDictBar.GetItemRect(5, rcItem);
+	rcItem.DeflateRect(3, 0);
+	rcItem.bottom += 160;
+
+	m_cboLangs.Create(WS_CHILD | WS_VISIBLE | WS_VSCROLL
+			| CBS_DROPDOWNLIST | CBS_AUTOHSCROLL, rcItem, &m_wndDictBar, IDC_LANGUAGE_LIST);
+	m_cboLangs.SetFont(&m_boldFont);
+	m_cboLangs.SetItemHeight(-1, 16);
+
+	// Separator
+	btn.iBitmap = 0;
+	btn.idCommand = IDC_STATIC;
+	m_wndDictBar.GetToolBarCtrl().InsertButton(6, &btn);
+
+	m_wndDictBar.InsertLabel(7, IDC_DICTIONARY_LABEL, &m_font);
+
+	// Dictionary combo
+	btn.iBitmap = 350;
+	btn.idCommand = IDC_DICTIONARY;
+	m_wndDictBar.GetToolBarCtrl().InsertButton(8, &btn);
+
+	m_wndDictBar.GetItemRect(8, rcItem);
 	rcItem.DeflateRect(3, 0);
 	rcItem.bottom += 160;
 
@@ -249,45 +273,11 @@ void CMainFrame::InitDictBar()
 	m_cboDict.SetFont(&m_boldFont);
 	m_cboDict.SetItemHeight(-1, 16);
 
-	for (int i = 0; i < theApp.GetDictionaryCount(); ++i)
-	{
-		DictionaryInfo* pInfo = theApp.GetDictionaryInfo(i);
-
-		m_cboDict.InsertString(i, pInfo->strTitle);
-		m_cboDict.SetItemDataPtr(i, pInfo);
-	}
-
-	if (theApp.GetDictionaryCount() != 0)
-		m_cboDict.SetCurSel(m_nCurDict = 0);
+	m_nCurLang = theApp.GetAppSettings()->nCurLang;
+	m_nCurDict = theApp.GetAppSettings()->nCurDict;
+	UpdateLangAndDict(NULL, true);
 }
 
-void CMainFrame::UpdateDictComboContent()
-{
-	m_cboDict.ResetContent();
-
-	for (int i = 0; i < theApp.GetDictionaryCount(); ++i)
-	{
-		DictionaryInfo* pInfo = theApp.GetDictionaryInfo(i);
-
-		m_cboDict.InsertString(i, pInfo->strTitle);
-		m_cboDict.SetItemDataPtr(i, pInfo);
-	}
-
-	if (m_nCurDict >= 0 && m_nCurDict < theApp.GetDictionaryCount())
-		m_cboDict.SetCurSel(m_nCurDict);
-	else if (theApp.GetDictionaryCount() > 0)
-		m_cboDict.SetCurSel(m_nCurDict = 0);
-	else
-		m_nCurDict = CB_ERR;
-
-	CMDIChildWnd* pActive = MDIGetActive();
-	if (pActive != NULL)
-	{
-		CDjVuView* pView = (CDjVuView*)pActive->GetActiveView();
-		UpdateDictCombo(pView);
-	}
-}
-	
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
 	if (!CMDIFrameWnd::PreCreateWindow(cs))
@@ -379,7 +369,7 @@ void CMainFrame::OnUpdateViewDictBar(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(m_wndDictBar.IsWindowVisible());
 
-	if (theApp.GetDictionaryCount() == 0)
+	if (theApp.GetDictLangsCount() == 0)
 	{
 		pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
 		pCmdUI->m_nIndex--;
@@ -391,7 +381,7 @@ void CMainFrame::OnUpdateViewStatusBar(CCmdUI* pCmdUI)
 {
 	OnUpdateControlBarMenu(pCmdUI);
 
-	if (theApp.GetDictionaryCount() > 0
+	if (theApp.GetDictLangsCount() > 0
 			&& pCmdUI->m_pMenu->GetMenuItemID(pCmdUI->m_nIndex + 1) != ID_VIEW_DICTBAR)
 	{
 		pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex + 1, MF_BYPOSITION | MF_STRING,
@@ -405,7 +395,7 @@ void CMainFrame::UpdateToolbars()
 	CAppSettings* pSettings = theApp.GetAppSettings();
 
 	ShowControlBar(&m_wndToolBar, pSettings->bToolbar, false);
-	ShowControlBar(&m_wndDictBar, pSettings->bDictBar && theApp.GetDictionaryCount() > 0, false);
+	ShowControlBar(&m_wndDictBar, pSettings->bDictBar && theApp.GetDictLangsCount() > 0, false);
 	ShowControlBar(&m_wndStatusBar, pSettings->bStatusBar, false);
 }
 
@@ -626,6 +616,16 @@ void CMainFrame::OnChangeDictionary()
 	m_nCurDict = m_cboDict.GetCurSel();
 }
 
+void CMainFrame::OnChangeLanguage()
+{
+	if (m_nCurLang != m_cboLangs.GetCurSel())
+	{
+		m_nCurLang = m_cboLangs.GetCurSel();
+		m_nCurDict = 0;
+		UpdateDictCombo();
+	}
+}
+
 void CMainFrame::OnDictionaryInfo()
 {
 	if (m_nCurDict == CB_ERR)
@@ -678,30 +678,105 @@ void CMainFrame::OnUpdateDictionaryLookup(CCmdUI* pCmdUI)
 
 void CMainFrame::OnIdleUpdateCmdUI()
 {
-	if (theApp.GetDictionaryCount() == 0)
+	if (theApp.GetDictLangsCount() == 0)
 		m_wndDictBar.ShowWindow(SW_HIDE);
 
 	CMDIFrameWnd::OnIdleUpdateCmdUI();
 }
 
-void CMainFrame::UpdateDictCombo(const CDjVuView* pView)
+void CMainFrame::UpdateLangAndDict(const CDjVuView* pView, bool bReset)
 {
 	if (pView == NULL)
-		return;
-
-	DjVuSource* pSource = const_cast<CDjVuView*>(pView)->GetDocument()->GetSource();
-	DictionaryInfo* pInfo = pSource->GetDictionaryInfo();
-	if (!pInfo->bInstalled)
-		return;
-
-	for (int i = 0; i < m_cboDict.GetCount(); ++i)
 	{
-		if (pInfo == m_cboDict.GetItemDataPtr(i))
+		CMDIChildWnd* pActive = MDIGetActive();
+		pView = (pActive != NULL ? (CDjVuView*) pActive->GetActiveView() : NULL);
+	}
+
+	if (bReset)
+	{
+		m_cboLangs.ResetContent();
+		m_cboDict.ResetContent();
+
+		if (theApp.GetDictLangsCount() > 0)
 		{
-			m_cboDict.SetCurSel(m_nCurDict = i);
-			return;
+			for (int i = 0; i < theApp.GetDictLangsCount(); ++i)
+				m_cboLangs.AddString(theApp.GetLangFrom(i) + _T(" -> ") + theApp.GetLangTo(i));
+
+			if (m_nCurLang == CB_ERR || m_nCurLang < 0 || m_nCurLang >= theApp.GetDictLangsCount())
+			{
+				m_nCurLang = 0;
+				m_nCurDict = 0;
+			}
+			if (m_nCurDict == CB_ERR || m_nCurDict < 0 || m_nCurDict >= theApp.GetDictionaryCount(m_nCurLang))
+				m_nCurDict = 0;
 		}
 	}
+
+	if (theApp.GetDictLangsCount() == 0)
+	{
+		m_nCurLang = CB_ERR;
+		m_nCurDict = CB_ERR;
+		return;
+	}
+
+	DictionaryInfo* pInfo = NULL;
+	if (pView != NULL)
+	{
+		DjVuSource* pSource = const_cast<CDjVuView*>(pView)->GetDocument()->GetSource();
+		pInfo = pSource->GetDictionaryInfo();
+	}
+
+	if (!bReset && (pView == NULL || !pInfo->bInstalled))
+		return;
+
+	if (pView != NULL && pInfo->bInstalled)
+	{
+		int nLang, nDict;
+		if (FindAppDictionary(pInfo, nLang, nDict))
+		{
+			if (!bReset && nLang == m_nCurLang)
+			{
+				m_cboDict.SetCurSel(m_nCurDict = nDict);
+				return;
+			}
+
+			m_nCurLang = nLang;
+			m_nCurDict = nDict;
+		}
+	}
+
+	m_cboLangs.SetCurSel(m_nCurLang);
+	UpdateDictCombo();
+}
+
+bool CMainFrame::FindAppDictionary(DictionaryInfo* pInfo, int& nLang, int& nDict)
+{
+	for (int i = 0; i < theApp.GetDictLangsCount(); ++i)
+	{
+		for (int j = 0; j < theApp.GetDictionaryCount(i); ++j)
+		{
+			if (pInfo == theApp.GetDictionaryInfo(i, j))
+			{
+				nLang = i;
+				nDict = j;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+void CMainFrame::UpdateDictCombo()
+{
+	m_cboDict.ResetContent();
+	for (int j = 0; j < theApp.GetDictionaryCount(m_nCurLang); ++j)
+	{
+		DictionaryInfo* pInfo = theApp.GetDictionaryInfo(m_nCurLang, j);
+		int nIndex = m_cboDict.AddString(pInfo->strTitle);
+		m_cboDict.SetItemDataPtr(nIndex, pInfo);
+	}
+	m_cboDict.SetCurSel(m_nCurDict);
 }
 
 LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
@@ -1242,6 +1317,9 @@ void CMainFrame::OnDestroy()
 		m_pMagnifyWnd = NULL;
 	}
 
+	theApp.GetAppSettings()->nCurLang = m_nCurLang;
+	theApp.GetAppSettings()->nCurDict = m_nCurDict;
+
 	theApp.RemoveObserver(this);
 
 	CMDIFrameWnd::OnDestroy();
@@ -1278,7 +1356,7 @@ void CMainFrame::LanguageChanged()
 	OnUpdateFrameMenu(NULL);
 	DrawMenuBar();
 
-	UpdateDictComboContent();
+	UpdateLangAndDict(NULL, true);
 
 	m_cboZoom.ResetContent();
 
@@ -1438,7 +1516,7 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 
 			UpdatePageCombo(pView);
 			UpdateZoomCombo(pView);
-			UpdateDictCombo(pView);
+			UpdateLangAndDict(pView);
 		}
 		else
 		{
@@ -1456,6 +1534,6 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 	}
 	else if (message->code == DICT_LIST_CHANGED)
 	{
-		UpdateDictComboContent();
+		UpdateLangAndDict(NULL, true);
 	}
 }

@@ -159,4 +159,7 @@ struct CAppSettings
 
 	int nUnits;
 	static double unitsPerInch[];
+
+	int nCurLang;
+	int nCurDict;
 };

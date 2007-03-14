@@ -38,7 +38,7 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent)
 	AddPage(&m_pageDisplay);
 	AddPage(&m_pageAssocs);
 
-	if (theApp.GetDictionaryCount() > 0)
+	if (theApp.GetDictLangsCount() > 0)
 		AddPage(&m_pageDict);
 
 	m_psh.dwFlags = PSH_PROPSHEETPAGE | PSH_NOAPPLYNOW;
@@ -52,6 +52,7 @@ CSettingsDlg::~CSettingsDlg()
 BEGIN_MESSAGE_MAP(CSettingsDlg, CPropertySheet)
 	ON_WM_CTLCOLOR()
 	ON_WM_CREATE()
+	ON_MESSAGE_VOID(WM_KICKIDLE, OnKickIdle)
 END_MESSAGE_MAP()
 
 
@@ -108,4 +109,9 @@ HBRUSH CSettingsDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	}
 
 	return brush;
+}
+
+void CSettingsDlg::OnKickIdle()
+{
+	SendMessageToDescendants(WM_KICKIDLE);
 }

@@ -375,7 +375,7 @@ void CPageIndexWnd::OnChangeText()
 	while (left < right - 1)
 	{
 		int mid = (left + right) / 2;
-		if (m_sorted[mid]->strFirst < text)
+		if (m_sorted[mid]->strFirst <= text)
 			left = mid;
 		else
 			right = mid;

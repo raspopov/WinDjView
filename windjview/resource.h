@@ -133,6 +133,9 @@
 #define IDS_PATH_TOO_LONG               290
 #define IDR_DICTIONARIES_BAR            291
 #define IDS_DICTBAR_TITLE               292
+#define IDS_NOT_SPECIFIED               293
+#define IDS_UNINSTALL_DICT              294
+#define IDS_UNINSTALL_FAILED            295
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -224,6 +227,10 @@
 #define IDC_DICTIONARY                  1087
 #define IDC_DICTIONARY_LABEL            1088
 #define IDC_LIST                        1089
+#define IDC_LANGUAGE_LIST               1090
+#define IDC_LANGUAGE_LIST_LABEL         1091
+#define IDS_LANGUAGE_LIST_LABEL         1091
+#define IDC_UNINSTALL                   1092
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_VIEW_NEXTPAGE_SHORTCUT       32773
@@ -322,9 +329,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        293
+#define _APS_NEXT_RESOURCE_VALUE        296
 #define _APS_NEXT_COMMAND_VALUE         33152
-#define _APS_NEXT_CONTROL_VALUE         1090
+#define _APS_NEXT_CONTROL_VALUE         1093
 #define _APS_NEXT_SYMED_VALUE           116
 #endif
 #endif
