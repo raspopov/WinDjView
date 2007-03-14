@@ -174,6 +174,28 @@ bool FileExists(LPCTSTR lpszFileName)
 	return true;
 }
 
+bool MoveToTrash(LPCTSTR lpszFileName)
+{
+	int nLength = _tcslen(lpszFileName);
+	if (nLength >= _MAX_PATH)
+		return false;
+
+	// SHFileOperation needs an extra NULL character at the end
+	TCHAR pszFileToDelete[_MAX_PATH + 1];
+	_tcscpy(pszFileToDelete, lpszFileName);
+	pszFileToDelete[nLength + 1] = 0;
+
+	// Move to recycle bin
+	SHFILEOPSTRUCT fo;
+	ZeroMemory(&fo, sizeof(fo));
+	fo.wFunc = FO_DELETE;
+	fo.pFrom = pszFileToDelete;
+	fo.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT;
+
+	return (SHFileOperation(&fo) == 0);
+}
+
+
 GUTF8String MakeUTF8String(const CString& strText)
 {
 	int nSize;
