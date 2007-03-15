@@ -479,6 +479,15 @@ GUTF8String ReadRawXML(LPCTSTR pszFileName)
 	return result;
 }
 
+void Append(string& dest, const char* src)
+{
+	size_t length = strlen(src);
+	if (dest.size() + length < dest.capacity())
+		dest.reserve(max(dest.size() * 2, dest.size() + length));
+
+	dest.insert(dest.length(), src, length);
+}
+
 GUTF8String ReadExcelPageIndex(LPCTSTR pszFileName)
 {
 	Excel::_ApplicationPtr pApplication;
@@ -486,9 +495,8 @@ GUTF8String ReadExcelPageIndex(LPCTSTR pszFileName)
 	if (FAILED(pApplication.CreateInstance(_T("Excel.Application"))))
 		return "";
 
-	GUTF8String strResult;
-	strResult += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-	strResult += "<index>\n";
+	string strResult;
+	Append(strResult, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<index>\n");
 
 	try
 	{
@@ -532,30 +540,30 @@ GUTF8String ReadExcelPageIndex(LPCTSTR pszFileName)
 				}
 
 				if (nNewLevel == nLevel + 1)
-					strResult += ">\n";
+					Append(strResult, ">\n");
 				else
 				{
-					strResult += "/>\n";
+					Append(strResult, "/>\n");
 					for (int i = nLevel - 1; i >= nNewLevel; --i)
 					{
 						for (int k = 1; k < i; ++k)
-							strResult += "  ";
-						strResult += "</entry>\n";
+							Append(strResult, "  ");
+						Append(strResult, "</entry>\n");
 					}
 				}
 			}
 			nLevel = nNewLevel;
 
 			for (int k = 1; k < nLevel; ++k)
-				strResult += "  ";
-			strResult += "<entry";
+				Append(strResult, "  ");
+			Append(strResult, "<entry");
 
 			if (bstrFirst.length() > 0)
-				strResult += " first=\"" + MakeUTF8String(wstring(bstrFirst)).toEscaped() + "\"";
+				Append(strResult, " first=\"" + MakeUTF8String(wstring(bstrFirst)).toEscaped() + "\"");
 			if (bstrLast.length() > 0)
-				strResult += " last=\"" + MakeUTF8String(wstring(bstrLast)).toEscaped() + "\"";
+				Append(strResult, " last=\"" + MakeUTF8String(wstring(bstrLast)).toEscaped() + "\"");
 			if (bstrURL.length() > 0)
-				strResult += " url=\"" + MakeUTF8String(wstring(bstrURL)).toEscaped() + "\"";
+				Append(strResult, " url=\"" + MakeUTF8String(wstring(bstrURL)).toEscaped() + "\"");
 		}
 
 		if (bFirst)
@@ -563,10 +571,10 @@ GUTF8String ReadExcelPageIndex(LPCTSTR pszFileName)
 
 		if (strResult.length() > 0)
 		{
-			strResult += "/>\n";
+			Append(strResult, "/>\n");
 			for (int i = 1; i < nLevel; ++i)
-				strResult += "</entry>\n";
-			strResult += "</index>\n";
+				Append(strResult, "</entry>\n");
+			Append(strResult, "</index>\n");
 		}
 
 		pBook->Close(VARIANT_FALSE);
@@ -584,7 +592,7 @@ GUTF8String ReadExcelPageIndex(LPCTSTR pszFileName)
 	{
 	}
 
-	return strResult;
+	return strResult.c_str();
 }
 
 GUTF8String ReadExcelCharMap(LPCTSTR pszFileName)
@@ -1587,14 +1595,29 @@ int CDictionaryDlg::TestEntries(const XMLNode& parent, int nEntries)
 		strFirst = MapCharacters(tolower(strFirst));
 		strLast = MapCharacters(tolower(strLast));
 
-		if (strFirst < prevFirst)
-			m_warnings.push_back(FormatString(_T("A%d is lexicographically smaller than A%d.\r\n"), nCount, nCount - 1));
+		if (!strFirst.empty())
+		{
+			if (!strLast.empty() && strFirst > strLast)
+				m_warnings.push_back(FormatString(_T("Cell C%d is lexicographically smaller than B%d.\r\n"), nCount, nCount));
 
-		if (strFirst < prevLast)
-			m_warnings.push_back(FormatString(_T("A%d is lexicographically smaller than B%d.\r\n"), nCount, nCount - 1));
+			if (!prevFirst.empty() && strFirst < prevFirst)
+				m_warnings.push_back(FormatString(_T("Cell B%d is lexicographically smaller than B%d.\r\n"), nCount, nCount - 1));
 
-		if (!strLast.empty() && strFirst > strLast)
-			m_warnings.push_back(FormatString(_T("B%d is lexicographically smaller than A%d.\r\n"), nCount, nCount));
+			if (!prevLast.empty() && strFirst < prevLast)
+				m_warnings.push_back(FormatString(_T("Cell B%d is lexicographically smaller than C%d.\r\n"), nCount, nCount - 1));
+		}
+		else if (!strLast.empty())
+		{
+			if (!prevFirst.empty() && strLast < prevFirst)
+				m_warnings.push_back(FormatString(_T("Cell C%d is lexicographically smaller than B%d.\r\n"), nCount, nCount - 1));
+
+			if (!prevLast.empty() && strLast < prevLast)
+				m_warnings.push_back(FormatString(_T("Cell C%d is lexicographically smaller than C%d.\r\n"), nCount, nCount - 1));
+		}
+		else
+		{
+			m_warnings.push_back(FormatString(_T("Cell B%d and C%d are both empty.\r\n"), nCount, nCount));
+		}
 
 		prevFirst = strFirst;
 		prevLast = strLast;

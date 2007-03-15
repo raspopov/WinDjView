@@ -1,3 +1,13 @@
+eng,English
+rus,Russian
+ukr,Ukrainian
+deu,German
+fra,French
+ita,Italian
+spa,Spanish
+ell,Greek
+grc,"Greek, Ancient (to 1453)"
+lat,Latin
 abk,Abkhazian
 ace,Achinese
 ach,Acoli
@@ -120,7 +130,6 @@ efi,Efik
 egy,Egyptian (Ancient)
 eka,Ekajuk
 elx,Elamite
-eng,English
 enm,"English, Middle (1100-1500)"
 ang,"English, Old (ca.450-1100)"
 myv,Erzya
@@ -136,7 +145,6 @@ fil,Filipino
 fin,Finnish
 fiu,Finno-Ugrian (Other)
 fon,Fon
-fra,French
 frm,"French, Middle (ca.1400-1600)"
 fro,"French, Old (842-ca.1400)"
 fur,Friulian
@@ -150,7 +158,6 @@ gay,Gayo
 gba,Gbaya
 gez,Geez
 kat,Georgian
-deu,German
 gmh,"German, Middle High (ca.1050-1500)"
 goh,"German, Old High (ca.750-1050)"
 gem,Germanic (Other)
@@ -159,8 +166,6 @@ gon,Gondi
 gor,Gorontalo
 got,Gothic
 grb,Grebo
-grc,"Greek, Ancient (to 1453)"
-ell,"Greek, Modern (1453-)"
 grn,Guarani
 guj,Gujarati
 gwi,Gwich´in
@@ -197,7 +202,6 @@ ira,Iranian (Other)
 mga,"Irish, Middle (900-1200)"
 sga,"Irish, Old (to 900)"
 iro,Iroquoian languages
-ita,Italian
 jpn,Japanese
 jav,Javanese
 jrb,Judeo-Arabic
@@ -243,7 +247,6 @@ lad,Ladino
 lah,Lahnda
 lam,Lamba
 lao,Lao
-lat,Latin
 lav,Latvian
 lez,Lezghian
 lim,Limburgan
@@ -361,7 +364,6 @@ roa,Romance (Other)
 ron,Romanian
 rom,Romany
 run,Rundi
-rus,Russian
 sal,Salishan languages
 sam,Samaritan Aramaic
 smi,Sami languages (Other)
@@ -402,7 +404,6 @@ sot,"Sotho, Southern"
 sai,South American Indian (Other)
 alt,Southern Altai
 sma,Southern Sami
-spa,Spanish (Castilian)
 srn,Sranan Togo
 suk,Sukuma
 sux,Sumerian
@@ -447,7 +448,6 @@ twi,Twi
 udm,Udmurt
 uga,Ugaritic
 uig,Uighur
-ukr,Ukrainian
 umb,Umbundu
 und,Undetermined
 hsb,Upper Sorbian

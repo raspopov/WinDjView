@@ -33,6 +33,7 @@
 #include "ThumbnailsView.h"
 #include "BookmarksWnd.h"
 #include "PageIndexWnd.h"
+#include "NavPane.h"
 #include "XMLParser.h"
 
 #ifdef _DEBUG
@@ -1828,6 +1829,8 @@ void CDjViewApp::Lookup(const CString& strLookup, DictionaryInfo* pInfo)
 	if (pIndex == NULL)
 		return;
 
+	pFrame->HideNavPane(false);
+	pFrame->GetNavPane()->ActivateTab(pIndex);
 	pIndex->Lookup(strLookup);
 }
 

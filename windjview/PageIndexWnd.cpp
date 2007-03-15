@@ -136,16 +136,40 @@ int CPageIndexWnd::AddEntries(const XMLNode& parent, HTREEITEM hParent)
 		node.GetAttribute(pszAttrLastPage, entry.strLast);
 		node.GetAttribute(pszAttrURL, entry.strLink);
 
-		CString strTitle = MakeCString(entry.strFirst);
-		if (!entry.strLast.empty())
-			strTitle += _T(" - ") + MakeCString(entry.strLast);
+		CString strTitle;
+		if (!entry.strFirst.empty())
+		{
+			entry.strText = MakeCString(entry.strFirst);
+			strTitle = MakeCString(entry.strFirst);
+			if (!entry.strLast.empty())
+				strTitle += _T(" - ") + MakeCString(entry.strLast);
+		}
+		else
+		{
+			entry.strText = MakeCString(entry.strLast);
+			strTitle = MakeCString(entry.strLast);
+			if (m_entries.size() > 1)
+			{
+				int nPrev = static_cast<int>(m_entries.size()) - 2;
+				while (nPrev >= 0 && m_entries[nPrev].strLink.empty())
+					--nPrev;
+
+				if (nPrev >= 0)
+				{
+					IndexEntry& prev = m_entries[nPrev];
+					if (!prev.strLast.empty() && prev.strLast <= entry.strLast)
+						entry.strFirst = prev.strLast;
+					else if (!prev.strFirst.empty() && prev.strFirst <= entry.strLast)
+						entry.strFirst = prev.strFirst;
+				}
+			}
+		}
 
 		++nCount;
 		HTREEITEM hItem = m_list.InsertItem(strTitle, 0, 1, hParent);
 		m_list.SetItemData(hItem, m_entries.size() - 1);
 		entry.hItem = hItem;
 
-		entry.strTextFirst = MakeCString(entry.strFirst);
 		entry.strFirst = MapCharacters(tolower(entry.strFirst));
 		entry.strLast = MapCharacters(tolower(entry.strLast));
 
@@ -301,8 +325,8 @@ void CPageIndexWnd::OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
 
 			size_t nEntry = m_list.GetItemData(hItem);
 			IndexEntry& entry = m_entries[nEntry];
-			m_cboLookup.SetWindowText(entry.strTextFirst);
-			m_cboLookup.GetEditCtrl()->SetSel(entry.strTextFirst.GetLength(), -1);
+			m_cboLookup.SetWindowText(entry.strText);
+			m_cboLookup.GetEditCtrl()->SetSel(entry.strText.GetLength(), -1);
 
 			m_bChangeInternal = false;
 		}

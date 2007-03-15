@@ -391,9 +391,14 @@ BEGIN
     "B",            ID_BOOKMARK_ADD,        VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_FOCUS_TO_LOOKUP,     VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
     "H",            ID_HIGHLIGHT_SELECTION, VIRTKEY, CONTROL, NOINVERT
+    "I",            ID_DICTIONARY_INFO,     VIRTKEY, CONTROL, NOINVERT
     "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_DICTIONARY_LOOKUP,   VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
     "N",            ID_VIEW_GOTO_PAGE,      VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
@@ -404,6 +409,7 @@ BEGIN
     VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
     VK_ADD,         ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
+    VK_DOWN,        ID_DICTIONARY_NEXT,     VIRTKEY, ALT, NOINVERT
     VK_DOWN,        ID_ROTATE_180,          VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     VK_END,         ID_VIEW_LASTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
@@ -426,6 +432,7 @@ BEGIN
     VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
     VK_TAB,         ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_UP,          ID_DICTIONARY_PREV,     VIRTKEY, ALT, NOINVERT
     "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
 END
 

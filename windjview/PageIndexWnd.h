@@ -62,7 +62,7 @@ protected:
 	struct IndexEntry
 	{
 		wstring strFirst, strLast, strLink;
-		CString strTextFirst;
+		CString strText;
 		HTREEITEM hItem;
 	};
 

@@ -75,7 +75,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_WM_DESTROY()
 	ON_WM_CLOSE()
 	ON_MESSAGE(WM_APPCOMMAND, OnAppCommand)
-	ON_CBN_SETFOCUS(IDC_LOOKUP, OnLookupFocus)
+	ON_CBN_SETFOCUS(IDC_LOOKUP, OnLookupSetFocus)
 	ON_CONTROL(CBN_FINISHEDIT, IDC_LOOKUP, OnLookup)
 	ON_CONTROL(CBN_CANCELEDIT, IDC_LOOKUP, OnCancelChange)
 	ON_CBN_SELCHANGE(IDC_DICTIONARY, OnChangeDictionary)
@@ -84,6 +84,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_COMMAND(ID_DICTIONARY_NEXT, OnDictionaryNext)
 	ON_COMMAND(ID_DICTIONARY_PREV, OnDictionaryPrev)
 	ON_COMMAND(ID_DICTIONARY_LOOKUP, OnLookup)
+	ON_COMMAND(ID_FOCUS_TO_LOOKUP, OnFocusToLookup)
 	ON_UPDATE_COMMAND_UI(ID_DICTIONARY_INFO, OnUpdateDictionaryInfo)
 	ON_UPDATE_COMMAND_UI(ID_DICTIONARY_NEXT, OnUpdateDictionaryNext)
 	ON_UPDATE_COMMAND_UI(ID_DICTIONARY_PREV, OnUpdateDictionaryPrev)
@@ -592,9 +593,15 @@ void CMainFrame::OnChangeZoomEdit()
 	pView->SetFocus();
 }
 
-void CMainFrame::OnLookupFocus()
+void CMainFrame::OnLookupSetFocus()
 {
 	theApp.InitSearchHistory(m_cboLookup);
+}
+
+void CMainFrame::OnFocusToLookup()
+{
+	if (m_wndDictBar.IsWindowVisible())
+		m_cboLookup.SetFocus();
 }
 
 void CMainFrame::OnLookup()

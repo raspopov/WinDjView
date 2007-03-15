@@ -158,7 +158,8 @@ protected:
 	afx_msg void OnClose();
 	afx_msg LRESULT OnAppCommand(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnLookup();
-	afx_msg void OnLookupFocus();
+	afx_msg void OnLookupSetFocus();
+	afx_msg void OnFocusToLookup();
 	afx_msg void OnChangeDictionary();
 	afx_msg void OnChangeLanguage();
 	afx_msg void OnDictionaryInfo();
