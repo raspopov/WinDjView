@@ -71,7 +71,8 @@ struct CPrintSettings
 		fPosLeft(0.0), fPosTop(0.0), bCenterImage(true), bClipContent(false),
 		fScale(100.0), bShrinkOversized(true), bScaleToFit(false),
 		bIgnorePrinterMargins(false), nCopies(1), bCollate(false),
-		bAutoRotate(false), bLandscape(false), bTwoPages(false), nPaperCode(0) {}
+		bAutoRotate(false), bLandscape(false), bTwoPages(false),
+		bBooklet(false), nPaperCode(0) {}
 
 	double fMarginLeft;
 	double fMarginTop;
@@ -95,7 +96,8 @@ struct CPrintSettings
 	BOOL bCollate;
 
 	BOOL bLandscape;
-	BOOL bTwoPages;
+	bool bTwoPages;
+	bool bBooklet;
 
 	CString strPrinter;
 	WORD nPaperCode;

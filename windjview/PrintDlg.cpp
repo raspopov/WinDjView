@@ -48,6 +48,11 @@ CPrintDlg::CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, int nMode, CWnd* pP
 
 CPrintDlg::~CPrintDlg()
 {
+	if (m_pPrinter != NULL)
+	{
+		delete m_pPrinter;
+		m_pPrinter = NULL;
+	}
 }
 
 void CPrintDlg::DoDataExchange(CDataExchange* pDX)
@@ -163,6 +168,10 @@ BOOL CPrintDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	m_settings = *theApp.GetPrintSettings();
+	if (m_settings.bBooklet)
+		m_settings.bTwoPages = true;
+
 	ASSERT(m_hPrinter == NULL);
 
 	m_edtCopies.SetInteger();
@@ -237,10 +246,8 @@ BOOL CPrintDlg::OnInitDialog()
 		}
 	}
 
-	if (m_cboPrinter.GetCurSel() == -1)
+	if (m_cboPrinter.GetCurSel() == -1 && m_cboPrinter.GetCount() > 0)
 		m_cboPrinter.SetCurSel(0);
-
-	m_settings = *theApp.GetPrintSettings();
 
 	UpdateData(false);
 
@@ -253,7 +260,8 @@ BOOL CPrintDlg::OnInitDialog()
 
 	m_cboPagesPerSheet.AddString(LoadString(IDS_PRINT_ONE_PAGE));
 	m_cboPagesPerSheet.AddString(LoadString(IDS_PRINT_TWO_PAGES));
-	m_cboPagesPerSheet.SetCurSel(m_settings.bTwoPages ? 1 : 0);
+	m_cboPagesPerSheet.AddString(LoadString(IDS_PRINT_BOOKLET));
+	m_cboPagesPerSheet.SetCurSel(m_settings.bBooklet ? 2 : m_settings.bTwoPages ? 1 : 0);
 
 	return true;
 }
@@ -270,58 +278,67 @@ void CPrintDlg::OnOK()
 	// Printer handle and info struct are returned to the caller
 	ASSERT(m_hPrinter != NULL && m_pPrinter != NULL && m_pPaper != NULL);
 
-	// Parse page range
-	m_pages.clear();
-	if (m_nRangeType == AllPages)
+	if (IsPrintSelection())
 	{
-		for (int i = 1; i <= m_pSource->GetPageCount(); ++i)
-			m_pages.push_back(i);
-	}
-	else if (m_nRangeType == CurrentPage)
-	{
-		m_pages.push_back(m_nCurPage + 1);
-		if (m_settings.bTwoPages && m_nCurPage < m_pSource->GetPageCount() - 1)
-			m_pages.push_back(m_nCurPage + 2);
-	}
-	else if (m_nRangeType == CurrentSelection)
-	{
-		m_pages.push_back(m_nCurPage + 1);
+		m_arrPages.push_back(make_pair(m_nCurPage + 1, 0));
 	}
 	else
 	{
-		if (!ParseRange())
+		// Parse page range
+		m_pages.clear();
+		if (m_nRangeType == AllPages)
 		{
-			AfxMessageBox(IDS_ERROR_PARSING_RANGE, MB_ICONEXCLAMATION | MB_OK);
-			return;
+			for (int i = 1; i <= m_pSource->GetPageCount(); ++i)
+				m_pages.push_back(i);
 		}
-	}
-
-	bool bAllPages = (m_cboPagesInRange.GetCurSel() == 0) || m_nRangeType == CurrentPage || m_nRangeType == CurrentSelection;
-	bool bOddPages = (m_cboPagesInRange.GetCurSel() == 1) && (m_nRangeType == AllPages || m_nRangeType == CustomRange);
-	bool bEvenPages = (m_cboPagesInRange.GetCurSel() == 2) && (m_nRangeType == AllPages || m_nRangeType == CustomRange);
-	int i = 1;
-	int inc = (m_settings.bTwoPages ? 2 : 1);
-
-	for (size_t j = 0; j < m_pages.size(); j += inc, ++i)
-	{
-		int nFirst = m_pages[j];
-		if (!m_settings.bTwoPages || IsPrintSelection())
+		else if (m_nRangeType == CurrentPage)
 		{
-			if (bAllPages || bOddPages && (nFirst % 2) == 1 || bEvenPages && (nFirst % 2) == 0)
-				m_arrPages.push_back(make_pair(nFirst, 0));
+			m_pages.push_back(m_nCurPage + 1);
+			if (m_settings.bTwoPages && m_nCurPage < m_pSource->GetPageCount() - 1)
+				m_pages.push_back(m_nCurPage + 2);
 		}
 		else
 		{
-			if (j + 1 == m_pages.size())
+			if (!ParseRange())
 			{
-				if (bAllPages || bOddPages && (i % 2) == 1 || bEvenPages && (i % 2) == 0)
+				AfxMessageBox(IDS_ERROR_PARSING_RANGE, MB_ICONEXCLAMATION | MB_OK);
+				return;
+			}
+		}
+
+		if (m_settings.bBooklet && m_pages.size() > 2)
+		{
+			size_t size = 4 * ((m_pages.size() + 3) / 4);
+			vector<int> pages(size, 0);
+			for (size_t i = 0; i < m_pages.size(); ++i)
+			{
+				if (i < size / 2)
+					pages[1 + 4*(i / 2) + (i % 2)] = m_pages[i];
+				else
+					pages[2*size - 4*((i + 1) / 2) - ((i + 1) % 2)] = m_pages[i];
+			}
+			m_pages.swap(pages);
+		}
+
+		bool bAllPages = (m_cboPagesInRange.GetCurSel() == 0) || m_nRangeType == CurrentPage || m_nRangeType == CurrentSelection;
+		bool bOddPages = (m_cboPagesInRange.GetCurSel() == 1) && (m_nRangeType == AllPages || m_nRangeType == CustomRange);
+		bool bEvenPages = (m_cboPagesInRange.GetCurSel() == 2) && (m_nRangeType == AllPages || m_nRangeType == CustomRange);
+		int i = 1;
+		int inc = (m_settings.bTwoPages ? 2 : 1);
+
+		for (size_t j = 0; j < m_pages.size(); j += inc, ++i)
+		{
+			int nFirst = m_pages[j];
+			if (!m_settings.bTwoPages)
+			{
+				if (bAllPages || bOddPages && (nFirst % 2) == 1 || bEvenPages && (nFirst % 2) == 0)
 					m_arrPages.push_back(make_pair(nFirst, 0));
-				break;
 			}
 			else
 			{
+				int nSecond = (j + 1 < m_pages.size() ? m_pages[j + 1] : 0);
 				if (bAllPages || bOddPages && (i % 2) == 1 || bEvenPages && (i % 2) == 0)
-					m_arrPages.push_back(make_pair(nFirst, m_pages[j + 1]));
+					m_arrPages.push_back(make_pair(nFirst, nSecond));
 			}
 		}
 	}
@@ -330,12 +347,9 @@ void CPrintDlg::OnOK()
 		reverse(m_arrPages.begin(), m_arrPages.end());
 
 	if (m_hPrinter != NULL)
-		::ClosePrinter(m_hPrinter);
-
-	if (m_pPrinter != NULL)
 	{
-		delete m_pPrinter;
-		m_pPrinter = NULL;
+		::ClosePrinter(m_hPrinter);
+		m_hPrinter = NULL;
 	}
 
 	CDialog::OnOK();
@@ -346,7 +360,10 @@ void CPrintDlg::OnCancel()
 	SaveSettings();
 
 	if (m_hPrinter != NULL)
+	{
 		::ClosePrinter(m_hPrinter);
+		m_hPrinter = NULL;
+	}
 
 	if (m_pPrinter != NULL)
 	{
@@ -471,7 +488,10 @@ void CPrintDlg::OnChangePagesPerSheet()
 {
 	UpdateData();
 
-	BOOL bTwoPages = m_cboPagesPerSheet.GetCurSel() == 1;
+	int nSel = m_cboPagesPerSheet.GetCurSel();
+	m_settings.bBooklet = (nSel == 2);
+
+	bool bTwoPages = (nSel != 0);
 	if (bTwoPages == m_settings.bTwoPages)
 		return;
 
@@ -547,7 +567,7 @@ void CPrintDlg::OnChangePrinter()
 
 	CString strPrinter;
 	m_cboPrinter.GetLBText(nPrinter, strPrinter);
-	theApp.GetPrintSettings()->strPrinter = strPrinter;
+	m_settings.strPrinter = strPrinter;
 
 	PRINTER_DEFAULTS defaults;
 	defaults.pDatatype = NULL;

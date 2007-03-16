@@ -2899,7 +2899,7 @@ void CDjVuView::OnFilePrint()
 
 	if (dlg.DoModal() == IDOK)
 	{
-		ASSERT(dlg.m_hPrinter != NULL && dlg.m_pPrinter != NULL && dlg.m_pPaper != NULL);
+		ASSERT(dlg.m_pPrinter != NULL && dlg.m_pPaper != NULL);
 
 		CProgressDlg progress_dlg(PrintThreadProc);
 		progress_dlg.SetUserData(reinterpret_cast<DWORD_PTR>(&dlg));
@@ -3362,7 +3362,7 @@ void CDjVuView::PageRendered(int nPage, CDIB* pDIB)
 
 void CDjVuView::OnDestroy()
 {
-	if (m_nType == Normal)
+	if (m_nType == Normal && m_pSource != NULL)
 		GetMainFrame()->AddToHistory(this, true);
 
 	if (m_pRenderThread != NULL)

@@ -136,6 +136,7 @@
 #define IDS_NOT_SPECIFIED               293
 #define IDS_UNINSTALL_DICT              294
 #define IDS_UNINSTALL_FAILED            295
+#define IDS_PRINT_BOOKLET               296
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -330,7 +331,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        296
+#define _APS_NEXT_RESOURCE_VALUE        297
 #define _APS_NEXT_COMMAND_VALUE         33153
 #define _APS_NEXT_CONTROL_VALUE         1093
 #define _APS_NEXT_SYMED_VALUE           116

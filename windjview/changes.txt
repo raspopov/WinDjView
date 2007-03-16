@@ -12,7 +12,7 @@ Changes in version 0.5 (2007-??-??):
 + Reorganized Settings dialog.
 + Added option to invert colors.
 + Added option to change display units (centimeters, millimeters, inches).
-+ Added option to auto-rotate pages when printing.
++ New printing options: auto-rotate pages, booklet printing.
 * Improved interface responsiveness when opening and closing documents.
 * Improvements for files with large shared dictionaries:
   * Reduced memory usage.

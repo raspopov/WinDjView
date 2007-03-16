@@ -395,7 +395,8 @@ BEGIN
                                                     NOINVERT
     "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
     "H",            ID_HIGHLIGHT_SELECTION, VIRTKEY, CONTROL, NOINVERT
-    "I",            ID_DICTIONARY_INFO,     VIRTKEY, CONTROL, NOINVERT
+    "I",            ID_DICTIONARY_INFO,     VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
     "L",            ID_DICTIONARY_LOOKUP,   VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
@@ -1340,6 +1341,7 @@ BEGIN
     IDS_NOT_SPECIFIED       "Not Specified"
     IDS_UNINSTALL_DICT      "Are you sure you want to uninstall the dictionary ""%s""?\n\nThe dictionary file will be moved to the recycle bin. To permanently delete the dictionary, empty the recycle bin."
     IDS_UNINSTALL_FAILED    "Could not uninstall the dictionary ""%s"". To uninstall it manually, quit the application and delete the following file:\n\n%s"
+    IDS_PRINT_BOOKLET       "Booklet"
 END
 
 STRINGTABLE DISCARDABLE 
