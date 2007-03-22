@@ -552,6 +552,9 @@ BOOL CMyAnchorWnd::Create(CMyScrollView* pView)
 		dc.SelectObject(pOldBitmap);
 
 		SetWindowRgn(rgn, false);
+
+		// SetWindowRgn now owns the region, so don't destroy it
+		rgn.Detach();
 	}
 
 	return bRetVal;
