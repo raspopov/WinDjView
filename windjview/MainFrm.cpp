@@ -1288,7 +1288,7 @@ BOOL CMainFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	if (IsFullscreenMode())
 	{
-		if (m_pFullscreenWnd->GetView()->SendMessage(WM_COMMAND, wParam, lParam))
+		if (m_pFullscreenWnd->SendMessage(WM_COMMAND, wParam, lParam))
 			return true;
 
 		return CWnd::OnCommand(wParam, lParam);

@@ -267,7 +267,7 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 			nAddToHistory |= CDjVuView::AddSource;
 
 		if (!strPage.IsEmpty())
-			pView->GoToURL(MakeUTF8String("#" + strPage), nAddToHistory);
+			pView->GoToURL(MakeUTF8String(_T("#") + strPage), nAddToHistory);
 		if (bAddToHistory)
 			pView->GetMainFrame()->AddToHistory(pView);
 	}

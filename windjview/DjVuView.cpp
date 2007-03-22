@@ -1792,7 +1792,7 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	{
 	case 'G':
 	case 'g':
-		OnViewGotoPage();
+		GetTopLevelParent()->SendMessage(WM_COMMAND, ID_VIEW_GOTO_PAGE);
 		return;
 
 	case VK_HOME:
