@@ -972,7 +972,9 @@ int CMainFrame::GetDocumentCount()
 
 void CMainFrame::GoToHistoryPos(const HistoryPos& pos)
 {
-	CDjVuDoc* pDoc = theApp.OpenDocument(pos.strFileName, "", false);
+	CDjVuDoc* pDoc = theApp.FindOpenDocument(pos.strFileName);
+	if (pDoc == NULL)
+		pDoc = theApp.OpenDocument(pos.strFileName, "", false);
 	if (pDoc == NULL)
 		return;
 
@@ -990,6 +992,7 @@ void CMainFrame::GoToHistoryPos(const HistoryPos& pos)
 		}
 	}
 
+	pView->GetParentFrame()->ActivateFrame();
 	pView->GoToBookmark(pos.bookmark, CDjVuView::DoNotAdd);
 }
 
