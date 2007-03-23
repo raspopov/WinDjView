@@ -72,6 +72,8 @@ public:
 	Annotation* GetAnnoTemplate() { return &m_annoTemplate; }
 
 	CDjVuDoc* OpenDocument(LPCTSTR lpszFileName, const GUTF8String& strPage, bool bAddToHistory = true);
+	CDjVuDoc* FindOpenDocument(LPCTSTR lpszFileName);
+
 	void SaveSettings();
 	bool RegisterShellFileTypes();
 
@@ -114,7 +116,6 @@ protected:
 	Annotation m_annoTemplate;
 
 	CMyDocTemplate* m_pDjVuTemplate;
-	CDocument* FindOpenDocument(LPCTSTR lpszFileName);
 
 	void LoadSettings();
 	void EnableShellOpen();

@@ -1003,7 +1003,7 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 		if (updateType == TOP)
 		{
 			nAnchorPage = CalcTopPage();
-			ptAnchorOffset = ScreenToDjVu(nAnchorPage, ptTop - m_pages[nAnchorPage].ptOffset, false);
+			ptAnchorOffset = ptTop - m_pages[nAnchorPage].ptOffset;
 		}
 		else if (updateType == BOTTOM)
 		{
@@ -1011,11 +1011,11 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 
 			int nPage = CalcTopPage();
 			while (nPage < m_nPageCount - 1 &&
-				ptBottom.y > m_pages[nPage].rcDisplay.bottom)
+					ptBottom.y > m_pages[nPage].rcDisplay.bottom)
 				++nPage;
 
-			nAnchorPage = nPage - (nPage % 2);
-			ptAnchorOffset = ScreenToDjVu(nAnchorPage, ptBottom - m_pages[nAnchorPage].ptOffset, false);
+			nAnchorPage = nPage;
+			ptAnchorOffset = ptBottom - m_pages[nAnchorPage].ptOffset;
 		}
 
 		if (nAnchorPage != -1)

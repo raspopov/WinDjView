@@ -984,7 +984,7 @@ CDjVuDoc* CDjViewApp::OpenDocument(LPCTSTR lpszPathName, const GUTF8String& strP
 	return pDoc;
 }
 
-CDocument* CDjViewApp::FindOpenDocument(LPCTSTR lpszFileName)
+CDjVuDoc* CDjViewApp::FindOpenDocument(LPCTSTR lpszFileName)
 {
 	TCHAR szPath[_MAX_PATH], szTemp[_MAX_PATH];
 	ASSERT(lstrlen(lpszFileName) < _countof(szPath));
@@ -1010,7 +1010,7 @@ CDocument* CDjViewApp::FindOpenDocument(LPCTSTR lpszFileName)
 
 		CDocument* pDocument = NULL;
 		if (pTemplate->MatchDocType(szPath, pDocument) == CDocTemplate::yesAlreadyOpen)
-			return pDocument;
+			return (CDjVuDoc*) pDocument;
 	}
 
 	return NULL;
@@ -1550,7 +1550,7 @@ bool CDjViewApp::InstallDictionary(CDjVuDoc* pDoc, bool bAllUsers, bool bKeepOri
 	_tsplitpath(strOldName, NULL, NULL, szName, szExt);
 	CString strNewName = strPath + CString(szName) + szExt;
 
-	CDjVuDoc* pPrevDoc = (CDjVuDoc*) FindOpenDocument(strNewName);
+	CDjVuDoc* pPrevDoc = FindOpenDocument(strNewName);
 	if (pPrevDoc != NULL)
 	{
 		m_pPendingSource = pPrevDoc->GetSource();
@@ -1624,7 +1624,7 @@ bool CDjViewApp::InstallDictionary(CDjVuDoc* pDoc, bool bAllUsers, bool bKeepOri
 
 bool CDjViewApp::UninstallDictionary(DictionaryInfo* pInfo)
 {
-	CDjVuDoc* pPrevDoc = (CDjVuDoc*) FindOpenDocument(pInfo->strPathName);
+	CDjVuDoc* pPrevDoc = FindOpenDocument(pInfo->strPathName);
 	if (pPrevDoc != NULL)
 	{
 		m_pPendingSource = pPrevDoc->GetSource();
