@@ -24,6 +24,7 @@
 #include "DjVuDoc.h"
 #include "DjVuView.h"
 #include "MyFileDialog.h"
+#include "FullscreenWnd.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -261,6 +262,9 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 
 		CDjVuDoc* pDoc = (CDjVuDoc*) pOpenDocument;
 		CDjVuView* pView = pDoc->GetDjVuView();
+
+		if (pView->GetMainFrame()->IsFullscreenMode())
+			pView->GetMainFrame()->GetFullscreenWnd()->Hide();
 
 		int nAddToHistory = (bAddToHistory ? CDjVuView::AddTarget : 0);
 		if (bAddToHistory && bestMatch == CDocTemplate::yesAlreadyOpen)

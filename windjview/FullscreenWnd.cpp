@@ -105,9 +105,6 @@ void CFullscreenWnd::Hide()
 
 	ShowWindow(SW_HIDE);
 
-	if (m_pOwner != NULL)
-		m_pOwner->SetFocus();
-
 	m_pView = NULL;
 	m_pOwner = NULL;
 }
