@@ -83,12 +83,12 @@ BEGIN
     PUSHBUTTON      "Save &As...",IDC_SAVE_AS,264,43,54,14
     GROUPBOX        "&DjVu Document",IDC_DJVU_GROUP,7,7,250,24
     CONTROL         "File name",IDC_DJVU_FILE,"Static",SS_LEFTNOWORDWRAP | 
-                    SS_PATHELLIPSIS | WS_GROUP,13,18,221,9
+                    SS_PATHELLIPSIS | SS_NOPREFIX | WS_GROUP,13,18,221,9
     PUSHBUTTON      "...",IDC_BROWSE_DJVU,239,15,13,12
     GROUPBOX        "&Page Index",IDC_PAGE_INDEX_GROUP,7,35,250,40
     CONTROL         "File name",IDC_PAGE_INDEX_FILE,"Static",
-                    SS_LEFTNOWORDWRAP | SS_PATHELLIPSIS | WS_GROUP,13,47,221,
-                    9
+                    SS_LEFTNOWORDWRAP | SS_PATHELLIPSIS | SS_NOPREFIX |
+                    WS_GROUP,13,47,221,9
     PUSHBUTTON      "...",IDC_BROWSE_PAGE_INDEX,239,43,13,12
     CONTROL         "Don't change",IDC_PAGE_INDEX_DONTCHANGE,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,61,59,8
@@ -99,7 +99,7 @@ BEGIN
     PUSHBUTTON      "Export...",IDC_EXPORT_PAGE_INDEX,207,57,45,14,WS_GROUP
     GROUPBOX        "C&haracter Map",IDC_CHAR_MAP_GROUP,7,79,250,40
     CONTROL         "File name",IDC_CHAR_MAP_FILE,"Static",SS_LEFTNOWORDWRAP | 
-                    SS_PATHELLIPSIS | WS_GROUP,13,90,221,9
+                    SS_PATHELLIPSIS | SS_NOPREFIX | WS_GROUP,13,90,221,9
     PUSHBUTTON      "...",IDC_BROWSE_CHAR_MAP,239,86,13,12
     CONTROL         "Don't change",IDC_CHAR_MAP_DONTCHANGE,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,104,59,8

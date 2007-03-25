@@ -163,17 +163,6 @@ bool IsWinNT()
 	return !!nResult;
 }
 
-bool FileExists(LPCTSTR lpszFileName)
-{
-	WIN32_FIND_DATA data;
-	HANDLE h = ::FindFirstFile(lpszFileName, &data);
-	if (h == INVALID_HANDLE_VALUE)
-		return false;
-
-	::FindClose(h);
-	return true;
-}
-
 bool MoveToTrash(LPCTSTR lpszFileName)
 {
 	int nLength = _tcslen(lpszFileName);

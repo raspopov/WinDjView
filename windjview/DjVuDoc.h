@@ -50,6 +50,7 @@ public:
 
 protected:
 	DjVuSource* m_pSource;
+	HRESULT DoInstall();
 
 	// Generated message map functions
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);

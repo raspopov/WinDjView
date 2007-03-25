@@ -735,7 +735,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,149,69,50,14
 END
 
-IDD_INSTALL_DIC DIALOG DISCARDABLE  0, 0, 190, 112
+IDD_INSTALL_DIC DIALOG DISCARDABLE  0, 0, 190, 138
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Install Dictionary"
 FONT 8, "MS Sans Serif"
@@ -746,12 +746,19 @@ BEGIN
     CONTROL         "Install this dictionary for all users of this computer (requires administrative priveleges)",
                     IDC_ALL_USERS,"Button",BS_AUTORADIOBUTTON | BS_TOP | 
                     BS_MULTILINE,7,21,176,19
+    CONTROL         "Install this dictionary into a custom location:",
+                    IDC_CUSTOM,"Button",BS_AUTORADIOBUTTON | BS_TOP | 
+                    BS_MULTILINE,7,41,157,11
+    PUSHBUTTON      "...",IDC_BROWSE_LOCATION,170,40,13,12,WS_GROUP
+    CONTROL         "(Not selected)",IDC_CUSTOM_LOCATION,"Static",
+                    SS_LEFTNOWORDWRAP | SS_NOPREFIX | SS_PATHELLIPSIS | 
+                    WS_GROUP,18,53,165,9
     LTEXT           "A copy of this file will be created. Please uncheck the following box if you want to move the original file to the Recycle Bin after the installation:",
-                    IDC_STATIC,7,43,176,26
+                    IDC_STATIC,7,69,176,26
     CONTROL         "Keep the original file",IDC_KEEP_ORIGINAL,"Button",
-                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,71,86,11
-    DEFPUSHBUTTON   "OK",IDOK,78,91,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,133,91,50,14
+                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,97,86,11
+    DEFPUSHBUTTON   "OK",IDOK,78,117,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,133,117,50,14
 END
 
 IDD_INSTALL_DIC_REPLACE DIALOG DISCARDABLE  0, 0, 190, 91
@@ -785,14 +792,17 @@ END
 IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 125
 STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Dictionaries"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | 
                     LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | 
-                    LVS_NOSORTHEADER | WS_TABSTOP,7,18,208,82,
+                    LVS_NOSORTHEADER | WS_TABSTOP,7,42,208,58,
                     WS_EX_CLIENTEDGE
-    LTEXT           "Installed dictionaries:",IDC_STATIC,7,7,69,9
+    LTEXT           "Installed dictionaries:",IDC_STATIC,7,31,69,9
     PUSHBUTTON      "&Uninstall",IDC_UNINSTALL,7,104,50,14
+    LTEXT           "Custom location:",IDC_STATIC,7,7,69,9
+    LTEXT           "(Not selected)",IDC_CUSTOM_LOCATION,7,18,192,9
+    PUSHBUTTON      "...",IDC_BROWSE_LOCATION,202,16,13,12
 END
 
 
@@ -943,7 +953,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 183
         TOPMARGIN, 7
-        BOTTOMMARGIN, 105
+        BOTTOMMARGIN, 131
     END
 
     IDD_INSTALL_DIC_REPLACE, DIALOG
@@ -1342,13 +1352,15 @@ BEGIN
     IDS_UNINSTALL_DICT      "Are you sure you want to uninstall the dictionary ""%s""?\n\nThe dictionary file will be moved to the recycle bin. To permanently delete the dictionary, empty the recycle bin."
     IDS_UNINSTALL_FAILED    "Could not uninstall the dictionary ""%s"". To uninstall it manually, quit the application and delete the following file:\n\n%s"
     IDS_PRINT_BOOKLET       "Booklet"
+    IDS_DICT_LOCATION_PROMPT "Select a custom location for dictionaries:"
+    IDS_INVALID_DIR         "The typed folder name is invalid. Please select an existing folder from the list, or use the ""Make New Folder"" button."
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDC_DICTIONARY_LABEL    "Dictionary:"
     IDC_LANGUAGE_LIST       "Select the source and destination languages\nLanguages"
-    IDS_LANGUAGE_LIST_LABEL "Language:"
+    IDC_LANGUAGE_LIST_LABEL "Language:"
 END
 
 #endif    // English (U.S.) resources

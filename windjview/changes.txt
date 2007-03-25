@@ -6,6 +6,7 @@ Changes in version 0.5 (2007-??-??):
 ! Implemented user-created bookmarks and annotations.
 ! Added rectangle tool: can be used to create an annotation,
   to zoom in, to print selected region or to export it to a bitmap file.
+! Integrated dictionary features of DjVuDic program.
 + Open page and view settings can be restored when opening a file.
 + Page number can be specified when opening files via command line.
 + Back/Forward keys on multimedia keyboards now work as Alt+arrows.

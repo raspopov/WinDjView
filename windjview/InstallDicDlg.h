@@ -34,11 +34,15 @@ public:
 	enum { IDD = IDD_INSTALL_DIC };
 	int m_nChoice;
 	BOOL m_bKeepOriginal;
+	CString m_strDictLocation;
 
 protected:
 	UINT m_nTemplateID;
+	static int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData);
 
 	virtual BOOL OnInitDialog();
 	virtual void DoDataExchange(CDataExchange* pDX);
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg void OnBrowseLocation();
 	DECLARE_MESSAGE_MAP()
 };

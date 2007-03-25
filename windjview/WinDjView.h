@@ -63,7 +63,7 @@ public:
 	BOOL GetProfileCompressed(LPCTSTR pszSection, LPCTSTR pszEntry, GUTF8String& value);
 
 	virtual bool LoadDocSettings(const CString& strKey, DocSettings* pSettings);
-	virtual DictionaryInfo* GetDictionaryInfo(const CString& strFileName, bool bCheckPath = true);
+	virtual DictionaryInfo* GetDictionaryInfo(const CString& strPathName, bool bCheckPath = true);
 	virtual void ReportFatalError();
 
 	CAppSettings* GetAppSettings() { return &m_appSettings; }
@@ -92,8 +92,9 @@ public:
 	DictionaryInfo* GetDictionaryInfo(int nLangIndex, int nIndex)
 		{ return m_dictsByLang[nLangIndex].dicts[nIndex]; }
 	void Lookup(const CString& strLookup, DictionaryInfo* pInfo);
-	bool InstallDictionary(CDjVuDoc* pDoc, bool bAllUsers, bool bKeepOriginal);
+	bool InstallDictionary(DjVuSource* pSource, int nLocationChoice, bool bKeepOriginal);
 	bool UninstallDictionary(DictionaryInfo* pInfo);
+	void ReloadDictionaries();
 
 	// Register running threads
 	void ThreadStarted();
@@ -141,7 +142,7 @@ protected:
 	set<DjVuSource*> m_deleteOnRelease;
 	map<CString, DictionaryInfo> m_dictionaries;
 	void LoadDictionaries();
-	void LoadDictionaries(const CString& strDirectory);
+	void LoadDictionaries(CString strDirectory);
 	void LoadDictionaryInfo(DictionaryInfo& info);
 	bool LoadDictionaryInfoFromDisk(DictionaryInfo& info);
 	void UpdateDictVector();

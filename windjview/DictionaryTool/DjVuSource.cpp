@@ -755,7 +755,7 @@ static const char pszLangToKey[] = "language-to";
 
 DjVuSource::DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DocSettings* pSettings)
 	: m_strFileName(strFileName), m_pDjVuDoc(pDoc), m_nPageCount(0), m_bHasText(false),
-	  m_pSettings(pSettings), m_pDicInfo(&m_dicInfo)
+	  m_pSettings(pSettings)
 {
 	m_nPageCount = m_pDjVuDoc->get_pages_num();
 	ASSERT(m_nPageCount > 0);
@@ -765,19 +765,18 @@ DjVuSource::DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DocSet
 
 	if (pApplication != NULL)
 	{
-		m_pDicInfo = pApplication->GetDictionaryInfo(strFileName);
-		if (m_pDicInfo == NULL)
-			m_pDicInfo = &m_dicInfo;
+		if (pApplication->GetDictionaryInfo(strFileName) != NULL)
+			m_dictInfo.bInstalled = true;
 	}
 
 	PageInfo info = GetPageInfo(0, false, true);
 	if (info.pAnt != NULL)
 	{
-		m_pDicInfo->ReadPageIndex(info.pAnt->metadata[pszPageIndexKey]);
-		m_pDicInfo->ReadCharMap(info.pAnt->metadata[pszCharMapKey]);
-		m_pDicInfo->ReadTitle(info.pAnt->metadata[pszTitleKey]);
-		m_pDicInfo->ReadLangFrom(info.pAnt->metadata[pszLangFromKey]);
-		m_pDicInfo->ReadLangTo(info.pAnt->metadata[pszLangToKey]);
+		m_dictInfo.ReadPageIndex(info.pAnt->metadata[pszPageIndexKey]);
+		m_dictInfo.ReadCharMap(info.pAnt->metadata[pszCharMapKey]);
+		m_dictInfo.ReadTitle(info.pAnt->metadata[pszTitleKey]);
+		m_dictInfo.ReadLangFrom(info.pAnt->metadata[pszLangFromKey]);
+		m_dictInfo.ReadLangTo(info.pAnt->metadata[pszLangToKey]);
 	}
 }
 
@@ -1255,4 +1254,19 @@ bool DjVuSource::SaveAs(const CString& strFileName)
 	{
 		return false;
 	}
+}
+
+void DjVuSource::UpdateDictionaries()
+{
+	if (pApplication == NULL)
+		return;
+
+	openDocumentsLock.Lock();
+	map<CString, DjVuSource*>::iterator it;
+	for (it = openDocuments.begin(); it != openDocuments.end(); ++it)
+	{
+		DjVuSource* pSource = (*it).second;
+		pSource->m_dictInfo.bInstalled = (pApplication->GetDictionaryInfo(pSource->m_strFileName) != NULL);
+	}
+	openDocumentsLock.Unlock();
 }

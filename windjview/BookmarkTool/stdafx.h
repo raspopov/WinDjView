@@ -62,6 +62,7 @@
 #include <afxcmn.h>
 #include <afxmt.h>
 #include <afxpriv.h>
+#include <shlwapi.h>
 
 #if (_MFC_VER > 0x0600)
 #include <../src/mfc/afximpl.h>

@@ -164,4 +164,6 @@ struct CAppSettings
 
 	int nCurLang;
 	int nCurDict;
+	CString strDictLocation;
+	int nDictChoice;
 };

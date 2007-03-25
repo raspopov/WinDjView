@@ -80,4 +80,5 @@ CAppSettings::CAppSettings()
 
 	nCurLang = -1;
 	nCurDict = -1;
+	nDictChoice = 0;
 }

@@ -201,7 +201,7 @@ struct DictionaryInfo
 struct IApplication
 {
 	virtual bool LoadDocSettings(const CString& strKey, DocSettings* pSettings) = 0;
-	virtual DictionaryInfo* GetDictionaryInfo(const CString& strFileName, bool bCheckPath = true) = 0;
+	virtual DictionaryInfo* GetDictionaryInfo(const CString& strPathName, bool bCheckPath = true) = 0;
 	virtual void ReportFatalError() = 0;
 };
 
@@ -232,7 +232,9 @@ public:
 	bool SaveAs(const CString& strFileName);
 
 	DocSettings* GetSettings() { return m_pSettings; }
-	DictionaryInfo* GetDictionaryInfo() { return m_pDicInfo; }
+	DictionaryInfo* GetDictionaryInfo() { return &m_dictInfo; }
+	bool IsDictionary() const { return m_dictInfo.strPageIndex.length() != 0; }
+	static void UpdateDictionaries();
 
 	static map<MD5, DocSettings>& GetAllSettings() { return settings; }
 
@@ -266,13 +268,10 @@ protected:
 	int m_nPageCount;
 	CCriticalSection m_lock;
 	bool m_bHasText;
-	GUTF8String m_strPageIndex;
-	GUTF8String m_strCharMap;
 
 	vector<PageData> m_pages;
 	DocSettings* m_pSettings;
-	DictionaryInfo* m_pDicInfo;
-	DictionaryInfo m_dicInfo;
+	DictionaryInfo m_dictInfo;
 
 	static map<CString, DjVuSource*> openDocuments;
 	static CCriticalSection openDocumentsLock;

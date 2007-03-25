@@ -33,13 +33,18 @@ public:
 // Dialog Data
 	enum { IDD = IDD_SETTINGS_DICT };
 	CListCtrl m_list;
+	CString m_strDictLocation;
 
 protected:
 	CImageList m_imgList;
+
+	static int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData);
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual BOOL OnInitDialog();
 	afx_msg void OnKickIdle();
 	afx_msg void OnUninstall();
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg void OnBrowseLocation();
 	DECLARE_MESSAGE_MAP()
 };

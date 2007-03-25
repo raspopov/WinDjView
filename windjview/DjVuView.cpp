@@ -4719,11 +4719,9 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nAddToHistory)
 	}
 
 	CString strPathName = MakeCString(strURL);
-	TCHAR szDrive[_MAX_DRIVE + 1] = {0};
-	TCHAR szDir[_MAX_DIR + 1] = {0};
-	TCHAR szExt[_MAX_EXT + 1] = {0};
-	_tsplitpath(strPathName, NULL, NULL, NULL, szExt);
-	if (_tcsicmp(szExt, _T(".djvu")) == 0 || _tcsicmp(szExt, _T(".djv")) == 0)
+	LPTSTR pszExt = PathFindExtension(strPathName);
+	if (!PathIsURL(strPathName) && pszExt != NULL
+			&& (_tcsicmp(pszExt, _T(".djvu")) == 0 || _tcsicmp(pszExt, _T(".djv")) == 0))
 	{
 		// Check if the link leads to a local DjVu file
 
@@ -4733,19 +4731,18 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nAddToHistory)
 			strPathName = strPathName.Mid(7);
 
 		// Try as absolute path
-		bool bExists = true;
-		if (!FileExists(strPathName))
+		if (PathIsRelative(strPathName))
 		{
-			// Try as relative path
-			CString strCurrentPath = m_pSource->GetFileName();
-			_tsplitpath(strCurrentPath, szDrive, szDir, NULL, NULL);
-
-			strPathName = CString(szDrive) + CString(szDir) + strPathName;
-			if (!FileExists(strPathName))
-				bExists = false;
+			CString strPath = m_pSource->GetFileName();
+			PathRemoveFileSpec(strPath.GetBuffer(MAX_PATH));
+			if (PathAppend(strPath.GetBuffer(MAX_PATH), strPathName))
+			{
+				strPath.ReleaseBuffer();
+				strPathName = strPath;
+			}
 		}
 
-		if (bExists)
+		if (PathFileExists(strPathName))
 		{
 			if (AfxComparePath(m_pSource->GetFileName(), strPathName))
 			{

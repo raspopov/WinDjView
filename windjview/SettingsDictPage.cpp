@@ -34,6 +34,10 @@ IMPLEMENT_DYNAMIC(CSettingsDictPage, CPropertyPage)
 CSettingsDictPage::CSettingsDictPage()
 	: CPropertyPage(CSettingsDictPage::IDD)
 {
+	m_strDictLocation = theApp.GetAppSettings()->strDictLocation;
+
+	PathRemoveBackslash(m_strDictLocation.GetBuffer(_MAX_PATH));
+	m_strDictLocation.ReleaseBuffer();
 }
 
 CSettingsDictPage::~CSettingsDictPage()
@@ -44,12 +48,17 @@ void CSettingsDictPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LIST, m_list);
+
+	if (!m_strDictLocation.IsEmpty())
+		DDX_Text(pDX, IDC_CUSTOM_LOCATION, m_strDictLocation);
 }
 
 
 BEGIN_MESSAGE_MAP(CSettingsDictPage, CPropertyPage)
 	ON_MESSAGE_VOID(WM_KICKIDLE, OnKickIdle)
 	ON_BN_CLICKED(IDC_UNINSTALL, OnUninstall)
+	ON_WM_CTLCOLOR()
+	ON_BN_CLICKED(IDC_BROWSE_LOCATION, OnBrowseLocation)
 END_MESSAGE_MAP()
 
 
@@ -111,4 +120,72 @@ void CSettingsDictPage::OnUninstall()
 					MB_ICONEXCLAMATION | MB_OK);
 		}
 	}
+}
+
+HBRUSH CSettingsDictPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	HBRUSH brush = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+
+	if (pWnd->GetDlgCtrlID() == IDC_CUSTOM_LOCATION && m_strDictLocation.IsEmpty())
+	{
+		pDC->SetTextColor(::GetSysColor(COLOR_GRAYTEXT));
+	}
+
+	return brush;
+}
+
+int CALLBACK CSettingsDictPage::BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
+{
+	if (uMsg == BFFM_INITIALIZED)
+	{
+		CSettingsDictPage* pDlg = (CSettingsDictPage*) lpData;
+		if (!pDlg->m_strDictLocation.IsEmpty())
+			::SendMessage(hwnd, BFFM_SETSELECTION, 1, (LPARAM)(LPCTSTR) pDlg->m_strDictLocation);
+	}
+	if (uMsg == BFFM_SELCHANGED)
+	{
+		LPITEMIDLIST pItem = (LPITEMIDLIST) lParam;
+
+		TCHAR szPath[_MAX_PATH];
+		bool bOk = !!SHGetPathFromIDList(pItem, szPath);
+
+		::SendMessage(hwnd, BFFM_ENABLEOK, 0, bOk);
+	}
+	else if (uMsg == BFFM_VALIDATEFAILED)
+	{
+		AfxMessageBox(IDS_INVALID_DIR);
+		return 1;
+	}
+
+	return 0;
+}
+
+void CSettingsDictPage::OnBrowseLocation()
+{
+	TCHAR szPath[_MAX_PATH];
+	CString strTitle = LoadString(IDS_DICT_LOCATION_PROMPT);
+
+	BROWSEINFO info;
+	ZeroMemory(&info, sizeof(info));
+	info.hwndOwner = m_hWnd;
+	info.pszDisplayName = szPath;
+	info.lpszTitle = strTitle;
+	info.ulFlags = BIF_RETURNONLYFSDIRS | BIF_VALIDATE | BIF_USENEWUI;
+	info.lpfn = BrowseCallbackProc;
+	info.lParam = (LPARAM) this;
+
+	LPITEMIDLIST pItem = SHBrowseForFolder(&info);
+	if (pItem == NULL)
+		return;
+
+	if (SHGetPathFromIDList(pItem, szPath))
+	{
+		PathRemoveBackslash(szPath);
+		m_strDictLocation = szPath;
+		UpdateData(false);
+	}
+
+	LPMALLOC pMalloc;
+	if (SUCCEEDED(SHGetMalloc(&pMalloc)))
+		pMalloc->Free(pItem);
 }

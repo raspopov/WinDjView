@@ -19,7 +19,6 @@
 
 #include "stdafx.h"
 #include "WinDjView.h"
-#include "AppSettings.h"
 #include "SettingsGeneralPage.h"
 
 #ifdef _DEBUG

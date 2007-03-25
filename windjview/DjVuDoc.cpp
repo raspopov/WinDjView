@@ -114,7 +114,24 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + lpszPathName + LoadString(IDS_NOT_VALID_DOCUMENT));
 		return false;
 	}
-
+/*
+	if (m_pSource->IsDictionary() && !m_pSource->GetDictionaryInfo()->bInstalled)
+	{
+		if (AfxMessageBox(IDS_PROMPT_INSTALL_ON_OPEN, MB_ICONQUESTION | MB_YESNO) == IDYES)
+		{
+			if (DoInstall())
+			{
+				m_pSource->Release();
+				AfxMessageBox(IDS_INSTALLATION_SUCCEEDED, MB_ICONEXCLAMATION | MB_OK);
+				return false;
+			}
+			else
+			{
+				AfxMessageBox(IDS_INSTALLATION_FAILED, MB_ICONEXCLAMATION | MB_OK);
+			}
+		}
+	}
+*/
 	return true;
 }
 
@@ -123,7 +140,7 @@ CDjVuView* CDjVuDoc::GetDjVuView()
 	POSITION pos = GetFirstViewPosition();
 	ASSERT(pos != NULL);
 
-	CDjVuView* pView = (CDjVuView*)GetNextView(pos);
+	CDjVuView* pView = (CDjVuView*) GetNextView(pos);
 	return pView;
 }
 
@@ -167,11 +184,11 @@ void CDjVuDoc::OnSaveCopyAs()
 void CDjVuDoc::OnFileExportText()
 {
 	CString strPathName = m_pSource->GetFileName();
-	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
-	_tsplitpath(strPathName, szDrive, szPath, szName, szExt);
-	CString strFileName = szName + CString(_T(".txt"));
+	if (!PathRenameExtension(strPathName.GetBuffer(MAX_PATH), _T(".txt")))
+		PathRemoveExtension(strPathName.GetBuffer(MAX_PATH));
 
-	CMyFileDialog dlg(false, _T("txt"), strFileName, OFN_OVERWRITEPROMPT |
+	strPathName.ReleaseBuffer();
+	CMyFileDialog dlg(false, _T("txt"), strPathName, OFN_OVERWRITEPROMPT |
 		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
 		LoadString(IDS_TEXT_FILTER));
 
@@ -184,13 +201,13 @@ void CDjVuDoc::OnFileExportText()
 
 	CWaitCursor wait;
 
-	strFileName = dlg.GetPathName();
+	strPathName = dlg.GetPathName();
 	wstring wtext;
 	GetDjVuView()->GetNormalizedText(wtext);
 	CString strText = MakeCString(wtext);
 
 	CFile file;
-	if (file.Open(strFileName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive))
+	if (file.Open(strPathName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive))
 	{
 #ifdef _UNICODE
 		// Get ANSI text
@@ -213,8 +230,7 @@ void CDjVuDoc::OnUpdateFileExportText(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(m_pSource->HasText());
 
-	if (m_pSource->GetDictionaryInfo()->strPageIndex.length() > 0
-			&& !m_pSource->GetDictionaryInfo()->bInstalled
+	if (m_pSource->IsDictionary() && !m_pSource->GetDictionaryInfo()->bInstalled
 			&& pCmdUI->m_pMenu->GetMenuItemID(pCmdUI->m_nIndex + 1) != ID_FILE_INSTALL)
 	{
 		pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex + 1, MF_BYPOSITION | MF_STRING,
@@ -225,31 +241,63 @@ void CDjVuDoc::OnUpdateFileExportText(CCmdUI* pCmdUI)
 
 void CDjVuDoc::OnFileInstall()
 {
+	if (m_pSource->GetDictionaryInfo()->bInstalled)
+		return;
+
+	HRESULT hResult = DoInstall();
+
+	if (SUCCEEDED(hResult))
+	{
+		// Dictionary could become installed without copying, if the dictionary's location
+		// has just been selected as a new user location
+		if (!m_pSource->GetDictionaryInfo()->bInstalled)
+			OnCloseDocument();
+
+		AfxMessageBox(IDS_INSTALLATION_SUCCEEDED, MB_ICONEXCLAMATION | MB_OK);
+	}
+	else if (hResult != E_ABORT)
+	{
+		AfxMessageBox(IDS_INSTALLATION_FAILED, MB_ICONEXCLAMATION | MB_OK);
+	}
+}
+
+HRESULT CDjVuDoc::DoInstall()
+{
 	DictionaryInfo* pInfo = theApp.GetDictionaryInfo(m_strPathName, false);
 	bool bExists = (pInfo != NULL);
 	if (bExists && AfxComparePath(pInfo->strPathName, m_strPathName))
-		return;
+		return E_ABORT;
 
 	CInstallDicDlg dlg(bExists ? IDD_INSTALL_DIC_REPLACE : IDD_INSTALL_DIC);
 
-	if (dlg.DoModal() == IDOK)
-	{
-		// dlg.m_nChoice will be equal to 0, if this is an IDD_INSTALL_DIC_REPLACE dialog
-		// But this doesn't matter, because in this case the bAllUsers argument of
-		// InstallDictionary will be unused (previous dictionary is always replaced if exists).
+	if (dlg.DoModal() != IDOK)
+		return E_ABORT;
 
-		CWaitCursor wait;
-		if (!theApp.InstallDictionary(this, dlg.m_nChoice == 1, !!dlg.m_bKeepOriginal))
-			AfxMessageBox(IDS_INSTALLATION_FAILED, MB_ICONEXCLAMATION | MB_OK);
-		else
-			AfxMessageBox(IDS_INSTALLATION_SUCCEEDED, MB_ICONEXCLAMATION | MB_OK);
+	if (!bExists)
+	{
+		theApp.GetAppSettings()->nDictChoice = dlg.m_nChoice;
+
+		if (theApp.GetAppSettings()->strDictLocation.IsEmpty() && !dlg.m_strDictLocation.IsEmpty())
+		{
+			theApp.GetAppSettings()->strDictLocation = dlg.m_strDictLocation;
+			theApp.ReloadDictionaries();
+		}
 	}
+
+	int nChoice = -1;
+	if (!bExists)
+		nChoice = dlg.m_nChoice;
+
+	CWaitCursor wait;
+	if (theApp.InstallDictionary(m_pSource, nChoice, !!dlg.m_bKeepOriginal))
+		return S_OK;
+	else
+		return E_FAIL;
 }
 
 void CDjVuDoc::OnUpdateFileInstall(CCmdUI* pCmdUI)
 {
-	if (m_pSource->GetDictionaryInfo()->strPageIndex.length() == 0
-			|| m_pSource->GetDictionaryInfo()->bInstalled)
+	if (!m_pSource->IsDictionary() || m_pSource->GetDictionaryInfo()->bInstalled)
 	{
 		pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
 		pCmdUI->m_nIndex--;

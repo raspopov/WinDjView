@@ -29,7 +29,7 @@ CPP_PCH_CREATE = /Yc"stdafx.h"
 CPP_FLAGS = $(CPP_FLAGS) /nologo /MT /W3 /EHsc /O2 /GL /GR /Zc:wchar_t- \
             /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Fp$(PCH) /Fo"$(INTDIR)/" /c
 
-LINK_FLAGS = $(LINK_FLAGS) "..\libdjvu\$(LIBDJVU)" \
+LINK_FLAGS = $(LINK_FLAGS) "..\libdjvu\$(LIBDJVU)" shlwapi.lib \
              /nologo /subsystem:windows /incremental:no /machine:x86 \
              /nodefaultlib:"msvcrt.lib" /ltcg /out:$(OUT)
 

@@ -95,7 +95,7 @@ protected:
 	void UpdateLangAndDict(const CDjVuView* pView, bool bReset = false);
 
 	int m_nCurDict, m_nCurLang;
-	bool FindAppDictionary(DictionaryInfo* pInfo, int& nLang, int& nDict);
+	bool FindAppDictionary(const CString& strPathName, int& nLang, int& nDict);
 	void UpdateDictCombo();
 
 	void UpdateSettings();

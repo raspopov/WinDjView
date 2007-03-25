@@ -727,9 +727,10 @@ void CMainFrame::UpdateLangAndDict(const CDjVuView* pView, bool bReset)
 	}
 
 	DictionaryInfo* pInfo = NULL;
+	DjVuSource* pSource = NULL;
 	if (pView != NULL)
 	{
-		DjVuSource* pSource = const_cast<CDjVuView*>(pView)->GetDocument()->GetSource();
+		pSource = const_cast<CDjVuView*>(pView)->GetDocument()->GetSource();
 		pInfo = pSource->GetDictionaryInfo();
 	}
 
@@ -739,7 +740,7 @@ void CMainFrame::UpdateLangAndDict(const CDjVuView* pView, bool bReset)
 	if (pView != NULL && pInfo->bInstalled)
 	{
 		int nLang, nDict;
-		if (FindAppDictionary(pInfo, nLang, nDict))
+		if (FindAppDictionary(pSource->GetFileName(), nLang, nDict))
 		{
 			if (!bReset && nLang == m_nCurLang)
 			{
@@ -756,13 +757,13 @@ void CMainFrame::UpdateLangAndDict(const CDjVuView* pView, bool bReset)
 	UpdateDictCombo();
 }
 
-bool CMainFrame::FindAppDictionary(DictionaryInfo* pInfo, int& nLang, int& nDict)
+bool CMainFrame::FindAppDictionary(const CString& strPathName, int& nLang, int& nDict)
 {
 	for (int i = 0; i < theApp.GetDictLangsCount(); ++i)
 	{
 		for (int j = 0; j < theApp.GetDictionaryCount(i); ++j)
 		{
-			if (pInfo == theApp.GetDictionaryInfo(i, j))
+			if (AfxComparePath(strPathName, theApp.GetDictionaryInfo(i, j)->strPathName))
 			{
 				nLang = i;
 				nDict = j;

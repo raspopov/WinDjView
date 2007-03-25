@@ -177,7 +177,7 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 	if (!AfxFullPath(szPath, strFileName))
 		bPathTooLong = true;
 
-	if (bPathTooLong || !FileExists(szPath))
+	if (bPathTooLong || !PathFileExists(szPath))
 	{
 		// Try extracting page number
 		nPos = strFileName.ReverseFind('#');

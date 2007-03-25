@@ -83,7 +83,6 @@ CString MakeCString(const GUTF8String& text);
 GUTF8String MakeUTF8String(const CString& strText);
 GUTF8String MakeUTF8String(const wstring& strText);
 
-bool FileExists(LPCTSTR lpszFileName);
 bool MoveToTrash(LPCTSTR lpszFileName);
 
 #define PAGE_RENDERED 1
