@@ -600,8 +600,16 @@ void CMainFrame::OnLookupSetFocus()
 
 void CMainFrame::OnFocusToLookup()
 {
-	if (m_wndDictBar.IsWindowVisible())
-		m_cboLookup.SetFocus();
+	if (theApp.GetDictLangsCount() == 0)
+		return;
+
+	if (!m_wndDictBar.IsWindowVisible())
+	{
+		ShowControlBar(&m_wndDictBar, true, false);
+		theApp.GetAppSettings()->bDictBar = true;
+	}
+
+	m_cboLookup.SetFocus();
 }
 
 void CMainFrame::OnLookup()

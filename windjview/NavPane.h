@@ -47,8 +47,8 @@ public:
 public:
 	int AddTab(const CString& strName, CWnd* pWnd);
 	int GetTabIndex(CWnd* pTabContent);
-	void ActivateTab(CWnd* pTabContent);
-	void ActivateTab(int nTab);
+	void ActivateTab(CWnd* pTabContent, bool bExpand = true);
+	void ActivateTab(int nTab, bool bExpand = true);
 	void SetTabName(CWnd* pTabContent, const CString& strName);
 	void SetTabName(int nTab, const CString& strName);
 	void SetTabBorder(CWnd* pTabContent, bool bDrawBorder);

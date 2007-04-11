@@ -292,6 +292,7 @@ void CChildFrame::OnCollapsePane()
 
 void CChildFrame::OnExpandPane()
 {
+	m_wndSplitter.HideNavPane(false);
 	m_wndSplitter.CollapseNavPane(false);
 }
 

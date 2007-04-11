@@ -1565,7 +1565,7 @@ bool CDjViewApp::InstallDictionary(DjVuSource* pSource, int nLocationChoice, boo
 
 	PathRemoveBackslash(strPath.GetBuffer(MAX_PATH));
 	strPath.ReleaseBuffer();
-	strPath = _T("\\");
+	strPath += _T("\\");
 
 	CString strFileName = strOldPathName;
 	PathStripPath(strFileName.GetBuffer(MAX_PATH));
@@ -1866,8 +1866,7 @@ void CDjViewApp::Lookup(const CString& strLookup, DictionaryInfo* pInfo)
 	if (pIndex == NULL)
 		return;
 
-	pFrame->HideNavPane(false);
-	pFrame->GetNavPane()->ActivateTab(pIndex);
+	pFrame->GetNavPane()->ActivateTab(pIndex, false);
 	pIndex->Lookup(strLookup);
 }
 

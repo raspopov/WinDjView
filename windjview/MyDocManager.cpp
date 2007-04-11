@@ -205,6 +205,7 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 	CDocTemplate::Confidence bestMatch = CDocTemplate::noAttempt;
 	CDocTemplate* pBestTemplate = NULL;
 	CDocument* pOpenDocument = NULL;
+	bool bFullscreenDoc = false;
 
 	POSITION pos = m_templateList.GetHeadPosition();
 	while (pos != NULL)
@@ -232,13 +233,15 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 			CView* pView = pOpenDocument->GetNextView(pos);
 			ASSERT_VALID(pView);
 
-			CFrameWnd* pFrame = pView->GetParentFrame();
-			ASSERT(pFrame);
-			pFrame->ActivateFrame();
+			CMainFrame* pMainFrm = (CMainFrame*) pView->GetTopLevelFrame();
+			bFullscreenDoc = (pMainFrm->IsFullscreenMode()
+					&& pMainFrm->GetFullscreenWnd()->GetOwner()->GetDocument() == pOpenDocument);
 
-			CFrameWnd* pAppFrame = pFrame->GetTopLevelFrame();
-			if (pFrame != pAppFrame)
-				pAppFrame->ActivateFrame();
+			if (!bFullscreenDoc)
+			{
+				pView->GetParentFrame()->ActivateFrame();
+				pMainFrm->ActivateFrame();
+			}
 		}
 		else
 			TRACE(_T("Error: Can not find a view for document to activate.\n"));
@@ -262,9 +265,16 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 
 		CDjVuDoc* pDoc = (CDjVuDoc*) pOpenDocument;
 		CDjVuView* pView = pDoc->GetDjVuView();
+		CMainFrame* pMainFrm = pView->GetMainFrame();
 
-		if (pView->GetMainFrame()->IsFullscreenMode())
-			pView->GetMainFrame()->GetFullscreenWnd()->Hide();
+		if (bFullscreenDoc)
+		{
+			pView = pMainFrm->GetFullscreenWnd()->GetOwner();
+			pMainFrm->ShowWindow(SW_HIDE);
+			pMainFrm->GetFullscreenWnd()->SetFocus();
+		}
+		else if (pMainFrm->IsFullscreenMode())
+			pMainFrm->GetFullscreenWnd()->Hide();
 
 		int nAddToHistory = (bAddToHistory ? CDjVuView::AddTarget : 0);
 		if (bAddToHistory && bestMatch == CDocTemplate::yesAlreadyOpen)
@@ -273,7 +283,7 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 		if (!strPage.IsEmpty())
 			pView->GoToURL(MakeUTF8String(_T("#") + strPage), nAddToHistory);
 		if (bAddToHistory)
-			pView->GetMainFrame()->AddToHistory(pView);
+			pMainFrm->AddToHistory(pView);
 	}
 
 	return pOpenDocument;

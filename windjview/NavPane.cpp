@@ -342,7 +342,9 @@ void CNavPaneWnd::OnLButtonDown(UINT nFlags, CPoint point)
 
 	int nTabClicked = GetTabFromPoint(point);
 	if (nTabClicked != -1)
+	{
 		ActivateTab(nTabClicked);
+	}
 
 	UpdateCloseButton(true);
 	CWnd::OnLButtonDown(nFlags, point);
@@ -506,16 +508,16 @@ int CNavPaneWnd::GetTabIndex(CWnd* pTabContent)
 	return -1;
 }
 
-void CNavPaneWnd::ActivateTab(CWnd* pTabContent)
+void CNavPaneWnd::ActivateTab(CWnd* pTabContent, bool bExpand)
 {
 	int nTab = GetTabIndex(pTabContent);
 	if (nTab == -1)
 		return;
 
-	ActivateTab(nTab);
+	ActivateTab(nTab, bExpand);
 }
 
-void CNavPaneWnd::ActivateTab(int nTab)
+void CNavPaneWnd::ActivateTab(int nTab, bool bExpand)
 {
 	m_nActiveTab = nTab;
 
@@ -525,7 +527,10 @@ void CNavPaneWnd::ActivateTab(int nTab)
 	m_tabs[nTab].pWnd->SetFocus();
 	Invalidate();
 
-	GetParentFrame()->SendMessage(ID_EXPAND_PANE);
+	if (bExpand)
+	{
+		GetParentFrame()->SendMessage(ID_EXPAND_PANE);
+	}
 }
 
 void CNavPaneWnd::PostNcDestroy()

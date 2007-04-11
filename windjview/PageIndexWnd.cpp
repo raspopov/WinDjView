@@ -405,19 +405,10 @@ void CPageIndexWnd::OnChangeText()
 			right = mid;
 	}
 
-	if (left > 0)
-	{
-		if (!m_sorted[left - 1]->strLast.empty())
-		{
-			if (m_sorted[left - 1]->strLast == text)
-				--left;
-		}
-		else
-		{
-			if (m_sorted[left - 1]->strFirst == text)
-				--left;
-		}
-	}
+	while (left > 0 && m_sorted[left - 1]->strFirst == text)
+		--left;
+	while (left > 0 && m_sorted[left - 1]->strLast == text)
+		--left;
 
 	m_bChangeInternal = true;
 	if (left >= 0 && left < static_cast<int>(m_sorted.size()))
