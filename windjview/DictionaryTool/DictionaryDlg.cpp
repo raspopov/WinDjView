@@ -1559,7 +1559,7 @@ void CDictionaryDlg::TestIndex()
 				node.GetAttribute(_T("from"), strFrom);
 				node.GetAttribute(_T("to"), strTo);
 
-				if (strFrom.length() == 0 || strTo.length() == 0)
+				if (strFrom.length() == 0)
 					continue;
 
 				strFrom = tolower(strFrom);

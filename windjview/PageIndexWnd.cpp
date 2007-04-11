@@ -238,7 +238,7 @@ bool CPageIndexWnd::InitCharacterMap(const GUTF8String& strCharMap)
 		node.GetAttribute(pszAttrFrom, strFrom);
 		node.GetAttribute(pszAttrTo, strTo);
 
-		if (strFrom.length() == 0 || strTo.length() == 0)
+		if (strFrom.length() == 0)
 			continue;
 
 		strFrom = tolower(strFrom);
