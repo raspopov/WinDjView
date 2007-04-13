@@ -330,13 +330,15 @@
 #define ID_DICTIONARY_LOOKUP            33150
 #define ID_VIEW_DICTBAR                 33151
 #define ID_FOCUS_TO_LOOKUP              33152
+#define ID_BOOKMARK_MOVEUP              33153
+#define ID_BOOKMARK_MOVEDOWN            33154
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        299
-#define _APS_NEXT_COMMAND_VALUE         33153
+#define _APS_NEXT_COMMAND_VALUE         33155
 #define _APS_NEXT_CONTROL_VALUE         1098
 #define _APS_NEXT_SYMED_VALUE           116
 #endif

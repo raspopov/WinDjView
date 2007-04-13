@@ -89,6 +89,7 @@ public:
 	~Bookmark()
 		{ delete pchildren; }
 	Bookmark& operator=(const Bookmark& bm);
+	void swap(Bookmark& bm);
 
 	GUTF8String strTitle;
 	Bookmark* pParent;

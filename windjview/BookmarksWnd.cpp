@@ -127,10 +127,11 @@ void CBookmarksWnd::InitBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks
 
 void CBookmarksWnd::AddBookmark(Bookmark& bookmark)
 {
-	AddBookmark(bookmark, TVI_ROOT);
+	HTREEITEM hItem = AddBookmark(bookmark, TVI_ROOT);
+	SelectItem(hItem);
 }
 
-void CBookmarksWnd::AddBookmark(Bookmark& bookmark, HTREEITEM hParent)
+HTREEITEM CBookmarksWnd::AddBookmark(Bookmark& bookmark, HTREEITEM hParent)
 {
 	CString strTitle = MakeCString(bookmark.strTitle);
 	HTREEITEM hItem = InsertItem(strTitle, 0, 1, hParent);
@@ -145,6 +146,8 @@ void CBookmarksWnd::AddBookmark(Bookmark& bookmark, HTREEITEM hParent)
 	list<Bookmark>::iterator it;
 	for (it = bookmark.children.begin(); it != bookmark.children.end(); ++it)
 		AddBookmark(*it, hItem);
+
+	return hItem;
 }
 
 void CBookmarksWnd::GoToBookmark(HTREEITEM hItem)
@@ -223,32 +226,51 @@ void CBookmarksWnd::OnUpdate(const Observable* source, const Message* message)
 void CBookmarksWnd::OnContextMenu(CWnd* pWnd, CPoint point)
 {
 	TreeNode* pNode = m_pSelection;
-	if (m_bEnableEditing && pNode != NULL)
+	if (!m_bEnableEditing || pNode == NULL || pNode == m_pRoot)
+		return;
+
+	CRect rcClient;
+	GetClientRect(rcClient);
+	ClientToScreen(rcClient);
+
+	if (!rcClient.PtInRect(point))
 	{
-		CRect rcClient;
-		GetClientRect(rcClient);
-		ClientToScreen(rcClient);
+		point = CPoint(pNode->rcLabel.left + 2, pNode->rcLabel.bottom)
+				+ rcClient.TopLeft() - GetScrollPosition();
+	}
 
-		if (!rcClient.PtInRect(point))
-		{
-			point = CPoint(pNode->rcLabel.left + 2, pNode->rcLabel.bottom)
-					+ rcClient.TopLeft() - GetScrollPosition();
-		}
+	CMenu menu;
+	menu.LoadMenu(IDR_POPUP);
 
-		CMenu menu;
-		menu.LoadMenu(IDR_POPUP);
+	CMenu* pPopup = menu.GetSubMenu(1);
+	ASSERT(pPopup != NULL);
 
-		CMenu* pPopup = menu.GetSubMenu(1);
-		ASSERT(pPopup != NULL);
+	if (pNode->pNext == NULL)
+		pPopup->EnableMenuItem(ID_BOOKMARK_MOVEDOWN, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+	if (pNode->pParent->pChild == pNode)
+		pPopup->EnableMenuItem(ID_BOOKMARK_MOVEUP, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
-		int nCommand = pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
-				point.x, point.y, this);
-		if (nCommand == ID_BOOKMARK_DELETE)
-			DeleteBookmark(pNode);
-		else if (nCommand == ID_BOOKMARK_RENAME)
-			RenameBookmark(pNode);
-		else if (nCommand == ID_BOOKMARK_SETDESTINATION)
-			SetBookmarkDestination(pNode);
+	int nCommand = pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
+			point.x, point.y, this);
+
+	switch (nCommand)
+	{
+	case ID_BOOKMARK_DELETE:
+		DeleteBookmark(pNode);
+		break;
+	
+	case ID_BOOKMARK_RENAME:
+		RenameBookmark(pNode);
+		break;
+
+	case ID_BOOKMARK_SETDESTINATION:
+		SetBookmarkDestination(pNode);
+		break;
+
+	case ID_BOOKMARK_MOVEUP:
+	case ID_BOOKMARK_MOVEDOWN:
+		MoveBookmark(pNode, nCommand == ID_BOOKMARK_MOVEUP);
+		break;
 	}
 }
 
@@ -323,4 +345,29 @@ void CBookmarksWnd::OnEnterIdle(UINT nWhy, CWnd* pWho)
 	CMyTreeCtrl::OnEnterIdle(nWhy, pWho);
 
 	GetTopLevelFrame()->SendMessage(WM_ENTERIDLE, nWhy, (LPARAM) pWho->GetSafeHwnd());
+}
+
+void CBookmarksWnd::MoveBookmark(TreeNode* pNode, bool bUp)
+{
+	if (pNode == m_pRoot)
+		return;
+
+	TreeNode* pSwapNode = pNode->pNext;
+	if (bUp)
+	{
+		pSwapNode = pNode->pParent->pChild;
+		while (pSwapNode != NULL && pSwapNode != pNode && pSwapNode->pNext != NULL && pSwapNode->pNext != pNode)
+			pSwapNode = pSwapNode->pNext;
+	}
+	if (pSwapNode == NULL || pSwapNode == pNode)
+		return;
+
+	BookmarkInfo* pInfo = (BookmarkInfo*) pNode->dwUserData;
+	BookmarkInfo* pSwapInfo = (BookmarkInfo*) pSwapNode->dwUserData;
+
+	pInfo->pBookmark->swap(*pSwapInfo->pBookmark);
+	swap(pNode->strLabel, pSwapNode->strLabel);
+
+	RecalcLayout();
+	SelectNode(pSwapNode);
 }

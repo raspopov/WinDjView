@@ -35,6 +35,8 @@ CFullscreenWnd::CFullscreenWnd()
 
 CFullscreenWnd::~CFullscreenWnd()
 {
+	if (AfxGetThreadState()->m_pRoutingFrame == (CFrameWnd*) this)
+		AfxGetThreadState()->m_pRoutingFrame = NULL;
 }
 
 BEGIN_MESSAGE_MAP(CFullscreenWnd, CWnd)
@@ -175,17 +177,27 @@ void CFullscreenWnd::OnDestroy()
 
 BOOL CFullscreenWnd::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
 {
-	if (IsWindowVisible() && m_pView != NULL)
+	if (IsWindowVisible())
 	{
 		// Trick to make dialogs and message boxes work properly
 		CPushRoutingFrame push((CFrameWnd*) this);
 
 		// Send commands to the view
-		if (m_pView->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+		if (m_pView != NULL && m_pView->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
 			return true;
-	}
 
-	return CWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+		if (CWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+			return true;
+
+		if (theApp.OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+			return true;
+
+		return false;
+	}
+	else
+	{
+		return CWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+	}
 }
 
 LRESULT CFullscreenWnd::OnAppCommand(WPARAM wParam, LPARAM lParam)

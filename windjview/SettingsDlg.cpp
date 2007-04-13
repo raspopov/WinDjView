@@ -96,6 +96,10 @@ BOOL CSettingsDlg::OnInitDialog()
 		CRect(rcPage.left, rcOk.top, rcOk.left - 5, rcClient.bottom - 5), this, IDC_STATIC_ABOUT);
 	m_ctlAbout.SetFont(&m_font);
 
+	int nPage = theApp.GetAppSettings()->nActiveSettingsTab;
+	nPage = max(0, min(GetPageCount() - 1, nPage));
+	SetActivePage(nPage);
+
 	return true;
 }
 
@@ -114,4 +118,6 @@ HBRUSH CSettingsDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 void CSettingsDlg::OnKickIdle()
 {
 	SendMessageToDescendants(WM_KICKIDLE);
+
+	theApp.GetAppSettings()->nActiveSettingsTab = GetActiveIndex();
 }

@@ -166,4 +166,6 @@ struct CAppSettings
 	int nCurDict;
 	CString strDictLocation;
 	int nDictChoice;
+
+	int nActiveSettingsTab;
 };

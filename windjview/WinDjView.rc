@@ -351,6 +351,9 @@ BEGIN
         MENUITEM "&Rename",                     ID_BOOKMARK_RENAME
         MENUITEM "&Delete",                     ID_BOOKMARK_DELETE
         MENUITEM SEPARATOR
+        MENUITEM "Move &Up",                    ID_BOOKMARK_MOVEUP
+        MENUITEM "Move D&own",                  ID_BOOKMARK_MOVEDOWN
+        MENUITEM SEPARATOR
         MENUITEM "&Set Destination",            ID_BOOKMARK_SETDESTINATION
     END
 END
@@ -792,7 +795,7 @@ END
 IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 125
 STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Dictionaries"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | 
                     LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | 
@@ -1361,6 +1364,12 @@ BEGIN
     IDC_DICTIONARY_LABEL    "Dictionary:"
     IDC_LANGUAGE_LIST       "Select the source and destination languages\nLanguages"
     IDC_LANGUAGE_LIST_LABEL "Language:"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_BOOKMARK_MOVEUP      "Move up the selected bookmark"
+    ID_BOOKMARK_MOVEDOWN    "Move the selected bookmark down"
 END
 
 #endif    // English (U.S.) resources

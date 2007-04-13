@@ -371,7 +371,7 @@ Bookmark& Bookmark::operator=(const Bookmark& bm)
 	if (this != &bm)
 	{
 		children = bm.children;
-		strURL = bm.strTitle;
+		strURL = bm.strURL;
 		strTitle = bm.strTitle;
 		pParent = bm.pParent;
 		nLinkType = bm.nLinkType;
@@ -381,6 +381,21 @@ Bookmark& Bookmark::operator=(const Bookmark& bm)
 	}
 
 	return *this;
+}
+
+void Bookmark::swap(Bookmark& bm)
+{
+	if (this != &bm)
+	{
+		children.swap(bm.children);
+		std::swap(strURL, bm.strURL);
+		std::swap(strTitle, bm.strTitle);
+		std::swap(pParent, bm.pParent);
+		std::swap(nLinkType, bm.nLinkType);
+		std::swap(nPage, bm.nPage);
+		std::swap(ptOffset, bm.ptOffset);
+		std::swap(bMargin, bm.bMargin);
+	}
 }
 
 GUTF8String Bookmark::GetXML() const

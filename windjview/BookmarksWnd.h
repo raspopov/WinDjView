@@ -51,10 +51,11 @@ protected:
 	void GoToBookmark(HTREEITEM hItem);
 	void InitBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks,
 		HTREEITEM hParent, GPosition& pos, int nCount);
-	void AddBookmark(Bookmark& bookmark, HTREEITEM hParent);
+	HTREEITEM AddBookmark(Bookmark& bookmark, HTREEITEM hParent);
 	void DeleteBookmark(TreeNode* pNode);
 	void RenameBookmark(TreeNode* pNode);
 	void SetBookmarkDestination(TreeNode* pNode);
+	void MoveBookmark(TreeNode* pNode, bool bUp);
 
 	struct BookmarkInfo
 	{
