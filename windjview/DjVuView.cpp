@@ -3027,7 +3027,8 @@ void CDjVuView::OnContextMenu(CWnd* pWnd, CPoint point)
 
 		if (!m_bHasSelection)
 		{
-			pPopup->DeleteMenu(ID_EDIT_COPY, MF_BYCOMMAND);
+			pPopup->ModifyMenu(ID_EDIT_COPY, MF_BYCOMMAND | MF_STRING,
+					ID_EDIT_COPY, LoadString(IDS_COPY_SELECTION));
 			pPopup->DeleteMenu(ID_HIGHLIGHT_TEXT, MF_BYCOMMAND);
 		}
 		else
@@ -4916,7 +4917,7 @@ void CDjVuView::OnUpdateMode(CCmdUI* pCmdUI)
 
 void CDjVuView::OnEditCopy()
 {
-	if (!m_bHasSelection)
+	if (m_nSelectionPage == -1 && !m_bHasSelection)
 		return;
 
 	CWaitCursor wait;
@@ -4925,49 +4926,94 @@ void CDjVuView::OnEditCopy()
 		return;
 	EmptyClipboard();
 
-	wstring text;
-	GetNormalizedText(text, true);
-	int nLength = text.length();
-
-	HGLOBAL hText = NULL, hUnicodeText = NULL;
-
-	// Prepare Unicode text
-	hUnicodeText = ::GlobalAlloc(GMEM_MOVEABLE, (nLength + 1)*sizeof(WCHAR));
-	if (hUnicodeText != NULL)
+	if (m_bHasSelection)
 	{
-		// Lock the handle and copy the text to the buffer.
-		LPWSTR pszUnicodeText = (LPWSTR)::GlobalLock(hUnicodeText);
-		memmove(pszUnicodeText, text.c_str(), (nLength + 1)*sizeof(WCHAR));
+		wstring text;
+		GetNormalizedText(text, true);
+		int nLength = text.length();
 
-		// Prepare ANSI text
-		int nSize = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-				pszUnicodeText, -1, NULL, 0, NULL, NULL);
-		if (nSize > 0)
+		HGLOBAL hText = NULL, hUnicodeText = NULL;
+
+		// Prepare Unicode text
+		hUnicodeText = ::GlobalAlloc(GMEM_MOVEABLE, (nLength + 1)*sizeof(WCHAR));
+		if (hUnicodeText != NULL)
 		{
-			hText = ::GlobalAlloc(GMEM_MOVEABLE, nSize*sizeof(CHAR));
-			if (hText != NULL)
+			// Lock the handle and copy the text to the buffer.
+			LPWSTR pszUnicodeText = (LPWSTR)::GlobalLock(hUnicodeText);
+			memmove(pszUnicodeText, text.c_str(), (nLength + 1)*sizeof(WCHAR));
+
+			// Prepare ANSI text
+			int nSize = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+					pszUnicodeText, -1, NULL, 0, NULL, NULL);
+			if (nSize > 0)
 			{
-				LPSTR pszText = (LPSTR)::GlobalLock(hText);
-				WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-					pszUnicodeText, -1, pszText, nSize, NULL, NULL);
-				::GlobalUnlock(pszText);
+				hText = ::GlobalAlloc(GMEM_MOVEABLE, nSize*sizeof(CHAR));
+				if (hText != NULL)
+				{
+					LPSTR pszText = (LPSTR)::GlobalLock(hText);
+					WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+						pszUnicodeText, -1, pszText, nSize, NULL, NULL);
+					::GlobalUnlock(pszText);
+				}
 			}
+
+			::GlobalUnlock(pszUnicodeText);
 		}
 
-		::GlobalUnlock(pszUnicodeText);
+		if (hUnicodeText != NULL)
+			SetClipboardData(CF_UNICODETEXT, hUnicodeText);
+		if (hText != NULL)
+			SetClipboardData(CF_TEXT, hText);
 	}
+	else
+	{
+		GP<DjVuImage> pImage = m_pSource->GetPage(m_nSelectionPage, NULL);
+		if (pImage == NULL)
+		{
+			AfxMessageBox(IDS_ERROR_DECODING_PAGE, MB_ICONERROR | MB_OK);
+		}
+		else
+		{
+			CSize size = m_pages[m_nSelectionPage].GetSize(m_nRotate);
+			CDIB* pBitmap = CRenderThread::Render(pImage, size, m_displaySettings, m_nDisplayMode, m_nRotate);
 
-	if (hUnicodeText != NULL)
-		SetClipboardData(CF_UNICODETEXT, hUnicodeText);
-	if (hText != NULL)
-		SetClipboardData(CF_TEXT, hText);
+			CRect rcCrop = TranslatePageRect(m_nSelectionPage, m_rcSelection, false);
+			CDIB* pCropped = pBitmap->Crop(rcCrop);
+			delete pBitmap;
+			pBitmap = pCropped;
+
+			if (pBitmap == NULL || pBitmap->m_hObject == NULL)
+			{
+				AfxMessageBox(IDS_ERROR_RENDERING_PAGE, MB_ICONERROR | MB_OK);
+			}
+			else
+			{
+				CDIB* pNewBitmap = pBitmap->ReduceColors();
+				if (pNewBitmap != NULL && pNewBitmap->m_hObject != NULL)
+				{
+					delete pBitmap;
+					pBitmap = pNewBitmap;
+				}
+				else
+				{
+					delete pNewBitmap;
+				}
+
+				HGLOBAL hData = pBitmap->SaveToMemory();
+				if (hData != NULL)
+					SetClipboardData(CF_DIB, hData);
+			}
+
+			delete pBitmap;
+		}
+	}
 
 	CloseClipboard();
 }
 
 void CDjVuView::OnUpdateEditCopy(CCmdUI* pCmdUI)
 {
-	pCmdUI->Enable(m_bHasSelection);
+	pCmdUI->Enable(m_bHasSelection || m_nSelectionPage != -1);
 }
 
 void CDjVuView::GetNormalizedText(wstring& text, bool bSelected, int nMaxLength)

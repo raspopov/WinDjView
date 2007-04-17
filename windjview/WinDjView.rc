@@ -227,7 +227,7 @@ BEGIN
     END
     POPUP "&Edit"
     BEGIN
-        MENUITEM "&Copy Text\tCtrl+C",          ID_EDIT_COPY
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM SEPARATOR
         MENUITEM "Add &Bookmark...\tCtrl+B",    ID_BOOKMARK_ADD
         MENUITEM SEPARATOR
@@ -1357,6 +1357,7 @@ BEGIN
     IDS_PRINT_BOOKLET       "Booklet"
     IDS_DICT_LOCATION_PROMPT "Select a custom location for dictionaries:"
     IDS_INVALID_DIR         "The typed folder name is invalid. Please select an existing folder from the list, or use the ""Make New Folder"" button."
+    IDS_COPY_SELECTION      "&Copy Selection"
 END
 
 STRINGTABLE DISCARDABLE 

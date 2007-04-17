@@ -48,6 +48,7 @@ public:
 	CDIB* ReduceColors();
 	CDIB* Crop(const CRect& rcCrop);
 	void Save(LPCTSTR pszPathName) const;
+	HGLOBAL SaveToMemory() const;
 
 protected:
 	CDIB() : CBitmap(), m_pBits(NULL), m_pBMI(NULL),

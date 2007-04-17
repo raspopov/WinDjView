@@ -139,6 +139,9 @@
 #define IDS_PRINT_BOOKLET               296
 #define IDS_DICT_LOCATION_PROMPT        297
 #define IDS_INVALID_DIR                 298
+#define IDS_COPY_SELECTION              299
+#define IDS_COPY_SELECTION_MAIN         300
+#define IDS_COPY_TEXT_MAIN              301
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -337,7 +340,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        299
+#define _APS_NEXT_RESOURCE_VALUE        302
 #define _APS_NEXT_COMMAND_VALUE         33155
 #define _APS_NEXT_CONTROL_VALUE         1098
 #define _APS_NEXT_SYMED_VALUE           116

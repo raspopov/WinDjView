@@ -534,18 +534,36 @@ void CDIB::Save(LPCTSTR pszPathName) const
 	DWORD dwHeaderSize = sizeof(BITMAPINFOHEADER) +
 		sizeof(RGBQUAD)*m_pBMI->bmiHeader.biClrUsed;
 	DWORD dwBitCount = m_pBMI->bmiHeader.biWidth * m_pBMI->bmiHeader.biBitCount;
-	dwBitCount = (((dwBitCount + 31) / 32) * 4) * m_pBMI->bmiHeader.biHeight;
+	DWORD dwDataSize = (((dwBitCount + 31) / 32) * 4) * m_pBMI->bmiHeader.biHeight;
 
 	hdr.bfOffBits = sizeof(BITMAPFILEHEADER) + dwHeaderSize;
-	hdr.bfSize = hdr.bfOffBits + dwBitCount;
+	hdr.bfSize = hdr.bfOffBits + dwDataSize;
 
 	file.Write(&hdr, sizeof(hdr));
 	file.Write(m_pBMI, dwHeaderSize);
-	file.Write(m_pBits, dwBitCount);
+	file.Write(m_pBits, dwDataSize);
 
 	file.Close();
 }
 
+HGLOBAL CDIB::SaveToMemory() const
+{
+	DWORD dwHeaderSize = sizeof(BITMAPINFOHEADER) +
+		sizeof(RGBQUAD)*m_pBMI->bmiHeader.biClrUsed;
+	DWORD dwBitCount = m_pBMI->bmiHeader.biWidth * m_pBMI->bmiHeader.biBitCount;
+	DWORD dwDataSize = (((dwBitCount + 31) / 32) * 4) * m_pBMI->bmiHeader.biHeight;
+
+	HGLOBAL hData = ::GlobalAlloc(GMEM_MOVEABLE, dwHeaderSize + dwDataSize);
+	if (hData != NULL)
+	{
+		LPBYTE pData = (LPBYTE) ::GlobalLock(hData);
+		memmove(pData, m_pBMI, dwHeaderSize);
+		memmove(pData + dwHeaderSize, m_pBits, dwDataSize);
+		::GlobalUnlock(hData);
+	}
+
+	return hData;
+}
 
 // CLightweightDIB
 
