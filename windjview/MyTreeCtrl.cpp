@@ -631,11 +631,7 @@ void CMyTreeCtrl::RecalcLayout()
 	}
 
 	SetHoverNode(NULL);
-
-	CPoint ptCursor;
-	::GetCursorPos(&ptCursor);
-	ScreenToClient(&ptCursor);
-	UpdateHoverNode(ptCursor);
+	UpdateHoverNode();
 
 	Invalidate();
 }
@@ -804,6 +800,14 @@ void CMyTreeCtrl::OnMouseLeave()
 {
 	if (!m_bMouseInTooltip)
 		SetHoverNode(NULL);
+}
+
+void CMyTreeCtrl::UpdateHoverNode()
+{
+	CPoint ptCursor;
+	::GetCursorPos(&ptCursor);
+	ScreenToClient(&ptCursor);
+	UpdateHoverNode(ptCursor);
 }
 
 void CMyTreeCtrl::UpdateHoverNode(const CPoint& point)
@@ -1079,11 +1083,7 @@ bool CMyTreeCtrl::OnScrollBy(CSize sz)
 			SetScrollPos(SB_VERT, y);
 
 		SetHoverNode(NULL);
-
-		CPoint ptCursor;
-		::GetCursorPos(&ptCursor);
-		ScreenToClient(&ptCursor);
-		UpdateHoverNode(ptCursor);
+		UpdateHoverNode();
 
 		UpdateWindow();
 		return true;
@@ -1416,8 +1416,9 @@ BOOL CMyTreeCtrl::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 	if (m_bRedirectWheel)
 	{
 		CWnd* pWnd = WindowFromPoint(point);
-		if (pWnd != this && !IsChild(pWnd) && IsFromCurrentProcess(pWnd) &&
-				pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
+		if (pWnd != this && pWnd->m_hWnd != m_toolTip.m_hWnd
+				&& !IsChild(pWnd) && IsFromCurrentProcess(pWnd)
+				&& pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
 			return true;
 	}
 
@@ -1582,6 +1583,8 @@ BOOL CMyTreeCtrl::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lPa
 	{
 	case WM_MOUSEMOVE:
 		{
+			m_pTree->m_bMouseInTooltip = true;
+
 			TRACKMOUSEEVENT tme;
 
 			ZeroMemory(&tme, sizeof(tme));
@@ -1604,11 +1607,6 @@ BOOL CMyTreeCtrl::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lPa
 		if (m_nNextCode == m_nMouseLeaveCode)
 		{
 			m_pTree->m_bMouseInTooltip = false;
-			Hide();
-
-			CPoint ptCursor;
-			::GetCursorPos(&ptCursor);
-			m_pTree->ScreenToClient(&ptCursor);
 
 			// GetAsyncKeyState always returns state of physical buttons, even
 			// if they are reversed. We only want to check if any of the mouse
@@ -1618,7 +1616,7 @@ BOOL CMyTreeCtrl::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lPa
 			bool bMiddleDown = (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0;
 
 			if (!bLeftDown && !bRightDown && !bMiddleDown)
-				m_pTree->UpdateHoverNode(ptCursor);
+				m_pTree->UpdateHoverNode();
 		}
 		break;
 
