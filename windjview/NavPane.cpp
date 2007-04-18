@@ -170,10 +170,10 @@ void CNavPaneWnd::DrawTab(CDC* pDC, int nTab, bool bActive)
 	COLORREF clrFrame = ::GetSysColor(COLOR_WINDOWFRAME);
 	COLORREF clrText = ::GetSysColor(COLOR_WINDOWTEXT);
 
-	static CBrush brushBtnface(clrBtnface);
-	static CPen penBtnface(PS_SOLID, 1, clrBtnface);
-	static CPen penFrame(PS_SOLID, 1, clrFrame);
-	static CPen penHilight(PS_SOLID, 1, clrHilight);
+	CBrush brushBtnface(clrBtnface);
+	CPen penBtnface(PS_SOLID, 1, clrBtnface);
+	CPen penFrame(PS_SOLID, 1, clrFrame);
+	CPen penHilight(PS_SOLID, 1, clrHilight);
 
 	CRect rcTab = tab.rcTab;
 	rcTab.bottom += s_nTabSize / 2 - 2;
