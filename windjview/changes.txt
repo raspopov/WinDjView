@@ -22,6 +22,7 @@ Changes in version 0.5 (2007-??-??):
 * Fixed slow loading of large bookmark trees.
 * Fixed printing in two pages per sheet mode.
 * Fixed a crash in print dialog with some printers.
+* A number of other small fixes and improvements.
 
 Changes in version 0.4.3 (2006-09-15):
 + Added panning when mouse wheel is pressed.

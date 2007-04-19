@@ -154,7 +154,7 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 {
 	CPoint ptOffset = GetScrollPosition();
 
-	int nBottom = pNode->rcNode.bottom;
+	int nBottom = (pNode == m_pRoot ? 0 : pNode->rcNode.bottom);
 
 	CRect rcLine(pNode->rcNode);
 	rcLine.right = m_szDisplay.cx;
