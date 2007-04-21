@@ -388,6 +388,9 @@ bool CMyTreeCtrl::DeleteItem(HTREEITEM hItem)
 			pParent->pLastChild = pPrev;
 	}
 
+	if (m_pSelection == pNode)
+		m_pSelection = NULL;
+
 	NMTREEVIEW nmtv;
 	InitNotification(nmtv, TVN_DELETEITEM);
 
