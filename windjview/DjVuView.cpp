@@ -2588,7 +2588,7 @@ void CDjVuView::OnLButtonUp(UINT nFlags, CPoint point)
 		UpdateHoverAnnotation(point);
 
 		if (pClickedAnno == m_pHoverAnno && pClickedAnno->strURL.length() != 0)
-			GoToURL(pClickedAnno->strURL, m_nHoverPage);
+			GoToURL(pClickedAnno->strURL);
 	}
 
 	if (m_bDragging)
