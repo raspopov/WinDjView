@@ -129,7 +129,8 @@ public:
 		Select = 1,
 		MagnifyingGlass = 2,
 		SelectRect = 3,
-		NextPrev = 4
+		ZoomRect = 4,
+		NextPrev = 5
 	};
 
 	int GetMode() const { return m_nMode; }
@@ -346,6 +347,7 @@ protected:
 	static HCURSOR hCursorText;
 	static HCURSOR hCursorMagnify;
 	static HCURSOR hCursorCross;
+	static HCURSOR hCursorZoomRect;
 	CImageList m_hourglass;
 
 	// Dummy invisible scrollbars

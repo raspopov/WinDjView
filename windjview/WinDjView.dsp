@@ -641,6 +641,10 @@ SOURCE=.\WinDjView.rc
 
 SOURCE=.\res\WinDjView.rc2
 # End Source File
+# Begin Source File
+
+SOURCE=.\res\zoom_rect.cur
+# End Source File
 # End Group
 # End Target
 # End Project

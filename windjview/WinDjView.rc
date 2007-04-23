@@ -100,6 +100,7 @@ IDC_CURSOR_PAN_R        CURSOR  DISCARDABLE     "res\\pan_r.cur"
 IDC_CURSOR_PAN_U        CURSOR  DISCARDABLE     "res\\pan_u.cur"
 IDC_CURSOR_PAN_UD       CURSOR  DISCARDABLE     "res\\pan_ud.cur"
 IDC_CURSOR_PAN_UL       CURSOR  DISCARDABLE     "res\\pan_ul.cur"
+IDC_CURSOR_ZOOM_RECT    CURSOR  DISCARDABLE     "res\\zoom_rect.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -141,6 +142,7 @@ BEGIN
     BUTTON      ID_MODE_SELECT
     BUTTON      ID_MODE_SELECT_RECT
     BUTTON      ID_MODE_MAGNIFY
+    BUTTON      ID_MODE_ZOOM_RECT
     SEPARATOR
     BUTTON      ID_VIEW_FIRSTPAGE
     BUTTON      ID_VIEW_PREVIOUSPAGE
@@ -310,6 +312,7 @@ BEGIN
         MENUITEM "&Select Tool",                ID_MODE_SELECT
         MENUITEM "&Rectangle Tool",             ID_MODE_SELECT_RECT
         MENUITEM "&Magnifying Glass",           ID_MODE_MAGNIFY
+        MENUITEM "Marquee &Zoom",               ID_MODE_ZOOM_RECT
     END
     POPUP "&Window"
     BEGIN
@@ -1315,6 +1318,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    ID_MODE_ZOOM_RECT       "Activate marquee zoom\nMarquee Zoom"
     ID_FILE_EXPORT_TEXT     "Extract text from the active document and save it into a file\nExport Text"
     ID_CHECK_FOR_UPDATE     "Check program website for available updates\nCheck for update"
     ID_DISPLAY_COLOR        "Display document in original color"

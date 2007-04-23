@@ -41,6 +41,7 @@
 #define IDB_CLOSE                       151
 #define IDB_BOOKMARKS                   152
 #define IDB_DONATE                      153
+#define IDC_CURSOR_ZOOM_RECT            154
 #define IDS_BOOKMARKS_TAB               200
 #define IDS_ASSOCIATE_SUCCESSFUL        201
 #define IDS_ASSOCIATE_FAILED            202
@@ -291,6 +292,7 @@
 #define ID_MODE_SELECT                  32845
 #define ID_MODE_MAGNIFY                 32846
 #define ID_MODE_SELECT_RECT             32847
+#define ID_MODE_ZOOM_RECT               32848
 #define ID_FILE_EXPORT_TEXT             32850
 #define ID_CHECK_FOR_UPDATE             32852
 #define ID_DISPLAY_COLOR                32854
@@ -339,7 +341,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        300
-#define _APS_NEXT_COMMAND_VALUE         33155
+#define _APS_NEXT_COMMAND_VALUE         33156
 #define _APS_NEXT_CONTROL_VALUE         1098
 #define _APS_NEXT_SYMED_VALUE           116
 #endif

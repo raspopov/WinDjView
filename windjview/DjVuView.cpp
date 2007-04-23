@@ -57,6 +57,7 @@ HCURSOR CDjVuView::hCursorLink = NULL;
 HCURSOR CDjVuView::hCursorText = NULL;
 HCURSOR CDjVuView::hCursorMagnify = NULL;
 HCURSOR CDjVuView::hCursorCross = NULL;
+HCURSOR CDjVuView::hCursorZoomRect = NULL;
 
 const int c_nDefaultMargin = 4;
 const int c_nDefaultShadowMargin = 3;
@@ -152,8 +153,8 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND(ID_PAGE_INFORMATION, OnPageInformation)
 	ON_COMMAND_RANGE(ID_EXPORT_PAGE, ID_EXPORT_SELECTION, OnExportPage)
 	ON_UPDATE_COMMAND_UI(ID_EXPORT_SELECTION, OnUpdateExportSelection)
-	ON_COMMAND_RANGE(ID_MODE_DRAG, ID_MODE_SELECT_RECT, OnChangeMode)
-	ON_UPDATE_COMMAND_UI_RANGE(ID_MODE_DRAG, ID_MODE_SELECT_RECT, OnUpdateMode)
+	ON_COMMAND_RANGE(ID_MODE_DRAG, ID_MODE_ZOOM_RECT, OnChangeMode)
+	ON_UPDATE_COMMAND_UI_RANGE(ID_MODE_DRAG, ID_MODE_ZOOM_RECT, OnUpdateMode)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
 	ON_COMMAND_RANGE(ID_DISPLAY_COLOR, ID_DISPLAY_FOREGROUND, OnViewDisplay)
@@ -2286,19 +2287,21 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	if (nHitTest == HTCLIENT)
 	{
 		if (hCursorHand == NULL)
-			hCursorHand = AfxGetApp()->LoadCursor(IDC_CURSOR_HAND);
+			hCursorHand = theApp.LoadCursor(IDC_CURSOR_HAND);
 		if (hCursorDrag == NULL)
-			hCursorDrag = AfxGetApp()->LoadCursor(IDC_CURSOR_DRAG);
+			hCursorDrag = theApp.LoadCursor(IDC_CURSOR_DRAG);
 		if (hCursorLink == NULL)
 			hCursorLink = ::LoadCursor(0, IDC_HAND);
 		if (hCursorLink == NULL)
-			hCursorLink = AfxGetApp()->LoadCursor(IDC_CURSOR_LINK);
+			hCursorLink = theApp.LoadCursor(IDC_CURSOR_LINK);
 		if (hCursorText == NULL)
 			hCursorText = ::LoadCursor(0, IDC_IBEAM);
 		if (hCursorMagnify == NULL)
-			hCursorMagnify = AfxGetApp()->LoadCursor(IDC_CURSOR_MAGNIFY);
+			hCursorMagnify = theApp.LoadCursor(IDC_CURSOR_MAGNIFY);
 		if (hCursorCross == NULL)
 			hCursorCross = ::LoadCursor(0, IDC_CROSS);
+		if (hCursorZoomRect == NULL)
+			hCursorZoomRect = theApp.LoadCursor(IDC_CURSOR_ZOOM_RECT);
 
 		CRect rcClient;
 		GetClientRect(rcClient);
@@ -2317,7 +2320,7 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		if (hCursor == NULL && m_bDraggingText)
 			hCursor = hCursorText;
 		if (hCursor == NULL && m_bDraggingRect)
-			hCursor = hCursorCross;
+			hCursor = (m_nMode == ZoomRect ? hCursorZoomRect : hCursorCross);
 		if (hCursor == NULL && m_bDraggingLink)
 			hCursor = hCursorLink;
 
@@ -2330,6 +2333,8 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 			hCursor = m_bDragging ? hCursorDrag : hCursorHand;
 		if (hCursor == NULL && m_nMode == SelectRect)
 			hCursor = hCursorCross;
+		if (hCursor == NULL && m_nMode == ZoomRect)
+			hCursor = hCursorZoomRect;
 		if (hCursor == NULL && m_nMode == Select && nPage != -1)
 		{
 			const Page& page = m_pages[nPage];
@@ -2427,7 +2432,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 		ShowCursor();
 		UpdateCursor();
 	}
-	else if (m_nMode == SelectRect)
+	else if (m_nMode == SelectRect || m_nMode == ZoomRect)
 	{
 		UpdateHoverAnnotation(CPoint(-1, -1));
 		ClearSelection();
@@ -2629,6 +2634,18 @@ void CDjVuView::StopDragging()
 			if (m_rcSelection.width() <= 1 || m_rcSelection.height() <= 1)
 				m_nSelectionPage = -1;
 			m_bDraggingRect = false;
+
+			if (m_nMode == ZoomRect && m_nSelectionPage != -1)
+			{
+				OnZoomToSelection();
+
+				CRect rcDisplay = TranslatePageRect(m_nSelectionPage, m_rcSelection);
+				rcDisplay.OffsetRect(-GetScrollPosition());
+				rcDisplay.InflateRect(0, 0, 1, 1);
+				InvalidateRect(rcDisplay);
+
+				m_nSelectionPage = -1;
+			}
 		}
 
 		ReleaseCapture();
@@ -4881,6 +4898,10 @@ void CDjVuView::OnChangeMode(UINT nID)
 		m_nMode = SelectRect;
 		break;
 
+	case ID_MODE_ZOOM_RECT:
+		m_nMode = ZoomRect;
+		break;
+
 	case ID_MODE_DRAG:
 	default:
 		m_nMode = Drag;
@@ -4909,6 +4930,10 @@ void CDjVuView::OnUpdateMode(CCmdUI* pCmdUI)
 
 	case SelectRect:
 		nID = ID_MODE_SELECT_RECT;
+		break;
+
+	case ZoomRect:
+		nID = ID_MODE_ZOOM_RECT;
 		break;
 	}
 
