@@ -5,7 +5,8 @@
 //C- Copyright (c) 2001  AT&T
 //C-
 //C- This software is subject to, and may be distributed under, the
-//C- GNU General Public License, Version 2. The license should have
+//C- GNU General Public License, either Version 2 of the license,
+//C- or (at your option) any later version. The license should have
 //C- accompanied the software or you may obtain a copy of the license
 //C- from the Free Software Foundation at http://www.fsf.org .
 //C-
@@ -14,10 +15,10 @@
 //C- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //C- GNU General Public License for more details.
 //C- 
-//C- DjVuLibre-3.5 is derived from the DjVu(r) Reference Library
-//C- distributed by Lizardtech Software.  On July 19th 2002, Lizardtech 
-//C- Software authorized us to replace the original DjVu(r) Reference 
-//C- Library notice by the following text (see doc/lizard2002.djvu):
+//C- DjVuLibre-3.5 is derived from the DjVu(r) Reference Library from
+//C- Lizardtech Software.  Lizardtech Software has authorized us to
+//C- replace the original DjVu(r) Reference Library notice by the following
+//C- text (see doc/lizard2002.djvu and doc/lizardtech2007.djvu):
 //C-
 //C-  ------------------------------------------------------------------
 //C- | DjVu (r) Reference Library (v. 3.5)
@@ -26,7 +27,8 @@
 //C- | 6,058,214 and patents pending.
 //C- |
 //C- | This software is subject to, and may be distributed under, the
-//C- | GNU General Public License, Version 2. The license should have
+//C- | GNU General Public License, either Version 2 of the license,
+//C- | or (at your option) any later version. The license should have
 //C- | accompanied the software or you may obtain a copy of the license
 //C- | from the Free Software Foundation at http://www.fsf.org .
 //C- |
@@ -118,10 +120,9 @@ static const char localestring[]="locale";
 
 
 // directory names for searching messages
-static const char opensourcedir[]="osi";
 #ifdef AUTOCONF
-static const char DjVuDataDir[] = DIR_DATADIR "/djvu";
-static const char ModuleDjVuDir[] ="share/djvu";
+static const char DjVuDataDir[] = DIR_DATADIR "/djvu/osi";
+static const char ModuleDjVuDir[] ="share/djvu/osi";
 #else /* !AUTOCONF */
 static const char ModuleDjVuDir[] ="profiles";
 #endif /* !AUTOCONF */
@@ -262,8 +263,7 @@ appendPath(const GURL &url,
            GMap<GUTF8String,void *> &map,
            GList<GURL> &list)
 {
-  if( !url.is_empty() 
-      && !map.contains(url.get_string()) && url.is_dir() )
+  if( !url.is_empty() && !map.contains(url.get_string()) )
     {
       map[url.get_string()]=0;
       list.append(url);
@@ -352,7 +352,6 @@ DjVuMessage::GetProfilePaths(void)
       }
     } 
     GList<GURL> localepaths;
-    GList<GURL> osilocalepaths;
 
     // Need to do it the right way!
     GUTF8String defaultlocale = getenv("LANGUAGE");
@@ -393,9 +392,6 @@ DjVuMessage::GetProfilePaths(void)
                   path=GURL::UTF8(src,paths[pos]);
                   if(path.is_dir())
                     localepaths.append(path);
-                  path=GURL::UTF8(GUTF8String(opensourcedir)+"/"+src,paths[pos]);
-                  if(path.is_dir())
-                    osilocalepaths.append(path);
                 }
               }
               // We don't need to check anymore language files.
@@ -404,19 +400,12 @@ DjVuMessage::GetProfilePaths(void)
             }
           }
           if(!pos)
-          {
-            for(pos=paths;pos;++pos)
             {
+            for(pos=paths;pos;++pos)
+              {
               path=GURL::UTF8(sublocale,paths[pos]);
               if(path.is_dir())
-              {
                 localepaths.append(path);
-              }
-              path=GURL::UTF8(GUTF8String(opensourcedir)+"/"+sublocale,paths[pos]);
-              if(path.is_dir())
-              {
-                osilocalepaths.append(path);
-              }
             }
           }
         }
@@ -429,13 +418,6 @@ DjVuMessage::GetProfilePaths(void)
       appendPath(localepaths[pos],pathsmap,realpaths);
     for(pos=paths;pos;++pos)
       appendPath(paths[pos],pathsmap,realpaths);
-    for(pos=osilocalepaths;pos;++pos)
-      appendPath(osilocalepaths[pos],pathsmap,realpaths);
-    for(pos=paths;pos;++pos)
-      {
-        path=GURL::UTF8(opensourcedir,paths[pos]);
-        appendPath(path,pathsmap,realpaths);
-      }
   }
   return realpaths;
 }
