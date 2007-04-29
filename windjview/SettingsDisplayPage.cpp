@@ -44,6 +44,7 @@ CSettingsDisplayPage::CSettingsDisplayPage()
 	m_nContrast = m_displaySettings.nContrast + 100;
 	m_nGamma = static_cast<int>(m_displaySettings.fGamma * 10 + 0.5);
 
+	m_bAdjustPrinting = theApp.GetPrintSettings()->bAdjustPrinting;
 	m_nUnits = theApp.GetAppSettings()->nUnits;
 }
 
@@ -57,6 +58,7 @@ void CSettingsDisplayPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_ADJUST_DISPLAY, m_bAdjustDisplay);
 	DDX_Check(pDX, IDC_HQ_SCALING, m_bHQScaling);
 	DDX_Check(pDX, IDC_INVERT_COLORS, m_bInvertColors);
+	DDX_Check(pDX, IDC_ADJUST_PRINTING, m_bAdjustPrinting);
 
 	DDX_Control(pDX, IDC_BRIGHTNESS, m_sliderBrightness);
 	DDX_Control(pDX, IDC_CONTRAST, m_sliderContrast);

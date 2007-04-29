@@ -112,6 +112,7 @@ const TCHAR* s_pszClipContent = _T("clip-content");
 const TCHAR* s_pszScaleToFit = _T("fit");
 const TCHAR* s_pszShrinkOversized = _T("shrink");
 const TCHAR* s_pszIgnoreMargins = _T("no-margins");
+const TCHAR* s_pszAdjustPrinting = _T("adjust-printing");
 
 const TCHAR* s_pszDocumentsSection = _T("Documents");
 const TCHAR* s_pszSettings = _T("settings");
@@ -536,6 +537,7 @@ void CDjViewApp::LoadSettings()
 	m_printSettings.bScaleToFit = !!GetProfileInt(s_pszPrintSection, s_pszScaleToFit, m_printSettings.bScaleToFit);
 	m_printSettings.bShrinkOversized = !!GetProfileInt(s_pszPrintSection, s_pszShrinkOversized, m_printSettings.bShrinkOversized);
 	m_printSettings.bIgnorePrinterMargins = !!GetProfileInt(s_pszPrintSection, s_pszIgnoreMargins, m_printSettings.bIgnorePrinterMargins);
+	m_printSettings.bAdjustPrinting = !!GetProfileInt(s_pszPrintSection, s_pszAdjustPrinting, m_printSettings.bAdjustPrinting);
 }
 
 bool CDjViewApp::LoadDocSettings(const CString& strKey, DocSettings* pSettings)
@@ -634,6 +636,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszPrintSection, s_pszScaleToFit, m_printSettings.bScaleToFit);
 	WriteProfileInt(s_pszPrintSection, s_pszShrinkOversized, m_printSettings.bShrinkOversized);
 	WriteProfileInt(s_pszPrintSection, s_pszIgnoreMargins, m_printSettings.bIgnorePrinterMargins);
+	WriteProfileInt(s_pszPrintSection, s_pszAdjustPrinting, m_printSettings.bAdjustPrinting);
 
 	const map<MD5, DocSettings>& settings = DjVuSource::GetAllSettings();
 	for (map<MD5, DocSettings>::const_iterator it = settings.begin(); it != settings.end(); ++it)
@@ -959,6 +962,8 @@ void CDjViewApp::OnFileSettings()
 
 		m_appSettings.nUnits = dlg.m_pageDisplay.m_nUnits;
 		m_displaySettings = dlg.m_pageDisplay.m_displaySettings;
+
+		m_printSettings.bAdjustPrinting = !!dlg.m_pageDisplay.m_bAdjustPrinting;
 
 		if (GetDictLangsCount() > 0 && m_appSettings.strDictLocation != dlg.m_pageDict.m_strDictLocation)
 		{

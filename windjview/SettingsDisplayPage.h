@@ -37,6 +37,7 @@ public:
 	BOOL m_bHQScaling;
 	BOOL m_bInvertColors;
 	BOOL m_bAdjustDisplay;
+	BOOL m_bAdjustPrinting;
 	CSliderCtrl m_sliderBrightness;
 	CSliderCtrl m_sliderContrast;
 	CSliderCtrl m_sliderGamma;

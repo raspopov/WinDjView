@@ -72,7 +72,7 @@ struct CPrintSettings
 		fScale(100.0), bShrinkOversized(true), bScaleToFit(false),
 		bIgnorePrinterMargins(false), nCopies(1), bCollate(false),
 		bAutoRotate(false), bLandscape(false), bTwoPages(false),
-		bBooklet(false), nPaperCode(0) {}
+		bBooklet(false), nPaperCode(0), bAdjustPrinting(false) {}
 
 	double fMarginLeft;
 	double fMarginTop;
@@ -88,6 +88,8 @@ struct CPrintSettings
 	BOOL bScaleToFit;
 	BOOL bShrinkOversized;
 	BOOL bIgnorePrinterMargins;
+
+	BOOL bAdjustPrinting;
 
 	// The following settings are not stored in registry
 	double fScale;

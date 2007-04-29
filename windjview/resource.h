@@ -201,6 +201,7 @@
 #define IDC_INVERT_COLORS               1054
 #define IDC_PAGE                        1055
 #define IDC_CLOSE_ON_ESC                1055
+#define IDC_ADJUST_PRINTING             1055
 #define IDC_PAGE_COUNT                  1056
 #define IDC_WRAP_BOOKMARKS              1056
 #define IDC_RESTORE_VIEW                1057

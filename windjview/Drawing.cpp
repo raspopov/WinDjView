@@ -1081,6 +1081,9 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRe
 		theApp.ReportFatalError();
 	}
 
+	CDisplaySettings defaultSettings;
+	CDisplaySettings& displaySettings = (settings.bAdjustPrinting ? *theApp.GetDisplaySettings() : defaultSettings);
+
 	if (pm != NULL)
 	{
 		if (nTotalRotate != 0)
@@ -1103,7 +1106,7 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRe
 			pm = pmStretched;
 		}
 
-		pBmpPage = RenderPixmap(*pm, *theApp.GetDisplaySettings());
+		pBmpPage = RenderPixmap(*pm, displaySettings);
 	}
 	else if (bm != NULL)
 	{
@@ -1127,7 +1130,7 @@ void PrintPage(CDC* pDC, GP<DjVuImage> pImage, int nRotate, int nMode, const CRe
 			bm = bmStretched;
 		}
 
-		pBmpPage = RenderBitmap(*bm, *theApp.GetDisplaySettings());
+		pBmpPage = RenderBitmap(*bm, displaySettings);
 
 		if (!bPreview)
 		{
