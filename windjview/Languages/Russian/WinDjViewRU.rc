@@ -88,6 +88,7 @@ IDC_CURSOR_PAN_R        CURSOR  DISCARDABLE     "..\\..\\res\\pan_r.cur"
 IDC_CURSOR_PAN_U        CURSOR  DISCARDABLE     "..\\..\\res\\pan_u.cur"
 IDC_CURSOR_PAN_UD       CURSOR  DISCARDABLE     "..\\..\\res\\pan_ud.cur"
 IDC_CURSOR_PAN_UL       CURSOR  DISCARDABLE     "..\\..\\res\\pan_ul.cur"
+IDC_CURSOR_ZOOM_RECT    CURSOR  DISCARDABLE     "..\\..\\res\\zoom_rect.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -109,6 +110,8 @@ IDB_CLOSE               BITMAP  MOVEABLE PURE   "..\\..\\res\\close.bmp"
 IDB_BOOKMARKS           BITMAP  MOVEABLE PURE   "..\\..\\res\\bookmarks.bmp"
 IDB_DONATE              BITMAP  MOVEABLE PURE   "..\\..\\res\\donate.bmp"
 IDB_PAN_ANCHOR          BITMAP  MOVEABLE PURE   "..\\..\\res\\pan_anchor.bmp"
+IDB_HOURGLASS           BITMAP  DISCARDABLE     "..\\..\\res\\hourglass.bmp"
+IDR_DICTIONARIES_BAR    BITMAP  DISCARDABLE     "..\\..\\res\\dictbar.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -125,7 +128,9 @@ BEGIN
     SEPARATOR
     BUTTON      ID_MODE_DRAG
     BUTTON      ID_MODE_SELECT
+    BUTTON      ID_MODE_SELECT_RECT
     BUTTON      ID_MODE_MAGNIFY
+    BUTTON      ID_MODE_ZOOM_RECT
     SEPARATOR
     BUTTON      ID_VIEW_FIRSTPAGE
     BUTTON      ID_VIEW_PREVIOUSPAGE
@@ -150,6 +155,14 @@ BEGIN
     SEPARATOR
     BUTTON      ID_ROTATE_LEFT
     BUTTON      ID_ROTATE_RIGHT
+END
+
+IDR_DICTIONARIES_BAR TOOLBAR DISCARDABLE  16, 15
+BEGIN
+    BUTTON      ID_DICTIONARY_LOOKUP
+    BUTTON      ID_DICTIONARY_PREV
+    BUTTON      ID_DICTIONARY_NEXT
+    BUTTON      ID_DICTIONARY_INFO
 END
 
 
@@ -204,7 +217,12 @@ BEGIN
     END
     POPUP "&Правка"
     BEGIN
-        MENUITEM "С&копировать текст\tCtrl+C",  ID_EDIT_COPY
+        MENUITEM "&Копировать\tCtrl+C",         ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "Добавить &закладку...\tCtrl+B", ID_BOOKMARK_ADD
+        MENUITEM SEPARATOR
+        MENUITEM "&Отметить выделение...\tCtrl+H", ID_HIGHLIGHT_SELECTION
+        MENUITEM "&Экспорт выделения...",       ID_EXPORT_SELECTION
         MENUITEM SEPARATOR
         MENUITEM "&Поиск...\tCtrl+F",           ID_EDIT_FIND
     END
@@ -212,6 +230,7 @@ BEGIN
     BEGIN
         MENUITEM "Пане&ль инструментов",        ID_VIEW_TOOLBAR
         MENUITEM "&Строка состояния",           ID_VIEW_STATUS_BAR
+        MENUITEM "&Боковая панель",             ID_VIEW_SIDEBAR
         MENUITEM SEPARATOR
         MENUITEM "&На полный экран\tCtrl+L",    ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
@@ -279,8 +298,10 @@ BEGIN
     POPUP "&Инструменты"
     BEGIN
         MENUITEM "Режим &перетаскивания",       ID_MODE_DRAG
-        MENUITEM "Режим &выделения",            ID_MODE_SELECT
+        MENUITEM "Выделить &текст",             ID_MODE_SELECT
+        MENUITEM "Выделить &область",           ID_MODE_SELECT_RECT
         MENUITEM "Режим &увеличения",           ID_MODE_MAGNIFY
+        MENUITEM "Выделить и &масштабировать",  ID_MODE_ZOOM_RECT
     END
     POPUP "&Окно"
     BEGIN
@@ -288,6 +309,8 @@ BEGIN
         MENUITEM "В виде &горизонтальных полос", ID_WINDOW_TILE_HORZ
         MENUITEM "В виде &вертикальных полос",  ID_WINDOW_TILE_VERT
         MENUITEM "&Упорядочить свёрнутые",      ID_WINDOW_ARRANGE
+        MENUITEM SEPARATOR
+        MENUITEM "&На полный экран\tCtrl+L",    ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
         MENUITEM "Переключиться на это окно",   ID_WINDOW_ACTIVATE_FIRST
     END
@@ -300,12 +323,30 @@ END
 
 IDR_POPUP MENU DISCARDABLE 
 BEGIN
-    POPUP "Меню"
+    POPUP "Страница"
     BEGIN
-        MENUITEM "С&копировать текст",          ID_EDIT_COPY
+        MENUITEM "&Копировать текст",           ID_EDIT_COPY
+        MENUITEM "&Отметить текст...",          ID_HIGHLIGHT_TEXT
+        MENUITEM "&Отметить выделение...",      ID_HIGHLIGHT_SELECTION
+        MENUITEM "Экспорт &выделения...",       ID_EXPORT_SELECTION
+        MENUITEM "&Масштаб по выделению",       ID_ZOOM_TO_SELECTION
+        MENUITEM "&Параметры аннотации...",     ID_ANNOTATION_EDIT
+        MENUITEM "&Удалить аннотацию",          ID_ANNOTATION_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Добавить &закладку...",       ID_BOOKMARK_ADD
         MENUITEM SEPARATOR
         MENUITEM "&Информация о странице",      ID_PAGE_INFORMATION
-        MENUITEM "&Сохранить страницу как...",  ID_EXPORT_PAGE
+        MENUITEM "&Экспорт страницы...",        ID_EXPORT_PAGE
+    END
+    POPUP "Закладка"
+    BEGIN
+        MENUITEM "&Переименовать",              ID_BOOKMARK_RENAME
+        MENUITEM "&Удалить",                    ID_BOOKMARK_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Переместить &вверх",          ID_BOOKMARK_MOVEUP
+        MENUITEM "Переместить в&низ",           ID_BOOKMARK_MOVEDOWN
+        MENUITEM SEPARATOR
+        MENUITEM "&Перенаправить",              ID_BOOKMARK_SETDESTINATION
     END
 END
 
@@ -342,11 +383,18 @@ BEGIN
                                                     NOINVERT
     "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
+    "B",            ID_BOOKMARK_ADD,        VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
-    "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, NOINVERT
+    "F",            ID_FOCUS_TO_LOOKUP,     VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_HIGHLIGHT_SELECTION, VIRTKEY, CONTROL, NOINVERT
+    "I",            ID_DICTIONARY_INFO,     VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_DICTIONARY_LOOKUP,   VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
     "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
     "N",            ID_VIEW_GOTO_PAGE,      VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
@@ -354,34 +402,33 @@ BEGIN
     "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
     "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
-    VK_ADD,         ID_ZOOM_IN,             VIRTKEY, NOINVERT
     VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
     VK_ADD,         ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
+    VK_DOWN,        ID_DICTIONARY_NEXT,     VIRTKEY, ALT, NOINVERT
     VK_DOWN,        ID_ROTATE_180,          VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
-    VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, NOINVERT
-    VK_END,         ID_VIEW_LASTPAGE,       VIRTKEY, CONTROL, NOINVERT
+    VK_END,         ID_VIEW_LASTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
     VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
-    VK_HOME,        ID_VIEW_FIRSTPAGE,      VIRTKEY, NOINVERT
-    VK_HOME,        ID_VIEW_FIRSTPAGE,      VIRTKEY, CONTROL, NOINVERT
+    VK_HOME,        ID_VIEW_FIRSTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-    VK_LEFT,        ID_VIEW_BACK,           VIRTKEY, ALT, NOINVERT
+    VK_LEFT,        ID_VIEW_BACK_SHORTCUT,  VIRTKEY, ALT, NOINVERT
     VK_LEFT,        ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
-    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, NOINVERT
     VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
-    VK_NEXT,        ID_VIEW_NEXTPAGE,       VIRTKEY, CONTROL, NOINVERT
-    VK_PRIOR,       ID_VIEW_PREVIOUSPAGE,   VIRTKEY, CONTROL, NOINVERT
-    VK_RIGHT,       ID_VIEW_FORWARD,        VIRTKEY, ALT, NOINVERT
+    VK_NEXT,        ID_VIEW_NEXTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
+    VK_PRIOR,       ID_VIEW_PREVIOUSPAGE_SHORTCUT, VIRTKEY, CONTROL, 
+                                                    NOINVERT
+    VK_RIGHT,       ID_VIEW_FORWARD_SHORTCUT, VIRTKEY, ALT, NOINVERT
     VK_RIGHT,       ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
-    VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
     VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
                                                     NOINVERT
+    VK_TAB,         ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_UP,          ID_DICTIONARY_PREV,     VIRTKEY, ALT, NOINVERT
     "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
 END
 
@@ -398,7 +445,7 @@ FONT 8, "MS Shell Dlg"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2004-2006 Андрей Жежерун",IDC_STATIC,40,
+    LTEXT           "Copyright (C) 2004-2007 Андрей Жежерун",IDC_STATIC,40,
                     17,171,8
     DEFPUSHBUTTON   "Закрыть",IDOK,230,7,50,14,WS_GROUP
     LTEXT           "Домашняя страница:",IDC_STATIC,40,35,74,8
@@ -407,7 +454,7 @@ BEGIN
                     117,35,139,8
     LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,113,45,
                     131,8
-    LTEXT           "Эта программа является свободно распространяемой. Вы вправе распространять её и/или модифицировать, соблюдая условия Открытого Лицензионного Соглашения (GPL) GNU, опубликованного Free Software Foundation, версии 2 или любой более поздней.",
+    LTEXT           "Эта программа является свободно распространяемой. Вы вправе распространять её и/или модифицировать, соблюдая условия Открытого Лицензионного Соглашения (GPL) GNU версии 2, опубликованного Free Software Foundation.",
                     IDC_STATIC,40,62,240,35
     LTEXT           "Вы можете поддержать дальнейшую разработку программы, сделав пожертвование через PayPal",
                     IDC_STATIC,40,104,174,17
@@ -420,13 +467,13 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Печать"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    LTEXT           "&Имя:",IDC_STATIC,174,21,37,9
+    LTEXT           "&Имя:",IDC_STATIC,174,21,37,9,SS_CENTERIMAGE
     COMBOBOX        IDC_COMBO_PRINTER,223,19,161,82,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Свойства",IDC_PROPERTIES,391,18,50,14
     CONTROL         "Печать в &файл",IDC_PRINT_TO_FILE,"Button",
                     BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,378,78,63,
-                    9
+                    11
     CONTROL         "&Книжная",IDC_PORTRAIT,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,174,112,53,11
     CONTROL         "&Альбомная",IDC_LANDSCAPE,"Button",BS_AUTORADIOBUTTON,
@@ -441,25 +488,29 @@ BEGIN
                     WS_GROUP,14,166,37,11
     CONTROL         "&Текущая страница",IDC_RANGE_CURRENT,"Button",
                     BS_AUTORADIOBUTTON,14,180,80,11
+    CONTROL         "В&ыделение",IDC_RANGE_SELECTION,"Button",
+                    BS_AUTORADIOBUTTON,99,180,55,11
     CONTROL         "Ст&раницы:",IDC_RANGE_PAGES,"Button",BS_AUTORADIOBUTTON,
                     14,194,50,11
     EDITTEXT        IDC_PAGE_RANGES,66,193,85,12,ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "Слева:",IDC_STATIC,174,168,28,9
-    EDITTEXT        IDC_POSITION_LEFT,206,166,38,12,ES_AUTOHSCROLL
-    LTEXT           "Сверху:",IDC_STATIC,174,186,28,9
-    EDITTEXT        IDC_POSITION_TOP,206,184,38,12,ES_AUTOHSCROLL
+    LTEXT           "Слева:",IDC_STATIC,174,168,24,9
+    EDITTEXT        IDC_POSITION_LEFT,200,166,32,12,ES_AUTOHSCROLL
+    LTEXT           "Сверху:",IDC_STATIC,236,168,26,9
+    EDITTEXT        IDC_POSITION_TOP,265,166,32,12,ES_AUTOHSCROLL
     CONTROL         "Расположить по &центру",IDC_CENTER_IMAGE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,206,202,95,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,174,188,95,11
+    CONTROL         "Автомати&ческая ориентация",IDC_AUTO_ROTATE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,174,202,114,11
     CONTROL         "Обрезать кра&я",IDC_CLIP_CONTENT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,206,216,67,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,174,216,67,11
     LTEXT           "&Масштаб:",IDC_STATIC,319,168,36,9
     EDITTEXT        IDC_SCALE,357,166,38,12,ES_AUTOHSCROLL
     CONTROL         "Растянуть на вс&ю страницу",IDC_SCALE_TO_FIT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,319,188,113,9
-    CONTROL         "&Уменьшить слишком большие",IDC_SHRINK_OVERSIZED,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,319,202,120,9
-    CONTROL         "Не учит&ывать поля принтера",IDC_IGNORE_MARGINS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,319,216,124,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,319,188,113,11
+    CONTROL         "Умень&шить слишком большие",IDC_SHRINK_OVERSIZED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,319,202,120,11
+    CONTROL         "Не &учитывать поля принтера",IDC_IGNORE_MARGINS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,319,216,124,11
     LTEXT           "С&лева:",IDC_STATIC,14,251,27,9
     EDITTEXT        IDC_MARGIN_LEFT,43,249,36,12,ES_AUTOHSCROLL
     LTEXT           "Св&ерху:",IDC_STATIC,14,269,26,9
@@ -468,17 +519,17 @@ BEGIN
     EDITTEXT        IDC_MARGIN_RIGHT,115,249,36,12,ES_AUTOHSCROLL
     LTEXT           "С&низу:",IDC_STATIC,84,269,27,9
     EDITTEXT        IDC_MARGIN_BOTTOM,115,267,36,12,ES_AUTOHSCROLL
-    LTEXT           "Ра&змер:",IDC_STATIC,174,251,31,9
+    LTEXT           "Ра&змер:",IDC_STATIC,174,251,31,9,SS_CENTERIMAGE
     COMBOBOX        IDC_COMBO_PAPER,206,249,91,81,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Печатать:",IDC_STATIC,319,251,34,9
+    LTEXT           "Печатать:",IDC_STATIC,319,251,34,9,SS_CENTERIMAGE
     COMBOBOX        IDC_COMBO_PAGESINRANGE,356,249,86,81,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "На листе:",IDC_STATIC,319,269,34,9
+    LTEXT           "На листе:",IDC_STATIC,319,269,34,9,SS_CENTERIMAGE
     COMBOBOX        IDC_COMBO_PAGESPERSHEET,356,267,86,84,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Обратны&й порядок страниц",IDC_REVERSE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,297,114,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,297,114,11
     DEFPUSHBUTTON   "Печать",IDOK,343,295,50,14
     PUSHBUTTON      "Закрыть",IDCANCEL,399,295,50,14
     GROUPBOX        "Принтер",IDC_STATIC,167,7,282,87
@@ -494,15 +545,13 @@ BEGIN
                     WS_VISIBLE,14,20,138,115
     GROUPBOX        "Ориентация бумаги",IDC_STATIC,167,98,137,51
     GROUPBOX        "Предварительный просмотр",IDC_STATIC,7,7,153,142
-    GROUPBOX        "Поля (в миллиметрах)",IDC_STATIC,7,237,153,49
+    GROUPBOX        "Поля",IDC_STATIC,7,237,153,49
     GROUPBOX        "Бумага",IDC_STATIC,167,237,137,49
     LTEXT           "Введите номера и/или диапазоны страниц через запятую. Пример: 1,3,5-9",
                     IDC_STATIC,15,210,141,17
     GROUPBOX        "Дополнительные настройки",IDC_STATIC,311,237,138,49
     GROUPBOX        "Расположение",IDC_STATIC,167,154,137,78
-    GROUPBOX        "Масштаб",IDC_STATIC,311,154,138,78
-    LTEXT           "мм",IDC_STATIC,247,168,21,9
-    LTEXT           "мм",IDC_STATIC,247,186,21,9
+    GROUPBOX        "Масштаб печати",IDC_STATIC,311,154,138,78
     CTEXT           "Размер бумаги",IDC_STATIC_PAPER,14,138,138,8
 END
 
@@ -527,59 +576,35 @@ BEGIN
     PUSHBUTTON      "Отмена",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 249, 295
-STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Настройки"
+IDD_SETTINGS_GENERAL DIALOG DISCARDABLE  0, 0, 250, 134
+STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Основные"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,137,274,50,14
-    PUSHBUTTON      "Отмена",IDCANCEL,192,274,50,14
-    LTEXT           "Связать файлы .djvu и .djv с программой WinDjView:",
-                    IDC_STATIC,15,18,182,9
-    PUSHBUTTON      "&Связать",IDC_ASSOCIATE,15,30,50,14
-    CONTROL         "&Восстанавливать связь при запуске программы",
-                    IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    15,49,188,10
-    CONTROL         "Создавать &иконки для всех страниц в фоновом режиме",
-                    IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,95,212,10
-    CONTROL         "&Листать страницы щелчком мыши в полноэкранном режиме",
-                    IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,109,224,10
     CONTROL         "Предупреждать при закрытии &нескольких документов",
                     IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,81,219,10
-    CONTROL         "Масштабировать с увеличенной &резкостью (но медленнее)",
-                    IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,
-                    197,224,10
-    CONTROL         "&Применить коррекцию изображения",IDC_ADJUST_DISPLAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,211,153,9
-    LTEXT           "&Яркость: 0",IDC_BRIGHTNESS_TEXT,15,225,61,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,76,224,
-                    160,12
-    LTEXT           "&Контраст: 0",IDC_CONTRAST_TEXT,15,238,55,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,76,237,
-                    160,12
-    LTEXT           "&Гамма: 1.0",IDC_GAMMA_TEXT,15,251,45,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,76,250,160,
-                    12
-    GROUPBOX        "Типы файлов",IDC_STATIC,7,7,235,58
-    GROUPBOX        "Разное",IDC_STATIC,7,69,235,112
-    GROUPBOX        "Отображение",IDC_STATIC,7,185,235,82
-    LTEXT           "WinDjView\n(C) Андрей Жежерун",IDC_STATIC_ABOUT,7,274,
-                    92,18
+                    WS_TABSTOP,7,7,236,10
+    CONTROL         "Создавать &иконки для всех страниц в фоновом режиме",
+                    IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,21,236,10
+    CONTROL         "&Листать страницы щелчком мыши в полноэкранном режиме",
+                    IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,35,236,10
     CONTROL         "Всегда прятать полосы прокр&утки в полноэкранном режиме",
                     IDC_FULLSCREEN_HIDESCROLL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,123,219,10
+                    WS_TABSTOP,7,49,236,10
     CONTROL         "&Масштаб по Ctrl+колесу мыши в противоположную сторону",
                     IDC_INVERT_WHEEL_ZOOM,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,137,219,10
+                    WS_TABSTOP,7,63,236,10
     CONTROL         "&Закрывать программу при нажатии Escape",
-                    IDC_CLOSE_ON_ESC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    15,151,219,10
+                    IDC_CLOSE_ON_ESC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
+                    77,236,10
     CONTROL         "Переносить закла&дки, не помещающиеся в одну строку",
                     IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    15,165,219,10
+                    7,91,236,10
+    CONTROL         "Запоминать открытую страницу и настройки каждого документа",
+                    IDC_RESTORE_VIEW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
+                    105,236,10
 END
 
 IDD_FIND DIALOG DISCARDABLE  0, 0, 287, 64
@@ -587,8 +612,9 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Поиск"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    LTEXT           "&Текст:",IDC_STATIC,7,7,33,12,SS_CENTERIMAGE
-    EDITTEXT        IDC_FIND,46,7,174,12,ES_AUTOHSCROLL
+    LTEXT           "&Текст:",IDC_STATIC,7,10,35,9,SS_CENTERIMAGE
+    CONTROL         "",IDC_FIND,"ComboBoxEx32",CBS_DROPDOWN | 
+                    CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP,47,7,173,95
     CONTROL         "&Учитывать регистр",IDC_MATCH_CASE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,28,84,8
     DEFPUSHBUTTON   "&Найти",IDOK,230,7,50,14
@@ -621,6 +647,162 @@ BEGIN
     PUSHBUTTON      "Отмена",IDCANCEL,66,27,50,14
 END
 
+IDD_SETTINGS_DISPLAY DIALOG DISCARDABLE  0, 0, 250, 134
+STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Отображение"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    CONTROL         "Масштабировать с увеличенной &резкостью (но медленнее)",
+                    IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,
+                    236,10
+    CONTROL         "&Инвертировать цвета",IDC_INVERT_COLORS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,21,236,10
+    CONTROL         "&Применить коррекцию изображения",IDC_ADJUST_DISPLAY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,236,9
+    LTEXT           "&Яркость: 0",IDC_BRIGHTNESS_TEXT,7,49,52,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,61,48,
+                    182,12
+    LTEXT           "&Контраст: 0",IDC_CONTRAST_TEXT,7,63,52,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,61,62,182,
+                    12
+    LTEXT           "&Гамма: 1.0",IDC_GAMMA_TEXT,7,77,52,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,61,76,182,12
+    CONTROL         "Применять коррекцию при пе&чати",IDC_ADJUST_PRINTING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,93,236,9
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,107,236,1
+    LTEXT           "&Единицы измерения:",IDC_STATIC,7,117,73,10
+    COMBOBOX        IDC_COMBO_UNITS,83,115,87,60,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_ANNOTATION DIALOGEX 0, 0, 200, 260
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Параметры аннотации"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,40,11,153,1,
+                    WS_EX_STATICEDGE
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,39,59,154,1,
+                    WS_EX_STATICEDGE
+    LTEXT           "&Граница",IDC_STATIC,7,7,30,9
+    LTEXT           "Тип:",IDC_STATIC,18,19,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_BORDER_TYPE,43,19,79,64,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Цвет:",IDC_STATIC,130,19,20,12,SS_CENTERIMAGE
+    PUSHBUTTON      "",IDC_BORDER_COLOR,152,18,41,15
+    CONTROL         "Показывать только при наведении &мыши",
+                    IDC_HIDE_INACTIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    19,37,159,11
+    LTEXT           "&Заливка",IDC_STATIC,7,55,31,9
+    LTEXT           "Тип:",IDC_STATIC,19,67,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_FILL_TYPE,43,67,79,64,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Цвет:",IDC_STATIC,130,67,20,12,SS_CENTERIMAGE
+    PUSHBUTTON      "",IDC_FILL_COLOR,152,66,41,15
+    LTEXT           "&Прозрачность:",IDC_STATIC,19,85,51,12,SS_CENTERIMAGE
+    CONTROL         "Slider1",IDC_FILL_TRANSPARENCY,"msctls_trackbar32",
+                    WS_TABSTOP,72,86,99,12
+    RTEXT           "100%",IDC_FILL_TRANSPARENCY_TEXT,172,85,20,12,
+                    SS_CENTERIMAGE
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,7,105,186,1,
+                    WS_EX_STATICEDGE
+    LTEXT           "&Текст:",IDC_STATIC,7,114,33,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_COMMENT,43,114,150,47,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,89,168,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,143,168,50,14
+    PUSHBUTTON      "За&кладка >>",IDC_ADD_BOOKMARK,7,168,54,14
+    CONTROL         "",IDC_STATIC_LESS,"Static",SS_GRAYFRAME,7,189,186,1,
+                    WS_EX_STATICEDGE
+    CONTROL         "",IDC_STATIC_MORE,"Static",SS_GRAYFRAME,7,252,186,1,
+                    WS_EX_STATICEDGE
+    LTEXT           "&Имя:",IDC_STATIC,7,198,33,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_BOOKMARK_TITLE,43,198,150,47,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+END
+
+IDD_RENAME_BOOKMARK DIALOG DISCARDABLE  0, 0, 206, 90
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Переименовать закладку"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "&Имя:",IDC_STATIC,7,7,20,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_BOOKMARK_TITLE,28,7,171,53,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,95,69,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,149,69,50,14
+END
+
+IDD_INSTALL_DIC DIALOG DISCARDABLE  0, 0, 190, 138
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Установить словарь"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Установить для текущего пользователя",IDC_CURRENT_USER,
+                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | 
+                    WS_GROUP | WS_TABSTOP,7,7,176,11
+    CONTROL         "Установить для всех пользователей (необходимы административные права)",
+                    IDC_ALL_USERS,"Button",BS_AUTORADIOBUTTON | BS_TOP | 
+                    BS_MULTILINE,7,21,176,19
+    CONTROL         "Установить в пользовательский каталог:",IDC_CUSTOM,
+                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,7,41,
+                    157,11
+    PUSHBUTTON      "...",IDC_BROWSE_LOCATION,170,40,13,12,WS_GROUP
+    CONTROL         "(Не выбран)",IDC_CUSTOM_LOCATION,"Static",
+                    SS_LEFTNOWORDWRAP | SS_NOPREFIX | SS_PATHELLIPSIS | 
+                    WS_GROUP,18,53,165,9
+    LTEXT           "Файл со словарём будет скопирован. Чтобы переместить исходный файл в корзину после установки, отмените следующую опцию:",
+                    IDC_STATIC,7,69,176,26
+    CONTROL         "Не удалять исходный файл",IDC_KEEP_ORIGINAL,"Button",
+                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,97,108,11
+    DEFPUSHBUTTON   "OK",IDOK,78,117,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,133,117,50,14
+END
+
+IDD_INSTALL_DIC_REPLACE DIALOG DISCARDABLE  0, 0, 190, 91
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Установить словарь"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Чтобы переместить исходный файл в корзину после установки, отмените следующую опцию:",
+                    IDC_STATIC,7,35,176,18
+    CONTROL         "Не удалять исходный файл",IDC_KEEP_ORIGINAL,"Button",
+                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,54,106,11
+    DEFPUSHBUTTON   "OK",IDOK,78,70,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,133,70,50,14
+    LTEXT           "Словарь с таким именем уже присутствует в системе. При установке найденный словарь будет заменён на текущий файл.",
+                    IDC_STATIC,7,7,176,26
+END
+
+IDD_SETTINGS_ASSOCS DIALOG DISCARDABLE  0, 0, 250, 134
+STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Связь с файлами"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "Связать файлы .djvu и .djv с программой WinDjView:",-1,
+                    7,7,182,9
+    PUSHBUTTON      "&Связать",IDC_ASSOCIATE,7,19,50,14
+    CONTROL         "&Восстанавливать связь при запуске программы",
+                    IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    7,38,186,10
+END
+
+IDD_SETTINGS_DICT DIALOGEX 0, 0, 250, 134
+STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Словари"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | 
+                    LVS_NOSORTHEADER | WS_TABSTOP,7,42,236,67,
+                    WS_EX_CLIENTEDGE
+    LTEXT           "Установленные словари:",IDC_STATIC,7,31,91,9
+    PUSHBUTTON      "&Удалить",IDC_UNINSTALL,7,113,50,14
+    LTEXT           "Пользовательский каталог:",IDC_STATIC,7,7,101,9
+    LTEXT           "(Не выбран)",IDC_CUSTOM_LOCATION,7,18,220,9
+    PUSHBUTTON      "...",IDC_BROWSE_LOCATION,230,16,13,12
+END
+
 
 #ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
@@ -629,8 +811,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,4,4,0
- PRODUCTVERSION 0,4,4,0
+ FILEVERSION 0,5,0,0
+ PRODUCTVERSION 0,5,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -648,14 +830,14 @@ BEGIN
             VALUE "Comments", "Русский\0"
             VALUE "CompanyName", "Andrew Zhezherun\0"
             VALUE "FileDescription", "WinDjView Localized Resources\0"
-            VALUE "FileVersion", "0.4.4\0"
+            VALUE "FileVersion", "0.5 beta\0"
             VALUE "InternalName", "WinDjViewRU.dll\0"
             VALUE "LegalCopyright", "Copyright (C) 2004-2007 Andrew Zhezherun. All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "WinDjViewRU.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "WinDjView\0"
-            VALUE "ProductVersion", "0.4.4\0"
+            VALUE "ProductVersion", "0.5\0"
             VALUE "SpecialBuild", "\0"
         END
     END
@@ -708,12 +890,12 @@ BEGIN
         BOTTOMMARGIN, 40
     END
 
-    IDD_SETTINGS, DIALOG
+    IDD_SETTINGS_GENERAL, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 242
+        RIGHTMARGIN, 243
         TOPMARGIN, 7
-        BOTTOMMARGIN, 288
+        BOTTOMMARGIN, 127
     END
 
     IDD_FIND, DIALOG
@@ -739,6 +921,62 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 41
     END
+
+    IDD_SETTINGS_DISPLAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 243
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 127
+    END
+
+    IDD_ANNOTATION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 193
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 253
+    END
+
+    IDD_RENAME_BOOKMARK, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 199
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
+    END
+
+    IDD_INSTALL_DIC, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 183
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 131
+    END
+
+    IDD_INSTALL_DIC_REPLACE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 183
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 84
+    END
+
+    IDD_SETTINGS_ASSOCS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 243
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 126
+    END
+
+    IDD_SETTINGS_DICT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 243
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 127
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -752,20 +990,25 @@ STRINGTABLE DISCARDABLE
 BEGIN
     IDR_MAINFRAME           "WinDjView"
     IDR_DjVuTYPE            "\nDjVu\nDjVu\nДокументы DjVu (*.djvu;*.djv)\n.djvu;.djv\nDjVu.Document\n"
-    IDS_BOOKMARKS_TAB       "Содержание"
-    IDS_ASSOCIATE_SUCCESSFUL 
-                            "Файлы с расширениями .djvu и .djv теперь связаны с WinDjView.\nПри двойном щелчке по таким файлам будет запускаться данная программа."
-    IDS_ASSOCIATE_FAILED    "При обновлении настроек Windows произошла ошибка.\nУ Вас может быть недостаточно прав для проведения данной операции."
-    IDS_THUMBNAILS_TAB      "Страницы"
-    IDS_SEARCH_RESULTS_TAB  "Результаты поиска"
-    IDS_SAVE_COPY_AS        "Сохранить копию как"
-    IDS_DJVU_FILTER         "Документы DjVu (*.djvu)|*.djvu|Все файлы (*.*)|*.*||"
-    IDS_CANNOT_SAVE_TO_ORIG "Невозможно сохранить документ в тот же самый файл"
-    IDS_SAVE_ERROR          "При сохранении документа произошла ошибка"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    IDS_BOOKMARKS_TAB       "Содержание"
+    IDS_ASSOCIATE_SUCCESSFUL 
+                            "Файлы с расширениями .djvu и .djv теперь связаны с WinDjView.\nПри двойном щелчке по таким файлам будет запускаться данная программа."
+    IDS_ASSOCIATE_FAILED    "При обновлении настроек Windows произошла ошибка.\nУ Вас может быть недостаточно прав для проведения данной операции."
+    IDS_PAGE_INDEX_TAB      "Индекс"
+    IDS_THUMBNAILS_TAB      "Страницы"
+    IDS_SEARCH_RESULTS_TAB  "Результаты поиска"
+    IDS_SAVE_COPY_AS        "Сохранить копию как"
+    IDS_DJVU_FILTER         "Документы DjVu (*.djvu)|*.djvu|Все файлы (*.*)|*.*||"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_CANNOT_SAVE_TO_ORIG "Невозможно сохранить документ в тот же самый файл"
+    IDS_SAVE_ERROR          "При сохранении документа произошла ошибка"
     IDS_ERROR_DECODING_PAGE "Невозможно прочитать страницу"
     IDS_BMP_FILTER          "Картинки (*.bmp)|*.bmp|Все файлы (*.*)|*.*||"
     IDS_EXPORT_PAGE         "Сохранить страницу как"
@@ -777,6 +1020,11 @@ BEGIN
     IDS_VERSION_URL         "http://windjview.sourceforge.net/version.txt"
     IDS_WEBSITE_URL         "http://windjview.sourceforge.net/ru"
     IDS_DJVULIBRE_URL       "http://djvu.sourceforge.net"
+    IDS_DONATE_URL          "https://sourceforge.net/donate/index.php?group_id=114927"
+    IDS_STRING_NOT_FOUND    "Текст не найден"
+    IDS_PRINTING            "Идёт печать..."
+    IDS_ERROR_RENDERING_PAGE "Невозможно отобразить страницу"
+    IDS_SEARCHING_PAGE      "Поиск на странице %d из %d"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -845,7 +1093,7 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_EDIT_CLEAR           "Erase the selection\nErase"
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
-    ID_EDIT_COPY            "Скопировать выделенный текст в буфер обмена\nСкопировать текст"
+    ID_EDIT_COPY            "Копировать выделенный текст в буфер обмена\nСкопировать текст"
     ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
     ID_EDIT_FIND            "Поиск текста в текущем документе\nПоиск"
     ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
@@ -884,8 +1132,84 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_LAYOUT_FIRSTPAGE_ALONE 
                             "При группировке соседних страниц отображать первую страницу отдельно"
+    ID_HIGHLIGHT_SELECTION  "Отметить текущее выделение"
+    ID_ANNOTATION_EDIT      "Редактировать данную аннотацию"
+    ID_ANNOTATION_DELETE    "Удалить данную аннотацию"
+    ID_INDICATOR_PAGE       "  Стр. %d из %d  "
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_NOT_VALID_DOCUMENT  "\nВозможно, файл повреждён или имеет неправильный формат."
+    IDS_PRINTING_FAILED     "Невозможно напечатать документ.\n Проверьте настройки принтера и драйвера."
+    IDS_PAPER_SIZE          "%s x %s %s"
+    IDS_VERSION_INFO        "WinDjView %s\n(C) Андрей Жежерун"
+    IDS_VERSION_ABOUT       "WinDjView %s"
+    IDS_CURRENT_VERSION     "0.5 beta"
+    IDS_FATAL_ERROR         "Произошла серьёзная ошибка.\n\nОна могла быть вызвана повреждённым документом. После этой ошибки программа может работать некорректно. Вам настоятельно рекомендуется перезапустить программу.\n\nНажмите OK, чтобы выйти из программы, или Cancel, чтобы вернуться к открытым документам."
+    IDS_WARN_CLOSE_MULTIPLE "Выход из программы приведёт к закрытию %d документов. Продолжить?"
     IDS_OPENFILE            "Открыть"
     IDS_ALLFILTER           "Все файлы (*.*)"
+    IDS_SETTINGS            "Настройки"
+    IDS_BORDER_TYPES        "Нет,Сплошная,Инвертированная"
+    IDS_FILL_TYPES          "Нет,Сплошная,Инвертированная"
+    IDS_MORE_COLORS         "Другие цвета..."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_CUSTOM_BOOKMARKS_TAB "Закладки"
+    IDS_BOOKMARK_MORE       "За&кладка >>"
+    IDS_BOOKMARK_LESS       "За&кладка <<"
+    IDS_UNITS_FULL          "Сантиметры,Миллиметры,Дюймы"
+    IDS_UNITS_SHORT         "см,мм,''"
+    IDS_EDIT_ANNOTATION     "Параметры аннотации"
+    IDS_CREATE_ANNOTATION   "Новая аннотация"
+    IDS_BOOKMARK_SELECTION  "Закладка на выделение"
+    IDS_BOOKMARK_ANNOTATION "Закладка на аннотацию"
+    IDS_BOOKMARK_VIEW       "Закладка на вид"
+    IDS_RENAME_BOOKMARK     "Переименовать закладку"
+    IDS_PROMPT_BOOKMARK_DESTINATION 
+                            "Выделенная закладка будет перенаправлена на текущее положение в документе. Вы уверены, что хотите продолжить?"
+    IDS_PROMPT_BOOKMARK_DELETE 
+                            "Выделенная закладка будет удалена. Вы уверены, что хотите продолжить?"
+    IDS_PROMPT_ANNOTATION_DELETE 
+                            "Выделенная аннотация будет удалена. Вы уверены, что хотите продолжить?"
+    IDS_FILE_INSTALL        "Установить..."
+    IDS_INSTALLATION_FAILED "Не удалось установить словарь. Возможные причины: недостаточно прав на запись в целевой каталог, либо файл открыт в другом приложении, либо отсутствует свободное место на диске."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EXPORT_SELECTION     "Экспорт выделенной части страницы в файл картинки"
+    ID_VIEW_BACK            "Перейти назад\nНазад"
+    ID_VIEW_FORWARD         "Перейти вперёд\nВперёд"
+    ID_WINDOW_ACTIVATE_FIRST "Переключиться на это окно"
+    ID_WINDOW_ACTIVATE_1    "Переключиться на это окно"
+    ID_WINDOW_ACTIVATE_2    "Переключиться на это окно"
+    ID_WINDOW_ACTIVATE_3    "Переключиться на это окно"
+    ID_WINDOW_ACTIVATE_4    "Переключиться на это окно"
+    ID_WINDOW_ACTIVATE_5    "Переключиться на это окно"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_WINDOW_ACTIVATE_6    "Переключиться на это окно"
+    ID_WINDOW_ACTIVATE_7    "Переключиться на это окно"
+    ID_WINDOW_ACTIVATE_8    "Переключиться на это окно"
+    ID_WINDOW_ACTIVATE_9    "Переключиться на это окно"
+    ID_WINDOW_ACTIVATE_10   "Переключиться на это окно"
+    ID_WINDOW_ACTIVATE_11   "Переключиться на это окно"
+    ID_WINDOW_ACTIVATE_12   "Переключиться на это окно"
+    ID_WINDOW_ACTIVATE_13   "Переключиться на это окно"
+    ID_WINDOW_ACTIVATE_14   "Переключиться на это окно"
+    ID_WINDOW_ACTIVATE_LAST "Переключиться на это окно"
+    ID_ZOOM_IN              "Увеличить\nУвеличить"
+    ID_ZOOM_OUT             "Уменьшить\nУменьшить"
+    ID_MODE_DRAG            "Включить режим перетаскивания документа\nРежим перетаскивания"
+    ID_MODE_SELECT          "Включить режим выделения текста\nВыделить текст"
+    ID_MODE_MAGNIFY         "Включить режим увеличения изображения\nРежим увеличения"
+    ID_MODE_SELECT_RECT     "Включить режим выделения области\nВыделить область"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -923,9 +1247,16 @@ STRINGTABLE DISCARDABLE
 BEGIN
     IDC_PAGENUM             "Выберите номер страницы\nСтраница"
     IDC_ZOOM                "Выберите масштаб\nМасштаб"
+    IDC_LOOKUP              "Поиск слова в выбранном словаре\nПоиск в словаре"
+    IDC_LOOKUP_LABEL        "Поиск в словаре:"
+    IDC_DICTIONARY          "Выбор словаря из выпадающего списка\nСловарь"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
     ID_PAGE_INFORMATION     "Показать служебную информацию о странице"
     ID_FILE_SETTINGS        "Изменить настройки программы"
-    ID_EXPORT_PAGE          "Сохранить эту страницу в отдельный файл"
+    ID_EXPORT_PAGE          "Экспорт данной страницы в файл катринки"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -939,37 +1270,47 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_VIEW_BACK            "Перейти назад\nНазад"
-    ID_VIEW_FORWARD         "Перейти вперёд\nВперёд"
-    ID_WINDOW_ACTIVATE_FIRST "Переключиться на это окно"
-    ID_WINDOW_ACTIVATE_1    "Переключиться на это окно"
-    ID_WINDOW_ACTIVATE_2    "Переключиться на это окно"
-    ID_WINDOW_ACTIVATE_3    "Переключиться на это окно"
-    ID_WINDOW_ACTIVATE_4    "Переключиться на это окно"
-    ID_WINDOW_ACTIVATE_5    "Переключиться на это окно"
+    IDS_NUM_OCCURRENCES     "найдено %d вхождений"
+    IDS_EXPORT_TEXT         "Сохранить текст"
+    IDS_TEXT_FILTER         "Текстовый документ (*.txt)|*.txt|Все файлы (*.*)|*.*||"
+    IDS_PRINTING_PAGE       "Печать страницы %d из %d..."
+    IDS_SEARCHING           "Идёт поиск"
+    IDS_OF_PAGE_COUNT       "из %d"
+    IDS_FIT_WIDTH           "По ширине"
+    IDS_FIT_HEIGHT          "По высоте"
+    IDS_FIT_PAGE            "Стр. целиком"
+    IDS_ACTUAL_SIZE         "Исх. размер"
+    IDS_STRETCH             "Растянуть"
+    IDS_TOOLTIP_BRIGHTNESS  "Яркость: %+d"
+    IDS_TOOLTIP_CONTRAST    "Контраст: %+d"
+    IDS_TOOLTIP_GAMMA       "Гамма: %1.1f"
+    IDS_STATUS_BLACKANDWHITE "  Чёрно-белый  "
+    IDS_STATUS_FOREGROUND   "  Передний план  "
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_WINDOW_ACTIVATE_6    "Переключиться на это окно"
-    ID_WINDOW_ACTIVATE_7    "Переключиться на это окно"
-    ID_WINDOW_ACTIVATE_8    "Переключиться на это окно"
-    ID_WINDOW_ACTIVATE_9    "Переключиться на это окно"
-    ID_WINDOW_ACTIVATE_10   "Переключиться на это окно"
-    ID_WINDOW_ACTIVATE_11   "Переключиться на это окно"
-    ID_WINDOW_ACTIVATE_12   "Переключиться на это окно"
-    ID_WINDOW_ACTIVATE_13   "Переключиться на это окно"
-    ID_WINDOW_ACTIVATE_14   "Переключиться на это окно"
-    ID_WINDOW_ACTIVATE_LAST "Переключиться на это окно"
-    ID_ZOOM_IN              "Увеличить\nУвеличить"
-    ID_ZOOM_OUT             "Уменьшить\nУменьшить"
-    ID_MODE_DRAG            "Включить режим перетаскивания документа\nРежим перетаскивания"
-    ID_MODE_SELECT          "Включить режим выделения текста\nРежим выделения"
-    ID_MODE_MAGNIFY         "Включить режим увеличения изображения\nРежим увеличения"
+    IDS_STATUS_BACKGROUND   "  Задний план  "
+    IDS_PRINT_ALL_PAGES     "Все страницы"
+    IDS_PRINT_ODD_PAGES     "Нечётные страницы"
+    IDS_PRINT_EVEN_PAGES    "Чётные страницы"
+    IDS_PRINT_ONE_PAGE      "Одна страница"
+    IDS_PRINT_TWO_PAGES     "Две страницы"
+    IDS_PLEASE_WAIT         "Пожалуйста, подождите..."
+    IDS_PAGE_NO_TOOLTIP     "стр. %d"
+    IDS_BRIGHTNESS_TEXT_ZERO "&Яркость: %d"
+    IDS_BRIGHTNESS_TEXT     "&Яркость: %+d"
+    IDS_CONTRAST_TEXT_ZERO  "&Контраст: %d"
+    IDS_CONTRAST_TEXT       "&Контраст: %+d"
+    IDS_GAMMA_TEXT          "&Гамма: %1.1f"
+    IDS_FAILED_TO_OPEN      "Невозможно открыть документ\n"
+    IDS_TOOLBAR_TITLE       "Панель инструментов"
+    IDS_TOOLTIP_HIDE        "Скрыть"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    ID_MODE_ZOOM_RECT       "Включить режим масштабирования по выделению\nВыделить и масштабировать"
     ID_FILE_EXPORT_TEXT     "Извлечь текст из документа и сохранить как текстовый файл"
     ID_CHECK_FOR_UPDATE     "Проверить сайт программы в интернете на наличие обновлений\nПроверить обновления"
     ID_DISPLAY_COLOR        "Отображать документ в исходных цветах"
@@ -982,66 +1323,50 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_INDICATOR_PAGE       "  Стр. %d из %d  "
     ID_INDICATOR_SIZE       "  %s x %s %s  "
     ID_INDICATOR_ADJUST     "  Включена коррекция  "
     ID_INDICATOR_MODE       "  Режим  "
+    ID_BOOKMARK_DELETE      "Удалить выделенную закладку"
+    ID_BOOKMARK_RENAME      "Переименовать выделенную закладку"
+    ID_BOOKMARK_SETDESTINATION 
+                            "Перенаправить выделенную закладку на текущее положение в документе"
+    ID_BOOKMARK_ADD         "Создать закладку на текущий вид, выделение или аннотацию"
+    ID_ZOOM_TO_SELECTION    "Масщтабировать по выделению"
+    ID_VIEW_SIDEBAR         "Показать или скрыть боковую панель\nБоковая панель"
+    ID_DICTIONARY_NEXT      "Поиск слова в следующем словаре\nСледующий словарь"
+    ID_DICTIONARY_PREV      "Поиск слова в предыдущем словаре\nПредыдущий словарь"
+    ID_DICTIONARY_INFO      "Показать информацию о выбранном словаре\nИнформация о словаре"
+    ID_DICTIONARY_LOOKUP    "Поиск слова в выбранном словаре\nПоиск в словаре"
+    ID_VIEW_DICTBAR         "Показать или скрыть панель словарей\nПанель словарей"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_DONATE_URL          "https://sourceforge.net/donate/index.php?group_id=114927"
-    IDS_STRING_NOT_FOUND    "Текст не найден"
-    IDS_PRINTING            "Идёт печать..."
-    IDS_ERROR_RENDERING_PAGE "Невозможно отобразить страницу"
-    IDS_SEARCHING_PAGE      "Поиск на странице %d из %d"
-    IDS_NUM_OCCURRENCES     "найдено %d вхождений"
-    IDS_EXPORT_TEXT         "Сохранить текст"
-    IDS_TEXT_FILTER         "Текстовый документ (*.txt)|*.txt|Все файлы (*.*)|*.*||"
-    IDS_PRINTING_PAGE       "Печать страницы %d из %d..."
-    IDS_SEARCHING           "Идёт поиск"
-    IDS_OF_PAGE_COUNT       "из %d"
-    IDS_FIT_WIDTH           "По ширине"
-    IDS_FIT_HEIGHT          "По высоте"
-    IDS_FIT_PAGE            "Стр. целиком"
-    IDS_ACTUAL_SIZE         "Исх. размер"
+    IDS_INSTALLATION_SUCCEEDED "Установка словаря прошла успешно."
+    IDS_ERROR_PARSING_RANGE "Ошибка в диапазоне печати."
+    IDS_PATH_TOO_LONG       "Невозможно открыть документ: слишком длинный путь к файлу.\n%s"
+    IDR_DICTIONARIES_BAR    "Панель словарей"
+    IDS_DICTBAR_TITLE       "Словари"
+    IDS_LANG_NOT_SPECIFIED  "Не указан"
+    IDS_UNINSTALL_DICT      "Вы уверены, что хотите удалить словарь ""%s""?\n\nФайл со словарём будет перемещён в корзину. Чтобы полностью удалить файл, очистите корзину после удаления словаря."
+    IDS_UNINSTALL_FAILED    "Ошибка при удалении словаря ""%s"". Вы можете удалить словарь вручную, для этого закройте приложение и удалите следующий файл:\n\n%s"
+    IDS_PRINT_BOOKLET       "Печать буклета"
+    IDS_DICT_LOCATION_PROMPT "Выберите каталог для установки словарей:"
+    IDS_INVALID_DIR         "Введённый путь не существует. Пожалуйста, выберите каталог из списка, либо воспользуйтесь кнопкой создания нового каталога."
+    IDS_COPY_SELECTION      "&Копировать выделение"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_STRETCH             "Растянуть"
-    IDS_TOOLTIP_BRIGHTNESS  "Яркость: %+d"
-    IDS_TOOLTIP_CONTRAST    "Контраст: %+d"
-    IDS_TOOLTIP_GAMMA       "Гамма: %1.1f"
-    IDS_STATUS_BLACKANDWHITE "  Чёрно-белый  "
-    IDS_STATUS_FOREGROUND   "  Передний план  "
-    IDS_STATUS_BACKGROUND   "  Задний план  "
-    IDS_PRINT_ALL_PAGES     "Все страницы"
-    IDS_PRINT_ODD_PAGES     "Нечётные страницы"
-    IDS_PRINT_EVEN_PAGES    "Чётные страницы"
-    IDS_PRINT_ONE_PAGE      "Одна страница"
-    IDS_PRINT_TWO_PAGES     "Две страницы"
-    IDS_PLEASE_WAIT         "Пожалуйста, подождите..."
-    IDS_PAGE_NO_TOOLTIP     "стр. %d"
-    IDS_BRIGHTNESS_TEXT_ZERO "&Яркость: %d"
-    IDS_BRIGHTNESS_TEXT     "&Яркость: %+d"
+    IDC_DICTIONARY_LABEL    "Словарь:"
+    IDC_LANGUAGE_LIST       "Выбор языковой пары для поиска в словаре\nЯзыковая пара"
+    IDC_LANGUAGE_LIST_LABEL "Язык:"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_CONTRAST_TEXT_ZERO  "&Контраст: %d"
-    IDS_CONTRAST_TEXT       "&Контраст: %+d"
-    IDS_GAMMA_TEXT          "&Гамма: %1.1f"
-    IDS_FAILED_TO_OPEN      "Невозможно открыть документ\n"
-    IDS_TOOLBAR_TITLE       "Панель инструментов"
-    IDS_TOOLTIP_HIDE        "Скрыть"
-    IDS_NOT_VALID_DOCUMENT  "\nВозможно, файл повреждён или имеет неправильный формат."
-    IDS_PRINTING_FAILED     "Невозможно напечатать документ.\n Проверьте настройки принтера и драйвера."
-    IDS_VERSION_INFO        "WinDjView %s\n(C) Андрей Жежерун"
-    IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "0.4.3"
-    IDS_FATAL_ERROR         "Произошла серьёзная ошибка.\n\nОна могла быть вызвана повреждённым документом. После этой ошибки программа может работать некорректно. Вам настоятельно рекомендуется перезапустить программу.\n\nНажмите OK, чтобы выйти из программы, или Cancel, чтобы вернуться к открытым документам."
-    IDS_WARN_CLOSE_MULTIPLE "Выход из программы приведёт к закрытию %d документов. Продолжить?"
+    ID_BOOKMARK_MOVEUP      "Переместить выделенную закладку вверх"
+    ID_BOOKMARK_MOVEDOWN    "Переместить выделенную закладку вниз"
 END
 
 #endif    // Russian resources

@@ -134,7 +134,7 @@
 #define IDS_PATH_TOO_LONG               290
 #define IDR_DICTIONARIES_BAR            291
 #define IDS_DICTBAR_TITLE               292
-#define IDS_NOT_SPECIFIED               293
+#define IDS_LANG_NOT_SPECIFIED          293
 #define IDS_UNINSTALL_DICT              294
 #define IDS_UNINSTALL_FAILED            295
 #define IDS_PRINT_BOOKLET               296

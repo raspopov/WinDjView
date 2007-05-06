@@ -344,6 +344,26 @@ void CMyToolBar::OnUpdate(const Observable* source, const Message* message)
 		}
 
 		if (!m_labels.empty())
+		{
+			for (int nButton = 0; nButton < GetToolBarCtrl().GetButtonCount(); ++nButton)
+			{
+				TBBUTTON btn;
+				ZeroMemory(&btn, sizeof(btn));
+				GetToolBarCtrl().GetButton(nButton, &btn);
+				CWnd* pWnd = GetDlgItem(btn.idCommand);
+
+				if (btn.fsStyle == TBSTYLE_SEP && pWnd != NULL)
+				{
+					CRect rcItem;
+					GetItemRect(nButton, rcItem);
+					rcItem.DeflateRect(3, 0);
+
+					pWnd->MoveWindow(rcItem);
+				}
+			}
+
+			GetToolBarCtrl().AutoSize();
 			Invalidate(false);
+		}
 	}
 }

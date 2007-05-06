@@ -180,7 +180,7 @@ void CMainFrame::InitToolBar()
 	m_cboPage.GetEditCtrl()->SetInteger();
 
 	int nComboZoom = m_wndToolBar.CommandToIndex(ID_ZOOM_IN) - 1;
-	m_wndToolBar.SetButtonInfo(nComboZoom, IDC_ZOOM, TBBS_SEPARATOR, 105);
+	m_wndToolBar.SetButtonInfo(nComboZoom, IDC_ZOOM, TBBS_SEPARATOR, 110);
 
 	m_wndToolBar.GetItemRect(nComboZoom, rcItem);
 	rcItem.DeflateRect(3, 0);
@@ -212,7 +212,7 @@ void CMainFrame::InitDictBar()
 
 	TBBUTTON btn;
 	ZeroMemory(&btn, sizeof(btn));
-	btn.iBitmap = 140;
+	btn.iBitmap = 135;
 	btn.idCommand = IDC_LOOKUP;
 	btn.fsStyle = TBSTYLE_SEP;
 

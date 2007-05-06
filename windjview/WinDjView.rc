@@ -478,13 +478,13 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Print"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    LTEXT           "&Name:",IDC_STATIC,174,21,37,9
+    LTEXT           "&Name:",IDC_STATIC,174,21,37,9,SS_CENTERIMAGE
     COMBOBOX        IDC_COMBO_PRINTER,215,19,145,82,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Properties",IDC_PROPERTIES,366,18,50,14
     CONTROL         "Print to &file",IDC_PRINT_TO_FILE,"Button",
                     BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,364,77,52,
-                    9
+                    11
     CONTROL         "Portra&it",IDC_PORTRAIT,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP | WS_TABSTOP,174,112,53,11
     CONTROL         "Lan&dscape",IDC_LANDSCAPE,"Button",BS_AUTORADIOBUTTON,
@@ -509,19 +509,19 @@ BEGIN
     LTEXT           "T&op:",IDC_STATIC,230,168,18,9
     EDITTEXT        IDC_POSITION_TOP,250,166,32,12,ES_AUTOHSCROLL
     CONTROL         "Center i&mage",IDC_CENTER_IMAGE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,193,188,57,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,193,188,57,11
     CONTROL         "Auto-rotate",IDC_AUTO_ROTATE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,193,202,57,9
+                    WS_TABSTOP,193,202,57,11
     CONTROL         "Clip content",IDC_CLIP_CONTENT,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,193,216,55,9
+                    WS_TABSTOP,193,216,55,11
     LTEXT           "&Scale:",IDC_STATIC,304,168,21,9
     EDITTEXT        IDC_SCALE,331,166,38,12,ES_AUTOHSCROLL
     CONTROL         "Scale to fit media",IDC_SCALE_TO_FIT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,331,188,73,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,331,188,73,11
     CONTROL         "S&hrink oversized pages",IDC_SHRINK_OVERSIZED,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,331,202,89,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,331,202,89,11
     CONTROL         "Ignore printer margins",IDC_IGNORE_MARGINS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,331,216,85,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,331,216,85,11
     LTEXT           "&Left:",IDC_STATIC,14,251,21,9
     EDITTEXT        IDC_MARGIN_LEFT,38,249,38,12,ES_AUTOHSCROLL
     LTEXT           "&Top:",IDC_STATIC,14,269,21,9
@@ -530,17 +530,17 @@ BEGIN
     EDITTEXT        IDC_MARGIN_RIGHT,113,249,38,12,ES_AUTOHSCROLL
     LTEXT           "&Bottom:",IDC_STATIC,84,269,27,9
     EDITTEXT        IDC_MARGIN_BOTTOM,113,267,38,12,ES_AUTOHSCROLL
-    LTEXT           "Si&ze:",IDC_STATIC,174,251,20,9
+    LTEXT           "Si&ze:",IDC_STATIC,174,251,20,9,SS_CENTERIMAGE
     COMBOBOX        IDC_COMBO_PAPER,198,249,84,81,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Print",IDC_STATIC,304,251,17,9
+    LTEXT           "Print",IDC_STATIC,304,251,17,9,SS_CENTERIMAGE
     COMBOBOX        IDC_COMBO_PAGESINRANGE,326,249,92,81,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Print",IDC_STATIC,304,269,17,9
+    LTEXT           "Print",IDC_STATIC,304,269,17,9,SS_CENTERIMAGE
     COMBOBOX        IDC_COMBO_PAGESPERSHEET,326,267,92,84,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Reverse order",IDC_REVERSE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,297,66,9
+                    WS_TABSTOP,12,297,66,11
     DEFPUSHBUTTON   "Print",IDOK,320,295,50,14
     PUSHBUTTON      "Close",IDCANCEL,375,295,50,14
     GROUPBOX        "Printer",IDC_STATIC,167,7,258,87
@@ -588,7 +588,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS_GENERAL DIALOG DISCARDABLE  0, 0, 222, 125
+IDD_SETTINGS_GENERAL DIALOG DISCARDABLE  0, 0, 222, 134
 STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "General"
 FONT 8, "MS Shell Dlg"
@@ -658,7 +658,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,64,27,50,14
 END
 
-IDD_SETTINGS_DISPLAY DIALOG DISCARDABLE  0, 0, 222, 139
+IDD_SETTINGS_DISPLAY DIALOG DISCARDABLE  0, 0, 222, 134
 STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Display"
 FONT 8, "MS Shell Dlg"
@@ -680,9 +680,9 @@ BEGIN
     CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,61,76,154,12
     CONTROL         "Use adjustments for &printing",IDC_ADJUST_PRINTING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,93,208,9
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,112,208,1
-    LTEXT           "&Units:",IDC_STATIC,7,122,23,10
-    COMBOBOX        IDC_COMBO_UNITS,32,120,87,60,CBS_DROPDOWNLIST | 
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,107,208,1
+    LTEXT           "&Units:",IDC_STATIC,7,117,23,10
+    COMBOBOX        IDC_COMBO_UNITS,32,115,87,60,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
 END
 
@@ -784,7 +784,7 @@ BEGIN
                     IDC_STATIC,7,7,176,26
 END
 
-IDD_SETTINGS_ASSOCS DIALOG DISCARDABLE  0, 0, 222, 125
+IDD_SETTINGS_ASSOCS DIALOG DISCARDABLE  0, 0, 222, 134
 STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "File Associations"
 FONT 8, "MS Shell Dlg"
@@ -797,17 +797,17 @@ BEGIN
                     7,38,208,10
 END
 
-IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 125
+IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 134
 STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Dictionaries"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | 
                     LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | 
-                    LVS_NOSORTHEADER | WS_TABSTOP,7,42,208,58,
+                    LVS_NOSORTHEADER | WS_TABSTOP,7,42,208,67,
                     WS_EX_CLIENTEDGE
     LTEXT           "Installed dictionaries:",IDC_STATIC,7,31,69,9
-    PUSHBUTTON      "&Uninstall",IDC_UNINSTALL,7,104,50,14
+    PUSHBUTTON      "&Uninstall",IDC_UNINSTALL,7,113,50,14
     LTEXT           "Custom location:",IDC_STATIC,7,7,69,9
     LTEXT           "(Not selected)",IDC_CUSTOM_LOCATION,7,18,192,9
     PUSHBUTTON      "...",IDC_BROWSE_LOCATION,202,16,13,12
@@ -840,7 +840,7 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "Andrew Zhezherun\0"
             VALUE "FileDescription", "WinDjView\0"
-            VALUE "FileVersion", "0.5\0"
+            VALUE "FileVersion", "0.5 beta\0"
             VALUE "InternalName", "WinDjView.exe\0"
             VALUE "LegalCopyright", "Copyright (C) 2004-2007 Andrew Zhezherun. All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
@@ -905,7 +905,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 118
+        BOTTOMMARGIN, 127
     END
 
     IDD_FIND, DIALOG
@@ -937,7 +937,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 132
+        BOTTOMMARGIN, 127
     END
 
     IDD_ANNOTATION, DIALOG
@@ -977,7 +977,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 117
+        BOTTOMMARGIN, 126
     END
 
     IDD_SETTINGS_DICT, DIALOG
@@ -985,7 +985,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 118
+        BOTTOMMARGIN, 127
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1357,7 +1357,7 @@ BEGIN
     IDS_PATH_TOO_LONG       "Failed to open document: the path is too long.\n%s"
     IDR_DICTIONARIES_BAR    "Di&ctionary Bar"
     IDS_DICTBAR_TITLE       "Dictionaries"
-    IDS_NOT_SPECIFIED       "Not Specified"
+    IDS_LANG_NOT_SPECIFIED  "Not Specified"
     IDS_UNINSTALL_DICT      "Are you sure you want to uninstall the dictionary ""%s""?\n\nThe dictionary file will be moved to the recycle bin. To permanently delete the dictionary, empty the recycle bin."
     IDS_UNINSTALL_FAILED    "Could not uninstall the dictionary ""%s"". To uninstall it manually, quit the application and delete the following file:\n\n%s"
     IDS_PRINT_BOOKLET       "Booklet"

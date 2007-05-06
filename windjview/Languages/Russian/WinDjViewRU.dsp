@@ -82,6 +82,10 @@ SOURCE=..\..\res\close.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\res\dictbar.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\res\DjVuDoc.ico
 # End Source File
 # Begin Source File
@@ -95,6 +99,10 @@ SOURCE=..\..\res\drag.cur
 # Begin Source File
 
 SOURCE=..\..\res\hand.cur
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\hourglass.bmp
 # End Source File
 # Begin Source File
 
@@ -163,6 +171,10 @@ SOURCE=..\..\res\WinDjView.ico
 # Begin Source File
 
 SOURCE=..\..\res\WinDjView.rc2
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\zoom_rect.cur
 # End Source File
 # End Group
 # End Target

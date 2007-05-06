@@ -1760,7 +1760,7 @@ void CDjViewApp::UpdateDictProperties()
 	map<GUTF8String, int> langMatch;
 	map<GUTF8String, CString> langNames;
 
-	langNames[""] = MakeUTF8String(LoadString(IDS_NOT_SPECIFIED));
+	langNames[""] = MakeUTF8String(LoadString(IDS_LANG_NOT_SPECIFIED));
 	langMatch[""] = 0;
 
 	map<CString, DictionaryInfo>::iterator it;
