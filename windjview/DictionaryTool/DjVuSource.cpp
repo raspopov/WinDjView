@@ -378,6 +378,11 @@ Bookmark& Bookmark::operator=(const Bookmark& bm)
 		nPage = bm.nPage;
 		ptOffset = bm.ptOffset;
 		bMargin = bm.bMargin;
+		bZoom = bm.bZoom;
+		nZoomType = bm.nZoomType;
+		fZoom = bm.fZoom;
+		nPrevZoomType = bm.nPrevZoomType;
+		fPrevZoom = bm.fPrevZoom;
 	}
 
 	return *this;

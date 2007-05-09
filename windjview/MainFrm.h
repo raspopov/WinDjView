@@ -48,7 +48,7 @@ public:
 
 	bool AddToHistory(CDjVuView* pView, bool bAlwaysEnableBack = false);
 	bool AddToHistory(CDjVuView* pView, int nPage);
-	bool AddToHistory(CDjVuView* pView, const Bookmark& bookmark);
+	bool AddToHistory(CDjVuView* pView, const Bookmark& bookmark, bool bForce = false);
 
 	CFullscreenWnd* GetFullscreenWnd();
 	bool IsFullscreenMode();
@@ -121,8 +121,8 @@ protected:
 	};
 	list<HistoryPos> m_history;
 	list<HistoryPos>::iterator m_historyPos;
-	void GoToHistoryPos(const HistoryPos& pos);
-	bool AddToHistory(const HistoryPos& pos);
+	void GoToHistoryPos(const HistoryPos& pos, const HistoryPos* pCurPos = NULL);
+	bool AddToHistory(const HistoryPos& pos, bool bForce = false);
 
 protected:
 	// Generated message map functions

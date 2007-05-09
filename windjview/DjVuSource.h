@@ -83,7 +83,7 @@ private:
 public:
 	Bookmark()
 		: pchildren(new list<Bookmark>()), children(*pchildren), pParent(NULL),
-		  nLinkType(URL), nPage(0), ptOffset(0, 0), bMargin(false) {}
+		  nLinkType(URL), nPage(0), ptOffset(0, 0), bMargin(false), bZoom(false) {}
 	Bookmark(const Bookmark& bm)
 		: pchildren(new list<Bookmark>()), children(*pchildren) { *this = bm; }
 	~Bookmark()
@@ -109,6 +109,9 @@ public:
 	int nPage;
 	CPoint ptOffset;
 	bool bMargin;
+	bool bZoom;
+	int nZoomType, nPrevZoomType;
+	double fZoom, fPrevZoom;
 
 	list<Bookmark>& children;
 

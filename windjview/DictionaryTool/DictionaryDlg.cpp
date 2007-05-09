@@ -1587,40 +1587,63 @@ int CDictionaryDlg::TestEntries(const XMLNode& parent, int nEntries)
 		if (MakeCString(node.tagName) != _T("entry"))
 			continue;
 
-		wstring strFirst, strLast;
-		node.GetAttribute(_T("first"), strFirst);
-		node.GetAttribute(_T("last"), strLast);
 		++nCount;
 
-		strFirst = MapCharacters(tolower(strFirst));
-		strLast = MapCharacters(tolower(strLast));
+		wstring strFirst, strLast, strURL;
+		node.GetAttribute(_T("url"), strURL);
 
-		if (!strFirst.empty())
+		if (!strURL.empty())
 		{
-			if (!strLast.empty() && strFirst > strLast)
-				m_warnings.push_back(FormatString(_T("Cell C%d is lexicographically smaller than B%d.\r\n"), nCount, nCount));
+			node.GetAttribute(_T("first"), strFirst);
+			node.GetAttribute(_T("last"), strLast);
+			strFirst = MapCharacters(tolower(strFirst));
+			strLast = MapCharacters(tolower(strLast));
 
-			if (!prevFirst.empty() && strFirst < prevFirst)
-				m_warnings.push_back(FormatString(_T("Cell B%d is lexicographically smaller than B%d.\r\n"), nCount, nCount - 1));
+			// If previous entry has two non-empty components, and the current entry has only one
+			// non-empty component, skip current entry. Similarly, if the current entry has two
+			// non-empty components, and the previous entry has only one non-empty component,
+			// skip the checks (but don't skip the entry).
 
-			if (!prevLast.empty() && strFirst < prevLast)
-				m_warnings.push_back(FormatString(_T("Cell B%d is lexicographically smaller than C%d.\r\n"), nCount, nCount - 1));
+			bool bSkip = false;
+
+			if (!strFirst.empty())
+			{
+				if (!strLast.empty() && strFirst > strLast)
+					m_warnings.push_back(FormatString(_T("Cell C%d is lexicographically smaller than B%d.\r\n"), nCount, nCount));
+
+				if (strLast.empty() && !prevFirst.empty() && !prevLast.empty())
+				{
+					bSkip = true;
+				}
+				else if (strLast.empty() || !prevLast.empty())
+				{
+					if (!prevFirst.empty() && strFirst < prevFirst)
+						m_warnings.push_back(FormatString(_T("Cell B%d is lexicographically smaller than B%d.\r\n"), nCount, nCount - 1));
+
+					if (!prevLast.empty() && strFirst < prevLast)
+						m_warnings.push_back(FormatString(_T("Cell B%d is lexicographically smaller than C%d.\r\n"), nCount, nCount - 1));
+				}
+			}
+			else if (!strLast.empty())
+			{
+				if (!prevFirst.empty() && strLast < prevFirst)
+					m_warnings.push_back(FormatString(_T("Cell C%d is lexicographically smaller than B%d.\r\n"), nCount, nCount - 1));
+
+				if (!prevLast.empty() && strLast < prevLast)
+					m_warnings.push_back(FormatString(_T("Cell C%d is lexicographically smaller than C%d.\r\n"), nCount, nCount - 1));
+			}
+			else
+			{
+				m_warnings.push_back(FormatString(_T("Cell B%d and C%d are both empty.\r\n"), nCount, nCount));
+				bSkip = true;
+			}
+
+			if (!bSkip)
+			{
+				prevFirst = strFirst;
+				prevLast = strLast;
+			}
 		}
-		else if (!strLast.empty())
-		{
-			if (!prevFirst.empty() && strLast < prevFirst)
-				m_warnings.push_back(FormatString(_T("Cell C%d is lexicographically smaller than B%d.\r\n"), nCount, nCount - 1));
-
-			if (!prevLast.empty() && strLast < prevLast)
-				m_warnings.push_back(FormatString(_T("Cell C%d is lexicographically smaller than C%d.\r\n"), nCount, nCount - 1));
-		}
-		else
-		{
-			m_warnings.push_back(FormatString(_T("Cell B%d and C%d are both empty.\r\n"), nCount, nCount));
-		}
-
-		prevFirst = strFirst;
-		prevLast = strLast;
 
 		nCount = TestEntries(node, nCount);
 	}

@@ -2250,6 +2250,12 @@ void CDjVuView::OnCancelMode()
 
 void CDjVuView::ZoomTo(int nZoomType, double fZoom)
 {
+	if (nZoomType < ZoomStretch || nZoomType > ZoomPercent)
+	{
+		nZoomType = ZoomPercent;
+		fZoom = 100.0;
+	}
+
 	m_nZoomType = nZoomType;
 	m_fZoom = fZoom;
 
@@ -4669,6 +4675,9 @@ void CDjVuView::GoToBookmark(const Bookmark& bookmark, int nAddToHistory)
 		if ((nAddToHistory & AddSource) != 0)
 			GetMainFrame()->AddToHistory(this);
 
+		if (bookmark.bZoom)
+			ZoomTo(bookmark.nZoomType, bookmark.fZoom);
+
 		if (bookmark.nPage == nPage)
 			ScrollToPage(nPage, bookmark.ptOffset, bookmark.bMargin);
 		else
@@ -6198,6 +6207,10 @@ void CDjVuView::OnZoomToSelection()
 	if (m_nSelectionPage == -1)
 		return;
 
+	GetMainFrame()->AddToHistory(this);
+	int nPrevZoomType = m_nZoomType;
+	double fPrevZoom = GetZoom();
+
 	CRect rcClient;
 	GetClientRect(rcClient);
 	if ((GetStyle() & WS_VSCROLL) == 0)
@@ -6233,6 +6246,16 @@ void CDjVuView::OnZoomToSelection()
 	UpdateVisiblePages();
 	UpdatePageNumber();
 	UpdateHoverAnnotation();
+
+	Bookmark bookmark;
+	CreateBookmarkFromView(bookmark);
+	bookmark.bZoom = true;
+	bookmark.nZoomType = ZoomPercent;
+	bookmark.fZoom = fZoom;
+	bookmark.nPrevZoomType = nPrevZoomType;
+	bookmark.fPrevZoom = fPrevZoom;
+
+	GetMainFrame()->AddToHistory(this, bookmark, true);
 }
 
 void CDjVuView::OnSwitchFocus()

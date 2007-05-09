@@ -370,7 +370,7 @@ void CMainFrame::OnUpdateViewDictBar(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(m_wndDictBar.IsWindowVisible());
 
-	if (theApp.GetDictLangsCount() == 0)
+	if (theApp.GetDictLangsCount() == 0 && pCmdUI->m_pMenu != NULL)
 	{
 		pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
 		pCmdUI->m_nIndex--;
@@ -383,6 +383,7 @@ void CMainFrame::OnUpdateViewStatusBar(CCmdUI* pCmdUI)
 	OnUpdateControlBarMenu(pCmdUI);
 
 	if (theApp.GetDictLangsCount() > 0
+			&& pCmdUI->m_pMenu != NULL
 			&& pCmdUI->m_pMenu->GetMenuItemID(pCmdUI->m_nIndex + 1) != ID_VIEW_DICTBAR)
 	{
 		pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex + 1, MF_BYPOSITION | MF_STRING,
@@ -979,7 +980,7 @@ int CMainFrame::GetDocumentCount()
 	return nCount;
 }
 
-void CMainFrame::GoToHistoryPos(const HistoryPos& pos)
+void CMainFrame::GoToHistoryPos(const HistoryPos& pos, const HistoryPos* pCurPos)
 {
 	CDjVuDoc* pDoc = theApp.FindOpenDocument(pos.strFileName);
 	if (pDoc == NULL)
@@ -1002,6 +1003,12 @@ void CMainFrame::GoToHistoryPos(const HistoryPos& pos)
 	}
 
 	pView->GetParentFrame()->ActivateFrame();
+
+	if (pCurPos != NULL && pCurPos->bookmark.bZoom)
+	{
+		pView->ZoomTo(pCurPos->bookmark.nPrevZoomType, pCurPos->bookmark.fPrevZoom);
+	}
+
 	pView->GoToBookmark(pos.bookmark, CDjVuView::DoNotAdd);
 }
 
@@ -1010,8 +1017,12 @@ void CMainFrame::OnViewBack()
 	if (m_history.empty() || m_historyPos == m_history.begin())
 		return;
 
+	const HistoryPos* pCurPos = NULL;
+	if (m_historyPos != m_history.end())
+		pCurPos = &(*m_historyPos);
+
 	const HistoryPos& pos = *(--m_historyPos);
-	GoToHistoryPos(pos);
+	GoToHistoryPos(pos, pCurPos);
 }
 
 void CMainFrame::OnUpdateViewBack(CCmdUI* pCmdUI)
@@ -1073,17 +1084,17 @@ bool CMainFrame::AddToHistory(CDjVuView* pView, int nPage)
 	return AddToHistory(pos);
 }
 
-bool CMainFrame::AddToHistory(CDjVuView* pView, const Bookmark& bookmark)
+bool CMainFrame::AddToHistory(CDjVuView* pView, const Bookmark& bookmark, bool bForce)
 {
 	HistoryPos pos;
 	pos.strFileName = pView->GetDocument()->GetPathName();
 	pView->CreateBookmarkFromView(pos.bmView);
 	pos.bookmark = bookmark;
 
-	return AddToHistory(pos);
+	return AddToHistory(pos, bForce);
 }
 
-bool CMainFrame::AddToHistory(const HistoryPos& pos)
+bool CMainFrame::AddToHistory(const HistoryPos& pos, bool bForce)
 {
 	ASSERT(pos.bmView.nLinkType == Bookmark::View);
 
@@ -1092,7 +1103,7 @@ bool CMainFrame::AddToHistory(const HistoryPos& pos)
 		if (m_historyPos == m_history.end())
 			--m_historyPos;
 
-		if (pos == *m_historyPos)
+		if (pos == *m_historyPos && !bForce)
 			return false;
 
 		++m_historyPos;

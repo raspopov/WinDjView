@@ -230,7 +230,9 @@ void CDjVuDoc::OnUpdateFileExportText(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(m_pSource->HasText());
 
-	if (m_pSource->IsDictionary() && !m_pSource->GetDictionaryInfo()->bInstalled
+	if (m_pSource->IsDictionary()
+			&& !m_pSource->GetDictionaryInfo()->bInstalled
+			&& pCmdUI->m_pMenu != NULL
 			&& pCmdUI->m_pMenu->GetMenuItemID(pCmdUI->m_nIndex + 1) != ID_FILE_INSTALL)
 	{
 		pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex + 1, MF_BYPOSITION | MF_STRING,
@@ -297,7 +299,8 @@ HRESULT CDjVuDoc::DoInstall()
 
 void CDjVuDoc::OnUpdateFileInstall(CCmdUI* pCmdUI)
 {
-	if (!m_pSource->IsDictionary() || m_pSource->GetDictionaryInfo()->bInstalled)
+	if (pCmdUI->m_pMenu != NULL
+			&& (!m_pSource->IsDictionary() || m_pSource->GetDictionaryInfo()->bInstalled))
 	{
 		pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
 		pCmdUI->m_nIndex--;
