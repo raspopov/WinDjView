@@ -66,6 +66,7 @@ protected:
 	CMyDropTarget m_dropTarget;
 	const Language* m_pLangFrom;
 	const Language* m_pLangTo;
+	FILETIME m_ftIndexModified, m_ftCharMapModified;
 
 	map<const Language*, vector<DictionaryInfo::LocalizedString> > m_lang;
 	void Normalize(vector<DictionaryInfo::LocalizedString>& loc);

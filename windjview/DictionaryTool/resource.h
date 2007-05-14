@@ -67,6 +67,8 @@
 #define IDC_ADD                         1029
 #define IDC_REMOVE                      1030
 #define IDC_WARN_LIST                   1031
+#define IDS_PAGE_INDEX_CHANGED          57345
+#define IDS_CHAR_MAP_CHANGED            57346
 
 // Next default values for new objects
 // 

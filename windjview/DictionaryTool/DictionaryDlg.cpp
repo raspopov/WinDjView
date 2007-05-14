@@ -678,6 +678,15 @@ bool CDictionaryDlg::OpenPageIndex(const CString& strFileName)
 	m_strPageIndexFile = strFileName;
 	m_strPageIndexXML = strPageIndexXML;
 
+	HANDLE hFile = ::CreateFile(strFileName, GENERIC_READ,
+			FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	if (hFile != NULL)
+	{
+		::ZeroMemory(&m_ftIndexModified, sizeof(FILETIME));
+		::GetFileTime(hFile, NULL, NULL, &m_ftIndexModified);
+		::CloseHandle(hFile);
+	}
+
 	OnKickIdle();
 	m_nPageIndexAction = 1;
 	UpdateData(false);
@@ -702,6 +711,15 @@ bool CDictionaryDlg::OpenCharMap(const CString& strFileName)
 	m_bHasCharMapFile = true;
 	m_strCharMapFile = strFileName;
 	m_strCharMapXML = strCharMapXML;
+
+	HANDLE hFile = ::CreateFile(strFileName, GENERIC_READ,
+			FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	if (hFile != NULL)
+	{
+		::ZeroMemory(&m_ftCharMapModified, sizeof(FILETIME));
+		::GetFileTime(hFile, NULL, NULL, &m_ftCharMapModified);
+		::CloseHandle(hFile);
+	}
 
 	OnKickIdle();
 	m_nCharMapAction = 1;
@@ -1291,6 +1309,50 @@ void CDictionaryDlg::OnSaveAs()
 
 void CDictionaryDlg::SaveDocument(const CString& strFileName)
 {
+	if (m_nPageIndexAction == 1 && m_bHasPageIndexFile)
+	{
+		FILETIME ftIndexModified;
+		HANDLE hFile = ::CreateFile(m_strPageIndexFile, GENERIC_READ,
+				FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+		if (hFile != NULL)
+		{
+			::ZeroMemory(&ftIndexModified, sizeof(FILETIME));
+			::GetFileTime(hFile, NULL, NULL, &ftIndexModified);
+			::CloseHandle(hFile);
+		}
+
+		if (memcmp(&ftIndexModified, &m_ftIndexModified, sizeof(FILETIME)) != 0)
+		{
+			UINT nResult = AfxMessageBox(IDS_PAGE_INDEX_CHANGED, MB_ICONEXCLAMATION | MB_YESNOCANCEL);
+			if (nResult == IDCANCEL)
+				return;
+			if (nResult == IDYES && !OpenPageIndex(m_strPageIndexFile))
+				return;
+		}
+	}
+
+	if (m_nCharMapAction == 1 && m_bHasCharMapFile)
+	{
+		FILETIME ftCharMapModified;
+		HANDLE hFile = ::CreateFile(m_strCharMapFile, GENERIC_READ,
+				FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+		if (hFile != NULL)
+		{
+			::ZeroMemory(&ftCharMapModified, sizeof(FILETIME));
+			::GetFileTime(hFile, NULL, NULL, &ftCharMapModified);
+			::CloseHandle(hFile);
+		}
+
+		if (memcmp(&ftCharMapModified, &m_ftCharMapModified, sizeof(FILETIME)) != 0)
+		{
+			UINT nResult = AfxMessageBox(IDS_CHAR_MAP_CHANGED, MB_ICONEXCLAMATION | MB_YESNOCANCEL);
+			if (nResult == IDCANCEL)
+				return;
+			if (nResult == IDYES && !OpenCharMap(m_strCharMapFile))
+				return;
+		}
+	}
+
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
 	_tsplitpath(m_strDjVuFile, szDrive, szPath, szName, szExt);
 
