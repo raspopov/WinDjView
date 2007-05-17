@@ -927,8 +927,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 					strTemp.GetBuffer(lSize), &lSize);
 				strTemp.ReleaseBuffer();
 
-				if (lResult != ERROR_SUCCESS || strTemp.IsEmpty() ||
-					strTemp != strFileTypeId)
+				if (lResult != ERROR_SUCCESS || strTemp != strFileTypeId)
 				{
 					// no association for that suffix
 					if (!SetRegKey(strFilterExt, strFileTypeId))
@@ -936,6 +935,31 @@ bool CDjViewApp::RegisterShellFileTypes()
 						bSuccess = false;
 						continue;
 					}
+				}
+
+				// Remove user-level Explorer file mapping
+				CString strExplorerKey;
+				strExplorerKey.Format(_T("Software\\Microsoft\\Windows\\CurrentVersion\\"
+						"Explorer\\FileExts\\%s"), strFilterExt);
+				HKEY hKey = NULL;
+				lResult = ::RegOpenKeyEx(HKEY_CURRENT_USER, strExplorerKey, 0, KEY_READ | KEY_WRITE, &hKey);
+				if (lResult == ERROR_SUCCESS)
+				{
+					DWORD dwType = REG_NONE;
+					DWORD cbData = 0;
+					lResult = ::RegQueryValueEx(hKey, _T("ProgID"), 0, &dwType, NULL, &cbData);
+					if (lResult == ERROR_SUCCESS)
+					{
+						lResult = ::RegDeleteValue(hKey, _T("ProgID"));
+						if (lResult != ERROR_SUCCESS)
+						{
+							bSuccess = false;
+							::RegCloseKey(hKey);
+							continue;
+						}
+					}
+
+					::RegCloseKey(hKey);
 				}
 			}
 		}
