@@ -939,8 +939,8 @@ bool CDjViewApp::RegisterShellFileTypes()
 
 				// Remove user-level Explorer file mapping
 				CString strExplorerKey;
-				strExplorerKey.Format(_T("Software\\Microsoft\\Windows\\CurrentVersion\\"
-						"Explorer\\FileExts\\%s"), strFilterExt);
+				strExplorerKey.Format(_T("Software\\Microsoft\\Windows\\CurrentVersion\\")
+						_T("Explorer\\FileExts\\%s"), strFilterExt);
 				HKEY hKey = NULL;
 				lResult = ::RegOpenKeyEx(HKEY_CURRENT_USER, strExplorerKey, 0, KEY_READ | KEY_WRITE, &hKey);
 				if (lResult == ERROR_SUCCESS)
