@@ -470,6 +470,15 @@ bool CBookmarkDlg::OpenBookmarks(const CString& strFileName)
 	m_bHasBookmarksFile = true;
 	m_strBookmarksFile = strFileName;
 
+	HANDLE hFile = ::CreateFile(strFileName, GENERIC_READ,
+			FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	if (hFile != NULL)
+	{
+		::ZeroMemory(&m_ftModified, sizeof(FILETIME));
+		::GetFileTime(hFile, NULL, NULL, &m_ftModified);
+		::CloseHandle(hFile);
+	}
+
 	OnKickIdle();
 	m_nBookmarksAction = 1;
 	UpdateData(false);
@@ -627,6 +636,28 @@ void CBookmarkDlg::OnSaveAs()
 
 void CBookmarkDlg::SaveDocument(const CString& strFileName)
 {
+	if (m_nBookmarksAction == 1 && m_bHasBookmarksFile)
+	{
+		FILETIME ftModified;
+		HANDLE hFile = ::CreateFile(m_strBookmarksFile, GENERIC_READ,
+				FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+		if (hFile != NULL)
+		{
+			::ZeroMemory(&ftModified, sizeof(FILETIME));
+			::GetFileTime(hFile, NULL, NULL, &ftModified);
+			::CloseHandle(hFile);
+		}
+
+		if (memcmp(&ftModified, &m_ftModified, sizeof(FILETIME)) != 0)
+		{
+			UINT nResult = AfxMessageBox(IDS_BOOKMARKS_CHANGED, MB_ICONEXCLAMATION | MB_YESNOCANCEL);
+			if (nResult == IDCANCEL)
+				return;
+			if (nResult == IDYES && !OpenBookmarks(m_strBookmarksFile))
+				return;
+		}
+	}
+
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
 	_tsplitpath(m_strDjVuFile, szDrive, szPath, szName, szExt);
 

@@ -57,6 +57,7 @@ protected:
 	HICON m_hIcon;
 	bool m_bHasDjVuFile;
 	bool m_bHasBookmarksFile;
+	FILETIME m_ftModified;
 	GP<DjVmNav> m_pBookmarks;
 	CMyDropTarget m_dropTarget;
 

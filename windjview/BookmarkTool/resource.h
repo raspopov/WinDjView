@@ -36,6 +36,7 @@
 #define IDC_BOOKMARKS_REPLACE           1009
 #define IDC_BOOKMARKS_REMOVE            1010
 #define IDC_SAVE_AS                     1011
+#define IDS_BOOKMARKS_CHANGED           1012
 
 // Next default values for new objects
 // 

@@ -195,6 +195,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     AFX_IDS_APP_TITLE       "DjVu Bookmark Tool"
+    IDS_BOOKMARKS_CHANGED   "The bookmark file has been modified on disk. Reload the bookmarks before saving the document?"
 END
 
 STRINGTABLE DISCARDABLE 
