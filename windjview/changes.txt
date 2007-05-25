@@ -2,7 +2,7 @@ WinDjView changes history
 Copyright (C) 2004-2007 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 0.5 (2007-??-??):
+Changes in version 0.5 (2007-05-25):
 ! Implemented user-created bookmarks and annotations.
 ! Added rectangle tool: can be used to create an annotation,
   to zoom in, to print selected region or to export it to a bitmap file.
