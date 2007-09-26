@@ -487,6 +487,9 @@ void CChildFrame::OnUpdate(const Observable* source, const Message* message)
 		if (m_pBookmarksWnd != NULL)
 			pNavPane->SetTabName(m_pBookmarksWnd, LoadString(IDS_BOOKMARKS_TAB));
 
+		if (m_pCustomBookmarksWnd != NULL)
+			pNavPane->SetTabName(m_pCustomBookmarksWnd, LoadString(IDS_CUSTOM_BOOKMARKS_TAB));
+
 		if (m_pResultsView != NULL)
 			pNavPane->SetTabName(m_pResultsView, LoadString(IDS_SEARCH_RESULTS_TAB));
 	}

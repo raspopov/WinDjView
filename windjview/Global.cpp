@@ -489,7 +489,7 @@ CString MD5::ToString() const
 		psz[2*i] = (hi <= 9 ? '0' + hi : 'A' + hi - 10);
 		psz[2*i + 1] = (lo <= 9 ? '0' + lo : 'A' + lo - 10);
 	}
-	result.ReleaseBuffer();
+	result.ReleaseBuffer(2*sizeof(md));
 	return result;
 }
 
