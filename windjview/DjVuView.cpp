@@ -2477,9 +2477,11 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 	CMyScrollView::OnLButtonDown(nFlags, point);
 }
 
-CPoint CDjVuView::ScreenToDjVu(int nPage, const CPoint& point, bool bClip) const
+CPoint CDjVuView::ScreenToDjVu(int nPage, const CPoint& point, bool bClip)
 {
-	const Page& page = m_pages[nPage];
+	Page& page = m_pages[nPage];
+	if (!page.info.bDecoded)
+		page.Init(m_pSource, nPage);
 	CSize szPage = page.GetSize(m_nRotate);
 
 	double fRatioX = szPage.cx / (1.0*page.szBitmap.cx);
@@ -2503,7 +2505,7 @@ CPoint CDjVuView::ScreenToDjVu(int nPage, const CPoint& point, bool bClip) const
 		GRectMapper mapper;
 		mapper.clear();
 		mapper.set_input(input);
-		mapper.set_output(output);               
+		mapper.set_output(output);
 		mapper.rotate(4 - nRotate);
 		mapper.map(rect);
 

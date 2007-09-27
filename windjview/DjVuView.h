@@ -317,7 +317,7 @@ protected:
 
 	int m_nMode, m_nType;
 	int m_nSelStartPos;
-	CPoint ScreenToDjVu(int nPage, const CPoint& point, bool bClip = true) const;
+	CPoint ScreenToDjVu(int nPage, const CPoint& point, bool bClip = true);
 	void UpdateDragAction();
 	int GetTextPosFromPoint(int nPage, const CPoint& point);
 	void GetTextPosFromTop(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos) const;
