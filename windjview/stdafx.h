@@ -29,12 +29,9 @@
 
 #define _WIN32_WINNT	0x0400
 
-#if (_MSC_VER >= 1300)
+#if (_MSC_VER >= 1200)
 #define WINVER			0x0500
 #define _WIN32_IE		0x0400
-#endif
-
-#if (_MFC_VER > 0x0600)
 #define _WIN32_WINDOWS	0x0410
 #endif
 
@@ -42,12 +39,7 @@
 #define NO_DEBUG
 #endif
 
-#ifndef _DEBUG
-// Don's use secure standard library from VC++ 2005
-#define _SECURE_SCL 0
-#endif
-
-#if (_MSC_VER < 1300)
+#if (_MSC_VER < 1200)
 #pragma warning(disable: 4200 4786)
 #endif
 
@@ -58,6 +50,8 @@
 // Turn off warnings in VC++ 2005
 #define _CRT_SECURE_NO_DEPRECATE
 #define _CRT_NONSTDC_NO_DEPRECATE
+// Don's use secure standard library from VC++ 2005
+#define _SECURE_SCL 0
 
 #define _WIN32_DCOM
 
@@ -126,6 +120,19 @@ using namespace std;
 
 #ifndef COLOR_HOTLIGHT
 #define COLOR_HOTLIGHT 26
+#endif
+
+#ifndef BIF_USENEWUI
+#define BIF_USENEWUI 0x00000050
+#endif
+
+#ifndef BS_TYPEMASK
+#define BS_TYPEMASK 0x0000000F
+#endif
+
+#ifndef CSIDL_COMMON_APPDATA
+#define CSIDL_COMMON_APPDATA 0x00000023
+#define CSIDL_FLAG_CREATE 0x00008000
 #endif
 
 #ifndef WM_APPCOMMAND

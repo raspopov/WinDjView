@@ -2,6 +2,8 @@ CPP = cl
 GENLIB = lib
 OUTOTHER =
 
+NEWCL = 1
+
 #MAKEDLL = 1
 #dumpbin /linkermember:1 libdjvud.lib > libdjvud.map
 
@@ -13,7 +15,7 @@ INTDIR = .\ObjsU.dbg
 INTDIR = .\Objs.dbg
 !ENDIF
 
-OPTS = /nologo /MDd /W3 /GX /Zi
+OPTS = /MDd /GX /Zi
 
 !ELSE
 
@@ -23,7 +25,7 @@ INTDIR = .\ObjsU
 INTDIR = .\Objs
 !ENDIF
 
-OPTS = /nologo /MT /W3 /GX /Ox /Og /Ot /Oi /Ob2
+OPTS = /MT /GX /Ox /Og /Ot /Oi /Ob2
 
 !ENDIF
 
@@ -45,7 +47,7 @@ OUTOTHER = libcpmt.lib gdi32.lib /link /def:libdjvu.def
 
 !IFDEF DEBUG
 
-OUTOPT = /nologo /subsystem:windows /machine:x86 /out:
+OUTOPT = /nologo /subsystem:windows /machine:x86 /nodefaultlib:"msvcrtd.lib" /out:
 !IFDEF UNICODE
 OUT = libdjvudu.lib
 !ELSE
@@ -67,14 +69,14 @@ OUT = libdjvu.lib
 
 !IFDEF NEWCL
 !IFDEF DEBUG
-OPTS = /nologo /MDd /W3 /EHsc /Zi /GR-
+OPTS = /MTd /EHsc /Zi /GR-
 !ELSE
-OPTS = /nologo /MT /W3 /EHsc /O2 /GR- /GL
+OPTS = /MT /EHsc /GR- /O2 /Ob2 /Oi /Ot /GL
 OUTOPT = /ltcg $(OUTOPT)
 !ENDIF
 !ENDIF
 
-COMPOPT = /c /Fo"$(INTDIR)\\" /D"WIN32" /D"_WINDOWS" /D"_CONSOLE" /D"NDEBUG" \
+COMPOPT = /nologo /c /W3 /Fo"$(INTDIR)\\" /D"WIN32" /D"_WINDOWS" /D"_CONSOLE" /D"NDEBUG" \
 			/D"HAS_WCTYPE=1" /D"THREADMODEL=0" /D"DO_CHANGELOCALE=0" /D"WIN32_MONITOR" \
 			/D"NEED_JPEG_DECODER" /D"WIN32_JPEG" /D"_CRT_SECURE_NO_DEPRECATE" \
 			/D"_CRT_NONSTDC_NO_DEPRECATE" /D"SECURE_SCL=0"

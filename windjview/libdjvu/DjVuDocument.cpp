@@ -1814,7 +1814,10 @@ DjVuDocument::expand(const GURL &codebase, const GUTF8String &idx_name)
 }
 
 void
-DjVuDocument::save_as(const GURL &where, const bool bundled)
+//< Changed for WinDjView project
+//DjVuDocument::save_as(const GURL &where, const bool bundled)
+DjVuDocument::save_as(const GURL &where, bool bundled)
+//>
 {
    DEBUG_MSG("DjVuDocument::save_as(): where='" << where <<
 	     "', bundled=" << bundled << "\n");

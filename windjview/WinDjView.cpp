@@ -1085,57 +1085,57 @@ void CDjViewApp::LoadLanguages()
 
 	WIN32_FIND_DATA fd;
 	HANDLE hFind = FindFirstFile(strFileMask, &fd);
-	if (hFind != INVALID_HANDLE_VALUE)
+	if (hFind == INVALID_HANDLE_VALUE)
+		return;
+
+	do
 	{
-		do
-		{
-			CString strPathName = strPath + fd.cFileName;
+		CString strPathName = strPath + fd.cFileName;
 
-			DWORD dwHandle;
-			DWORD dwSize = ::GetFileVersionInfoSize(strPathName, &dwHandle);
-			if (dwSize <= 0)
-				continue;
+		DWORD dwHandle;
+		DWORD dwSize = ::GetFileVersionInfoSize(strPathName.GetBuffer(0), &dwHandle);
+		if (dwSize <= 0)
+			continue;
 
-			vector<BYTE> versionInfo(dwSize);
-			LPBYTE pVersionInfo = &versionInfo[0];
-			if (::GetFileVersionInfo(strPathName, dwHandle, dwSize, pVersionInfo) == 0)
-				continue;
+		vector<BYTE> versionInfo(dwSize);
+		LPBYTE pVersionInfo = &versionInfo[0];
+		if (::GetFileVersionInfo(strPathName.GetBuffer(0), dwHandle, dwSize, pVersionInfo) == 0)
+			continue;
 
-			DWORD* pTranslations;
-			UINT cbTranslations;
-			if (::VerQueryValue(pVersionInfo, _T("\\VarFileInfo\\Translation"),
-					(void**)&pTranslations, &cbTranslations) == 0 || cbTranslations == 0)
-				continue;
+		DWORD* pTranslations;
+		UINT cbTranslations;
+		if (::VerQueryValue(pVersionInfo, _T("\\VarFileInfo\\Translation"),
+				(void**)&pTranslations, &cbTranslations) == 0 || cbTranslations == 0)
+			continue;
 
-			DWORD nLanguage = LOWORD(*pTranslations);
-			CString strTranslation = FormatString(_T("%04x%04x"), nLanguage, HIWORD(*pTranslations));
+		DWORD nLanguage = LOWORD(*pTranslations);
+		CString strTranslation = FormatString(_T("%04x%04x"), nLanguage, HIWORD(*pTranslations));
 
-			LPCTSTR pszBuffer;
-			UINT dwLength;
-			if (::VerQueryValue(pVersionInfo, FormatString(_T("\\StringFileInfo\\%s\\FileVersion"), strTranslation).GetBuffer(0),
-					(void**)&pszBuffer, &dwLength) == 0 || dwLength == 0)
-				continue;
+		LPCTSTR pszBuffer;
+		UINT dwLength;
+		if (::VerQueryValue(pVersionInfo, FormatString(_T("\\StringFileInfo\\%s\\FileVersion"), strTranslation).GetBuffer(0),
+				(void**)&pszBuffer, &dwLength) == 0 || dwLength == 0)
+			continue;
 
-			CString strVersion(pszBuffer);
-			if (strVersion != CURRENT_VERSION)
-				continue;
+		CString strVersion(pszBuffer);
+		if (strVersion != CURRENT_VERSION)
+			continue;
 
-			if (::VerQueryValue(pVersionInfo, FormatString(_T("\\StringFileInfo\\%s\\Comments"), strTranslation).GetBuffer(0),
-					(void**)&pszBuffer, &dwLength) == 0 || dwLength == 0)
-				continue;
+		if (::VerQueryValue(pVersionInfo, FormatString(_T("\\StringFileInfo\\%s\\Comments"), strTranslation).GetBuffer(0),
+				(void**)&pszBuffer, &dwLength) == 0 || dwLength == 0)
+			continue;
 
-			CString strLanguage(pszBuffer);
+		CString strLanguage(pszBuffer);
 
-			LanguageInfo info;
-			info.nLanguage = nLanguage;
-			info.strLanguage = strLanguage;
-			info.strLibraryPath = strPathName;
-			info.hInstance = NULL;
-			m_languages.push_back(info);
-		} while (FindNextFile(hFind, &fd) != 0);
+		LanguageInfo info;
+		info.nLanguage = nLanguage;
+		info.strLanguage = strLanguage;
+		info.strLibraryPath = strPathName;
+		info.hInstance = NULL;
+		m_languages.push_back(info);
+	} while (FindNextFile(hFind, &fd) != 0);
 
-		FindClose(hFind);
-	}
+	FindClose(hFind);
 }
 
 void CDjViewApp::OnSetLanguage(UINT nID)
