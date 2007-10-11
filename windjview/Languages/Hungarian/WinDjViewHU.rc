@@ -1,0 +1,1291 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+#ifndef VK_OEM_PLUS
+#define VK_OEM_PLUS 0xBB
+#define VK_OEM_COMMA 0xBC
+#define VK_OEM_MINUS 0xBD
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Hungarian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_HUN)
+#ifdef _WIN32
+LANGUAGE LANG_HUNGARIAN, SUBLANG_DEFAULT
+#pragma code_page(1250)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "#ifndef VK_OEM_PLUS\r\n"
+    "#define VK_OEM_PLUS 0xBB\r\n"
+    "#define VK_OEM_COMMA 0xBC\r\n"
+    "#define VK_OEM_MINUS 0xBD\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_HUN)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1250)\r\n"
+    "#include ""..\\..\\res\\WinDjView.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#include ""afxprint.rc""       // printing/print preview resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_CURSOR_DRAG         CURSOR                  "..\\..\\res\\drag.cur"
+IDC_CURSOR_LINK         CURSOR                  "..\\..\\res\\link.cur"
+IDC_CURSOR_HAND         CURSOR                  "..\\..\\res\\hand.cur"
+IDC_CURSOR_MAGNIFY      CURSOR                  "..\\..\\res\\magnify.cur"
+IDC_CURSOR_PAN_UR       CURSOR                  "..\\..\\res\\pan_ur.cur"
+IDC_CURSOR_PAN_ALL      CURSOR                  "..\\..\\res\\pan_all.cur"
+IDC_CURSOR_PAN_D        CURSOR                  "..\\..\\res\\pan_d.cur"
+IDC_CURSOR_PAN_DL       CURSOR                  "..\\..\\res\\pan_dl.cur"
+IDC_CURSOR_PAN_DR       CURSOR                  "..\\..\\res\\pan_dr.cur"
+IDC_CURSOR_PAN_L        CURSOR                  "..\\..\\res\\pan_l.cur"
+IDC_CURSOR_PAN_LR       CURSOR                  "..\\..\\res\\pan_lr.cur"
+IDC_CURSOR_PAN_R        CURSOR                  "..\\..\\res\\pan_r.cur"
+IDC_CURSOR_PAN_U        CURSOR                  "..\\..\\res\\pan_u.cur"
+IDC_CURSOR_PAN_UD       CURSOR                  "..\\..\\res\\pan_ud.cur"
+IDC_CURSOR_PAN_UL       CURSOR                  "..\\..\\res\\pan_ul.cur"
+IDC_CURSOR_ZOOM_RECT    CURSOR                  "..\\..\\res\\zoom_rect.cur"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "..\\..\\res\\WinDjView.ico"
+IDR_DjVuTYPE            ICON                    "..\\..\\res\\DjVuDoc.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP                  "..\\..\\res\\Toolbar.bmp"
+IDB_CLOSE               BITMAP                  "..\\..\\res\\close.bmp"
+IDB_BOOKMARKS           BITMAP                  "..\\..\\res\\bookmarks.bmp"
+IDB_DONATE              BITMAP                  "..\\..\\res\\donate.bmp"
+IDB_PAN_ANCHOR          BITMAP                  "..\\..\\res\\pan_anchor.bmp"
+IDB_HOURGLASS           BITMAP                  "..\\..\\res\\hourglass.bmp"
+IDR_DICTIONARIES_BAR    BITMAP                  "..\\..\\res\\dictbar.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR  16, 16
+BEGIN
+    BUTTON      ID_FILE_OPEN
+    SEPARATOR
+    BUTTON      ID_FILE_PRINT
+    BUTTON      ID_EDIT_FIND
+    BUTTON      ID_APP_ABOUT
+    SEPARATOR
+    BUTTON      ID_MODE_DRAG
+    BUTTON      ID_MODE_SELECT
+    BUTTON      ID_MODE_SELECT_RECT
+    BUTTON      ID_MODE_MAGNIFY
+    BUTTON      ID_MODE_ZOOM_RECT
+    SEPARATOR
+    BUTTON      ID_VIEW_FIRSTPAGE
+    BUTTON      ID_VIEW_PREVIOUSPAGE
+    SEPARATOR
+    BUTTON      ID_VIEW_NEXTPAGE
+    BUTTON      ID_VIEW_LASTPAGE
+    SEPARATOR
+    BUTTON      ID_VIEW_BACK
+    BUTTON      ID_VIEW_FORWARD
+    SEPARATOR
+    BUTTON      ID_LAYOUT_SINGLEPAGE
+    BUTTON      ID_LAYOUT_CONTINUOUS
+    BUTTON      ID_LAYOUT_FACING
+    BUTTON      ID_LAYOUT_CONTINUOUS_FACING
+    SEPARATOR
+    BUTTON      ID_ZOOM_OUT
+    SEPARATOR
+    BUTTON      ID_ZOOM_IN
+    BUTTON      ID_ZOOM_100
+    BUTTON      ID_ZOOM_FITPAGE
+    BUTTON      ID_ZOOM_FITWIDTH
+    SEPARATOR
+    BUTTON      ID_ROTATE_LEFT
+    BUTTON      ID_ROTATE_RIGHT
+END
+
+IDR_DICTIONARIES_BAR TOOLBAR  16, 15
+BEGIN
+    BUTTON      ID_DICTIONARY_LOOKUP
+    BUTTON      ID_DICTIONARY_PREV
+    BUTTON      ID_DICTIONARY_NEXT
+    BUTTON      ID_DICTIONARY_INFO
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU 
+BEGIN
+    POPUP "&Fájl"
+    BEGIN
+        MENUITEM "&Megnyitás...\tCtrl+O",       ID_FILE_OPEN
+        MENUITEM "B&eállítások...\tCtrl+,",     ID_FILE_SETTINGS
+        MENUITEM SEPARATOR
+        MENUITEM "Aktuális fájl",               ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Ki&lépés\tCtrl+Q",            ID_APP_EXIT
+    END
+    POPUP "&Nézet"
+    BEGIN
+        MENUITEM "&Eszköztár",                  ID_VIEW_TOOLBAR
+        MENUITEM "Álla&potsor",                 ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        POPUP "&Language"
+        BEGIN
+            MENUITEM "&English",                    ID_LANGUAGE_FIRST
+        END
+    END
+    POPUP "Sú&gó"
+    BEGIN
+        MENUITEM "&Frissítés keresése...",      ID_CHECK_FOR_UPDATE
+        MENUITEM "&WinDjView névjegye...",      ID_APP_ABOUT
+    END
+END
+
+IDR_DjVuTYPE MENU 
+BEGIN
+    POPUP "&Fájl"
+    BEGIN
+        MENUITEM "&Megnyitás...\tCtrl+O",       ID_FILE_OPEN
+        MENUITEM "Má&solat mentése...\tCtrl+S", ID_FILE_SAVE_COPY_AS
+        MENUITEM "&Bezárás\tCtrl+W",            ID_FILE_CLOSE
+        MENUITEM SEPARATOR
+        MENUITEM "B&eállítások...\tCtrl+,",     ID_FILE_SETTINGS
+        MENUITEM "Men&tés szövegként...",       ID_FILE_EXPORT_TEXT
+        MENUITEM "&Nyomtatás...\tCtrl+P",       ID_FILE_PRINT
+        MENUITEM SEPARATOR
+        MENUITEM "Nem tudom",                   ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Ki&lépés\tCtrl+Q",            ID_APP_EXIT
+    END
+    POPUP "&Szerkesztés"
+    BEGIN
+        MENUITEM "&Másolás\tCtrl+C",            ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "Könyvjel&zõ hozzáadása...\tCtrl+B", ID_BOOKMARK_ADD
+        MENUITEM SEPARATOR
+        MENUITEM "Szöveg ki&jelölése...\tCtrl+H", ID_HIGHLIGHT_SELECTION
+        MENUITEM "Szöveg kim&entése",           ID_EXPORT_SELECTION
+        MENUITEM SEPARATOR
+        MENUITEM "&Keresés...\tCtrl+F",         ID_EDIT_FIND
+    END
+    POPUP "&Nézet"
+    BEGIN
+        MENUITEM "&Eszköztár",                  ID_VIEW_TOOLBAR
+        MENUITEM "Álla&potsor",                 ID_VIEW_STATUS_BAR
+        MENUITEM "Ol&dalcsík",                  ID_VIEW_SIDEBAR
+        MENUITEM SEPARATOR
+        MENUITEM "Teljes nézet\tCtrl+L",        ID_VIEW_FULLSCREEN
+        MENUITEM SEPARATOR
+        MENUITEM "Oldalhoz igazítás\tCtrl+0",   ID_ZOOM_FITPAGE
+        MENUITEM "Szélesség igazítása\tCtrl+2", ID_ZOOM_FITWIDTH
+        MENUITEM "&Nyújtás\tCtrl+3",            ID_ZOOM_STRETCH
+        MENUITEM "E&redeti méret\tCtrl+4",      ID_ZOOM_ACTUALSIZE
+        POPUP "&Zoom"
+        BEGIN
+            MENUITEM "Nagyítás\tCtrl+Plusz",        ID_ZOOM_IN
+            MENUITEM "Kicsinyítés\tCtrl+Mínusz",    ID_ZOOM_OUT
+            MENUITEM SEPARATOR
+            MENUITEM "&50%",                        ID_ZOOM_50
+            MENUITEM "&75%",                        ID_ZOOM_75
+            MENUITEM "&100%\tCtrl+1",               ID_ZOOM_100
+            MENUITEM "&200%",                       ID_ZOOM_200
+            MENUITEM "&400%",                       ID_ZOOM_400
+            MENUITEM SEPARATOR
+            MENUITEM "&Egyéni...\tCtrl+M",          ID_ZOOM_CUSTOM
+        END
+        MENUITEM SEPARATOR
+        POPUP "Ugrás"
+        BEGIN
+            MENUITEM "Elsõ oldal\tCtrl+Home",       ID_VIEW_FIRSTPAGE
+            MENUITEM "Elõzõ oldal\tCtrl+PgUp",      ID_VIEW_PREVIOUSPAGE
+            MENUITEM "Következõ oldal\tCtrl+PgDn",  ID_VIEW_NEXTPAGE
+            MENUITEM "Utolsó oldal\tCtrl+End",      ID_VIEW_LASTPAGE
+            MENUITEM "Adott oldal...\tCtrl+G",      ID_VIEW_GOTO_PAGE
+            MENUITEM SEPARATOR
+            MENUITEM "Elõzõ nézet\tAlt+Bal nyíl",   ID_VIEW_BACK
+            MENUITEM "Következõ nézet\tAlt+Jobb nyíl", ID_VIEW_FORWARD
+        END
+        POPUP "Forgatás"
+        BEGIN
+            MENUITEM "Balra\tCtrl+Shift+Bal nyíl",  ID_ROTATE_LEFT
+            MENUITEM "Jobbra\tCtrl+Shift+Jobb nyíl", ID_ROTATE_RIGHT
+            MENUITEM "&180°\tCtrl+Shift+Le nyíl",   ID_ROTATE_180
+        END
+        POPUP "Oldalbeállítás"
+        BEGIN
+            MENUITEM "Egyetlen oldal\tCtrl+Alt+1",  ID_LAYOUT_SINGLEPAGE
+            MENUITEM "Folyamatos\tCtrl+Alt+2",      ID_LAYOUT_CONTINUOUS
+            MENUITEM "Oldalpár\tCtrl+Alt+3",        ID_LAYOUT_FACING
+            MENUITEM "Folyamatos - oldalpár\tCtrl+Alt+4", ID_LAYOUT_CONTINUOUS_FACING
+            MENUITEM SEPARATOR
+            MENUITEM "Elsõ oldal magában",          ID_LAYOUT_FIRSTPAGE_ALONE
+        END
+        POPUP "Megjelenítés"
+        BEGIN
+            MENUITEM "Színes\tCrtl+Shift+1",        ID_DISPLAY_COLOR
+            MENUITEM "Fekete-fehér\tCtrl+Shift+2",  ID_DISPLAY_BW
+            MENUITEM "Háttér\tCtrl+Shift+3",        ID_DISPLAY_BACKGROUND
+            MENUITEM "Elõtér\tCtrl+Shift+4",        ID_DISPLAY_FOREGROUND
+        END
+        MENUITEM SEPARATOR
+        POPUP "&Language"
+        BEGIN
+            MENUITEM "&English",                    ID_LANGUAGE_FIRST
+        END
+    END
+    POPUP "&Eszközök"
+    BEGIN
+        MENUITEM "&Kéz eszköz",                 ID_MODE_DRAG
+        MENUITEM "Ki&jelölés",                  ID_MODE_SELECT
+        MENUITEM "&Téglalap eszköz",            ID_MODE_SELECT_RECT
+        MENUITEM "&Nagyító",                    ID_MODE_MAGNIFY
+        MENUITEM "Téglalap &Zoom",              ID_MODE_ZOOM_RECT
+    END
+    POPUP "&Ablak"
+    BEGIN
+        MENUITEM "Lépcsõzetes elrendezés",      ID_WINDOW_CASCADE
+        MENUITEM "Vízszintes mozaik",           ID_WINDOW_TILE_HORZ
+        MENUITEM "Függõleges mozaik",           ID_WINDOW_TILE_VERT
+        MENUITEM "Ikonok rendezése",            ID_WINDOW_ARRANGE
+        MENUITEM SEPARATOR
+        MENUITEM "T&eljes nézet\tCtrl+L",       ID_VIEW_FULLSCREEN
+        MENUITEM SEPARATOR
+        MENUITEM "Ezt nyisd meg",               ID_WINDOW_ACTIVATE_FIRST
+    END
+    POPUP "Súgó"
+    BEGIN
+        MENUITEM "&Frissítés keresése...",      ID_CHECK_FOR_UPDATE
+        MENUITEM "&WinDjView névjegye...",      ID_APP_ABOUT
+    END
+END
+
+IDR_POPUP MENU 
+BEGIN
+    POPUP "Popup"
+    BEGIN
+        MENUITEM "Másolás",                     ID_EDIT_COPY
+        MENUITEM "Szöveg ki&emelése...",        ID_HIGHLIGHT_TEXT
+        MENUITEM "&Megjegyzés...",              ID_HIGHLIGHT_SELECTION
+        MENUITEM "Kiválasztás &mentése...",     ID_EXPORT_SELECTION
+        MENUITEM "Kiválasztásra &zoomolás",     ID_ZOOM_TO_SELECTION
+        MENUITEM "Megjegyzés &szerk...",        ID_ANNOTATION_EDIT
+        MENUITEM "Megjegyzés &törlése",         ID_ANNOTATION_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Könyvjelzõ &hozzáadása...",   ID_BOOKMARK_ADD
+        MENUITEM SEPARATOR
+        MENUITEM "Oldal &információ...",        ID_PAGE_INFORMATION
+        MENUITEM "&Oldal mentése...",           ID_EXPORT_PAGE
+    END
+    POPUP "Könyvjelzõ"
+    BEGIN
+        MENUITEM "&Átnevezés",                  ID_BOOKMARK_RENAME
+        MENUITEM "&Törlés",                     ID_BOOKMARK_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "&Fel",                        ID_BOOKMARK_MOVEUP
+        MENUITEM "L&e",                         ID_BOOKMARK_MOVEDOWN
+        MENUITEM SEPARATOR
+        MENUITEM "&Cél beállítása",             ID_BOOKMARK_SETDESTINATION
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS 
+BEGIN
+    "0",            ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_ZOOM_100,            VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_LAYOUT_SINGLEPAGE,   VIRTKEY, CONTROL, ALT, NOINVERT
+    "1",            ID_DISPLAY_COLOR,       VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_OEM_PLUS,    ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_PLUS,    ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_OEM_COMMA,   ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_MINUS,   ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_MINUS,   ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_LAYOUT_CONTINUOUS,   VIRTKEY, CONTROL, ALT, NOINVERT
+    "2",            ID_DISPLAY_BW,          VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_LAYOUT_FACING,       VIRTKEY, CONTROL, ALT, NOINVERT
+    "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "4",            ID_ZOOM_ACTUALSIZE,     VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_LAYOUT_CONTINUOUS_FACING, VIRTKEY, CONTROL, ALT, NOINVERT
+    "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "B",            ID_BOOKMARK_ADD,        VIRTKEY, CONTROL, NOINVERT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_FOCUS_TO_LOOKUP,     VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_HIGHLIGHT_SELECTION, VIRTKEY, CONTROL, NOINVERT
+    "I",            ID_DICTIONARY_INFO,     VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_DICTIONARY_LOOKUP,   VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_VIEW_GOTO_PAGE,      VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
+    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_DOWN,        ID_DICTIONARY_NEXT,     VIRTKEY, ALT, NOINVERT
+    VK_DOWN,        ID_ROTATE_180,          VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_END,         ID_VIEW_LASTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
+    VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_HOME,        ID_VIEW_FIRSTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_LEFT,        ID_VIEW_BACK_SHORTCUT,  VIRTKEY, ALT, NOINVERT
+    VK_LEFT,        ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
+    VK_NEXT,        ID_VIEW_NEXTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
+    VK_PRIOR,       ID_VIEW_PREVIOUSPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
+    VK_RIGHT,       ID_VIEW_FORWARD_SHORTCUT, VIRTKEY, ALT, NOINVERT
+    VK_RIGHT,       ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_TAB,         ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_UP,          ID_DICTIONARY_PREV,     VIRTKEY, ALT, NOINVERT
+    "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG  0, 0, 251, 122
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "A WinDjView névjegye"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,9,9,21,20
+    LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2004-2006 Andrew Zhezherun",IDC_STATIC,40,17,149,8
+    DEFPUSHBUTTON   "Bezárás",IDOK,194,7,50,14,WS_GROUP
+    LTEXT           "Project weboldala:",IDC_STATIC,40,35,64,8
+    LTEXT           "DjVuLibre honlapja:",IDC_STATIC,40,45,65,8
+    LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,106,35,128,8
+    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,109,45,123,8
+    LTEXT           "Ez a program szabad szoftver. Tovább adhatja és módosíthatja a GNU nyilvános licence alapján, ahogy azt a Szabad Szoftver Alapítvány meghatározza.",IDC_STATIC,40,62,204,26
+    LTEXT           "A program további fejlesztése paypal-on keresztül támogatható",IDC_STATIC,40,94,137,17
+    CONTROL         "Támogatás",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | WS_TABSTOP,181,94,63,21
+END
+
+IDD_PRINT DIALOGEX 0, 0, 432, 316
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Nyomtatás"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "&Név:",IDC_STATIC,174,21,37,9,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_PRINTER,218,19,136,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "&Tulajdonságok",IDC_PROPERTIES,359,18,59,14
+    CONTROL         "Nyomtatás fájlba",IDC_PRINT_TO_FILE,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,345,79,73,11
+    CONTROL         "Á&lló",IDC_PORTRAIT,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,174,112,53,11
+    CONTROL         "Fe&kvõ",IDC_LANDSCAPE,"Button",BS_AUTORADIOBUTTON,174,128,53,11
+    LTEXT           "&Másolatok száma:",IDC_STATIC,304,111,62,11
+    EDITTEXT        IDC_EDIT_COPIES,379,109,38,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_SPIN_COPIES,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,405,111,11,14
+    CONTROL         "Szétválogatás",IDC_COLLATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,331,128,69,11
+    CONTROL         "&Összes",IDC_RANGE_ALL,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,166,37,11
+    CONTROL         "Akt&uális oldal",IDC_RANGE_CURRENT,"Button",BS_AUTORADIOBUTTON,14,180,59,11
+    CONTROL         "Kiválasztás",IDC_RANGE_SELECTION,"Button",BS_AUTORADIOBUTTON,84,180,59,11
+    CONTROL         "Ol&dalak:",IDC_RANGE_PAGES,"Button",BS_AUTORADIOBUTTON,14,194,37,11
+    EDITTEXT        IDC_PAGE_RANGES,56,193,95,12,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "B&al:",IDC_STATIC,174,168,18,9
+    EDITTEXT        IDC_POSITION_LEFT,193,166,32,12,ES_AUTOHSCROLL
+    LTEXT           "F&elsõ:",IDC_STATIC,230,168,18,9
+    EDITTEXT        IDC_POSITION_TOP,250,166,32,12,ES_AUTOHSCROLL
+    CONTROL         "Középre igazítás",IDC_CENTER_IMAGE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,193,188,57,11
+    CONTROL         "Auto-forgatás",IDC_AUTO_ROTATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,193,202,57,11
+    CONTROL         "Kitöltés",IDC_CLIP_CONTENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,193,216,55,11
+    LTEXT           "Scale:",IDC_STATIC,304,168,21,9
+    EDITTEXT        IDC_SCALE,331,166,38,12,ES_AUTOHSCROLL
+    CONTROL         "Papírhoz igazítás",IDC_SCALE_TO_FIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,331,188,73,11
+    CONTROL         "La&pmérethez kicsinyítés",IDC_SHRINK_OVERSIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,331,202,89,11
+    CONTROL         "Margó spórolás",IDC_IGNORE_MARGINS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,331,216,85,11
+    LTEXT           "&Bal:",IDC_STATIC,14,251,21,9
+    EDITTEXT        IDC_MARGIN_LEFT,38,249,38,12,ES_AUTOHSCROLL
+    LTEXT           "&Felsõ:",IDC_STATIC,14,269,21,9
+    EDITTEXT        IDC_MARGIN_TOP,38,267,38,12,ES_AUTOHSCROLL
+    LTEXT           "&Jobb:",IDC_STATIC,84,251,27,9
+    EDITTEXT        IDC_MARGIN_RIGHT,113,249,38,12,ES_AUTOHSCROLL
+    LTEXT           "Al&só:",IDC_STATIC,84,269,27,9
+    EDITTEXT        IDC_MARGIN_BOTTOM,113,267,38,12,ES_AUTOHSCROLL
+    LTEXT           "M&éret:",IDC_STATIC,174,251,20,9,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_PAPER,198,249,84,81,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Nyomtatás:",IDC_STATIC,304,251,36,9,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_PAGESINRANGE,343,249,75,81,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Nyomtatás:",IDC_STATIC,304,269,37,9,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_PAGESPERSHEET,343,267,75,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Fordított sorrend",IDC_REVERSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,297,66,11
+    DEFPUSHBUTTON   "Nyomtatás",IDOK,320,295,50,14
+    PUSHBUTTON      "Bezár",IDCANCEL,375,295,50,14
+    GROUPBOX        "Nyomtató",IDC_STATIC,167,7,258,87
+    LTEXT           "Hely:",IDC_STATIC,174,55,37,9
+    LTEXT           "Típus:",IDC_STATIC,174,40,37,9
+    LTEXT           "Megjegyzés:",IDC_STATIC,174,70,40,9
+    LTEXT           "Típus",IDC_STATIC_TYPE,219,40,198,9
+    LTEXT           "Hely",IDC_STATIC_LOCATION,219,55,198,9
+    LTEXT           "Megjegyzés",IDC_STATIC_COMMENT,219,70,198,9
+    GROUPBOX        "Nyomtatási tartomány:",IDC_STATIC,7,154,153,78
+    GROUPBOX        "Másolatok",IDC_STATIC,296,98,129,51
+    CONTROL         "",IDC_PREVIEW_AREA,"Static",SS_BLACKFRAME | NOT WS_VISIBLE,14,20,138,115
+    GROUPBOX        "Tájolás",IDC_STATIC,167,98,122,51
+    GROUPBOX        "Elõnézet",IDC_STATIC,7,7,153,142
+    GROUPBOX        "Margók",IDC_STATIC,7,237,153,49
+    GROUPBOX        "Papír",IDC_STATIC,167,237,122,49
+    LTEXT           "Adjon meg oldalszámokat és/vagy oldaltartományokat vesszõvel elválasztva. Például: 1,3,5-9",IDC_STATIC,16,210,137,17
+    GROUPBOX        "Nyomtatási beállítások",IDC_STATIC,296,237,129,49
+    GROUPBOX        "Elhelyezkedés",IDC_STATIC,167,154,122,78
+    GROUPBOX        "Nyomtatási méret",IDC_STATIC,296,154,129,78
+    CTEXT           "Papírméret",IDC_STATIC_PAPER,14,138,138,8
+END
+
+IDD_PROGRESS DIALOG  0, 0, 171, 61
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON   "Mégse",IDOK,60,40,50,14
+    CTEXT           "A három oldal közül az elsõ nyomtatása folyamatban, kérem várjon...",IDC_STATIC_TEXT,7,7,157,9
+    CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,7,22,157,12
+END
+
+IDD_ZOOM DIALOG  0, 0, 119, 47
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Egyéni Zoom"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "&Zoom:",IDC_STATIC,18,7,24,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_ZOOM,44,7,55,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,7,26,50,14
+    PUSHBUTTON      "Mégse",IDCANCEL,62,26,50,14
+END
+
+IDD_SETTINGS_GENERAL DIALOG  0, 0, 222, 134
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Általános"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    CONTROL         "Figyelmeztetés több fájl bezárása esetén",IDC_WARN_CLOSE_MULTIPLE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,208,10
+    CONTROL         "Elõnézeti képek generálása háttérben",IDC_GEN_ALL_THUMBNAILS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
+    CONTROL         "Teljes nézetben oldalváltás egérkattintásra",IDC_FULLSCREEN_CLICKS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,208,10
+    CONTROL         "Teljes nézetben a görgetõsáv eltüntetése",IDC_FULLSCREEN_HIDESCROLL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,208,10
+    CONTROL         "Ctrl + egérgörgõs zoom irányának megfordítása",IDC_INVERT_WHEEL_ZOOM,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,208,10
+    CONTROL         "Kilépés Escape-pel",IDC_CLOSE_ON_ESC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,77,208,10
+    CONTROL         "Hosszú könyvjelzõk tördelése",IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,208,10
+    CONTROL         "A fájlhoz tartozó beállítások visszatöltése",IDC_RESTORE_VIEW,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,105,208,10
+END
+
+IDD_FIND DIALOG  0, 0, 287, 64
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Keresés"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "&Keresés:",IDC_STATIC,7,10,35,9
+    CONTROL         "",IDC_FIND,"ComboBoxEx32",CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP,47,7,173,95
+    CONTROL         "Kis- és &nagybetûk megkülönböztetése",IDC_MATCH_CASE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,28,143,8
+    DEFPUSHBUTTON   "Kö&vetkezõ",IDOK,230,7,50,14
+    PUSHBUTTON      "&Összes",IDC_FIND_ALL,230,25,50,14
+    PUSHBUTTON      "&Bezárás",IDCANCEL,230,43,50,14
+    LTEXT           "1/10 oldal keresése...",IDC_SEARCH_STATUS,7,48,214,9,NOT WS_VISIBLE
+END
+
+IDD_UPDATE DIALOG  0, 0, 167, 34
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "Frissítés keresése. Kérem várjon...",IDC_STATIC,39,10,118,11
+    ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
+END
+
+IDD_GOTO_PAGE DIALOG  0, 0, 123, 48
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Oldalhoz ugrás"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "&Oldal:",IDC_STATIC,7,7,21,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_PAGE,30,7,55,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_SPIN_PAGE,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,77,8,11,14
+    LTEXT           "of 9999",IDC_PAGE_COUNT,89,7,27,12,SS_CENTERIMAGE
+    DEFPUSHBUTTON   "OK",IDOK,9,27,50,14
+    PUSHBUTTON      "Mégse",IDCANCEL,64,27,50,14
+END
+
+IDD_SETTINGS_DISPLAY DIALOGEX 0, 0, 222, 134
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Megjelenítés"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    CONTROL         "Megjelenítés fi&nomítása nagy felbontásnál (lassabb)",IDC_HQ_SCALING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,208,10
+    CONTROL         "&Színek megfordítása",IDC_INVERT_COLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
+    CONTROL         "Megjelenítési beállítások &engedélyezése:",IDC_ADJUST_DISPLAY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,208,9
+    LTEXT           "&Fényesség: 0",IDC_BRIGHTNESS_TEXT,7,49,52,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,61,48,154,12
+    LTEXT           "&Kontraszt: 0",IDC_CONTRAST_TEXT,7,63,52,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,61,62,154,12
+    LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,7,77,52,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,61,76,154,12
+    CONTROL         "Nyomtatási beállítások engedélyezése",IDC_ADJUST_PRINTING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,93,208,9
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,107,208,1
+    LTEXT           "&Mérték:",IDC_STATIC,7,117,26,10
+    COMBOBOX        IDC_COMBO_UNITS,36,115,87,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_ANNOTATION DIALOGEX 0, 0, 200, 260
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Megjegyzés szerkesztése"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,28,11,165,1,WS_EX_STATICEDGE
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,34,58,159,1,WS_EX_STATICEDGE
+    LTEXT           "&Keret",IDC_STATIC,7,7,19,9
+    LTEXT           "Típus:",IDC_STATIC,18,19,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_BORDER_TYPE,43,19,79,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Szín:",IDC_STATIC,130,19,20,12,SS_CENTERIMAGE
+    PUSHBUTTON      "",IDC_BORDER_COLOR,152,18,41,15
+    CONTROL         "C&sak akkor jelenjen meg, ha az egér átfut rajta",IDC_HIDE_INACTIVE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,37,165,11
+    LTEXT           "Ki&töltés",IDC_STATIC,7,55,24,9
+    LTEXT           "Típus:",IDC_STATIC,19,67,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_FILL_TYPE,43,67,79,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Szín:",IDC_STATIC,130,67,20,12,SS_CENTERIMAGE
+    PUSHBUTTON      "",IDC_FILL_COLOR,152,66,41,15
+    LTEXT           "&Átlátszóság:",IDC_STATIC,19,85,47,12,SS_CENTERIMAGE
+    CONTROL         "Slider1",IDC_FILL_TRANSPARENCY,"msctls_trackbar32",WS_TABSTOP,70,86,101,12
+    RTEXT           "100%",IDC_FILL_TRANSPARENCY_TEXT,172,85,20,12,SS_CENTERIMAGE
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,7,105,186,1,WS_EX_STATICEDGE
+    LTEXT           "&Megjegyzés:",IDC_STATIC,7,114,41,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_COMMENT,50,114,143,47,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,89,168,50,14
+    PUSHBUTTON      "Mégse",IDCANCEL,143,168,50,14
+    PUSHBUTTON      "Kö&nyvjelzõ >>",IDC_ADD_BOOKMARK,7,168,54,14
+    CONTROL         "",IDC_STATIC_LESS,"Static",SS_GRAYFRAME,7,189,186,1,WS_EX_STATICEDGE
+    CONTROL         "",IDC_STATIC_MORE,"Static",SS_GRAYFRAME,7,252,186,1,WS_EX_STATICEDGE
+    LTEXT           "&Cím:",IDC_STATIC,7,198,41,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_BOOKMARK_TITLE,50,198,143,47,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+END
+
+IDD_RENAME_BOOKMARK DIALOGEX 0, 0, 206, 90
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Könyvjelzõ átnevezése"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    LTEXT           "&Cím:",IDC_STATIC,7,7,20,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_BOOKMARK_TITLE,28,7,171,53,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,95,69,50,14
+    PUSHBUTTON      "Mégse",IDCANCEL,149,69,50,14
+END
+
+IDD_INSTALL_DIC DIALOGEX 0, 0, 190, 138
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Szótár telepítése"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    CONTROL         "Csak az aktuális felhasználónak",IDC_CURRENT_USER,
+                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,7,7,176,11
+    CONTROL         "A gép összes felhasználójának számára telepítsem a szótárat (rendszergazdai jogokat igényel)",IDC_ALL_USERS,
+                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,7,21,176,19
+    CONTROL         "A szótárat fix helyre telepítem:",IDC_CUSTOM,"Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,7,41,157,10
+    PUSHBUTTON      "...",IDC_BROWSE_LOCATION,170,40,13,12,WS_GROUP
+    CONTROL         "(Nincs kiválasztva)",IDC_CUSTOM_LOCATION,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | SS_PATHELLIPSIS | WS_GROUP,18,53,165,9
+    LTEXT           "Másolat készül errõl a fájlról. Pipálja ki a jelölõdobozt, ha azt akarja, hogy a kukába kerüljön az eredeti fájl:",IDC_STATIC,7,69,176,26
+    CONTROL         "Az eredeti fájl megtartása",IDC_KEEP_ORIGINAL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,97,96,11
+    DEFPUSHBUTTON   "OK",IDOK,78,117,50,14
+    PUSHBUTTON      "Mégse",IDCANCEL,133,117,50,14
+END
+
+IDD_INSTALL_DIC_REPLACE DIALOGEX 0, 0, 190, 91
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Szótár telepítése"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    LTEXT           "A jelölõnégyzetbõl távolítsa el a pipát, ha az aktuális fájlt a kukába akarja dobni a telepítés után:",IDC_STATIC,7,35,176,18
+    CONTROL         "Az eredeti fájl megtartása",IDC_KEEP_ORIGINAL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,54,97,11
+    DEFPUSHBUTTON   "OK",IDOK,78,70,50,14
+    PUSHBUTTON      "Mégse",IDCANCEL,133,70,50,14
+    LTEXT           "Azonos nevû szótár már telepítve van a rendszerre. A telepítés a már létezõ szótárat cseréli le a mostanira.",IDC_STATIC,7,7,176,26
+END
+
+IDD_SETTINGS_ASSOCS DIALOG  0, 0, 222, 134
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Fájltársítás"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "A .djvu és .djv kiterjesztések társítása WinDjView-vel:",-1,7,7,182,9
+    PUSHBUTTON      "&Társítás",IDC_ASSOCIATE,7,19,50,14
+    CONTROL         "&Kiterjesztések visszaállítása a program újraindítása után",IDC_RESTORE_ASSOCS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,38,208,10
+END
+
+IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 134
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Szótárak"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_TABSTOP,7,42,208,67,WS_EX_CLIENTEDGE
+    LTEXT           "Telepített szótárak:",IDC_STATIC,7,31,69,9
+    PUSHBUTTON      "Szótár leszedése",IDC_UNINSTALL,7,113,65,14
+    LTEXT           "Adott hely:",IDC_STATIC,7,7,69,9
+    LTEXT           "(Nincs kiválasztva)",IDC_CUSTOM_LOCATION,7,18,192,9
+    PUSHBUTTON      "...",IDC_BROWSE_LOCATION,202,16,13,12
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,5,0,0
+ PRODUCTVERSION 0,5,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040e0000"
+        BEGIN
+            VALUE "Comments", "Magyar"
+            VALUE "CompanyName", "Andrew Zhezherun"
+            VALUE "FileDescription", "WinDjView Localized Resources"
+            VALUE "FileVersion", "0.5"
+            VALUE "InternalName", "WinDjViewHU.dll"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2007 Andrew Zhezherun. All rights reserved."
+            VALUE "OriginalFilename", "WinDjView.exe"
+            VALUE "ProductName", "WinDjView"
+            VALUE "ProductVersion", "0.5"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x40e, 0
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 244
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 115
+    END
+
+    IDD_PRINT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 425
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 309
+    END
+
+    IDD_PROGRESS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 164
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 54
+    END
+
+    IDD_ZOOM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 112
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 40
+    END
+
+    IDD_SETTINGS_GENERAL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 215
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 127
+    END
+
+    IDD_FIND, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 280
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 57
+    END
+
+    IDD_UPDATE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 160
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 27
+    END
+
+    IDD_GOTO_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 116
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 41
+    END
+
+    IDD_SETTINGS_DISPLAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 215
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 127
+    END
+
+    IDD_ANNOTATION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 193
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 253
+    END
+
+    IDD_RENAME_BOOKMARK, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 199
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
+    END
+
+    IDD_INSTALL_DIC, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 183
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 131
+    END
+
+    IDD_INSTALL_DIC_REPLACE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 183
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 84
+    END
+
+    IDD_SETTINGS_ASSOCS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 215
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 126
+    END
+
+    IDD_SETTINGS_DICT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 215
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 127
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDR_MAINFRAME           "WinDjView"
+    IDR_DjVuTYPE            "\nDjVu\nDjVu\nDjVu fájlok (*.djvu;*.djv)\n.djvu;.djv\nDjVu.Document\n"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_BOOKMARKS_TAB       "Tartalomjegyzék"
+    IDS_ASSOCIATE_SUCCESSFUL 
+                            "A .djvu és .djv fájlokat megnyithatja WinDjView-vel,\n ha duplán kattint rájuk az Explorerben."
+    IDS_ASSOCIATE_FAILED    "Hiba történt a fájlkiterjesztések társításánál.\nValószínûleg nincs jogod a rendszerleíró-adatbázis módosításához."
+    IDS_PAGE_INDEX_TAB      "Index"
+    IDS_THUMBNAILS_TAB      "Elõnézet"
+    IDS_SEARCH_RESULTS_TAB  "Keresési találatok"
+    IDS_SAVE_COPY_AS        "Másolat mentése másként"
+    IDS_DJVU_FILTER         "DjVu fájlok (*.djvu)|*.djvu|Minden fájl (*.*)|*.*||"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_CANNOT_SAVE_TO_ORIG "A fájl nem menthetõ az eredeti helyére"
+    IDS_SAVE_ERROR          "Hiba történt a fájl mentésekor"
+    IDS_ERROR_DECODING_PAGE "Hiba történt az oldal dekódálása közben"
+    IDS_BMP_FILTER          "Bitmap Files (*.bmp)|*.bmp|Minden fájl (*.*)|*.*||"
+    IDS_EXPORT_PAGE         "Oldal kimentése"
+    IDS_CONNECT_ERROR       "A szerver nem elérhetõ. Kérjük, ellenõrizze az internet beállításokat."
+    IDS_NO_UPDATES_AVAILABLE 
+                            "Pillanatnyilag nincs új frissítés. Kérjük, késõbb próbálja meg újra."
+    IDS_NEW_VERSION_AVAILABLE 
+                            "Az új verzió, a %s már elérhetõ. Szeretné a program weboldalát meglátogatni?"
+    IDS_VERSION_URL         "http://windjview.sourceforge.net/version.txt"
+    IDS_WEBSITE_URL         "http://windjview.sourceforge.net"
+    IDS_DJVULIBRE_URL       "http://djvu.sourceforge.net"
+    IDS_DONATE_URL          "https://sourceforge.net/donate/index.php?group_id=114927"
+    IDS_STRING_NOT_FOUND    "A keresett szó nem található"
+    IDS_PRINTING            "Nyomtatás folyamatban, kérem várjon..."
+    IDS_ERROR_RENDERING_PAGE "Hiba történt az oldal generálásakor"
+    IDS_SEARCHING_PAGE      "Oldal keresése %d / %d"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "WinDjView"
+    AFX_IDS_IDLEMESSAGE     "Kész"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_NEW             "Új fájl készítése\nÚj"
+    ID_FILE_OPEN            "Létezõ fájl megnyitása\nMegnyitás"
+    ID_FILE_CLOSE           "Aktuális fájl bezárása\nBezárás"
+    ID_FILE_SAVE            "Az aktuális fájl mentése\nMentés"
+    ID_FILE_SAVE_AS         "A fájl mentése más néven\nMentés másként"
+    ID_FILE_PAGE_SETUP      "Nyomtatási beállítások megváltoztatása\nOldal beállítás"
+    ID_FILE_PRINT_SETUP     "A nyomtató és nyomtatás beállításának megváltoztatása\nNyomtatási beállítások"
+    ID_FILE_PRINT           "Az aktuális fájl nyomtatása\nNyomtatás"
+    ID_FILE_PRINT_PREVIEW   "Teljes oldalak megjelenítése\nNyomtatási elõkép"
+    ID_FILE_SAVE_COPY_AS    "Az aktuális fájl másolatának mentése más néven\nMásolat mentése másként"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_APP_ABOUT            "A verziószám, a copyright és a programmal kapcsolatos információk megjelenítése\nNévjegy"
+    ID_APP_EXIT             "Kilépés az alkalmazásból\nKilépés"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE2       "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE3       "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE4       "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE5       "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE6       "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE7       "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE8       "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE9       "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE10      "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE11      "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE12      "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE13      "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE14      "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE15      "Nyisd meg ezt a fájlt"
+    ID_FILE_MRU_FILE16      "Nyisd meg ezt a fájlt"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_NEXT_PANE            "Válts a következõ ablakra\nKövetkezõ tábla"
+    ID_PREV_PANE            "Válts az elõzõ ablakra\nElõzõ tábla"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_WINDOW_NEW           "Az aktuális fájl új ablakban történõ megjelenítése\nÚj ablak"
+    ID_WINDOW_ARRANGE       "Váltás ikonnézetre az ablak alján\nIkonrendezés"
+    ID_WINDOW_CASCADE       "Egymást fedõ elrendezés\nLépcsõzetes ablakok"
+    ID_WINDOW_TILE_HORZ     "A mozaikok nem átfedõ rendezése\nVízszintes mozaik"
+    ID_WINDOW_TILE_VERT     "A mozaikok nem átfedõ rendezése\nFüggõleges mozaik"
+    ID_WINDOW_SPLIT         "Az aktuális ablak szétdobása\nHasítás"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EDIT_CLEAR           "Kijelölése törlése\nKijelölés"
+    ID_EDIT_CLEAR_ALL       "Minden törlése\nÖsszes törlése"
+    ID_EDIT_COPY            "Kijelölés másolása és vágólapra helyezés\nMásolás"
+    ID_EDIT_CUT             "Kijelölés kivágása és vágólapra helyezés\nKivágás"
+    ID_EDIT_FIND            "Keresés az aktuális fájlban\nKeresés"
+    ID_EDIT_PASTE           "Vágólap tartalmának beillesztése\nBeillesztés"
+    ID_EDIT_REPEAT          "Az utóljára végrehajtott mûvelet ismétlése\nIsmétlés"
+    ID_EDIT_REPLACE         "Adott szöveg másikkal helyettesítése\nCsere"
+    ID_EDIT_SELECT_ALL      "A fájl tartalmának kijelölése\nÖsszes kijelölése"
+    ID_EDIT_UNDO            "A legutóbbi mûvelet visszavonása\nVisszavonás"
+    ID_EDIT_REDO            "Visszavonás visszavonása\nVisszavonás visszavonása"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Eszköztár eltüntetése és megjelenítése\nEszköztár kapcsoló"
+    ID_VIEW_STATUS_BAR      "Állapotsor eltüntetése és megjelenítése\nÁllapotsor kapcsoló"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Ablak méretének megváltoztatása"
+    AFX_IDS_SCMOVE          "Ablak elhelyezkedésének megváltoztatása"
+    AFX_IDS_SCMINIMIZE      "Kis méretre ugrás"
+    AFX_IDS_SCMAXIMIZE      "Teljes méretre ugrás"
+    AFX_IDS_SCNEXTWINDOW    "Váltás a következõ fájlra"
+    AFX_IDS_SCPREVWINDOW    "Váltás az elõzõ fájlra"
+    AFX_IDS_SCCLOSE         "Aktuális ablak bezárása"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Ablak visszaállítása normál méretre"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+    AFX_IDS_MDICHILD        "Válts erre az ablakra"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_LAYOUT_FIRSTPAGE_ALONE 
+                            "A folytonos és folytonos-oldalpár elrendezésnél az elsõ oldal magában áll"
+    ID_HIGHLIGHT_SELECTION  "A pillanatnyi szöveg kiemelése"
+    ID_ANNOTATION_EDIT      "A megjegyzés tulajdonságainek szerkesztése"
+    ID_ANNOTATION_DELETE    "A megjegyzés törlése"
+    ID_INDICATOR_PAGE       "  %d / %d  "
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_NOT_VALID_DOCUMENT  "\nNem érvényes djvu fájl."
+    IDS_PRINTING_FAILED     "Nem sikerült a fájlt kinyomtatni. Hiba lehet a\nnyomtatóval vagy a nyomtató driverrel."
+    IDS_PAPER_SIZE          "%s x %s %s"
+    IDS_VERSION_INFO        "WinDjView %s\n(C) Andrew Zhezherun"
+    IDS_VERSION_ABOUT       "WinDjView %s"
+    IDS_CURRENT_VERSION     "0.5"
+    IDS_FATAL_ERROR         "Végzetes hiba történt.\n\nLehet, hogy egy nem szabványos djvu okozta. Az alkalmazás nem biztos, hogy normálisan mûködik ezután. Javasoljuk, hogy nyissa meg újra a programot.\n\nVagy az OK gombbal zárja be az alkalmazást, vagy a Mégse lenyomásával térjen vissza a megnyitott fájlhoz."
+    IDS_WARN_CLOSE_MULTIPLE "%d fájlt akar bezárni. Biztos Ön benne?"
+    IDS_OPENFILE            "Megnyitás"
+    IDS_ALLFILTER           "Minden fájl (*.*)"
+    IDS_SETTINGS            "Beállítások"
+    IDS_BORDER_TYPES        "Nincs,Szolid,Inverz"
+    IDS_FILL_TYPES          "Nincs,Szolid,Inverz"
+    IDS_MORE_COLORS         "Több szín..."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_CUSTOM_BOOKMARKS_TAB "Könyvjelzõk"
+    IDS_BOOKMARK_MORE       "Kö&nyvjelzõ >>"
+    IDS_BOOKMARK_LESS       "Kö&nyvjelzõ <<"
+    IDS_UNITS_FULL          "Centiméter,Milliméter,Hüvelyk"
+    IDS_UNITS_SHORT         "cm,mm,in"
+    IDS_EDIT_ANNOTATION     "Megjegyzés szerkesztése"
+    IDS_CREATE_ANNOTATION   "Megjegyzés létrehozása"
+    IDS_BOOKMARK_SELECTION  "Könyvjelzõ kijelölése"
+    IDS_BOOKMARK_ANNOTATION "Könyvjelzõ megjegyzés"
+    IDS_BOOKMARK_VIEW       "Könyvjelzõ nézet"
+    IDS_RENAME_BOOKMARK     "Könyvjelzõ átnevezése"
+    IDS_PROMPT_BOOKMARK_DESTINATION 
+                            "A könyvjelzõ az aktuális helyre mutat. Akarja folytatni?"
+    IDS_PROMPT_BOOKMARK_DELETE 
+                            "A könyvjelzõt törlésre jelölte. Akarja folytatni?"
+    IDS_PROMPT_ANNOTATION_DELETE 
+                            "A megjegyzést törlésre jelölte. Akarja folytatni?"
+    IDS_FILE_INSTALL        "Telepítés..."
+    IDS_INSTALLATION_FAILED "Szótár telepítése sikertelen. Vagy nincs elég joga a célmappa írásához, vagy a célfájlt már egy másik alkalmazás megnyitotta esetleg a lemez betelt."
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EXPORT_SELECTION     "A kiválasztott terület kimentése bmp-ben"
+    ID_VIEW_BACK            "Elõzõ nézethez ugrás\nElõzõ nézet"
+    ID_VIEW_FORWARD         "Következõ nézethez ugrás\nKövetkezõ nézet"
+    ID_WINDOW_ACTIVATE_FIRST "Válts erre az ablakra"
+    ID_WINDOW_ACTIVATE_1    "Válts erre az ablakra"
+    ID_WINDOW_ACTIVATE_2    "Válts erre az ablakra"
+    ID_WINDOW_ACTIVATE_3    "Válts erre az ablakra"
+    ID_WINDOW_ACTIVATE_4    "Válts erre az ablakra"
+    ID_WINDOW_ACTIVATE_5    "Válts erre az ablakra"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_WINDOW_ACTIVATE_6    "Válts erre az ablakra"
+    ID_WINDOW_ACTIVATE_7    "Válts erre az ablakra"
+    ID_WINDOW_ACTIVATE_8    "Válts erre az ablakra"
+    ID_WINDOW_ACTIVATE_9    "Válts erre az ablakra"
+    ID_WINDOW_ACTIVATE_10   "Válts erre az ablakra"
+    ID_WINDOW_ACTIVATE_11   "Válts erre az ablakra"
+    ID_WINDOW_ACTIVATE_12   "Válts erre az ablakra"
+    ID_WINDOW_ACTIVATE_13   "Válts erre az ablakra"
+    ID_WINDOW_ACTIVATE_14   "Válts erre az ablakra"
+    ID_WINDOW_ACTIVATE_LAST "Válts erre az ablakra"
+    ID_ZOOM_IN              "Nagyítás\nNagyítás"
+    ID_ZOOM_OUT             "Kicsinyítés\nKicsinyítés"
+    ID_MODE_DRAG            "Kéz eszközre váltás\nKéz eszköz"
+    ID_MODE_SELECT          "Kijelölésre váltás\nKijelölés"
+    ID_MODE_MAGNIFY         "Nagyítóra váltás\nNagyító"
+    ID_MODE_SELECT_RECT     "Téglalap kijelölésre váltás\nTéglalap eszköz"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_PREVIEW_CLOSE   "Nyomtatási elõnézet bezárása\nElõnézet törlése"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_NEXTPAGE        "Ugrás a következõ oldalra\nKövetkezõ oldal"
+    ID_VIEW_PREVIOUSPAGE    "Ugrás az elõzõ oldalra\nElõzõ oldal"
+    ID_ZOOM_50              "50%-os zoom"
+    ID_ZOOM_75              "75%-os zoom"
+    ID_ZOOM_100             "100%\n100%"
+    ID_ZOOM_200             "200%-os zoom"
+    ID_ZOOM_400             "400%-os zoom"
+    ID_ZOOM_FITWIDTH        "Ablak szélességéhez igazítás\nSzélességhez igazítás"
+    ID_ZOOM_FITHEIGHT       "Ablak magasságához igazítás"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_ZOOM_FITPAGE         "Oldal igazítása az ablakhoz\nOldal igazítása"
+    ID_ZOOM_ACTUALSIZE      "Oldal megjelenítése tényleges méretben"
+    ID_ZOOM_STRETCH         "Oldal nyújtása ablakhoz"
+    ID_ZOOM_CUSTOM          "Egyéni zoom"
+    ID_ROTATE_RIGHT         "Rotate right 90 degrees\nForgatás jobbra"
+    ID_ROTATE_LEFT          "90°-os forgatás\nForgatás balra"
+    ID_ROTATE_180           "180°-os forgatás\nForgatás 180°-ban"
+    ID_VIEW_FIRSTPAGE       "Ugrás az elsõ oldalra\nElsõ oldal"
+    ID_VIEW_LASTPAGE        "Ugrás az utolsó oldalra\nUtolsó oldal"
+END
+
+STRINGTABLE 
+BEGIN
+    IDC_PAGENUM             "Oldalszám megadása\nOldal"
+    IDC_ZOOM                "Zoom szintjének beállítása\nZoom"
+    IDC_LOOKUP              "Szó keresése az aktuális szótárban\nSzó keresés"
+    IDC_LOOKUP_LABEL        "Keres:"
+    IDC_DICTIONARY          "Szótár kiválasztása listából\nSzótár"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_PAGE_INFORMATION     "Oldal információinak megjelenítése"
+    ID_FILE_SETTINGS        "Beállítások megváltoztatása\nBeállítások"
+    ID_EXPORT_PAGE          "Aktuális fájl mentése bmp formátumban"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_LAYOUT_SINGLEPAGE    "Egyetlen oldal megjelenítése\nEgyetlen oldal"
+    ID_LAYOUT_CONTINUOUS    "Folyamatos megjelenítés\nFolyamatos"
+    ID_LAYOUT_FACING        "Oldalpár megjelenítése\nOldalpár"
+    ID_LAYOUT_CONTINUOUS_FACING 
+                            "Oldalpárok folyamatos megjelenítése\nFolyamatos - oldalpár"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_NUM_OCCURRENCES     "%d találat"
+    IDS_EXPORT_TEXT         "Szöveg kimentése"
+    IDS_TEXT_FILTER         "Szöveg fájl (*.txt)|*.txt|Minden fájl (*.*)|*.*||"
+    IDS_PRINTING_PAGE       "Oldal nyomtatása: %d / %d, kérem várjon..."
+    IDS_SEARCHING           "Keresés"
+    IDS_OF_PAGE_COUNT       "/ %d"
+    IDS_FIT_WIDTH           "Szélesség"
+    IDS_FIT_HEIGHT          "Magasság"
+    IDS_FIT_PAGE            "Oldal"
+    IDS_ACTUAL_SIZE         "Aktuális méret"
+    IDS_STRETCH             "Nyújtás"
+    IDS_TOOLTIP_BRIGHTNESS  "Fényerõ: %+d"
+    IDS_TOOLTIP_CONTRAST    "Kontraszt: %+d"
+    IDS_TOOLTIP_GAMMA       "Gamma: %1.1f"
+    IDS_STATUS_BLACKANDWHITE "  Fekete és fehér  "
+    IDS_STATUS_FOREGROUND   "  Elõtér  "
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STATUS_BACKGROUND   "  Háttér  "
+    IDS_PRINT_ALL_PAGES     "Adott tartományban"
+    IDS_PRINT_ODD_PAGES     "Páratlan oldalak"
+    IDS_PRINT_EVEN_PAGES    "Páros oldalak"
+    IDS_PRINT_ONE_PAGE      "Oldal per lap"
+    IDS_PRINT_TWO_PAGES     "Két oldal per lap"
+    IDS_PLEASE_WAIT         "Kérem várjon..."
+    IDS_PAGE_NO_TOOLTIP     "p# %d"
+    IDS_BRIGHTNESS_TEXT_ZERO "&Fényerõ: %d"
+    IDS_BRIGHTNESS_TEXT     "&Fényerõ: %+d"
+    IDS_CONTRAST_TEXT_ZERO  "&Kontraszt: %d"
+    IDS_CONTRAST_TEXT       "&Kontraszt: %+d"
+    IDS_GAMMA_TEXT          "&Gamma: %1.1f"
+    IDS_FAILED_TO_OPEN      "A fájl megnyitása nem sikerült\n"
+    IDS_TOOLBAR_TITLE       "Eszközsor"
+    IDS_TOOLTIP_HIDE        "Tûnj el"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_MODE_ZOOM_RECT       "Téglalap zoomra váltás\nTéglalap zoom"
+    ID_FILE_EXPORT_TEXT     "Aktuális fájl szövegtartalmának kinyerése és fájlba mentése\nSzöveg mentése"
+    ID_CHECK_FOR_UPDATE     "Az elérhetõ frissítések lekérése\nFrissítés"
+    ID_DISPLAY_COLOR        "Színes megjelenítés"
+    ID_DISPLAY_BW           "Fekete-fehér megjelenítés"
+    ID_DISPLAY_BACKGROUND   "Háttér megjelenítése"
+    ID_DISPLAY_FOREGROUND   "Elõtér megjelenítése"
+    ID_VIEW_FULLSCREEN      "Teljes képernyõs megjelenítés\nTeljes képernyõ"
+    ID_VIEW_GOTO_PAGE       "Adjon meg egy oldalszámot"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_INDICATOR_SIZE       "  %s x %s %s  "
+    ID_INDICATOR_ADJUST     "  Hozzáigazítva  "
+    ID_INDICATOR_MODE       "  Megjelenítés módja  "
+    ID_BOOKMARK_DELETE      "Könyvjelzõ törlése"
+    ID_BOOKMARK_RENAME      "Könyvjelzõ átnevezése"
+    ID_BOOKMARK_SETDESTINATION "A könyvjelzõ az aktuális helyre mutat."
+    ID_BOOKMARK_ADD         "Bookmark current view, selection or annotation"
+    ID_ZOOM_TO_SELECTION    "Az aktuális kijelölésre nagyítás"
+    ID_VIEW_SIDEBAR         "Oldalcsík elõhozása/eltüntetése\nOldalcsík váltása"
+    ID_DICTIONARY_NEXT      "Szó keresése a következõ szótárban\nKövetkezõ szótár"
+    ID_DICTIONARY_PREV      "Szó keresése az elõzõ szótárban\nElõzõ szótár"
+    ID_DICTIONARY_INFO      "Információk a kijelölt szótárról\nInformációk a szótárról"
+    ID_DICTIONARY_LOOKUP    "Szó keresése az aktuális szótárban\nKeresés"
+    ID_VIEW_DICTBAR         "A szótársor eltüntetése és elõhozása\nSzótársor váltása"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_INSTALLATION_SUCCEEDED "A szótár telepítése sikeres."
+    IDS_ERROR_PARSING_RANGE "Nyomtatási tartomány érvénytelen."
+    IDS_PATH_TOO_LONG       "A fájlt nem lehetett megnyitni: az elérési út túl hosszú.\n%s"
+    IDR_DICTIONARIES_BAR    "Szó&társor"
+    IDS_DICTBAR_TITLE       "Szótárak"
+    IDS_LANG_NOT_SPECIFIED  "Nincs meghatározva"
+    IDS_UNINSTALL_DICT      "Biztos, hogy le akarod szedni a ""%s"" szótárat?\n\nA szótár a szemetesbe kerül. A szótár végleges törléséhez, ürítsd ki a kukát."
+    IDS_UNINSTALL_FAILED    "A ""%s"" szótárat nem lehetett törölni. Kézzel történõ törléshez lépj ki a programból és töröld a következõ fájlt:\n\n%s"
+    IDS_PRINT_BOOKLET       "Booklet"
+    IDS_DICT_LOCATION_PROMPT "Keressen helyet a szótárnak:"
+    IDS_INVALID_DIR         "A megadott mappanév érvénytelen. Létezõ mappát válassz a listából vagy használd a  ""Make New Folder"" gombot."
+    IDS_COPY_SELECTION      "Kijelölés &másolása"
+END
+
+STRINGTABLE 
+BEGIN
+    IDC_DICTIONARY_LABEL    "Szótár:"
+    IDC_LANGUAGE_LIST       "Válaszd ki a forrás/cél nyelveket\nNyelveket"
+    IDC_LANGUAGE_LIST_LABEL "Nyelv:"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_BOOKMARK_MOVEUP      "A kijelölt könyvjelzõ feltolása"
+    ID_BOOKMARK_MOVEDOWN    "A kijelölt könyvjelzõ lehúzása"
+END
+
+#endif    // Hungarian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_HUN)
+LANGUAGE 9, 1
+#pragma code_page(1250)
+#include "..\..\res\WinDjView.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#include "afxprint.rc"       // printing/print preview resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

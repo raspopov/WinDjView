@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -18,12 +18,12 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Russian resources
+// English (U.S.) resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
-LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
-#pragma code_page(1251)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
 #endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
@@ -32,12 +32,12 @@ LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE MOVEABLE PURE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE MOVEABLE PURE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "#ifndef VK_OEM_PLUS\r\n"
@@ -48,7 +48,7 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE MOVEABLE PURE 
+3 TEXTINCLUDE 
 BEGIN
     "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
     "#define _AFX_NO_OLE_RESOURCES\r\n"
@@ -67,40 +67,28 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Russian resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_CURSOR_DRAG         CURSOR  DISCARDABLE     "res\\drag.cur"
-IDC_CURSOR_LINK         CURSOR  DISCARDABLE     "res\\link.cur"
-IDC_CURSOR_HAND         CURSOR  DISCARDABLE     "res\\hand.cur"
-IDC_CURSOR_MAGNIFY      CURSOR  DISCARDABLE     "res\\magnify.cur"
-IDC_CURSOR_PAN_UR       CURSOR  DISCARDABLE     "res\\pan_ur.cur"
-IDC_CURSOR_PAN_ALL      CURSOR  DISCARDABLE     "res\\pan_all.cur"
-IDC_CURSOR_PAN_D        CURSOR  DISCARDABLE     "res\\pan_d.cur"
-IDC_CURSOR_PAN_DL       CURSOR  DISCARDABLE     "res\\pan_dl.cur"
-IDC_CURSOR_PAN_DR       CURSOR  DISCARDABLE     "res\\pan_dr.cur"
-IDC_CURSOR_PAN_L        CURSOR  DISCARDABLE     "res\\pan_l.cur"
-IDC_CURSOR_PAN_LR       CURSOR  DISCARDABLE     "res\\pan_lr.cur"
-IDC_CURSOR_PAN_R        CURSOR  DISCARDABLE     "res\\pan_r.cur"
-IDC_CURSOR_PAN_U        CURSOR  DISCARDABLE     "res\\pan_u.cur"
-IDC_CURSOR_PAN_UD       CURSOR  DISCARDABLE     "res\\pan_ud.cur"
-IDC_CURSOR_PAN_UL       CURSOR  DISCARDABLE     "res\\pan_ul.cur"
-IDC_CURSOR_ZOOM_RECT    CURSOR  DISCARDABLE     "res\\zoom_rect.cur"
+IDC_CURSOR_DRAG         CURSOR                  "res\\drag.cur"
+IDC_CURSOR_LINK         CURSOR                  "res\\link.cur"
+IDC_CURSOR_HAND         CURSOR                  "res\\hand.cur"
+IDC_CURSOR_MAGNIFY      CURSOR                  "res\\magnify.cur"
+IDC_CURSOR_PAN_UR       CURSOR                  "res\\pan_ur.cur"
+IDC_CURSOR_PAN_ALL      CURSOR                  "res\\pan_all.cur"
+IDC_CURSOR_PAN_D        CURSOR                  "res\\pan_d.cur"
+IDC_CURSOR_PAN_DL       CURSOR                  "res\\pan_dl.cur"
+IDC_CURSOR_PAN_DR       CURSOR                  "res\\pan_dr.cur"
+IDC_CURSOR_PAN_L        CURSOR                  "res\\pan_l.cur"
+IDC_CURSOR_PAN_LR       CURSOR                  "res\\pan_lr.cur"
+IDC_CURSOR_PAN_R        CURSOR                  "res\\pan_r.cur"
+IDC_CURSOR_PAN_U        CURSOR                  "res\\pan_u.cur"
+IDC_CURSOR_PAN_UD       CURSOR                  "res\\pan_ud.cur"
+IDC_CURSOR_PAN_UL       CURSOR                  "res\\pan_ul.cur"
+IDC_CURSOR_ZOOM_RECT    CURSOR                  "res\\zoom_rect.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -109,28 +97,28 @@ IDC_CURSOR_ZOOM_RECT    CURSOR  DISCARDABLE     "res\\zoom_rect.cur"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\WinDjView.ico"
-IDR_DjVuTYPE            ICON    DISCARDABLE     "res\\DjVuDoc.ico"
+IDR_MAINFRAME           ICON                    "res\\WinDjView.ico"
+IDR_DjVuTYPE            ICON                    "res\\DjVuDoc.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
-IDB_CLOSE               BITMAP  MOVEABLE PURE   "res\\close.bmp"
-IDB_BOOKMARKS           BITMAP  MOVEABLE PURE   "res\\bookmarks.bmp"
-IDB_DONATE              BITMAP  MOVEABLE PURE   "res\\donate.bmp"
-IDB_PAN_ANCHOR          BITMAP  MOVEABLE PURE   "res\\pan_anchor.bmp"
-IDB_HOURGLASS           BITMAP  DISCARDABLE     "res\\hourglass.bmp"
-IDR_DICTIONARIES_BAR    BITMAP  DISCARDABLE     "res\\dictbar.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+IDB_CLOSE               BITMAP                  "res\\close.bmp"
+IDB_BOOKMARKS           BITMAP                  "res\\bookmarks.bmp"
+IDB_DONATE              BITMAP                  "res\\donate.bmp"
+IDB_PAN_ANCHOR          BITMAP                  "res\\pan_anchor.bmp"
+IDB_HOURGLASS           BITMAP                  "res\\hourglass.bmp"
+IDR_DICTIONARIES_BAR    BITMAP                  "res\\dictbar.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR MOVEABLE PURE  16, 16
+IDR_MAINFRAME TOOLBAR  16, 16
 BEGIN
     BUTTON      ID_FILE_OPEN
     SEPARATOR
@@ -169,7 +157,7 @@ BEGIN
     BUTTON      ID_ROTATE_RIGHT
 END
 
-IDR_DICTIONARIES_BAR TOOLBAR DISCARDABLE  16, 15
+IDR_DICTIONARIES_BAR TOOLBAR  16, 15
 BEGIN
     BUTTON      ID_DICTIONARY_LOOKUP
     BUTTON      ID_DICTIONARY_PREV
@@ -183,7 +171,7 @@ END
 // Menu
 //
 
-IDR_MAINFRAME MENU DISCARDABLE 
+IDR_MAINFRAME MENU 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -211,7 +199,7 @@ BEGIN
     END
 END
 
-IDR_DjVuTYPE MENU DISCARDABLE 
+IDR_DjVuTYPE MENU 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -286,12 +274,9 @@ BEGIN
             MENUITEM "&Single Page\tCtrl+Atl+1",    ID_LAYOUT_SINGLEPAGE
             MENUITEM "&Continuous\tCtrl+Alt+2",     ID_LAYOUT_CONTINUOUS
             MENUITEM "&Facing\tCtrl+Alt+3",         ID_LAYOUT_FACING
-            MENUITEM "C&ontinuous - Facing\tCtrl+Alt+4", 
-                                                    ID_LAYOUT_CONTINUOUS_FACING
-
+            MENUITEM "C&ontinuous - Facing\tCtrl+Alt+4", ID_LAYOUT_CONTINUOUS_FACING
             MENUITEM SEPARATOR
             MENUITEM "First page &alone",           ID_LAYOUT_FIRSTPAGE_ALONE
-
         END
         POPUP "&Display"
         BEGIN
@@ -332,7 +317,7 @@ BEGIN
     END
 END
 
-IDR_POPUP MENU DISCARDABLE 
+IDR_POPUP MENU 
 BEGIN
     POPUP "Page"
     BEGIN
@@ -367,58 +352,45 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS MOVEABLE PURE 
+IDR_MAINFRAME ACCELERATORS 
 BEGIN
     "0",            ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
     "1",            ID_ZOOM_100,            VIRTKEY, CONTROL, NOINVERT
     "1",            ID_LAYOUT_SINGLEPAGE,   VIRTKEY, CONTROL, ALT, NOINVERT
-    "1",            ID_DISPLAY_COLOR,       VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
-    187,            ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
-    187,            ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
-    188,            ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
-    189,            ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
-    189,            ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    "1",            ID_DISPLAY_COLOR,       VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_OEM_PLUS,    ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_PLUS,    ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_OEM_COMMA,   ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_MINUS,   ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_MINUS,   ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, NOINVERT
     "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
     "2",            ID_LAYOUT_CONTINUOUS,   VIRTKEY, CONTROL, ALT, NOINVERT
-    "2",            ID_DISPLAY_BW,          VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    "2",            ID_DISPLAY_BW,          VIRTKEY, SHIFT, CONTROL, NOINVERT
     "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
     "3",            ID_LAYOUT_FACING,       VIRTKEY, CONTROL, ALT, NOINVERT
-    "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, NOINVERT
     "4",            ID_ZOOM_ACTUALSIZE,     VIRTKEY, CONTROL, NOINVERT
-    "4",            ID_LAYOUT_CONTINUOUS_FACING, VIRTKEY, CONTROL, ALT, 
-                                                    NOINVERT
-    "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    "4",            ID_LAYOUT_CONTINUOUS_FACING, VIRTKEY, CONTROL, ALT, NOINVERT
+    "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, NOINVERT
     "B",            ID_BOOKMARK_ADD,        VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
-    "F",            ID_FOCUS_TO_LOOKUP,     VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    "F",            ID_FOCUS_TO_LOOKUP,     VIRTKEY, SHIFT, CONTROL, NOINVERT
     "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
     "H",            ID_HIGHLIGHT_SELECTION, VIRTKEY, CONTROL, NOINVERT
-    "I",            ID_DICTIONARY_INFO,     VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    "I",            ID_DICTIONARY_INFO,     VIRTKEY, SHIFT, CONTROL, NOINVERT
     "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
-    "L",            ID_DICTIONARY_LOOKUP,   VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    "L",            ID_DICTIONARY_LOOKUP,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
-    "N",            ID_VIEW_GOTO_PAGE,      VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    "N",            ID_VIEW_GOTO_PAGE,      VIRTKEY, SHIFT, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
     "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
     VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
-    VK_ADD,         ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    VK_ADD,         ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_DOWN,        ID_DICTIONARY_NEXT,     VIRTKEY, ALT, NOINVERT
-    VK_DOWN,        ID_ROTATE_180,          VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    VK_DOWN,        ID_ROTATE_180,          VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_END,         ID_VIEW_LASTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
     VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
@@ -426,18 +398,14 @@ BEGIN
     VK_HOME,        ID_VIEW_FIRSTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_LEFT,        ID_VIEW_BACK_SHORTCUT,  VIRTKEY, ALT, NOINVERT
-    VK_LEFT,        ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    VK_LEFT,        ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
     VK_NEXT,        ID_VIEW_NEXTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
-    VK_PRIOR,       ID_VIEW_PREVIOUSPAGE_SHORTCUT, VIRTKEY, CONTROL, 
-                                                    NOINVERT
+    VK_PRIOR,       ID_VIEW_PREVIOUSPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
     VK_RIGHT,       ID_VIEW_FORWARD_SHORTCUT, VIRTKEY, ALT, NOINVERT
-    VK_RIGHT,       ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    VK_RIGHT,       ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
-    VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_TAB,         ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_UP,          ID_DICTIONARY_PREV,     VIRTKEY, ALT, NOINVERT
     "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
@@ -449,79 +417,56 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 251, 122
-STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ABOUTBOX DIALOG  0, 0, 251, 122
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2004-2007 Andrew Zhezherun",IDC_STATIC,40,
-                    17,149,8
+    LTEXT           "Copyright (C) 2004-2007 Andrew Zhezherun",IDC_STATIC,40,17,149,8
     DEFPUSHBUTTON   "Close",IDOK,194,7,50,14,WS_GROUP
     LTEXT           "Project homepage:",IDC_STATIC,40,35,64,8
     LTEXT           "DjVuLibre homepage:",IDC_STATIC,40,45,72,8
-    LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,106,
-                    35,139,8
-    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,114,45,
-                    131,8
-    LTEXT           "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License version 2 as published by the Free Software Foundation.",
-                    IDC_STATIC,40,62,204,26
-    LTEXT           "You can support further development of this program by donating through PayPal",
-                    IDC_STATIC,40,94,137,17
-    CONTROL         "Donate",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | 
-                    WS_TABSTOP,181,94,63,21
+    LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,106,35,139,8
+    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,114,45,131,8
+    LTEXT           "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License version 2 as published by the Free Software Foundation.",IDC_STATIC,40,62,204,26
+    LTEXT           "You can support further development of this program by donating through PayPal",IDC_STATIC,40,94,137,17
+    CONTROL         "Donate",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | WS_TABSTOP,181,94,63,21
 END
 
-IDD_PRINT DIALOG DISCARDABLE  0, 0, 432, 316
-STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_PRINT DIALOGEX 0, 0, 432, 316
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Print"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "&Name:",IDC_STATIC,174,21,37,9,SS_CENTERIMAGE
-    COMBOBOX        IDC_COMBO_PRINTER,215,19,145,82,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "&Properties",IDC_PROPERTIES,366,18,50,14
-    CONTROL         "Print to &file",IDC_PRINT_TO_FILE,"Button",
-                    BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,364,77,52,
-                    11
-    CONTROL         "Portra&it",IDC_PORTRAIT,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP | WS_TABSTOP,174,112,53,11
-    CONTROL         "Lan&dscape",IDC_LANDSCAPE,"Button",BS_AUTORADIOBUTTON,
-                    174,128,53,11
+    COMBOBOX        IDC_COMBO_PRINTER,215,19,147,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "&Properties",IDC_PROPERTIES,368,18,50,14
+    CONTROL         "Print to &file",IDC_PRINT_TO_FILE,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,364,79,52,11
+    CONTROL         "Portra&it",IDC_PORTRAIT,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,174,112,53,11
+    CONTROL         "Lan&dscape",IDC_LANDSCAPE,"Button",BS_AUTORADIOBUTTON,174,128,53,11
     LTEXT           "Number of &copies:",IDC_STATIC,304,111,62,11
     EDITTEXT        IDC_EDIT_COPIES,379,109,38,12,ES_AUTOHSCROLL
-    CONTROL         "",IDC_SPIN_COPIES,"msctls_updown32",UDS_ALIGNRIGHT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS,405,111,11,14
-    CONTROL         "Collate",IDC_COLLATE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,379,128,37,11
-    CONTROL         "&All",IDC_RANGE_ALL,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP | WS_TABSTOP,14,166,37,11
-    CONTROL         "C&urrent page",IDC_RANGE_CURRENT,"Button",
-                    BS_AUTORADIOBUTTON,14,180,59,11
-    CONTROL         "Selection",IDC_RANGE_SELECTION,"Button",
-                    BS_AUTORADIOBUTTON,84,180,59,11
-    CONTROL         "Pa&ges:",IDC_RANGE_PAGES,"Button",BS_AUTORADIOBUTTON,14,
-                    194,37,11
+    CONTROL         "",IDC_SPIN_COPIES,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,405,111,11,14
+    CONTROL         "Collate",IDC_COLLATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,379,128,37,11
+    CONTROL         "&All",IDC_RANGE_ALL,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,166,37,11
+    CONTROL         "C&urrent page",IDC_RANGE_CURRENT,"Button",BS_AUTORADIOBUTTON,14,180,59,11
+    CONTROL         "Selection",IDC_RANGE_SELECTION,"Button",BS_AUTORADIOBUTTON,84,180,59,11
+    CONTROL         "Pa&ges:",IDC_RANGE_PAGES,"Button",BS_AUTORADIOBUTTON,14,194,37,11
     EDITTEXT        IDC_PAGE_RANGES,56,193,95,12,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "L&eft:",IDC_STATIC,174,168,18,9
     EDITTEXT        IDC_POSITION_LEFT,193,166,32,12,ES_AUTOHSCROLL
     LTEXT           "T&op:",IDC_STATIC,230,168,18,9
     EDITTEXT        IDC_POSITION_TOP,250,166,32,12,ES_AUTOHSCROLL
-    CONTROL         "Center i&mage",IDC_CENTER_IMAGE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,193,188,57,11
-    CONTROL         "Auto-rotate",IDC_AUTO_ROTATE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,193,202,57,11
-    CONTROL         "Clip content",IDC_CLIP_CONTENT,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,193,216,55,11
+    CONTROL         "Center i&mage",IDC_CENTER_IMAGE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,193,188,57,11
+    CONTROL         "Auto-rotate",IDC_AUTO_ROTATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,193,202,57,11
+    CONTROL         "Clip content",IDC_CLIP_CONTENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,193,216,55,11
     LTEXT           "&Scale:",IDC_STATIC,304,168,21,9
     EDITTEXT        IDC_SCALE,331,166,38,12,ES_AUTOHSCROLL
-    CONTROL         "Scale to fit media",IDC_SCALE_TO_FIT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,331,188,73,11
-    CONTROL         "S&hrink oversized pages",IDC_SHRINK_OVERSIZED,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,331,202,89,11
-    CONTROL         "Ignore printer margins",IDC_IGNORE_MARGINS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,331,216,85,11
+    CONTROL         "Scale to fit media",IDC_SCALE_TO_FIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,331,188,73,11
+    CONTROL         "S&hrink oversized pages",IDC_SHRINK_OVERSIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,331,202,89,11
+    CONTROL         "Ignore printer margins",IDC_IGNORE_MARGINS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,331,216,85,11
     LTEXT           "&Left:",IDC_STATIC,14,251,21,9
     EDITTEXT        IDC_MARGIN_LEFT,38,249,38,12,ES_AUTOHSCROLL
     LTEXT           "&Top:",IDC_STATIC,14,269,21,9
@@ -531,54 +476,46 @@ BEGIN
     LTEXT           "&Bottom:",IDC_STATIC,84,269,27,9
     EDITTEXT        IDC_MARGIN_BOTTOM,113,267,38,12,ES_AUTOHSCROLL
     LTEXT           "Si&ze:",IDC_STATIC,174,251,20,9,SS_CENTERIMAGE
-    COMBOBOX        IDC_COMBO_PAPER,198,249,84,81,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_PAPER,198,249,84,81,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Print",IDC_STATIC,304,251,17,9,SS_CENTERIMAGE
-    COMBOBOX        IDC_COMBO_PAGESINRANGE,326,249,92,81,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_PAGESINRANGE,326,249,92,81,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Print",IDC_STATIC,304,269,17,9,SS_CENTERIMAGE
-    COMBOBOX        IDC_COMBO_PAGESPERSHEET,326,267,92,84,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Reverse order",IDC_REVERSE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,297,66,11
+    COMBOBOX        IDC_COMBO_PAGESPERSHEET,326,267,92,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Reverse order",IDC_REVERSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,297,66,11
     DEFPUSHBUTTON   "Print",IDOK,320,295,50,14
     PUSHBUTTON      "Close",IDCANCEL,375,295,50,14
     GROUPBOX        "Printer",IDC_STATIC,167,7,258,87
     LTEXT           "Location:",IDC_STATIC,174,55,37,9
     LTEXT           "Type:",IDC_STATIC,174,40,37,9
     LTEXT           "Comment:",IDC_STATIC,174,70,37,9
-    LTEXT           "Type",IDC_STATIC_TYPE,216,40,138,9
-    LTEXT           "Location",IDC_STATIC_LOCATION,216,55,138,9
-    LTEXT           "Comment",IDC_STATIC_COMMENT,216,70,138,9
+    LTEXT           "Type",IDC_STATIC_TYPE,216,40,200,9
+    LTEXT           "Location",IDC_STATIC_LOCATION,216,55,200,9
+    LTEXT           "Comment",IDC_STATIC_COMMENT,216,70,200,9
     GROUPBOX        "Print range",IDC_STATIC,7,154,153,78
     GROUPBOX        "Copies",IDC_STATIC,296,98,129,51
-    CONTROL         "",IDC_PREVIEW_AREA,"Static",SS_BLACKFRAME | NOT 
-                    WS_VISIBLE,14,20,138,115
+    CONTROL         "",IDC_PREVIEW_AREA,"Static",SS_BLACKFRAME | NOT WS_VISIBLE,14,20,138,115
     GROUPBOX        "Orientation",IDC_STATIC,167,98,122,51
     GROUPBOX        "Preview",IDC_STATIC,7,7,153,142
     GROUPBOX        "Margins",IDC_STATIC,7,237,153,49
     GROUPBOX        "Paper",IDC_STATIC,167,237,122,49
-    LTEXT           "Enter page numbers and/or page ranges separated by commas. Example: 1,3,5-9",
-                    IDC_STATIC,16,210,137,17
+    LTEXT           "Enter page numbers and/or page ranges separated by commas. Example: 1,3,5-9",IDC_STATIC,16,210,137,17
     GROUPBOX        "Print options",IDC_STATIC,296,237,129,49
     GROUPBOX        "Position",IDC_STATIC,167,154,122,78
     GROUPBOX        "Scaled print size",IDC_STATIC,296,154,129,78
     CTEXT           "Paper size",IDC_STATIC_PAPER,14,138,138,8
 END
 
-IDD_PROGRESS DIALOG DISCARDABLE  0, 0, 171, 61
-STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
+IDD_PROGRESS DIALOG  0, 0, 171, 61
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
 FONT 8, "MS Shell Dlg"
 BEGIN
     DEFPUSHBUTTON   "Cancel",IDOK,60,40,50,14
-    CTEXT           "Printing page 1 of 3, please wait...",IDC_STATIC_TEXT,7,
-                    7,157,9
-    CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,7,22,157,
-                    12
+    CTEXT           "Printing page 1 of 3, please wait...",IDC_STATIC_TEXT,7,7,157,9
+    CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,7,22,157,12
 END
 
-IDD_ZOOM DIALOG DISCARDABLE  0, 0, 119, 47
-STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ZOOM DIALOG  0, 0, 119, 47
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Zoom Custom"
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -588,224 +525,178 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS_GENERAL DIALOG DISCARDABLE  0, 0, 222, 134
-STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+IDD_SETTINGS_GENERAL DIALOG  0, 0, 222, 134
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "General"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    CONTROL         "&Warn when closing multiple documents",
-                    IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,7,208,10
-    CONTROL         "Generate &thumbnails for all pages in background",
-                    IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,21,208,10
-    CONTROL         "&Mouse clicks switch pages in fullscreen mode",
-                    IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,35,208,10
-    CONTROL         "Always &hide scrollbars in fullscreen mode",
-                    IDC_FULLSCREEN_HIDESCROLL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,49,208,10
-    CONTROL         "&Invert Ctrl+Mouse Wheel zooming direction",
-                    IDC_INVERT_WHEEL_ZOOM,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,63,208,10
-    CONTROL         "Close the program when &Escape key is pressed",
-                    IDC_CLOSE_ON_ESC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
-                    77,208,10
-    CONTROL         "Wrap &long bookmarks",IDC_WRAP_BOOKMARKS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,91,208,10
-    CONTROL         "Restore open &page and view settings when opening a file",
-                    IDC_RESTORE_VIEW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
-                    105,208,10
+    CONTROL         "&Warn when closing multiple documents",IDC_WARN_CLOSE_MULTIPLE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,208,10
+    CONTROL         "Generate &thumbnails for all pages in background",IDC_GEN_ALL_THUMBNAILS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
+    CONTROL         "&Mouse clicks switch pages in fullscreen mode",IDC_FULLSCREEN_CLICKS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,208,10
+    CONTROL         "Always &hide scrollbars in fullscreen mode",IDC_FULLSCREEN_HIDESCROLL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,208,10
+    CONTROL         "&Invert Ctrl+Mouse Wheel zooming direction",IDC_INVERT_WHEEL_ZOOM,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,208,10
+    CONTROL         "Close the program when &Escape key is pressed",IDC_CLOSE_ON_ESC,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,77,208,10
+    CONTROL         "Wrap &long bookmarks",IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,208,10
+    CONTROL         "Restore open &page and view settings when opening a file",IDC_RESTORE_VIEW,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,105,208,10
 END
 
-IDD_FIND DIALOG DISCARDABLE  0, 0, 287, 64
-STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_FIND DIALOG  0, 0, 287, 64
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Find"
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "Fi&nd what:",IDC_STATIC,7,10,35,9
-    CONTROL         "",IDC_FIND,"ComboBoxEx32",CBS_DROPDOWN | 
-                    CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP,47,7,173,95
-    CONTROL         "Match &case",IDC_MATCH_CASE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,28,64,8
+    CONTROL         "",IDC_FIND,"ComboBoxEx32",CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP,47,7,173,95
+    CONTROL         "Match &case",IDC_MATCH_CASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,28,64,8
     DEFPUSHBUTTON   "&Find Next",IDOK,230,7,50,14
     PUSHBUTTON      "Find &All",IDC_FIND_ALL,230,25,50,14
     PUSHBUTTON      "Close",IDCANCEL,230,43,50,14
-    LTEXT           "Searching page 1 of 10...",IDC_SEARCH_STATUS,7,48,214,9,
-                    NOT WS_VISIBLE
+    LTEXT           "Searching page 1 of 10...",IDC_SEARCH_STATUS,7,48,214,9,NOT WS_VISIBLE
 END
 
-IDD_UPDATE DIALOG DISCARDABLE  0, 0, 167, 34
-STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
+IDD_UPDATE DIALOG  0, 0, 167, 34
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
 FONT 8, "MS Shell Dlg"
 BEGIN
-    LTEXT           "Checking for update. Please wait...",IDC_STATIC,39,10,
-                    118,11
+    LTEXT           "Checking for update. Please wait...",IDC_STATIC,39,10,118,11
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
 END
 
-IDD_GOTO_PAGE DIALOG DISCARDABLE  0, 0, 123, 48
-STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_GOTO_PAGE DIALOG  0, 0, 123, 48
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Go To Page"
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "&Page:",IDC_STATIC,7,7,21,12,SS_CENTERIMAGE
     EDITTEXT        IDC_PAGE,30,7,55,12,ES_AUTOHSCROLL
-    CONTROL         "",IDC_SPIN_PAGE,"msctls_updown32",UDS_ALIGNRIGHT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS,77,8,11,14
+    CONTROL         "",IDC_SPIN_PAGE,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,77,8,11,14
     LTEXT           "of 9999",IDC_PAGE_COUNT,89,7,27,12,SS_CENTERIMAGE
     DEFPUSHBUTTON   "OK",IDOK,9,27,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,64,27,50,14
 END
 
-IDD_SETTINGS_DISPLAY DIALOG DISCARDABLE  0, 0, 222, 134
-STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+IDD_SETTINGS_DISPLAY DIALOG  0, 0, 222, 134
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Display"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    CONTROL         "&Sharp scaling at low zoom levels (slower)",
-                    IDC_HQ_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,
-                    208,10
-    CONTROL         "&Invert colors",IDC_INVERT_COLORS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
-    CONTROL         "A&djust settings:",IDC_ADJUST_DISPLAY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,35,208,9
+    CONTROL         "&Sharp scaling at low zoom levels (slower)",IDC_HQ_SCALING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,208,10
+    CONTROL         "&Invert colors",IDC_INVERT_COLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
+    CONTROL         "A&djust settings:",IDC_ADJUST_DISPLAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,208,9
     LTEXT           "&Brightness: 0",IDC_BRIGHTNESS_TEXT,7,49,52,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,61,48,
-                    154,12
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,61,48,154,12
     LTEXT           "&Contrast: 0",IDC_CONTRAST_TEXT,7,63,52,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,61,62,154,
-                    12
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,61,62,154,12
     LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,7,77,52,9
     CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,61,76,154,12
     CONTROL         "Use adjustments for &printing",IDC_ADJUST_PRINTING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,93,208,9
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,107,208,1
     LTEXT           "&Units:",IDC_STATIC,7,117,23,10
-    COMBOBOX        IDC_COMBO_UNITS,32,115,87,60,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_UNITS,32,115,87,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_ANNOTATION DIALOG DISCARDABLE  0, 0, 200, 260
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ANNOTATION DIALOG  0, 0, 200, 260
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Edit Annotation"
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,30,11,163,1,
-                    WS_EX_STATICEDGE
-    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,19,59,174,1,
-                    WS_EX_STATICEDGE
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,30,11,163,1,WS_EX_STATICEDGE
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,19,59,174,1,WS_EX_STATICEDGE
     LTEXT           "&Border",IDC_STATIC,7,7,24,9
     LTEXT           "Type:",IDC_STATIC,18,19,22,12,SS_CENTERIMAGE
-    COMBOBOX        IDC_BORDER_TYPE,43,19,79,64,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_BORDER_TYPE,43,19,79,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Color:",IDC_STATIC,130,19,20,12,SS_CENTERIMAGE
     PUSHBUTTON      "",IDC_BORDER_COLOR,152,18,41,15
     CONTROL         "&Show only when hovered by mouse",IDC_HIDE_INACTIVE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,37,129,11
     LTEXT           "&Fill",IDC_STATIC,7,55,11,9
     LTEXT           "Type:",IDC_STATIC,19,67,22,12,SS_CENTERIMAGE
-    COMBOBOX        IDC_FILL_TYPE,43,67,79,64,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_FILL_TYPE,43,67,79,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Color:",IDC_STATIC,130,67,20,12,SS_CENTERIMAGE
     PUSHBUTTON      "",IDC_FILL_COLOR,152,66,41,15
     LTEXT           "&Transparency:",IDC_STATIC,19,85,47,12,SS_CENTERIMAGE
-    CONTROL         "Slider1",IDC_FILL_TRANSPARENCY,"msctls_trackbar32",
-                    WS_TABSTOP,70,86,101,12
-    RTEXT           "100%",IDC_FILL_TRANSPARENCY_TEXT,172,85,20,12,
-                    SS_CENTERIMAGE
-    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,7,105,186,1,
-                    WS_EX_STATICEDGE
+    CONTROL         "Slider1",IDC_FILL_TRANSPARENCY,"msctls_trackbar32",WS_TABSTOP,70,86,101,12
+    RTEXT           "100%",IDC_FILL_TRANSPARENCY_TEXT,172,85,20,12,SS_CENTERIMAGE
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,7,105,186,1,WS_EX_STATICEDGE
     LTEXT           "&Comment:",IDC_STATIC,7,114,33,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_COMMENT,43,114,150,47,ES_MULTILINE | ES_AUTOVSCROLL | 
-                    ES_WANTRETURN | WS_VSCROLL
+    EDITTEXT        IDC_COMMENT,43,114,150,47,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
     DEFPUSHBUTTON   "OK",IDOK,89,168,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,143,168,50,14
     PUSHBUTTON      "Book&mark >>",IDC_ADD_BOOKMARK,7,168,54,14
-    CONTROL         "",IDC_STATIC_LESS,"Static",SS_GRAYFRAME,7,189,186,1,
-                    WS_EX_STATICEDGE
-    CONTROL         "",IDC_STATIC_MORE,"Static",SS_GRAYFRAME,7,252,186,1,
-                    WS_EX_STATICEDGE
+    CONTROL         "",IDC_STATIC_LESS,"Static",SS_GRAYFRAME,7,189,186,1,WS_EX_STATICEDGE
+    CONTROL         "",IDC_STATIC_MORE,"Static",SS_GRAYFRAME,7,252,186,1,WS_EX_STATICEDGE
     LTEXT           "T&itle:",IDC_STATIC,7,198,33,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_BOOKMARK_TITLE,43,198,150,47,ES_MULTILINE | 
-                    ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    EDITTEXT        IDC_BOOKMARK_TITLE,43,198,150,47,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
 END
 
-IDD_RENAME_BOOKMARK DIALOG DISCARDABLE  0, 0, 206, 90
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_RENAME_BOOKMARK DIALOG  0, 0, 206, 90
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Rename Bookmark"
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "T&itle:",IDC_STATIC,7,7,20,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_BOOKMARK_TITLE,28,7,171,53,ES_MULTILINE | 
-                    ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    EDITTEXT        IDC_BOOKMARK_TITLE,28,7,171,53,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
     DEFPUSHBUTTON   "OK",IDOK,95,69,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,149,69,50,14
 END
 
-IDD_INSTALL_DIC DIALOG DISCARDABLE  0, 0, 190, 138
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_INSTALL_DIC DIALOG  0, 0, 190, 138
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Install Dictionary"
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         "Install this dictionary for the current user",
-                    IDC_CURRENT_USER,"Button",BS_AUTORADIOBUTTON | BS_TOP | 
-                    BS_MULTILINE | WS_GROUP | WS_TABSTOP,7,7,176,11
-    CONTROL         "Install this dictionary for all users of this computer (requires administrative priveleges)",
-                    IDC_ALL_USERS,"Button",BS_AUTORADIOBUTTON | BS_TOP | 
-                    BS_MULTILINE,7,21,176,19
-    CONTROL         "Install this dictionary into a custom location:",
-                    IDC_CUSTOM,"Button",BS_AUTORADIOBUTTON | BS_TOP | 
-                    BS_MULTILINE,7,41,157,11
+    CONTROL         "Install this dictionary for the current user",IDC_CURRENT_USER,
+                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,7,7,176,11
+    CONTROL         "Install this dictionary for all users of this computer (requires administrative priveleges)",IDC_ALL_USERS,
+                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,7,21,176,19
+    CONTROL         "Install this dictionary into a custom location:",IDC_CUSTOM,
+                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,7,41,157,11
     PUSHBUTTON      "...",IDC_BROWSE_LOCATION,170,40,13,12,WS_GROUP
-    CONTROL         "(Not selected)",IDC_CUSTOM_LOCATION,"Static",
-                    SS_LEFTNOWORDWRAP | SS_NOPREFIX | SS_PATHELLIPSIS | 
-                    WS_GROUP,18,53,165,9
-    LTEXT           "A copy of this file will be created. Please uncheck the following box if you want to move the original file to the Recycle Bin after the installation:",
-                    IDC_STATIC,7,69,176,26
-    CONTROL         "Keep the original file",IDC_KEEP_ORIGINAL,"Button",
-                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,97,86,11
+    CONTROL         "(Not selected)",IDC_CUSTOM_LOCATION,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | SS_PATHELLIPSIS | WS_GROUP,18,53,165,9
+    LTEXT           "A copy of this file will be created. Please uncheck the following box if you want to move the original file to the Recycle Bin after the installation:",IDC_STATIC,7,69,176,26
+    CONTROL         "Keep the original file",IDC_KEEP_ORIGINAL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,97,86,11
     DEFPUSHBUTTON   "OK",IDOK,78,117,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,133,117,50,14
 END
 
-IDD_INSTALL_DIC_REPLACE DIALOG DISCARDABLE  0, 0, 190, 91
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_INSTALL_DIC_REPLACE DIALOG  0, 0, 190, 91
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Install Dictionary"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Please uncheck the following box if you want to move the current file to the Recycle Bin after the installation:",
-                    IDC_STATIC,7,35,176,18
-    CONTROL         "Keep the original file",IDC_KEEP_ORIGINAL,"Button",
-                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,54,86,11
+    LTEXT           "Please uncheck the following box if you want to move the current file to the Recycle Bin after the installation:",IDC_STATIC,7,35,176,18
+    CONTROL         "Keep the original file",IDC_KEEP_ORIGINAL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,54,86,11
     DEFPUSHBUTTON   "OK",IDOK,78,70,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,133,70,50,14
-    LTEXT           "A dictionary with this name is already installed in the system. Installation will replace the existing dictionary with the currently open file.",
-                    IDC_STATIC,7,7,176,26
+    LTEXT           "A dictionary with this name is already installed in the system. Installation will replace the existing dictionary with the currently open file.",IDC_STATIC,7,7,176,26
 END
 
-IDD_SETTINGS_ASSOCS DIALOG DISCARDABLE  0, 0, 222, 134
-STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+IDD_SETTINGS_ASSOCS DIALOG  0, 0, 222, 134
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "File Associations"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    LTEXT           "Press to associate WinDjView with .djvu and .djv files:",
-                    -1,7,7,182,9
+    LTEXT           "Press to associate WinDjView with .djvu and .djv files:",-1,7,7,182,9
     PUSHBUTTON      "&Associate",IDC_ASSOCIATE,7,19,50,14
-    CONTROL         "&Restore associations at program start",
-                    IDC_RESTORE_ASSOCS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    7,38,208,10
+    CONTROL         "&Restore associations at program start",IDC_RESTORE_ASSOCS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,38,208,10
 END
 
 IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 134
-STYLE DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Dictionaries"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | 
-                    LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | 
-                    LVS_NOSORTHEADER | WS_TABSTOP,7,42,208,67,
-                    WS_EX_CLIENTEDGE
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_TABSTOP,7,42,208,67,WS_EX_CLIENTEDGE
     LTEXT           "Installed dictionaries:",IDC_STATIC,7,31,69,9
     PUSHBUTTON      "&Uninstall",IDC_UNINSTALL,7,113,50,14
     LTEXT           "Custom location:",IDC_STATIC,7,7,69,9
@@ -814,7 +705,6 @@ BEGIN
 END
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -837,18 +727,14 @@ BEGIN
     BEGIN
         BLOCK "04090000"
         BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", "Andrew Zhezherun\0"
-            VALUE "FileDescription", "WinDjView\0"
-            VALUE "FileVersion", "0.5\0"
-            VALUE "InternalName", "WinDjView.exe\0"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2007 Andrew Zhezherun. All rights reserved.\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "WinDjView.exe\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "WinDjView\0"
-            VALUE "ProductVersion", "0.5\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "CompanyName", "Andrew Zhezherun"
+            VALUE "FileDescription", "WinDjView"
+            VALUE "FileVersion", "0.5"
+            VALUE "InternalName", "WinDjView.exe"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2007 Andrew Zhezherun. All rights reserved."
+            VALUE "OriginalFilename", "WinDjView.exe"
+            VALUE "ProductName", "WinDjView"
+            VALUE "ProductVersion", "0.5"
         END
     END
     BLOCK "VarFileInfo"
@@ -857,8 +743,6 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -866,7 +750,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO MOVEABLE PURE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -996,13 +880,13 @@ END
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDR_MAINFRAME           "WinDjView"
     IDR_DjVuTYPE            "\nDjVu\nDjVu\nDjVu Documents (*.djvu;*.djv)\n.djvu;.djv\nDjVu.Document\n"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_BOOKMARKS_TAB       "Contents"
     IDS_ASSOCIATE_SUCCESSFUL 
@@ -1015,7 +899,7 @@ BEGIN
     IDS_DJVU_FILTER         "DjVu Documents (*.djvu)|*.djvu|All Files (*.*)|*.*||"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_CANNOT_SAVE_TO_ORIG "Cannot save the document to its original location"
     IDS_SAVE_ERROR          "An error occurred while saving the document"
@@ -1037,13 +921,13 @@ BEGIN
     IDS_SEARCHING_PAGE      "Searching page %d of %d"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     AFX_IDS_APP_TITLE       "WinDjView"
     AFX_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing document\nOpen"
@@ -1057,13 +941,13 @@ BEGIN
     ID_FILE_SAVE_COPY_AS    "Save a copy of the active document with a new name\nSave Copy As"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quit the application\nExit"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_FILE_MRU_FILE1       "Open this document"
     ID_FILE_MRU_FILE2       "Open this document"
@@ -1083,13 +967,13 @@ BEGIN
     ID_FILE_MRU_FILE16      "Open this document"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
     ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
     ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
@@ -1099,7 +983,7 @@ BEGIN
     ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_EDIT_CLEAR           "Erase the selection\nErase"
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
@@ -1114,13 +998,13 @@ BEGIN
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle Toolbar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle Status Bar"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     AFX_IDS_SCSIZE          "Change the window size"
     AFX_IDS_SCMOVE          "Change the window position"
@@ -1131,14 +1015,14 @@ BEGIN
     AFX_IDS_SCCLOSE         "Close the active window"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     AFX_IDS_SCRESTORE       "Restore the window to normal size"
     AFX_IDS_SCTASKLIST      "Activate Task List"
     AFX_IDS_MDICHILD        "Activate this window"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_LAYOUT_FIRSTPAGE_ALONE 
                             "Display first page alone in facing and continuous-facing layouts"
@@ -1148,7 +1032,7 @@ BEGIN
     ID_INDICATOR_PAGE       "  Page %d of %d  "
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_NOT_VALID_DOCUMENT  "\nThis is not a valid DjVu document."
     IDS_PRINTING_FAILED     "Failed to print the document. There could be a problem\nwith the printer or with the printer driver."
@@ -1166,7 +1050,7 @@ BEGIN
     IDS_MORE_COLORS         "More Colors..."
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_CUSTOM_BOOKMARKS_TAB "Bookmarks"
     IDS_BOOKMARK_MORE       "Book&mark >>"
@@ -1189,7 +1073,7 @@ BEGIN
     IDS_INSTALLATION_FAILED "Failed to install the dictionary. You may not have enough rights to write to the target location, the target file may be opened in another application, or the disk may be full."
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_EXPORT_SELECTION     "Export selected part of the page as bmp file"
     ID_VIEW_BACK            "Go to previous view\nPrevious View"
@@ -1202,7 +1086,7 @@ BEGIN
     ID_WINDOW_ACTIVATE_5    "Activate this window"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_WINDOW_ACTIVATE_6    "Activate this window"
     ID_WINDOW_ACTIVATE_7    "Activate this window"
@@ -1222,12 +1106,12 @@ BEGIN
     ID_MODE_SELECT_RECT     "Activate rectangle selection tool\nRectangle Tool"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_VIEW_NEXTPAGE        "Go to next page\nNext Page"
     ID_VIEW_PREVIOUSPAGE    "Go to previous page\nPrevious Page"
@@ -1240,7 +1124,7 @@ BEGIN
     ID_ZOOM_FITHEIGHT       "Fit page to height of the window"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_ZOOM_FITPAGE         "Fit page to the window\nFit Page"
     ID_ZOOM_ACTUALSIZE      "Display page in actual size"
@@ -1253,7 +1137,7 @@ BEGIN
     ID_VIEW_LASTPAGE        "Go to last page\nLast Page"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDC_PAGENUM             "Select page number\nPage"
     IDC_ZOOM                "Select zoom level\nZoom"
@@ -1262,14 +1146,14 @@ BEGIN
     IDC_DICTIONARY          "Select a dictionary from the drop-down list\nDictionary"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_PAGE_INFORMATION     "Display page information"
     ID_FILE_SETTINGS        "Change application settings\nSettings"
     ID_EXPORT_PAGE          "Export current page as bmp file"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_LAYOUT_SINGLEPAGE    "Single page layout\nSingle Page"
     ID_LAYOUT_CONTINUOUS    "Continuous page layout\nContinuous"
@@ -1278,7 +1162,7 @@ BEGIN
                             "Continuous-facing page layout\nContinuous - Facing"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_NUM_OCCURRENCES     "%d occurrences found"
     IDS_EXPORT_TEXT         "Export Text"
@@ -1298,7 +1182,7 @@ BEGIN
     IDS_STATUS_FOREGROUND   "  Foreground  "
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_STATUS_BACKGROUND   "  Background  "
     IDS_PRINT_ALL_PAGES     "All Pages In Range"
@@ -1318,7 +1202,7 @@ BEGIN
     IDS_TOOLTIP_HIDE        "Hide"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_MODE_ZOOM_RECT       "Activate marquee zoom\nMarquee Zoom"
     ID_FILE_EXPORT_TEXT     "Extract text from the active document and save it into a file\nExport Text"
@@ -1331,7 +1215,7 @@ BEGIN
     ID_VIEW_GOTO_PAGE       "Specify page number"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_INDICATOR_SIZE       "  %s x %s %s  "
     ID_INDICATOR_ADJUST     "  Adjusted  "
@@ -1350,7 +1234,7 @@ BEGIN
     ID_VIEW_DICTBAR         "Show or hide the dictionary bar\nToggle Dictionary Bar"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_INSTALLATION_SUCCEEDED "Dictionary was installed successfully."
     IDS_ERROR_PARSING_RANGE "Printing range is invalid."
@@ -1366,14 +1250,14 @@ BEGIN
     IDS_COPY_SELECTION      "&Copy Selection"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDC_DICTIONARY_LABEL    "Dictionary:"
     IDC_LANGUAGE_LIST       "Select the source and destination languages\nLanguages"
     IDC_LANGUAGE_LIST_LABEL "Language:"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_BOOKMARK_MOVEUP      "Move up the selected bookmark"
     ID_BOOKMARK_MOVEDOWN    "Move the selected bookmark down"

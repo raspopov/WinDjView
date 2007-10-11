@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="WinDjViewPT"
 	ProjectGUID="{CDF44B0E-D5B9-4B74-9005-D6EA19420B83}"
+	RootNamespace="WinDjViewPT"
 	>
 	<Platforms>
 		<Platform
@@ -18,7 +19,6 @@
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -76,6 +76,7 @@
 				OutputFile=".\Release/WinDjViewPT.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				GenerateManifest="false"
 				ResourceOnlyDLL="true"
 				ImportLibrary=".\Release/WinDjViewPT.lib"
 				TargetMachine="1"
@@ -85,6 +86,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				EmbedManifest="false"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"

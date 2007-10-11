@@ -2478,6 +2478,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\donate.bmp"
+				>
+			</File>
+			<File
 				RelativePath="res\drag.cur"
 				>
 			</File>
@@ -2499,6 +2503,10 @@
 			</File>
 			<File
 				RelativePath="res\pan_all.cur"
+				>
+			</File>
+			<File
+				RelativePath=".\res\pan_anchor.bmp"
 				>
 			</File>
 			<File

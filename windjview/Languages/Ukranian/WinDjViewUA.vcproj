@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="WinDjViewUA"
 	ProjectGUID="{BA75E1E4-9272-481B-AF04-712FA08F9942}"
+	RootNamespace="WinDjViewUA"
 	>
 	<Platforms>
 		<Platform
@@ -18,7 +19,6 @@
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -64,7 +64,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG,AFX_RESOURCE_DLL,AFX_TARG_RUS"
-				Culture="1049"
+				Culture="1058"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -76,6 +76,7 @@
 				OutputFile=".\Release/WinDjViewUA.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				GenerateManifest="false"
 				ResourceOnlyDLL="true"
 				ImportLibrary=".\Release/WinDjViewUA.lib"
 				TargetMachine="1"
@@ -85,6 +86,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				EmbedManifest="false"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"

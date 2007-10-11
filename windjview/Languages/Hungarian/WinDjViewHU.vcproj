@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="WinDjViewRU"
-	ProjectGUID="{1DD07ECA-099C-49C4-9E1C-33C6DE1D8FE0}"
-	RootNamespace="WinDjViewRU"
+	Name="WinDjViewHU"
+	ProjectGUID="{91141F17-EE60-45FE-B106-C458C00A9945}"
+	RootNamespace="WinDjViewHU"
 	>
 	<Platforms>
 		<Platform
@@ -40,18 +40,18 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/WinDjViewRU.tlb"
+				TypeLibraryName=".\Release/WinDjViewHU.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;WINDJVIEWRU_EXPORTS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;WINDJVIEWHU_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\Release/WinDjViewRU.pch"
+				PrecompiledHeaderFile=".\Release/WinDjViewHU.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
@@ -63,8 +63,8 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG,AFX_RESOURCE_DLL,AFX_TARG_RUS"
-				Culture="1049"
+				PreprocessorDefinitions="NDEBUG,AFX_RESOURCE_DLL,AFX_TARG_HUN"
+				Culture="1038"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -73,12 +73,12 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="odbc32.lib odbccp32.lib"
-				OutputFile=".\Release/WinDjViewRU.dll"
+				OutputFile=".\Release/WinDjViewHU.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateManifest="false"
 				ResourceOnlyDLL="true"
-				ImportLibrary=".\Release/WinDjViewRU.lib"
+				ImportLibrary=".\Release/WinDjViewHU.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -94,7 +94,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release/WinDjViewRU.bsc"
+				OutputFile=".\Release/WinDjViewHU.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -118,7 +118,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="WinDjViewRU.rc"
+				RelativePath="WinDjViewHU.rc"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
