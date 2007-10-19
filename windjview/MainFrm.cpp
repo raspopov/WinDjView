@@ -1522,6 +1522,8 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 		CDjVuView* pActiveView = (CDjVuView*)pActive->GetActiveView();
 		if (pActiveView == pView)
 			UpdatePageCombo(pView);
+
+		SendMessageToDescendants(WM_IDLEUPDATECMDUI, TRUE, 0, TRUE, TRUE);
 	}
 	else if (message->code == ZOOM_CHANGED)
 	{
