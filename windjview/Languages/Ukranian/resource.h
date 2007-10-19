@@ -17,6 +17,7 @@
 #define IDD_RENAME_BOOKMARK             112
 #define IDD_INSTALL_DIC                 113
 #define IDD_INSTALL_DIC_REPLACE         114
+#define IDD_SETTINGS_DICT               115
 #define IDR_MAINFRAME                   128
 #define IDR_DjVuTYPE                    129
 #define IDR_POPUP                       131
@@ -40,6 +41,7 @@
 #define IDB_CLOSE                       151
 #define IDB_BOOKMARKS                   152
 #define IDB_DONATE                      153
+#define IDC_CURSOR_ZOOM_RECT            154
 #define IDS_BOOKMARKS_TAB               200
 #define IDS_ASSOCIATE_SUCCESSFUL        201
 #define IDS_ASSOCIATE_FAILED            202
@@ -130,6 +132,15 @@
 #define IDS_INSTALLATION_SUCCEEDED      288
 #define IDS_ERROR_PARSING_RANGE         289
 #define IDS_PATH_TOO_LONG               290
+#define IDR_DICTIONARIES_BAR            291
+#define IDS_DICTBAR_TITLE               292
+#define IDS_LANG_NOT_SPECIFIED          293
+#define IDS_UNINSTALL_DICT              294
+#define IDS_UNINSTALL_FAILED            295
+#define IDS_PRINT_BOOKLET               296
+#define IDS_DICT_LOCATION_PROMPT        297
+#define IDS_INVALID_DIR                 298
+#define IDS_COPY_SELECTION              299
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -190,6 +201,7 @@
 #define IDC_INVERT_COLORS               1054
 #define IDC_PAGE                        1055
 #define IDC_CLOSE_ON_ESC                1055
+#define IDC_ADJUST_PRINTING             1055
 #define IDC_PAGE_COUNT                  1056
 #define IDC_WRAP_BOOKMARKS              1056
 #define IDC_RESTORE_VIEW                1057
@@ -216,6 +228,17 @@
 #define IDC_CURRENT_USER                1082
 #define IDC_ALL_USERS                   1083
 #define IDC_KEEP_ORIGINAL               1084
+#define IDC_LOOKUP                      1085
+#define IDC_CUSTOM                      1085
+#define IDC_LOOKUP_LABEL                1086
+#define IDC_DICTIONARY                  1087
+#define IDC_DICTIONARY_LABEL            1088
+#define IDC_LIST                        1089
+#define IDC_LANGUAGE_LIST               1090
+#define IDC_LANGUAGE_LIST_LABEL         1091
+#define IDC_UNINSTALL                   1092
+#define IDC_CUSTOM_LOCATION             1093
+#define IDC_BROWSE_LOCATION             1094
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_VIEW_NEXTPAGE_SHORTCUT       32773
@@ -270,6 +293,7 @@
 #define ID_MODE_SELECT                  32845
 #define ID_MODE_MAGNIFY                 32846
 #define ID_MODE_SELECT_RECT             32847
+#define ID_MODE_ZOOM_RECT               32848
 #define ID_FILE_EXPORT_TEXT             32850
 #define ID_CHECK_FOR_UPDATE             32852
 #define ID_DISPLAY_COLOR                32854
@@ -304,14 +328,22 @@
 #define ID_ZOOM_TO_SELECTION            33144
 #define ID_VIEW_SIDEBAR                 33145
 #define ID_FILE_INSTALL                 33146
+#define ID_DICTIONARY_NEXT              33147
+#define ID_DICTIONARY_PREV              33148
+#define ID_DICTIONARY_INFO              33149
+#define ID_DICTIONARY_LOOKUP            33150
+#define ID_VIEW_DICTBAR                 33151
+#define ID_FOCUS_TO_LOOKUP              33152
+#define ID_BOOKMARK_MOVEUP              33153
+#define ID_BOOKMARK_MOVEDOWN            33154
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        291
-#define _APS_NEXT_COMMAND_VALUE         33147
-#define _APS_NEXT_CONTROL_VALUE         1085
-#define _APS_NEXT_SYMED_VALUE           115
+#define _APS_NEXT_RESOURCE_VALUE        300
+#define _APS_NEXT_COMMAND_VALUE         33156
+#define _APS_NEXT_CONTROL_VALUE         1098
+#define _APS_NEXT_SYMED_VALUE           116
 #endif
 #endif

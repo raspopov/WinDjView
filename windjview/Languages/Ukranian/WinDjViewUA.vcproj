@@ -64,7 +64,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG,AFX_RESOURCE_DLL,AFX_TARG_RUS"
-				Culture="1058"
+				Culture="1049"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -152,6 +152,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\res\dictbar.bmp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\res\DjVuDoc.ico"
 				>
 			</File>
@@ -165,6 +169,10 @@
 			</File>
 			<File
 				RelativePath="..\..\res\hand.cur"
+				>
+			</File>
+			<File
+				RelativePath="..\..\res\hourglass.bmp"
 				>
 			</File>
 			<File
@@ -233,6 +241,10 @@
 			</File>
 			<File
 				RelativePath="..\..\res\WinDjView.rc2"
+				>
+			</File>
+			<File
+				RelativePath="..\..\res\zoom_rect.cur"
 				>
 			</File>
 		</Filter>
