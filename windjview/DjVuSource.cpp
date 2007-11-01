@@ -561,7 +561,7 @@ void DocSettings::Load(const XMLNode& node)
 	node.GetIntAttribute(pszAttrRotate, nRotate);
 
 	int nFirstPage;
-	if (node.GetIntAttribute(pszAttrStartPage, nFirstPage))
+	if (node.GetIntAttribute(pszAttrFirstPage, nFirstPage))
 		bFirstPageAlone = (nFirstPage != 0);
 
 	pageSettings.clear();
