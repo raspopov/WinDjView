@@ -181,7 +181,8 @@ GUTF8String Annotation::GetXML() const
 	strEnd.Format(_T("\" >\n%s</%s>\n"), strRects, pszTagAnnotation);
 
 	return MakeUTF8String(strBegin) + strComment.toEscaped() + "\" "
-		+ GUTF8String(pszAttrURL) + "=\"" + strURL.toEscaped() + MakeUTF8String(strEnd);
+		+ GUTF8String(reinterpret_cast<const unsigned short*>(pszAttrURL)) + "=\""
+		+ strURL.toEscaped() + MakeUTF8String(strEnd);
 }
 
 void Annotation::Load(const XMLNode& node)
@@ -560,7 +561,7 @@ void DocSettings::Load(const XMLNode& node)
 	node.GetIntAttribute(pszAttrRotate, nRotate);
 
 	int nFirstPage;
-	if (node.GetIntAttribute(pszAttrStartPage, nFirstPage))
+	if (node.GetIntAttribute(pszAttrFirstPage, nFirstPage))
 		bFirstPageAlone = (nFirstPage != 0);
 
 	pageSettings.clear();
@@ -848,10 +849,9 @@ DjVuSource* DjVuSource::FromFile(const CString& strFileName)
 
 	CFile file;
 	if (!file.Open(pszName, CFile::modeRead | CFile::shareDenyWrite))
-	{
 		return NULL;
-	}
-	int nLength = min(file.GetLength(), 0x40000);
+
+	int nLength = static_cast<int>(min(file.GetLength(), 0x40000));
 	LPBYTE pBuf = new BYTE[nLength];
 	file.Read(pBuf, nLength);
 	file.Close();

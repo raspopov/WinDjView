@@ -510,8 +510,9 @@ GUTF8String ReadExcelPageIndex(LPCTSTR pszFileName)
 				varOption, varOption, varOption, varOption);
 		Excel::_WorksheetPtr pSheet = pBook->Sheets->Item[1L];
 
-		Excel::RangePtr pRange = pSheet->GetRange(_bstr_t("A1"), _bstr_t("D16384"));
-		for (long nRow = 1; nRow < 16384; ++nRow)
+		Excel::RangePtr pRange = pSheet->GetRange(_bstr_t("A1"), _bstr_t("D65536"));
+		int nRowCount = pSheet->UsedRange->Rows->Count;
+		for (long nRow = 1; nRow <= nRowCount; ++nRow)
 		{
 			_bstr_t bstrLevel(_variant_t(pRange->Item[nRow][1L]));
 			_bstr_t bstrFirst(_variant_t(pRange->Item[nRow][2L]));
@@ -618,8 +619,9 @@ GUTF8String ReadExcelCharMap(LPCTSTR pszFileName)
 				varOption, varOption, varOption, varOption);
 		Excel::_WorksheetPtr pSheet = pBook->Sheets->Item[1L];
 
-		Excel::RangePtr pRange = pSheet->GetRange(_bstr_t("A1"), _bstr_t("B16384"));
-		for (long nRow = 1; nRow < 16384; ++nRow, ++nCount)
+		Excel::RangePtr pRange = pSheet->GetRange(_bstr_t("A1"), _bstr_t("B65536"));
+		int nRowCount = pSheet->UsedRange->Rows->Count;
+		for (long nRow = 1; nRow <= nRowCount; ++nRow, ++nCount)
 		{
 			_bstr_t bstrFrom(_variant_t(pRange->Item[nRow][1L]));
 			_bstr_t bstrTo(_variant_t(pRange->Item[nRow][2L]));
