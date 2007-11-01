@@ -96,7 +96,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "WinDjViewUA"=.\Languages\Ukranian\WinDjViewUA.dsp - Package Owner=<4>
+Project: "WinDjViewUA"=.\Languages\Ukrainian\WinDjViewUA.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

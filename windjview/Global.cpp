@@ -222,33 +222,44 @@ GUTF8String MakeUTF8String(const CString& strText)
 	return utf8String;
 }
 
-int ReadUTF8Character(const char* s, int& nBytes)
+int ReadUTF8Character(const char* str, int& nBytes)
 {
-	unsigned char c = static_cast<unsigned char>(s[0]);
+	const unsigned char* s = reinterpret_cast<const unsigned char*>(str);
+	unsigned char c = s[0];
 
 	if (c < 0x80)
 	{
 		nBytes = 1;
 		return c;
 	}
-	else if (c < 0xc2)
+	else if (c < 0xC2)
 	{
 		return -1;
 	}
-	else if (c < 0xe0)
+	else if (c < 0xE0)
 	{
-		if (s[1] == 0 || !((s[1] ^ 0x80) < 0x40))
+		if (s[1] == 0 || (s[1] ^ 0x80) >= 0x40)
 			return -1;
 		nBytes = 2;
-		return ((s[0] & 0x1F) << 6) + (s[1] & 0x7F);
+		return ((s[0] & 0x1F) << 6) + (s[1] ^ 0x80);
 	}
-	else if (c < 0xf0)
+	else if (c < 0xF0)
 	{
-		if (s[1] == 0 || s[2] == 0 || !((s[1] ^ 0x80) < 0x40
-				&& (s[2] ^ 0x80) < 0x40 && (c >= 0xe1 || s[1] >= 0xa0)))
+		if (s[1] == 0 || s[2] == 0 || (s[1] ^ 0x80) >= 0x40
+				|| (s[2] ^ 0x80) >= 0x40 || (c < 0xE1 && s[1] < 0xA0))
 			return -1;
 		nBytes = 3;
-		return ((s[0] & 0xF) << 12) + ((s[1] & 0x7F) << 6) + (s[2] & 0x7F);
+		return ((s[0] & 0xF) << 12) + ((s[1] ^ 0x80) << 6) + (s[2] ^ 0x80);
+	}
+	else if (c < 0xF5)
+	{
+		if (s[1] == 0 || s[2] == 0 || s[3] == 0 || (s[1] ^ 0x80) >= 0x40
+				|| (s[2] ^ 0x80) >= 0x40 || (s[3] ^ 0x80) >= 0x40
+				|| (c < 0xF1 && s[1] < 0x90))
+			return -1;
+		nBytes = 4;
+		return ((s[0] & 0x07) << 18) + ((s[1] ^ 0x80) << 12) + ((s[2] ^ 0x80) << 6)
+				+ (s[3] ^ 0x80);
 	}
 	else
 	{

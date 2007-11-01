@@ -39,6 +39,22 @@ inline bool IsNameChar(int c)
 	return IsNameStart(c) || c >= '0' && c <= '9' || c == '-' || c == '.' || c == 0xb7;
 }
 
+inline void AppendChar(wstring& s, int c)
+{
+	if (s.length() == s.capacity())
+		s.reserve(s.length()*2 + 2); // Make room for at least two more characters
+	if (c <= 0xFFFF)
+	{
+		s.insert(s.end(), static_cast<wchar_t>(c));
+	}
+	else
+	{
+		int c1 = 0xD800 + ((c - 0x10000) >> 10);
+		int c2 = 0xDC00 + ((c - 0x10000) & 0x3FF);
+		s.insert(s.end(), static_cast<wchar_t>(c1));
+		s.insert(s.end(), static_cast<wchar_t>(c2));
+	}
+}
 
 XMLNode& XMLNode::operator=(const XMLNode& node)
 {
@@ -270,30 +286,45 @@ int XMLParser::nextChar()
 		return 0xA;
 	}
 	
-	if (cur < 0x20)
+	if (cur < 0xC2)
 		throw errIllegalCharacter;
 
-	if (cur < 0xe0)
+	if (cur < 0xE0)
 	{
 		if ((ch = in->rdbuf()->sbumpc()) == EOF)
 			throw errIllegalCharacter;
-		if (!((ch ^ 0x80) < 0x40))
+		if ((ch ^ 0x80) >= 0x40)
 			throw errIllegalCharacter;
 
-		cur = ((cur & 0x1F) << 6) + (ch & 0x7F);
+		cur = ((cur & 0x1F) << 6) + (ch ^ 0x80);
 		ch = in->rdbuf()->sbumpc();
 		return cur;
 	}
 
-	if (cur < 0xf0)
+	if (cur < 0xF0)
 	{
 		int next = in->rdbuf()->sbumpc();
 		if (next == EOF || (ch = in->rdbuf()->sbumpc()) == EOF)
 			throw errIllegalCharacter;
-		if (!((next ^ 0x80) < 0x40 && (ch ^ 0x80) < 0x40
-				&& (cur >= 0xe1 || next >= 0xa0)))
+		if ((next ^ 0x80) >= 0x40 || (ch ^ 0x80) >= 0x40
+				|| (cur < 0xE1 && next < 0xA0))
 			throw errIllegalCharacter;
-		cur = ((cur & 0xF) << 12) + ((next & 0x7F) << 6) + (ch & 0x7F);
+		cur = ((cur & 0xF) << 12) + ((next ^ 0x80) << 6) + (ch ^ 0x80);
+		ch = in->rdbuf()->sbumpc();
+		return cur;
+	}
+
+	if (cur < 0xF5)
+	{
+		int next = in->rdbuf()->sbumpc(), next2;
+		if (next == EOF || (next2 = in->rdbuf()->sbumpc()) == EOF
+				|| (ch = in->rdbuf()->sbumpc()) == EOF)
+			throw errIllegalCharacter;
+		if ((next ^ 0x80) >= 0x40 || (next2 ^ 0x80) >= 0x40 || (ch ^ 0x80) >= 0x40
+				|| (cur < 0xF1 && next < 0x90))
+			throw errIllegalCharacter;
+		cur = ((cur & 0x07) << 18) + ((next ^ 0x80) << 12) + ((next2 ^ 0x80) << 6)
+				+ (ch ^ 0x80);
 		ch = in->rdbuf()->sbumpc();
 		return cur;
 	}
@@ -313,9 +344,9 @@ void XMLParser::readName(wstring& name)
 		throw errNameExpected;
 
 	name.reserve(32);
-	name.insert(name.end(), static_cast<wchar_t>(cur));
+	AppendChar(name, cur);
 	while (IsNameChar(nextChar()))
-		name.insert(name.end(), static_cast<wchar_t>(cur));
+		AppendChar(name, cur);
 }
 
 void XMLParser::readText(wstring& text)
@@ -335,11 +366,11 @@ void XMLParser::readText(wstring& text)
 
 		if (cur == '&')
 		{
-			text.insert(text.end(), static_cast<wchar_t>(readCharEntity()));
+			AppendChar(text, readCharEntity());
 		}
 		else
 		{
-			text.insert(text.end(), static_cast<wchar_t>(cur));
+			AppendChar(text, cur);
 			nextChar();
 		}
 	}
@@ -359,7 +390,7 @@ int XMLParser::readCharEntity()
 			nextChar();
 
 			int c = 0;
-			while (c <= 0xFFFF && (cur >= '0' && cur <= '9' || cur >= 'a' && cur <= 'f' || cur >= 'A' && cur <= 'F'))
+			while (c <= 0x10FFFF && (cur >= '0' && cur <= '9' || cur >= 'a' && cur <= 'f' || cur >= 'A' && cur <= 'F'))
 			{
 				if (cur >= '0' && cur <= '9')
 					c = c*0x10 + (cur - '0');
@@ -371,7 +402,7 @@ int XMLParser::readCharEntity()
 				nextChar();
 			}
 
-			if (cur != ';' || c > 0xFFFF || c == 0)
+			if (cur != ';' || c > 0x10FFFF || c == 0)
 				throw errInvalidCharEntity;
 
 			nextChar();
@@ -380,13 +411,13 @@ int XMLParser::readCharEntity()
 		else
 		{
 			int c = 0;
-			while (c <= 0xFFFF && cur >= '0' && cur <= '9')
+			while (c <= 0x10FFFF && cur >= '0' && cur <= '9')
 			{
 				c = c*10 + (cur - '0');
 				nextChar();
 			}
 
-			if (cur != ';' || c > 0xFFFF || c == 0)
+			if (cur != ';' || c > 0x10FFFF || c == 0)
 				throw errInvalidCharEntity;
 
 			nextChar();
@@ -583,26 +614,22 @@ void XMLParser::readContents(XMLNode& node)
 		}
 		else 
 		{
-			wchar_t ch;
+			int ch;
 			if (cur != '&')
 			{
-				ch = static_cast<wchar_t>(cur);
+				ch = cur;
 				nextChar();
 			}
 			else
-				ch = static_cast<wchar_t>(readCharEntity());
+				ch = readCharEntity();
 
-			if (node.text.length() == node.text.capacity())
-				node.text.reserve((node.text.length() + 1) * 2);
-			node.text.insert(node.text.end(), ch);
+			AppendChar(node.text, ch);
 
 			if (node.childElements.empty() || node.childElements.back().nType != XMLNode::TEXT)
 				node.childElements.push_back(XMLNode(XMLNode::TEXT));
 
 			wstring& text = node.childElements.back().text;
-			if (text.length() == text.capacity())
-				text.reserve((text.length() + 1) * 2);
-			text.insert(text.end(), ch);
+			AppendChar(text, ch);
 		}
 	}
 

@@ -21,7 +21,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjViewRU", "Languages\Ru
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjViewTT", "Languages\Tatarish\WinDjViewTT.vcproj", "{CB04C5F9-BCE5-40B8-8CA5-35CA2F6690CA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjViewUA", "Languages\Ukranian\WinDjViewUA.vcproj", "{BA75E1E4-9272-481B-AF04-712FA08F9942}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjViewUA", "Languages\Ukrainian\WinDjViewUA.vcproj", "{BA75E1E4-9272-481B-AF04-712FA08F9942}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjViewZH_CN", "Languages\Chinese_Simplified\WinDjViewZH_CN.vcproj", "{11C256BD-3CA8-4DE4-9F93-46B02D628E21}"
 EndProject
