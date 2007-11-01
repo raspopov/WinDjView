@@ -628,8 +628,7 @@ void XMLParser::readContents(XMLNode& node)
 			if (node.childElements.empty() || node.childElements.back().nType != XMLNode::TEXT)
 				node.childElements.push_back(XMLNode(XMLNode::TEXT));
 
-			wstring& text = node.childElements.back().text;
-			AppendChar(text, ch);
+			AppendChar(node.childElements.back().text, ch);
 		}
 	}
 

@@ -262,9 +262,7 @@ int ReadUTF8Character(const char* str, int& nBytes)
 				+ (s[3] ^ 0x80);
 	}
 	else
-	{
 		return -1;
-	}
 }
 
 bool IsValidUTF8(const char* pszText)
