@@ -44,18 +44,18 @@
 //	End copyright notice for libmd5-rfc
 //
 //-----------------------------------------------------------------------------
-//	Base64 encoder/decoder implementation is based on modp_b64 library
-//	Begin copyright notice for modp_b64
+//	Base64 encoder/decoder implementation is based on stringencoders
+//	Begin copyright notice for stringencoders
 //	***************************************************************************
 //	MODP_B64 - High performance base64 encoder/decoder
-//	Version 1.3 -- 17-Mar-2006
-//	http://modp.com/release/base64
+//	http://code.google.com/p/stringencoders/
 //
-//	Copyright &copy; 2005, 2006  Nick Galbreath -- nickg [at] modp [dot] com
+//	Copyright &copy; 2005, 2006, 2007  Nick Galbreath -- nickg [at] modp [dot] com
 //	All rights reserved.
 //
 //	Redistribution and use in source and binary forms, with or without
-//	modification, are permitted provided that the following conditions are met:
+//	modification, are permitted provided that the following conditions are
+//	met:
 //
 //	  Redistributions of source code must retain the above copyright
 //	  notice, this list of conditions and the following disclaimer.
@@ -83,7 +83,7 @@
 //	This is the standard "new" BSD license:
 //	http://www.opensource.org/licenses/bsd-license.php
 //	***************************************************************************
-//	End copyright notice for modp_b64
+//	End copyright notice for stringencoders
 
 // $Id$
 
@@ -606,40 +606,40 @@ void MD5::Block(const void* data)
 void MD5::Append(const void *data, size_t len)
 {
 	ASSERT(state != NULL);
-    if (len == 0)
+	if (len == 0)
 		return;
 
 	const unsigned char* p = (unsigned char*) data;
 	size_t left = len;
 	size_t offset = (state->count[0] >> 3) & 63;
-    DWORD nbits = len << 3;
+	DWORD nbits = len << 3;
 
-    // Update the message length
-    state->count[1] += len >> 29;
-    state->count[0] += nbits;
-    if (state->count[0] < nbits)
+	// Update the message length
+	state->count[1] += len >> 29;
+	state->count[0] += nbits;
+	if (state->count[0] < nbits)
 		state->count[1]++;
 
-    // Process an initial partial block
-    if (offset)
-    {
+	// Process an initial partial block
+	if (offset)
+	{
 		size_t ncopy = min(64 - offset, len);
 
 		memcpy(state->buf + offset, p, ncopy);
 		if (offset + ncopy < 64)
-		    return;
+			return;
 
 		p += ncopy;
 		left -= ncopy;
 		Block(state->buf);
-    }
+	}
 
-    // Process full blocks
+	// Process full blocks
 	for (; left >= 64; left -= 64, p += 64)
 		Block(p);
 
-    // Process a final partial block
-    if (left)
+	// Process a final partial block
+	if (left)
 		memcpy(state->buf, p, left);
 }
 
@@ -647,20 +647,20 @@ void MD5::Finish()
 {
 	ASSERT(state != NULL);
 
-    unsigned char data[8];
-    int i;
+	unsigned char data[8];
+	int i;
 
-    // Save the length before padding
-    for (i = 0; i < 8; ++i)
+	// Save the length before padding
+	for (i = 0; i < 8; ++i)
 		data[i] = static_cast<unsigned char>(state->count[i >> 2] >> ((i & 3) << 3));
 
-    // Pad to 56 bytes mod 64
-    Append(pad, ((55 - (state->count[0] >> 3)) & 63) + 1);
+	// Pad to 56 bytes mod 64
+	Append(pad, ((55 - (state->count[0] >> 3)) & 63) + 1);
 
-    // Append the length
-    Append(data, 8);
+	// Append the length
+	Append(data, 8);
 
-    for (i = 0; i < 16; ++i)
+	for (i = 0; i < 16; ++i)
 		md[i] = static_cast<unsigned char>(state->abcd[i >> 2] >> ((i & 3) << 3));
 
 	delete state;
@@ -882,115 +882,126 @@ static const UINT d3[256] =
 
 int modp_b64_encode(char* dest, const char* str, int len)
 {
-    int i;
-    BYTE* p = (BYTE*) dest;
+	int i;
+	const BYTE* s = (BYTE*) str;
+	BYTE* p = (BYTE*) dest;
 
-    /* unsigned here is important! */
-    BYTE t1, t2, t3;
+	/* unsigned here is important! */
+	DWORD t1, t2, t3;
 
-    for (i = 0; i < len - 2; i += 3) {
-        t1 = str[i]; t2 = str[i+1]; t3 = str[i+2];
-        *p++ = e0[t1];
-        *p++ = e1[((t1 & 0x03) << 4) | ((t2 >> 4) & 0x0F)];
-        *p++ = e1[((t2 & 0x0F) << 2) | ((t3 >> 6) & 0x03)];
-        *p++ = e1[t3];
-    }
+	for (i = 0; i < len - 2; i += 3)
+	{
+		t1 = s[i]; t2 = s[i + 1]; t3 = s[i + 2];
+		*p++ = e0[t1];
+		*p++ = e1[((t1 & 0x03) << 4) | ((t2 >> 4) & 0x0F)];
+		*p++ = e1[((t2 & 0x0F) << 2) | ((t3 >> 6) & 0x03)];
+		*p++ = e1[t3];
+	}
 
-    switch (len - i) {
-    case 0:
-        break;
-    case 1:
-        t1 = str[i];
-        *p++ = e0[t1];
-        *p++ = e1[(t1 & 0x03) << 4];
-        *p++ = CHARPAD;
-        *p++ = CHARPAD;
-        break;
-    default: // case 2
-        t1 = str[i];
-        t2 = str[i+1];
-        *p++ = e0[t1];
-        *p++ = e1[((t1 & 0x03) << 4) | ((t2 >> 4) & 0x0F)];
-        *p++ = e1[(t2 & 0x0F) << 2];
-        *p++ = CHARPAD;
-    }
+	switch (len - i)
+	{
+	case 0:
+		break;
+	case 1:
+		t1 = s[i];
+		*p++ = e0[t1];
+		*p++ = e1[(t1 & 0x03) << 4];
+		*p++ = CHARPAD;
+		*p++ = CHARPAD;
+		break;
+	default: // case 2
+		t1 = s[i]; t2 = s[i+1];
+		*p++ = e0[t1];
+		*p++ = e1[((t1 & 0x03) << 4) | ((t2 >> 4) & 0x0F)];
+		*p++ = e1[(t2 & 0x0F) << 2];
+		*p++ = CHARPAD;
+	}
 
-    *p = '\0';
-    return p - (BYTE*)dest;
+	*p = '\0';
+	return p - (BYTE*) dest;
 }
 
 int modp_b64_decode(char* dest, const char* src, int len)
 {
-    if (len == 0) return 0;
+	if (len == 0)
+		return 0;
 
 #ifdef DOPAD
-    // if padding is used, then the message must be at least
-    // 4 chars and be a multiple of 4
-    if (len < 4 || (len % 4 != 0)) return -1; // error
-    // there can be at most 2 pad chars at the end
-    if (src[len-1] == CHARPAD) {
-        len--;
-        if (src[len -1] == CHARPAD) {
-            len--;
-        }
-    }
+	// if padding is used, then the message must be at least
+	// 4 chars and be a multiple of 4
+	if (len < 4 || len % 4 != 0)
+		return -1; // error
+	// there can be at most 2 pad chars at the end
+	if (src[len - 1] == CHARPAD)
+	{
+		len--;
+		if (src[len - 1] == CHARPAD)
+			len--;
+	}
 #endif
 
-    int i;
-    int leftover = len % 4;
-    int chunks = (leftover == 0) ? len / 4 - 1 : len /4;
+	int i;
+	int leftover = len % 4;
+	int chunks = (leftover == 0) ? len / 4 - 1 : len / 4;
 
-    BYTE* p = (BYTE*) dest;
-    UINT x = 0;
-    UINT* destInt = (UINT*) p;
-    UINT* srcInt = (UINT*) src;
-    UINT y = *srcInt++;
-    for (i = 0; i < chunks; ++i) {
-        x = d0[y & 0xff] |
-            d1[(y >> 8) & 0xff] |
-            d2[(y >> 16) & 0xff] |
-            d3[(y >> 24) & 0xff];
+	BYTE* p = (BYTE*) dest;
+	UINT x = 0;
+	UINT* destInt = (UINT*) p;
+	UINT* srcInt = (UINT*) src;
+	UINT y = *srcInt++;
+	for (i = 0; i < chunks; ++i)
+	{
+		x = d0[y & 0xff] |
+			d1[(y >> 8) & 0xff] |
+			d2[(y >> 16) & 0xff] |
+			d3[(y >> 24) & 0xff];
 
-        if (x >= BADCHAR) return -1;
-        *destInt = x ;
-        p += 3;
-        destInt = (UINT*)p;
-        y = *srcInt++;}
+		if (x >= BADCHAR)
+			return -1;
+		*destInt = x;
+		p += 3;
+		destInt = (UINT*) p;
+		y = *srcInt++;
+	}
 
+	switch (leftover)
+	{
+	case 0:
+		x = d0[y & 0xff] |
+			d1[(y >> 8) & 0xff] |
+			d2[(y >> 16) & 0xff] |
+			d3[(y >> 24) & 0xff];
 
-    switch (leftover) {
-    case 0:
-        x = d0[y & 0xff] |
-            d1[(y >> 8) & 0xff] |
-            d2[(y >> 16) & 0xff] |
-            d3[(y >> 24) & 0xff];
+		if (x >= BADCHAR)
+			return -1;
+		*p++ = ((BYTE*) &x)[0];
+		*p++ = ((BYTE*) &x)[1];
+		*p = ((BYTE*) &x)[2];
+		return (chunks + 1)*3;
+		break;
+#ifndef DOPAD
+	case 1: // with padding this is an impossible case
+		x = d0[y & 0xff];
+		*p = *((BYTE*) &x); // i.e. first char/byte in int
+		break;
+#endif
+	case 2: // case 2, 1 output byte
+		x = d0[y & 0xff] | d1[(y >> 8) & 0xff];
+		*p = *((BYTE*) &x); // i.e. first char
+		break;
+	default: // case 3, 2 output bytes
+		x = d0[y & 0xff] |
+			d1[(y >> 8) & 0xff] |
+			d2[(y >> 16) & 0xff];  // 0x3c
+		*p++ = ((BYTE*) &x)[0];
+		*p = ((BYTE*) &x)[1];
+		break;
+	}
 
-        if (x >= BADCHAR) return -1;
-        *p++ =  ((BYTE*)(&x))[0];
-        *p++ =  ((BYTE*)(&x))[1];
-        *p =    ((BYTE*)(&x))[2];
-        return (chunks+1)*3;
-        break;
-    case 1:  // with padding this is an impossible case
-        x = d0[y & 0xff];
-        *p = *((BYTE*)(&x)); // i.e. first char/byte in int
-        break;
-    case 2: // case 2, 1  output byte
-        x = d0[y & 0xff] | d1[y >> 8 & 0xff];
-        *p = *((BYTE*)(&x)); // i.e. first char
-        break;
-    default: // case 3, 2 output bytes
-        x = d0[y & 0xff] |
-            d1[y >> 8 & 0xff ] |
-            d2[y >> 16 & 0xff];  // 0x3c
-        *p++ =  ((BYTE*)(&x))[0];
-        *p =  ((BYTE*)(&x))[1];
-        break;
-    }
+	if (x >= BADCHAR)
+		return -1;
 
-    if (x >= BADCHAR) return -1;
-
-    return 3*chunks + (6*leftover)/8;
+	return 3*chunks + (6*leftover)/8;
 }
 
 #define modp_b64_encode_len(A) (((A) + 2)/3*4 + 1)
@@ -998,22 +1009,21 @@ int modp_b64_decode(char* dest, const char* src, int len)
 
 string& Base64Encode(string& s)
 {
-    string x(modp_b64_encode_len(s.size()), '\0');
-    int d = modp_b64_encode(const_cast<char*>(x.data()), s.data(), s.size());
-    x.erase(d, std::string::npos);
-    s.swap(x);
-    return s;
+	string x(modp_b64_encode_len(s.size()), '\0');
+	int d = modp_b64_encode(const_cast<char*>(x.data()), s.data(), s.size());
+	x.erase(d, std::string::npos);
+	s.swap(x);
+	return s;
 }
 
 string& Base64Decode(string& s)
 {
-    string x(modp_b64_decode_len(s.size()), '\0');
-    int d = modp_b64_decode(const_cast<char*>(x.data()), s.data(), s.size());
-    if (d < 0) {
-        x.erase();
-    } else {
-        x.erase(d, string::npos);
-    }
-    s.swap(x);
-    return s;
+	string x(modp_b64_decode_len(s.size()), '\0');
+	int d = modp_b64_decode(const_cast<char*>(x.data()), s.data(), s.size());
+	if (d < 0)
+		x.erase();
+	else
+		x.erase(d, string::npos);
+	s.swap(x);
+	return s;
 }
