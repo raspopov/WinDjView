@@ -2,10 +2,10 @@ WinDjView changes history
 Copyright (C) 2004-2007 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 0.5.1 (2007-):
+Changes in version 0.5.1 (2007-??-??):
 + Added support for Unicode Supplementary Planes in contents and index.
 * Fixed saving "First page alone" setting for every document.
-* Fixed crash in maginfy tool after rotating the image.
+* Fixed crash in maginfy tool after rotating the page.
 * Fixed crash when compiled with Visual Studio 2005.
 
 Changes in version 0.5 (2007-05-30):
