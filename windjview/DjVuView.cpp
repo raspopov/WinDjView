@@ -3931,6 +3931,7 @@ void CDjVuView::OnExportPage(UINT nID)
 			delete pNewBitmap;
 		}
 
+		pBitmap->SetDPI(page.info.nDPI);
 		pBitmap->Save(strFileName);
 	}
 	else
@@ -5003,6 +5004,10 @@ void CDjVuView::OnEditCopy()
 	}
 	else
 	{
+		Page& page = m_pages[m_nSelectionPage];
+		if (!page.info.bDecoded)
+			page.Init(m_pSource, m_nSelectionPage);
+
 		GP<DjVuImage> pImage = m_pSource->GetPage(m_nSelectionPage, NULL);
 		if (pImage == NULL)
 		{
@@ -5010,7 +5015,7 @@ void CDjVuView::OnEditCopy()
 		}
 		else
 		{
-			CSize size = m_pages[m_nSelectionPage].GetSize(m_nRotate);
+			CSize size = page.GetSize(m_nRotate);
 			CDIB* pBitmap = CRenderThread::Render(pImage, size, m_displaySettings, m_nDisplayMode, m_nRotate);
 
 			CRect rcCrop = TranslatePageRect(m_nSelectionPage, m_rcSelection, false);
@@ -5035,6 +5040,7 @@ void CDjVuView::OnEditCopy()
 					delete pNewBitmap;
 				}
 
+				pBitmap->SetDPI(page.info.nDPI);
 				HGLOBAL hData = pBitmap->SaveToMemory();
 				if (hData != NULL)
 					SetClipboardData(CF_DIB, hData);

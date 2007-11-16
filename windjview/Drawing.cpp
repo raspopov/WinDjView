@@ -87,8 +87,9 @@ CDIB* RenderPixmap(GPixmap& pm, const CRect& rcClip, const CDisplaySettings& dis
 	ASSERT((int)pm.columns() >= rcClip.right && (int)pm.rows() >= rcClip.bottom);
 
 	BITMAPINFOHEADER bmih;
+	ZeroMemory(&bmih, sizeof(bmih));
 
-	bmih.biSize = sizeof(BITMAPINFOHEADER);
+	bmih.biSize = sizeof(bmih);
 	bmih.biWidth = rcClip.Width();
 	bmih.biHeight = rcClip.Height();
 	bmih.biBitCount = 24;
@@ -155,12 +156,13 @@ CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip, const CDisplaySettings& dis
 	LPBITMAPINFO pBMI;
 
 	int nPaletteEntries = bm.get_grays();
+	int nSize = sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)*nPaletteEntries;
 
-	pBMI = (LPBITMAPINFO)malloc(
-		sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)*nPaletteEntries);
+	pBMI = (LPBITMAPINFO) malloc(nSize);
+	ZeroMemory(pBMI, nSize);
+
 	BITMAPINFOHEADER& bmih = pBMI->bmiHeader;
-
-	bmih.biSize = sizeof(BITMAPINFOHEADER);
+	bmih.biSize = sizeof(bmih);
 	bmih.biWidth = rcClip.Width();
 	bmih.biHeight = rcClip.Height();
 	bmih.biBitCount = 8;
@@ -225,10 +227,11 @@ CDIB* RenderBitmap(GBitmap& bm, const CRect& rcClip, const CDisplaySettings& dis
 
 CDIB* RenderEmpty(const CSize& szBitmap, const CDisplaySettings& displaySettings)
 {
-	LPBITMAPINFO pBMI = (LPBITMAPINFO)malloc(
-		sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD));
-	BITMAPINFOHEADER& bmih = pBMI->bmiHeader;
+	int nSize = sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD);
+	LPBITMAPINFO pBMI = (LPBITMAPINFO) malloc(nSize);
+	ZeroMemory(pBMI, nSize);
 
+	BITMAPINFOHEADER& bmih = pBMI->bmiHeader;
 	bmih.biSize = sizeof(BITMAPINFOHEADER);
 	bmih.biWidth = szBitmap.cx;
 	bmih.biHeight = szBitmap.cy;
@@ -306,9 +309,6 @@ void CDIB::Create(const BITMAPINFO* pBMI)
 	BITMAPINFOHEADER& bmih = m_pBMI->bmiHeader;
 	bmih.biPlanes = 1;
 	bmih.biSizeImage = 0;
-	bmih.biXPelsPerMeter = 0;
-	bmih.biYPelsPerMeter = 0;
-	bmih.biClrImportant = 0;
 
 	HBITMAP hBitmap = ::CreateDIBSection(NULL,
 		m_pBMI, DIB_RGB_COLORS, (VOID**)&m_pBits, NULL, 0);
@@ -372,10 +372,11 @@ void CDIB::Create(CDIB* pSource, int nBitCount)
 	else
 		nPaletteEntries = 0;
 
-	LPBITMAPINFO pBMI = (LPBITMAPINFO)malloc(
-		sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)*nPaletteEntries);
-	BITMAPINFOHEADER& bmih = pBMI->bmiHeader;
+	int nSize = sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)*nPaletteEntries;
+	LPBITMAPINFO pBMI = (LPBITMAPINFO) malloc(nSize);
+	ZeroMemory(pBMI, nSize);
 
+	BITMAPINFOHEADER& bmih = pBMI->bmiHeader;
 	bmih.biSize = sizeof(BITMAPINFOHEADER);
 	bmih.biWidth = pSource->m_pBMI->bmiHeader.biWidth;
 	bmih.biHeight = pSource->m_pBMI->bmiHeader.biHeight;
@@ -412,6 +413,7 @@ CDIB* CDIB::CreateDIB(CDIB* pSource, int nBitCount)
 CDIB* CDIB::CreateDIB(int nWidth, int nHeight, int nBitCount)
 {
 	BITMAPINFOHEADER bmih;
+	ZeroMemory(&bmih, sizeof(bmih));
 
 	bmih.biSize = sizeof(BITMAPINFOHEADER);
 	bmih.biWidth = nWidth;
@@ -441,13 +443,11 @@ CDIB* CDIB::Crop(const CRect& rcCrop)
 {
 	ASSERT(m_pBits != NULL);
 
-	int nPaletteEntries = m_pBMI->bmiHeader.biClrUsed;
+	UINT nSize = sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)*m_pBMI->bmiHeader.biClrUsed;
+	LPBITMAPINFO pBMI = (LPBITMAPINFO) malloc(nSize);
+	memcpy(pBMI, m_pBMI, nSize);
 
-	LPBITMAPINFO pBMI = (LPBITMAPINFO)malloc(
-		sizeof(BITMAPINFOHEADER) + nPaletteEntries*sizeof(RGBQUAD));
 	BITMAPINFOHEADER& bmih = pBMI->bmiHeader;
-
-	memcpy(pBMI, m_pBMI, sizeof(BITMAPINFOHEADER) + nPaletteEntries*sizeof(RGBQUAD));
 	bmih.biWidth = rcCrop.Width();
 	bmih.biHeight = rcCrop.Height();
 
@@ -518,6 +518,13 @@ void CDIB::DrawDC(CDC* pDC, const CPoint& ptOffset, const CRect& rcPart)
 		&dcSrc, rcPart.left, rcPart.top, SRCCOPY);
 
 	dcSrc.SelectObject(pOldBmpSrc);
+}
+
+void CDIB::SetDPI(int nDPI)
+{
+	ASSERT(m_pBMI != NULL);
+	m_pBMI->bmiHeader.biXPelsPerMeter = static_cast<int>(nDPI/0.0254);
+	m_pBMI->bmiHeader.biYPelsPerMeter = static_cast<int>(nDPI/0.0254);
 }
 
 void CDIB::Save(LPCTSTR pszPathName) const

@@ -47,6 +47,7 @@ public:
 
 	CDIB* ReduceColors();
 	CDIB* Crop(const CRect& rcCrop);
+	void SetDPI(int nDPI);
 	void Save(LPCTSTR pszPathName) const;
 	HGLOBAL SaveToMemory() const;
 
