@@ -83,16 +83,18 @@ private:
 	int cur;
 
 	int nextChar();
+	int readReference();
+
 	void pushBack(int c);
 	vector<int> pushed;
 
 	void skipWhitespace();
 	void readName(wstring& name);
-	void readText(wstring& text);
-	int readCharEntity();
+	void readAttrValue(wstring& text);
 	void readTag(XMLNode& node);
 	void readContents(XMLNode& node);
 
+	bool skipString(const char* s);
 	bool skipPI();
 	bool skipComment();
 };

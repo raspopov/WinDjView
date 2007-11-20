@@ -39,6 +39,12 @@ inline bool IsNameChar(int c)
 	return IsNameStart(c) || c >= '0' && c <= '9' || c == '-' || c == '.' || c == 0xb7;
 }
 
+inline bool IsValidChar(int c)
+{
+	return c == 0x9 || 0xA || c == 0xD || c >= 0x20 && c <= 0xD7FF
+			|| c >= 0xE000 && c <= 0xFFFD || c >= 0x10000 && c <= 0x10FFFF;
+}
+
 inline void AppendChar(wstring& s, int c)
 {
 	if (s.length() == s.capacity())
@@ -214,12 +220,14 @@ const int errTagExpected = 5;
 const int errUnexpectedEOF = 6;
 const int errMissingClosingTag = 7;
 const int errInvalidTrailer = 8;
-const int errInvalidCharEntity = 9;
-const int errInvalidClosingTag = 10;
-const int errInvalidComment = 11;
-const int errInvalidTag = 12;
-const int errInvalidPI = 13;
-const int errInvalidAttrValue = 14;
+const int errInvalidReference = 9;
+const int errInvalidCharRef = 10;
+const int errInvalidEntityRef = 11;
+const int errInvalidClosingTag = 12;
+const int errInvalidComment = 13;
+const int errInvalidTag = 14;
+const int errInvalidPI = 15;
+const int errInvalidAttrValue = 16;
 
 bool XMLParser::Parse(istream& in_)
 {
@@ -249,8 +257,9 @@ bool XMLParser::Parse(istream& in_)
 
 		m_bValid = true;
 	}
-	catch (int)
+	catch (int e)
 	{
+		TRACE("Invalid XML: %d\n", e);
 		m_bValid = false;
 	}
 
@@ -349,14 +358,13 @@ void XMLParser::readName(wstring& name)
 		AppendChar(name, cur);
 }
 
-void XMLParser::readText(wstring& text)
+void XMLParser::readAttrValue(wstring& text)
 {
-	if (cur != '\'' && cur != '\"')
+	if (cur != '\"')
 		throw errAttrValueExpected;
 
-	int quote = cur;
 	nextChar();
-	while (cur != quote)
+	while (cur != '\"')
 	{
 		if (cur == EOF)
 			throw errUnexpectedEOF;
@@ -366,7 +374,7 @@ void XMLParser::readText(wstring& text)
 
 		if (cur == '&')
 		{
-			AppendChar(text, readCharEntity());
+			AppendChar(text, readReference());
 		}
 		else
 		{
@@ -378,10 +386,10 @@ void XMLParser::readText(wstring& text)
 	nextChar();
 }
 
-int XMLParser::readCharEntity()
+int XMLParser::readReference()
 {
 	if (cur != '&')
-		throw errInvalidCharEntity;
+		throw errInvalidReference;
 
 	if (nextChar() == '#')
 	{
@@ -402,8 +410,8 @@ int XMLParser::readCharEntity()
 				nextChar();
 			}
 
-			if (cur != ';' || c > 0x10FFFF || c == 0)
-				throw errInvalidCharEntity;
+			if (cur != ';' || !IsValidChar(c))
+				throw errInvalidCharRef;
 
 			nextChar();
 			return c;
@@ -417,8 +425,8 @@ int XMLParser::readCharEntity()
 				nextChar();
 			}
 
-			if (cur != ';' || c > 0x10FFFF || c == 0)
-				throw errInvalidCharEntity;
+			if (cur != ';' || !IsValidChar(c))
+				throw errInvalidCharRef;
 
 			nextChar();
 			return c;
@@ -432,7 +440,10 @@ int XMLParser::readCharEntity()
 		while (nextChar() != ';' && length < 4)
 			buf[length++] = static_cast<char>(cur);
 
+		if (cur != ';')
+			throw errInvalidEntityRef;
 		nextChar();
+
 		if (strncmp(buf, "lt", length) == 0)
 			return '<';
 		else if (strncmp(buf, "gt", length) == 0)
@@ -444,7 +455,7 @@ int XMLParser::readCharEntity()
 		else if (strncmp(buf, "apos", length) == 0)
 			return '\'';
 		else
-			throw errInvalidCharEntity;
+			throw errInvalidEntityRef;
 	}
 }
 
@@ -454,33 +465,41 @@ void XMLParser::pushBack(int c)
 	cur = c;
 }
 
-bool XMLParser::skipPI()
+bool XMLParser::skipString(const char* s)
 {
-	if (cur != '<')
-		return false;
-
-	if (nextChar() != '?' && cur != '!')
+	for (const char* p = s; *p != '\0'; ++p)
 	{
-		pushBack('<');
-		return false;
+		if (cur != *p)
+		{
+			for (const char* r = p - 1; r >= s; --r)
+				pushBack(*r);
+			return false;
+		}
+
+		nextChar();
 	}
 
-	nextChar();
+	return true;
+}
+
+bool XMLParser::skipPI()
+{
+	if (!skipString("<?"))
+		return false;
+
 	for (;;)
 	{
 		if (cur == EOF)
 		{
 			throw errUnexpectedEOF;
 		}
-		else if (cur == '>')
+		else if (cur == '?')
 		{
-			nextChar();
-			return true;
-		}
-		else if (cur == '<')
-		{
-			if (!skipPI() && !skipComment())
-				throw errInvalidPI;
+			if (nextChar() == '>')
+			{
+				nextChar();
+				return true;
+			}
 		}
 		else
 		{
@@ -491,26 +510,12 @@ bool XMLParser::skipPI()
 
 bool XMLParser::skipComment()
 {
-	if (cur != '<')
+	if (!skipString("<!--"))
 		return false;
-
-	if (nextChar() != '-')
-	{
-		pushBack('<');
-		return false;
-	}
-
-	if (nextChar() != '-')
-	{
-		pushBack('-');
-		pushBack('<');
-		return false;
-	}
 
 	int buf[2];
 	int count = 0;
 
-	nextChar();
 	while (cur != EOF)
 	{
 		if (count > 1 && buf[0] == '-' && buf[1] == '-')
@@ -528,7 +533,7 @@ bool XMLParser::skipComment()
 		nextChar();
 	}
 
-	throw 4;
+	throw errUnexpectedEOF;
 }
 
 void XMLParser::readTag(XMLNode& node)
@@ -549,7 +554,7 @@ void XMLParser::readTag(XMLNode& node)
 			throw errEqualsExpected;
 		nextChar();
 		skipWhitespace();
-		readText(node.attributes[attr]);
+		readAttrValue(node.attributes[attr]);
 		skipWhitespace();
 	}
 
@@ -621,7 +626,7 @@ void XMLParser::readContents(XMLNode& node)
 				nextChar();
 			}
 			else
-				ch = readCharEntity();
+				ch = readReference();
 
 			AppendChar(node.text, ch);
 

@@ -681,6 +681,9 @@ void DictionaryInfo::ReadTitle(const GUTF8String& str, bool bEncoded)
 {
 	titleLoc.clear();
 
+	if (str.length() == 0)
+		return;
+
 	string strTemp = str;
 	if (bEncoded)
 		Base64Decode(strTemp);
@@ -697,6 +700,9 @@ void DictionaryInfo::ReadLangFrom(const GUTF8String& str, bool bEncoded)
 {
 	strLangFromCode = "";
 	langFromLoc.clear();
+
+	if (str.length() == 0)
+		return;
 
 	string strTemp = str;
 	if (bEncoded)
@@ -720,6 +726,9 @@ void DictionaryInfo::ReadLangTo(const GUTF8String& str, bool bEncoded)
 {
 	strLangToCode = "";
 	langToLoc.clear();
+
+	if (str.length() == 0)
+		return;
 
 	string strTemp = str;
 	if (bEncoded)
