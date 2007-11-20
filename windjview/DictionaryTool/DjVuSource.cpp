@@ -1179,6 +1179,8 @@ PageInfo DjVuSource::ReadPageInfo(int nPage, bool bNeedText, bool bNeedAnno)
 			return pageInfo;
 		}
 
+		bool bHasIW44 = false;
+
 		// Find chunk with page info
 		while (iff->get_chunk(chkid) != 0)
 		{
@@ -1199,8 +1201,10 @@ PageInfo DjVuSource::ReadPageInfo(int nPage, bool bNeedText, bool bNeedAnno)
 				if ((pInfo->orientation & 1) != 0)
 					swap(pageInfo.szPage.cx, pageInfo.szPage.cy);
 			}
-			else if (chkid == "PM44" || chkid == "BM44")
+			else if (!bHasIW44 && (chkid == "PM44" || chkid == "BM44"))
 			{
+				bHasIW44 = true;
+
 				// Get image dimensions and resolution from bitmap chunk
 				UINT serial = chunk_stream->read8();
 				UINT slices = chunk_stream->read8();
