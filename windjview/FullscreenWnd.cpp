@@ -91,14 +91,15 @@ void CFullscreenWnd::Hide()
 		m_pOwner->UpdatePageInfoFrom(m_pView);
 		m_pOwner->CopyBitmapsFrom(m_pView, true);
 
+		m_pOwner->GoToPage(nPage, CDjVuView::DoNotAdd);
+
 		// Detach view from the document before destroying
 		m_pView->SetDocument(NULL);
 		m_pView->DestroyWindow();
 
-		m_pOwner->GoToPage(nPage, CDjVuView::DoNotAdd);
 		m_pOwner->ResumeDecoding();
 
-		CThumbnailsView* pThumbnails = ((CChildFrame*)m_pOwner->GetParentFrame())->GetThumbnailsView();
+		CThumbnailsView* pThumbnails = ((CChildFrame*) m_pOwner->GetParentFrame())->GetThumbnailsView();
 		if (pThumbnails != NULL)
 			pThumbnails->ResumeDecoding();
 
@@ -183,7 +184,8 @@ BOOL CFullscreenWnd::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERI
 		CPushRoutingFrame push((CFrameWnd*) this);
 
 		// Send commands to the view
-		if (m_pView != NULL && m_pView->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+		if (m_pView != NULL && ::IsWindow(m_pView->m_hWnd)
+				&& m_pView->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
 			return true;
 
 		if (CWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
