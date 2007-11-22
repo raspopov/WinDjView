@@ -35,8 +35,8 @@ public:
 	CBookmarksWnd(DjVuSource* pSource);
 	virtual ~CBookmarksWnd();
 
-	void InitBookmarks();
-	void InitCustomBookmarks();
+	void LoadContents();
+	void LoadUserBookmarks();
 	void AddBookmark(Bookmark& bookmark);
 	void EnableEditing(bool bEnable = true) { m_bEnableEditing = bEnable; }
 
@@ -49,7 +49,7 @@ protected:
 	bool m_bEnableEditing;
 
 	void GoToBookmark(HTREEITEM hItem);
-	void InitBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks,
+	void AddBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks,
 		HTREEITEM hParent, GPosition& pos, int nCount);
 	HTREEITEM AddBookmark(Bookmark& bookmark, HTREEITEM hParent);
 	void DeleteBookmark(TreeNode* pNode);

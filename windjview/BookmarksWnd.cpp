@@ -80,18 +80,18 @@ void CBookmarksWnd::OnDestroy()
 	CMyTreeCtrl::OnDestroy();
 }
 
-void CBookmarksWnd::InitBookmarks()
+void CBookmarksWnd::LoadContents()
 {
 	BeginBatchUpdate();
 
-	const GPList<DjVmNav::DjVuBookMark>& bookmarks = m_pSource->GetBookmarks()->getBookMarkList();
+	const GPList<DjVmNav::DjVuBookMark>& bookmarks = m_pSource->GetContents()->getBookMarkList();
 	GPosition pos = bookmarks;
-	InitBookmarks(bookmarks, TVI_ROOT, pos, bookmarks.size());
+	AddBookmarks(bookmarks, TVI_ROOT, pos, bookmarks.size());
 
 	EndBatchUpdate();
 }
 
-void CBookmarksWnd::InitCustomBookmarks()
+void CBookmarksWnd::LoadUserBookmarks()
 {
 	BeginBatchUpdate();
 
@@ -104,7 +104,7 @@ void CBookmarksWnd::InitCustomBookmarks()
 	EndBatchUpdate();
 }
 
-void CBookmarksWnd::InitBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks,
+void CBookmarksWnd::AddBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks,
 	HTREEITEM hParent, GPosition& pos, int nCount)
 {
 	for (int i = 0; i < nCount && !!pos; ++i)
@@ -121,7 +121,7 @@ void CBookmarksWnd::InitBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks
 
 		SetItemData(hItem, (DWORD_PTR)&info);
 
-		InitBookmarks(bookmarks, hItem, ++pos, bm->count);
+		AddBookmarks(bookmarks, hItem, ++pos, bm->count);
 	}
 }
 

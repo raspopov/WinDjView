@@ -53,9 +53,9 @@ public:
 	bool IsNavPaneCollapsed() const;
 
 	CThumbnailsView* GetThumbnailsView() { return m_pThumbnailsView; }
-	CBookmarksWnd* GetBookmarks() { return m_pBookmarksWnd; }
+	CBookmarksWnd* GetContents() { return m_pContentsWnd; }
 	CPageIndexWnd* GetPageIndex() { return m_pPageIndexWnd; }
-	CBookmarksWnd* GetCustomBookmarks(bool bActivate = true);
+	CBookmarksWnd* GetBookmarks(bool bActivate = true);
 	CSearchResultsView* GetSearchResults(bool bActivate = true);
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
@@ -85,8 +85,8 @@ protected:
 	CMySplitterWnd m_wndSplitter;
 //	CSplitterWnd m_wndDynSplitter;
 	CThumbnailsView* m_pThumbnailsView;
+	CBookmarksWnd* m_pContentsWnd;
 	CBookmarksWnd* m_pBookmarksWnd;
-	CBookmarksWnd* m_pCustomBookmarksWnd;
 	CSearchResultsView* m_pResultsView;
 	CPageIndexWnd* m_pPageIndexWnd;
 

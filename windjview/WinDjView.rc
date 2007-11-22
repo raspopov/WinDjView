@@ -888,7 +888,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_BOOKMARKS_TAB       "Contents"
+    IDS_CONTENTS_TAB        "Contents"
     IDS_ASSOCIATE_SUCCESSFUL 
                             "Now you will be able to open .djvu and .djv files with WinDjView\nby double-clicking them in the Explorer."
     IDS_ASSOCIATE_FAILED    "An error occurred while trying to register file associations.\nYou may not have enough permissions to write to system registry."
@@ -1052,7 +1052,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_CUSTOM_BOOKMARKS_TAB "Bookmarks"
+    IDS_BOOKMARKS_TAB       "Bookmarks"
     IDS_BOOKMARK_MORE       "Book&mark >>"
     IDS_BOOKMARK_LESS       "Book&mark <<"
     IDS_UNITS_FULL          "Centimeters,Millimeters,Inches"

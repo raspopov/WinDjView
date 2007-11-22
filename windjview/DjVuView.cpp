@@ -680,6 +680,26 @@ CMainFrame* CDjVuView::GetMainFrame() const
 	return GetMainWnd();
 }
 
+CBookmarksWnd* CDjVuView::GetBookmarks() const
+{
+	CFrameWnd* pFrame;
+	if (m_nType == Fullscreen)
+	{
+		pFrame = ((CFullscreenWnd*) GetTopLevelParent())->GetOwner()->GetParentFrame();
+	}
+	else if (m_nType == Magnify)
+	{
+		pFrame = ((CMagnifyWnd*) GetTopLevelParent())->GetOwner()->GetParentFrame();
+	}
+	else
+	{
+		ASSERT(m_nType == Normal);
+		pFrame = GetParentFrame();
+	}
+
+	return ((CChildFrame*) pFrame)->GetBookmarks();
+}
+
 BOOL CDjVuView::OnEraseBkgnd(CDC* pDC)
 {
 	return true;
@@ -5990,20 +6010,7 @@ void CDjVuView::OnHighlight(UINT nID)
 
 		m_pSource->GetSettings()->bookmarks.push_back(bookmark);
 		Bookmark& bmNew = m_pSource->GetSettings()->bookmarks.back();
-
-		CFrameWnd* pFrame;
-		if (m_nType == Fullscreen)
-		{
-			pFrame = ((CFullscreenWnd*) GetTopLevelParent())->GetOwner()->GetParentFrame();
-		}
-		else
-		{
-			ASSERT(m_nType == Normal);
-			pFrame = GetParentFrame();
-		}
-
-		CBookmarksWnd* pBookmarkWnd = ((CChildFrame*) pFrame)->GetCustomBookmarks();
-		pBookmarkWnd->AddBookmark(bmNew);
+		GetBookmarks()->AddBookmark(bmNew);
 	}
 }
 
@@ -6090,20 +6097,7 @@ void CDjVuView::OnAddBookmark()
 
 		m_pSource->GetSettings()->bookmarks.push_back(bookmark);
 		Bookmark& bmNew = m_pSource->GetSettings()->bookmarks.back();
-
-		CFrameWnd* pFrame;
-		if (m_nType == Fullscreen)
-		{
-			pFrame = ((CFullscreenWnd*) GetTopLevelParent())->GetOwner()->GetParentFrame();
-		}
-		else
-		{
-			ASSERT(m_nType == Normal);
-			pFrame = GetParentFrame();
-		}
-
-		CBookmarksWnd* pBookmarkWnd = ((CChildFrame*) pFrame)->GetCustomBookmarks();
-		pBookmarkWnd->AddBookmark(bmNew);
+		GetBookmarks()->AddBookmark(bmNew);
 	}
 }
 

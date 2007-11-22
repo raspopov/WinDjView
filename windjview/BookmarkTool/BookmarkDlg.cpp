@@ -115,7 +115,7 @@ HCURSOR CBookmarkDlg::OnQueryDragIcon()
 
 void CBookmarkDlg::OnExportBookmarks()
 {
-	if (m_pSource->GetBookmarks() == NULL)
+	if (m_pSource->GetContents() == NULL)
 		return;
 
 	TCHAR szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szName[_MAX_FNAME], szExt[_MAX_EXT];
@@ -139,7 +139,7 @@ void CBookmarkDlg::OnExportBookmarks()
 	if (ExportBookmarks(strBookmarksFile) && !m_bHasBookmarksFile)
 	{
 		m_strBookmarksFile = strBookmarksFile;
-		m_pBookmarks = m_pSource->GetBookmarks();
+		m_pBookmarks = m_pSource->GetContents();
 		m_bHasBookmarksFile = true;
 		UpdateData(false);
 	}
@@ -174,7 +174,7 @@ bool CBookmarkDlg::OpenDocument(const CString& strFileName)
 		m_pSource = DjVuSource::FromFile(strFileName);
 		m_strDjVuFile = strFileName;
 
-		if (m_pSource->GetBookmarks() != NULL && m_nBookmarksAction == 2)
+		if (m_pSource->GetContents() != NULL && m_nBookmarksAction == 2)
 			m_nBookmarksAction = 0;
 
 		UpdateData(false);
@@ -523,8 +523,10 @@ HBRUSH CBookmarkDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 void CBookmarkDlg::OnKickIdle()
 {
-	GetDlgItem(IDC_EXPORT_BOOKMARKS)->EnableWindow(m_pSource != NULL && m_pSource->GetBookmarks() != NULL);
-	GetDlgItem(IDC_BOOKMARKS_REMOVE)->EnableWindow(m_pSource != NULL && m_pSource->GetBookmarks() != NULL);
+	GetDlgItem(IDC_EXPORT_BOOKMARKS)->EnableWindow(m_pSource != NULL
+			&& m_pSource->GetContents() != NULL);
+	GetDlgItem(IDC_BOOKMARKS_REMOVE)->EnableWindow(m_pSource != NULL
+			&& m_pSource->GetContents() != NULL);
 	GetDlgItem(IDC_SAVE)->EnableWindow(m_pSource != NULL);
 	GetDlgItem(IDC_SAVE_AS)->EnableWindow(m_pSource != NULL);
 
@@ -604,7 +606,7 @@ bool CBookmarkDlg::ExportBookmarks(const CString& strBookmarksFile)
 		return false;
 	}
 
-	out << m_pSource->GetBookmarks();
+	out << m_pSource->GetContents();
 
 	out.close();
 

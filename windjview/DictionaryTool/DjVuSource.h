@@ -229,7 +229,7 @@ public:
 	bool HasText() const { return m_bHasText; }
 	int GetPageFromId(const GUTF8String& strPageId) const;
 
-	GP<DjVmNav> GetBookmarks() { return m_pDjVuDoc->get_djvm_nav(); }
+	GP<DjVmNav> GetContents() { return m_pDjVuDoc->get_djvm_nav(); }
 	GP<DjVuDocument> GetDjVuDoc() { return m_pDjVuDoc; }
 
 	CString GetFileName() const { return m_strFileName; }

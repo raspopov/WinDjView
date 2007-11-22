@@ -55,8 +55,8 @@ END_MESSAGE_MAP()
 
 CChildFrame::CChildFrame()
 	: m_bCreated(false), m_bActivating(false), m_pThumbnailsView(NULL),
-	  m_pBookmarksWnd(NULL), m_pResultsView(NULL), m_bFirstShow(true),
-	  m_pCustomBookmarksWnd(NULL), m_pPageIndexWnd(NULL), m_nStartupPage(-1),
+	  m_pContentsWnd(NULL), m_pResultsView(NULL), m_bFirstShow(true),
+	  m_pBookmarksWnd(NULL), m_pPageIndexWnd(NULL), m_nStartupPage(-1),
 	  m_bLockingUpdate(false)
 {
 }
@@ -241,15 +241,15 @@ void CChildFrame::CreateNavPanes()
 	CDjVuView* pDjVuView = GetDjVuView();
 	DjVuSource* pSource = pDjVuView->GetDocument()->GetSource();
 
-	if (pSource->GetBookmarks() != NULL)
+	if (pSource->GetContents() != NULL)
 	{
-		m_pBookmarksWnd = new CBookmarksWnd(pSource);
-		m_pBookmarksWnd->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
+		m_pContentsWnd = new CBookmarksWnd(pSource);
+		m_pContentsWnd->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 			| TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP
 			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 1);
-		pNavPane->AddTab(LoadString(IDS_BOOKMARKS_TAB), m_pBookmarksWnd);
-		m_pBookmarksWnd->InitBookmarks();
-		m_pBookmarksWnd->AddObserver(pDjVuView);
+		pNavPane->AddTab(LoadString(IDS_CONTENTS_TAB), m_pContentsWnd);
+		m_pContentsWnd->LoadContents();
+		m_pContentsWnd->AddObserver(pDjVuView);
 	}
 
 	if (pSource->IsDictionary())
@@ -279,8 +279,8 @@ void CChildFrame::CreateNavPanes()
 
 	if (!pSource->GetSettings()->bookmarks.empty())
 	{
-		CBookmarksWnd* pBookmarks = GetCustomBookmarks(false);
-		pBookmarks->InitCustomBookmarks();
+		CBookmarksWnd* pBookmarks = GetBookmarks(false);
+		pBookmarks->LoadUserBookmarks();
 	}
 }
 
@@ -448,31 +448,31 @@ CSearchResultsView* CChildFrame::GetSearchResults(bool bActivate)
 	return m_pResultsView;
 }
 
-CBookmarksWnd* CChildFrame::GetCustomBookmarks(bool bActivate)
+CBookmarksWnd* CChildFrame::GetBookmarks(bool bActivate)
 {
 	CNavPaneWnd* pNavPane = GetNavPane();
 
-	if (m_pCustomBookmarksWnd == NULL)
+	if (m_pBookmarksWnd == NULL)
 	{
 		CDjVuView* pDjVuView = GetDjVuView();
 		DjVuSource* pSource = pDjVuView->GetDocument()->GetSource();
 
-		m_pCustomBookmarksWnd = new CBookmarksWnd(pSource);
-		m_pCustomBookmarksWnd->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
+		m_pBookmarksWnd = new CBookmarksWnd(pSource);
+		m_pBookmarksWnd->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 			| TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP
 			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 5);
-		pNavPane->AddTab(LoadString(IDS_CUSTOM_BOOKMARKS_TAB), m_pCustomBookmarksWnd);
-		m_pCustomBookmarksWnd->AddObserver(pDjVuView);
-		m_pCustomBookmarksWnd->EnableEditing();
+		pNavPane->AddTab(LoadString(IDS_BOOKMARKS_TAB), m_pBookmarksWnd);
+		m_pBookmarksWnd->AddObserver(pDjVuView);
+		m_pBookmarksWnd->EnableEditing();
 	}
 
 	if (bActivate)
 	{
-		pNavPane->ActivateTab(m_pCustomBookmarksWnd);
+		pNavPane->ActivateTab(m_pBookmarksWnd);
 		pNavPane->UpdateWindow();
 	}
 
-	return m_pCustomBookmarksWnd;
+	return m_pBookmarksWnd;
 }
 
 void CChildFrame::OnUpdate(const Observable* source, const Message* message)
@@ -484,11 +484,11 @@ void CChildFrame::OnUpdate(const Observable* source, const Message* message)
 		if (m_pThumbnailsView != NULL)
 			pNavPane->SetTabName(m_pThumbnailsView, LoadString(IDS_THUMBNAILS_TAB));
 
+		if (m_pContentsWnd != NULL)
+			pNavPane->SetTabName(m_pContentsWnd, LoadString(IDS_CONTENTS_TAB));
+
 		if (m_pBookmarksWnd != NULL)
 			pNavPane->SetTabName(m_pBookmarksWnd, LoadString(IDS_BOOKMARKS_TAB));
-
-		if (m_pCustomBookmarksWnd != NULL)
-			pNavPane->SetTabName(m_pCustomBookmarksWnd, LoadString(IDS_CUSTOM_BOOKMARKS_TAB));
 
 		if (m_pResultsView != NULL)
 			pNavPane->SetTabName(m_pResultsView, LoadString(IDS_SEARCH_RESULTS_TAB));

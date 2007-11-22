@@ -29,6 +29,7 @@
 class CMainFrame;
 class CPrintDlg;
 class CRenderThread;
+class CBookmarksWnd;
 
 inline bool IsStandardZoom(int nZoomType, double fZoom)
 {
@@ -53,6 +54,7 @@ public:
 	CDjVuDoc* GetDocument() const;
 	void SetDocument(CDjVuDoc* pDocument) { m_pDocument = pDocument; }
 	CMainFrame* GetMainFrame() const;
+	CBookmarksWnd* GetBookmarks() const;
 
 // Operations
 public:

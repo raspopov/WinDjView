@@ -42,7 +42,7 @@
 #define IDB_BOOKMARKS                   152
 #define IDB_DONATE                      153
 #define IDC_CURSOR_ZOOM_RECT            154
-#define IDS_BOOKMARKS_TAB               200
+#define IDS_CONTENTS_TAB                200
 #define IDS_ASSOCIATE_SUCCESSFUL        201
 #define IDS_ASSOCIATE_FAILED            202
 #define IDS_PAGE_INDEX_TAB              203
@@ -113,7 +113,7 @@
 #define IDS_FILL_TYPES                  269
 #define IDS_COLOR_PALETTE               270
 #define IDS_MORE_COLORS                 271
-#define IDS_CUSTOM_BOOKMARKS_TAB        272
+#define IDS_BOOKMARKS_TAB               272
 #define IDS_BOOKMARK_MORE               273
 #define IDS_BOOKMARK_LESS               274
 #define IDS_UNITS_FULL                  275
