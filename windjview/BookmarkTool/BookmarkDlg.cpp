@@ -543,7 +543,15 @@ ofstream& operator<<(ofstream& out, GP<DjVmNav> nav)
 	int nCount = nav->getBookMarkCount();
 
 	stack<int> count, cur;
-	count.push(nCount);
+
+	// The number of bookmarks in the current branch is stored in the 'count' stack,
+	// and the number of processed children is stored in the 'cur' stack.
+	// When the last bookmark from a branch is processed, the tops of the two stacks
+	// are popped, and '</ul>' tag is printed to close the branch. Since the number
+	// of top-level entries is not stored anywhere, we put a sufficiently large number
+	// into the root of the 'count' stack to ensure that it is always non-empty,
+	// and close the top-level branch separately after the main loop.
+	count.push(nCount + 1);
 	cur.push(0);
 
 	const GPList<DjVmNav::DjVuBookMark>& bookmarks = nav->getBookMarkList();
