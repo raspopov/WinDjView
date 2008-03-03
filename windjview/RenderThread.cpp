@@ -264,6 +264,7 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 	}
 	catch (GException&)
 	{
+		return NULL;
 	}
 	catch (...)
 	{
@@ -291,6 +292,10 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 			pGBitmap = RescalePnm(pGBitmap, size.cx, size.cy);
 
 		pBitmap = RenderBitmap(*pGBitmap, displaySettings);
+	}
+	else
+	{
+		pBitmap = RenderEmpty(szRotated, displaySettings);
 	}
 
 	return pBitmap;

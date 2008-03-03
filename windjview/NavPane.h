@@ -21,6 +21,8 @@
 
 #include "Drawing.h"
 
+class CChildFrame;
+
 
 // CNavPaneWnd
 
@@ -55,6 +57,7 @@ public:
 	void SetTabBorder(int nTab, bool bDrawBorder);
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
+	CChildFrame* GetParentFrame() const;
 
 // Implementation
 protected:
@@ -94,7 +97,6 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()

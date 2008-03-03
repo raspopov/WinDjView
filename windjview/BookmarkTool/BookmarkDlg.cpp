@@ -251,7 +251,7 @@ GUTF8String HTMLEscape(const GUTF8String& str)
 			ss = "&amp;";
 			break;
 		case '\"':
-			ss="&quot;";
+			ss = "&quot;";
 			break;
 		}
 
@@ -290,13 +290,19 @@ GUTF8String HTMLEscape(const GUTF8String& str)
 
 void FixWhitespace(wstring& text)
 {
+	if (text.length() == 0)
+		return;
+
 	wstring result;
 	result.reserve(text.length());
 
 	int nStart = 0;
 	while (nStart < static_cast<int>(text.length()) && text[nStart] <= 0x20)
 		++nStart;
-	int nEnd = text.length() - 1;
+	if (nStart == static_cast<int>(text.length()))
+		return;
+
+	int nEnd = static_cast<int>(text.length()) - 1;
 	while (nEnd >= nStart && text[nEnd] <= 0x20)
 		--nEnd;
 
@@ -318,9 +324,8 @@ void FixWhitespace(wstring& text)
 		}
 	}
 
-	if (!bHadSpace)
-		result += text.substr(nStart, nEnd + 1 - nStart);
-
+	ASSERT(!bHadSpace && nStart <= nEnd);
+	result += text.substr(nStart, nEnd + 1 - nStart);
 	text.swap(result);
 }
 

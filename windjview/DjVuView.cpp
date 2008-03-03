@@ -548,9 +548,7 @@ void CDjVuView::OnInitialUpdate()
 	m_nPageCount = m_pSource->GetPageCount();
 	m_pages.resize(m_nPageCount);
 
-	// Save m_nPage, because UpdateLayout, which is called before RenderPage, can change it
 	int nStartupPage = (m_nPage >= 0 && m_nPage < GetPageCount() ? m_nPage : 0);
-	m_nPage = nStartupPage;
 
 	if (m_nType == Normal)
 	{
@@ -597,7 +595,9 @@ void CDjVuView::OnInitialUpdate()
 
 	m_pRenderThread = new CRenderThread(m_pSource, this);
 
-	UpdateLayout(RECALC);
+	if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
+		UpdateLayout(RECALC);
+
 	RenderPage(nStartupPage);
 
 	if (m_nType == Normal)
@@ -812,8 +812,6 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 
 	if (m_nLayout == SinglePage)
 	{
-		Page& page = m_pages[m_nPage];
-
 		// Update current page size 3 times to allow for scrollbars
 		for (int i = 0; i < 3; ++i)
 		{
@@ -1005,9 +1003,8 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 		if (updateType != RECALC)
 		{
 			UpdateVisiblePages();
+			UpdatePageNumber();
 		}
-
-		UpdatePageNumber();
 	}
 	else if (m_nLayout == ContinuousFacing)
 	{
@@ -1191,9 +1188,8 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 		if (updateType != RECALC)
 		{
 			UpdateVisiblePages();
+			UpdatePageNumber();
 		}
-
-		UpdatePageNumber();
 	}
 
 	m_bInsideUpdateLayout = false;

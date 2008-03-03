@@ -21,6 +21,7 @@
 #include "WinDjView.h"
 #include "NavPane.h"
 #include "Drawing.h"
+#include "ChildFrm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -343,7 +344,14 @@ void CNavPaneWnd::OnLButtonDown(UINT nFlags, CPoint point)
 	int nTabClicked = GetTabFromPoint(point);
 	if (nTabClicked != -1)
 	{
-		ActivateTab(nTabClicked);
+		if (nTabClicked != m_nActiveTab || GetParentFrame()->IsNavPaneCollapsed())
+		{
+			ActivateTab(nTabClicked);
+		}
+		else
+		{
+			GetParentFrame()->SendMessage(ID_COLLAPSE_PANE);
+		}
 	}
 
 	UpdateCloseButton(true);
@@ -609,7 +617,7 @@ void CNavPaneWnd::OnSetFocus(CWnd* pOldWnd)
 		m_tabs[m_nActiveTab].pWnd->SetFocus();
 }
 
-int CNavPaneWnd::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
+CChildFrame* CNavPaneWnd::GetParentFrame() const
 {
-	return MA_NOACTIVATE;
+	return (CChildFrame*) CWnd::GetParentFrame();
 }
