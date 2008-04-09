@@ -859,7 +859,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 		{
 			// enough info to register it
 			if (!pTemplate->GetDocString(strFileTypeName,
-				CDocTemplate::regFileTypeName))
+					CDocTemplate::regFileTypeName))
 				strFileTypeName = strFileTypeId;    // use id name
 
 			ASSERT(strFileTypeId.Find(' ') == -1);  // no spaces allowed

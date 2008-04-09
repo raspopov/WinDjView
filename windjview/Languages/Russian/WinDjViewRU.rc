@@ -886,7 +886,7 @@ END
 STRINGTABLE 
 BEGIN
     IDR_MAINFRAME           "WinDjView"
-    IDR_DjVuTYPE            "\nDjVu\nDjVu\nДокументы DjVu (*.djvu;*.djv)\n.djvu;.djv\nDjVu.Document\n"
+    IDR_DjVuTYPE            "\nDjVu\nDjVu\nДокументы DjVu (*.djvu;*.djv)\n.djvu;.djv\nDjVu.Document\nДокумент DjVu"
 END
 
 STRINGTABLE 
