@@ -60,5 +60,6 @@ protected:
 	afx_msg void OnUpdateFileExportText(CCmdUI* pCmdUI);
 	afx_msg void OnFileInstall();
 	afx_msg void OnUpdateFileInstall(CCmdUI* pCmdUI);
+	afx_msg void OnFileClose();
 	DECLARE_MESSAGE_MAP()
 };

@@ -196,10 +196,15 @@ CDjVuView::CDjVuView()
 	m_nFacingGap = c_nDefaultFacingGap;
 	m_nPageBorder = c_nDefaultPageBorder;
 	m_nPageShadow = c_nDefaultPageShadow;
+
+	CreateSystemDialogFont(m_sampleFont);
 }
 
 CDjVuView::~CDjVuView()
 {
+	for (map<int, HFONT>::iterator it = m_fonts.begin(); it != m_fonts.end(); ++it)
+		::DeleteObject(it->second);
+
 	delete m_pHScrollBar;
 	delete m_pVScrollBar;
 
@@ -267,22 +272,6 @@ void CDjVuView::OnDraw(CDC* pDC)
 
 	CRect rcIntersect;
 
-	if (m_nLayout == SinglePage || m_nLayout == Facing)
-	{
-		DrawPage(&m_offscreenDC, m_nPage);
-
-		if (m_nLayout == Facing && HasFacingPage(m_nPage))
-			DrawPage(&m_offscreenDC, m_nPage + 1);
-	}
-	else if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
-	{
-		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
-		{
-			if (rcIntersect.IntersectRect(m_pages[nPage].rcDisplay, rcClip))
-				DrawPage(&m_offscreenDC, nPage);
-		}
-	}
-
 	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 	{
 		Page& page = m_pages[nPage];
@@ -297,28 +286,34 @@ void CDjVuView::OnDraw(CDC* pDC)
 				continue;
 		}
 
-		if (page.pBitmap == NULL || page.pBitmap->m_hObject == NULL)
-			continue;
+		DrawPage(&m_offscreenDC, nPage);
 
-		// Draw annotations
-		for (list<Annotation>::iterator lit = page.info.anno.begin(); lit != page.info.anno.end(); ++lit)
-			DrawAnnotation(&m_offscreenDC, *lit, nPage, &(*lit) == m_pHoverAnno);
-
-		// Draw custom annotations
-		map<int, PageSettings>::iterator it = m_pSource->GetSettings()->pageSettings.find(nPage);
-		if (it != m_pSource->GetSettings()->pageSettings.end())
+		if (page.pBitmap != NULL && page.pBitmap->m_hObject != NULL)
 		{
-			PageSettings& pageSettings = (*it).second;
-			for (list<Annotation>::iterator lit = pageSettings.anno.begin(); lit != pageSettings.anno.end(); ++lit)
+			// Draw annotations
+			for (list<Annotation>::iterator lit = page.info.anno.begin(); lit != page.info.anno.end(); ++lit)
 				DrawAnnotation(&m_offscreenDC, *lit, nPage, &(*lit) == m_pHoverAnno);
-		}
 
-		// Draw selection
-		for (GPosition pos = page.selection; pos; ++pos)
-		{
-			GRect rect = page.selection[pos]->rect;
-			CRect rcText = TranslatePageRect(nPage, rect);
-			m_offscreenDC.InvertRect(rcText - ptScrollPos);
+			// Draw custom annotations
+			map<int, PageSettings>::iterator it = m_pSource->GetSettings()->pageSettings.find(nPage);
+			if (it != m_pSource->GetSettings()->pageSettings.end())
+			{
+				PageSettings& pageSettings = (*it).second;
+				for (list<Annotation>::iterator lit = pageSettings.anno.begin(); lit != pageSettings.anno.end(); ++lit)
+					DrawAnnotation(&m_offscreenDC, *lit, nPage, &(*lit) == m_pHoverAnno);
+			}
+
+			// Draw selection
+			for (GPosition pos = page.selection; pos; ++pos)
+			{
+				GRect rect = page.selection[pos]->rect;
+				CRect rcText = TranslatePageRect(nPage, rect);
+				m_offscreenDC.InvertRect(rcText - ptScrollPos);
+			}
+
+			// Draw transparent text on top of the image to assist dictionaries and
+			// other programs that hook to TextOut to find text under mouse pointer.
+			DrawTransparentText(&m_offscreenDC, nPage);
 		}
 	}
 
@@ -478,6 +473,92 @@ void CDjVuView::DrawPage(CDC* pDC, int nPage)
 	pDC->ExcludeClipRect(rcBorder - ptScrollPos);
 	pDC->FillSolidRect(rcClip - ptScrollPos, clrBackground);
 	pDC->RestoreDC(nSaveDC);
+}
+
+void GetWords(DjVuTXT::Zone* pZone, const GRect& rect, DjVuSelection& list)
+{
+	GRect temp;
+	for (GPosition pos = pZone->children; pos; ++pos)
+	{
+		DjVuTXT::Zone* pChild = &pZone->children[pos];
+		if (!temp.intersect(pChild->rect, rect))
+			continue;
+
+		if (pChild->ztype == DjVuTXT::WORD)
+			list.append(pChild);
+		else if (pChild->ztype < DjVuTXT::WORD)
+			GetWords(pChild, rect, list);
+	}
+}
+
+void CDjVuView::DrawTransparentText(CDC* pDC, int nPage)
+{
+	Page& page = m_pages[nPage];
+	if (page.info.pText == NULL)
+		return;
+
+	CPoint ptScrollPos = GetScrollPosition();
+
+	CRect rcClip;
+	pDC->GetClipBox(rcClip);
+	rcClip.OffsetRect(ptScrollPos);
+	rcClip.IntersectRect(rcClip, page.rcDisplay);
+
+	// Hide the displayed text by using raster operations.
+	pDC->SetROP2(R2_NOP);
+	pDC->BeginPath();
+
+	CPoint ptTopLeft = ScreenToDjVu(nPage, rcClip.TopLeft() - page.ptOffset, true);
+	CPoint ptBottomRight = ScreenToDjVu(nPage, rcClip.BottomRight() - page.ptOffset, true);
+	GRect rect(min(ptTopLeft.x, ptBottomRight.x), min(ptTopLeft.y, ptBottomRight.y),
+			abs(ptTopLeft.x - ptBottomRight.x), abs(ptTopLeft.y - ptBottomRight.y));
+
+	DjVuSelection zones;
+	GetWords(&page.info.pText->page_zone, rect, zones);
+
+	for (GPosition pos = zones; pos; ++pos)
+	{
+		DjVuTXT::Zone* pZone = zones[pos];
+		if (pZone->text_length == 0)
+			continue;
+
+		CRect rcWord = TranslatePageRect(nPage, pZone->rect) - ptScrollPos;
+
+		// Round font size up to the next even number to reduce the
+		// amount of fonts created.
+		int nFontSize = rcWord.Height() + (rcWord.Height() % 2);
+
+		// Find or create the font with this size.
+		map<int, HFONT>::iterator it = m_fonts.find(nFontSize);
+		if (it == m_fonts.end())
+		{
+			LOGFONT lf;
+			m_sampleFont.GetLogFont(&lf);
+			lf.lfHeight = nFontSize;
+			_tcscpy(lf.lfFaceName, _T("Arial"));
+			HFONT hFont = ::CreateFontIndirect(&lf);
+			it = m_fonts.insert(make_pair(nFontSize, hFont)).first;
+		}
+
+		HGDIOBJ hOldFont = ::SelectObject(pDC->m_hDC, it->second);
+
+		pDC->SetTextCharacterExtra(0);
+		CString strWord = MakeCString(page.info.pText->textUTF8.substr(pZone->text_start, pZone->text_length));
+		strWord.TrimLeft();
+		strWord.TrimRight();
+		CSize szWordExtent = pDC->GetTextExtent(strWord);
+		pDC->SetTextCharacterExtra(static_cast<int>((1.0 * rcWord.Width() - szWordExtent.cx) / (strWord.GetLength() - 1)));
+
+		pDC->ExtTextOut(rcWord.left, rcWord.top, ETO_CLIPPED, rcWord, strWord + _T(" "), NULL);
+
+		::SelectObject(pDC->m_hDC, hOldFont);
+	}
+
+	pDC->EndPath();
+
+	// StrokePath will apply the NOP raster operation selected earlier, thus
+	// making the text invisible.
+	pDC->StrokePath();
 }
 
 

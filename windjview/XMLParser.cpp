@@ -259,6 +259,7 @@ bool XMLParser::Parse(istream& in_)
 	}
 	catch (int e)
 	{
+		UNUSED(e);
 		TRACE("Invalid XML: %d\n", e);
 		m_bValid = false;
 	}

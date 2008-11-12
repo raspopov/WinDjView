@@ -197,6 +197,7 @@ protected:
 	bool InvalidatePage(int nPage);
 	void DrawPage(CDC* pDC, int nPage);
 	void DrawAnnotation(CDC* pDC, const Annotation& anno, int nPage, bool bActive);
+	void DrawTransparentText(CDC* pDC, int nPage);
 
 	int m_nZoomType;
 	double m_fZoom;
@@ -329,6 +330,9 @@ protected:
 	bool m_bHasSelection;
 	int m_nSelectionPage;
 	GRect m_rcSelection;
+
+	CFont m_sampleFont;
+	map<int, HFONT> m_fonts;
 
 	int m_nClickedPage;
 	bool m_bDragging, m_bDraggingPage, m_bDraggingText, m_bDraggingRect, m_bDraggingLink;

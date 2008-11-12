@@ -56,6 +56,15 @@ void PageInfo::Update(GP<DjVuImage> pImage)
 
 	try
 	{
+		if (bHasText && !bTextDecoded)
+			DecodeText(pImage->get_text());
+	}
+	catch (GException&)
+	{
+	}
+
+	try
+	{
 		if (!bAnnoDecoded)
 			DecodeAnno(pImage->get_anno());
 	}

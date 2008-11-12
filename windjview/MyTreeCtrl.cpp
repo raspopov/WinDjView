@@ -50,7 +50,7 @@ CMyTreeCtrl::CMyTreeCtrl()
 	CreateSystemIconFont(m_font);
 
 	LOGFONT lf;
-	::GetObject(m_font.m_hObject, sizeof(LOGFONT), &lf);
+	m_font.GetLogFont(&lf);
 
 	lf.lfUnderline = true;
 	m_fontHover.CreateFontIndirect(&lf);

@@ -23,6 +23,7 @@
 #include "ChildFrm.h"
 #include "DjVuDoc.h"
 #include "DjVuView.h"
+#include "MainFrm.h"
 #include "MyFileDialog.h"
 #include "InstallDicDlg.h"
 
@@ -41,6 +42,7 @@ BEGIN_MESSAGE_MAP(CDjVuDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_FILE_EXPORT_TEXT, OnUpdateFileExportText)
 	ON_COMMAND(ID_FILE_INSTALL, OnFileInstall)
 	ON_UPDATE_COMMAND_UI(ID_FILE_INSTALL, OnUpdateFileInstall)
+	ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
 END_MESSAGE_MAP()
 
 
@@ -306,4 +308,12 @@ void CDjVuDoc::OnUpdateFileInstall(CCmdUI* pCmdUI)
 		pCmdUI->m_nIndex--;
 		pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
 	}
+}
+
+void CDjVuDoc::OnFileClose()
+{
+	if (GetDjVuView()->GetMainFrame()->IsFullscreenMode())
+		return;
+
+	CDocument::OnFileClose();
 }

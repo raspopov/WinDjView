@@ -77,7 +77,7 @@ CThumbnailsView::CThumbnailsView(DjVuSource* pSource)
 	CreateSystemDialogFont(systemFont);
 
 	LOGFONT lf;
-	::GetObject(systemFont.m_hObject, sizeof(LOGFONT), &lf);
+	systemFont.GetLogFont(&lf);
 
 	_tcscpy(lf.lfFaceName, _T("Arial"));
 	lf.lfHeight = -12;
