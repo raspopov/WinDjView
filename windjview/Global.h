@@ -85,6 +85,23 @@ GUTF8String MakeUTF8String(const wstring& strText);
 
 bool MoveToTrash(LPCTSTR lpszFileName);
 
+void CreateSystemDialogFont(CFont& font);
+void CreateSystemIconFont(CFont& font);
+void CreateSystemMenuFont(CFont& font);
+
+UINT GetMouseScrollLines();
+
+CRect GetMonitorWorkArea(const CPoint& point);
+CRect GetMonitorWorkArea(CWnd* pWnd);
+CRect GetMonitorRect(CWnd* pWnd);
+
+bool IsFromCurrentProcess(CWnd* pWnd);
+
+CString FormatDouble(double fValue);
+void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, double& value, double def = 0.0, LPCTSTR pszSuffix = NULL);
+void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0, LPCTSTR pszSuffix = NULL);
+
+
 #define PAGE_RENDERED 1
 #define PAGE_DECODED 2
 #define LINK_CLICKED 3

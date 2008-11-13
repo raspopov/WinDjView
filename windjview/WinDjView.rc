@@ -417,10 +417,10 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG  0, 0, 251, 122
+IDD_ABOUTBOX DIALOGEX 0, 0, 251, 122
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About WinDjView"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
@@ -505,19 +505,19 @@ BEGIN
     CTEXT           "Paper size",IDC_STATIC_PAPER,14,138,138,8
 END
 
-IDD_PROGRESS DIALOG  0, 0, 171, 61
+IDD_PROGRESS DIALOGEX 0, 0, 171, 61
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "Cancel",IDOK,60,40,50,14
     CTEXT           "Printing page 1 of 3, please wait...",IDC_STATIC_TEXT,7,7,157,9
     CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,7,22,157,12
 END
 
-IDD_ZOOM DIALOG  0, 0, 119, 47
+IDD_ZOOM DIALOGEX 0, 0, 119, 47
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Zoom Custom"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "&Zoom To:",IDC_STATIC,13,7,35,12,SS_CENTERIMAGE
     EDITTEXT        IDC_ZOOM,51,7,55,12,ES_AUTOHSCROLL
@@ -525,32 +525,34 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS_GENERAL DIALOG  0, 0, 222, 134
+IDD_SETTINGS_GENERAL DIALOGEX 0, 0, 222, 136
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "General"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    CONTROL         "&Warn when closing multiple documents",IDC_WARN_CLOSE_MULTIPLE,
+    CONTROL         "&Open each document in its own top-level window",IDC_TOP_LEVEL_DOCUMENTS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,208,10
-    CONTROL         "Generate &thumbnails for all pages in background",IDC_GEN_ALL_THUMBNAILS,
+    CONTROL         "&Warn when closing multiple documents",IDC_WARN_CLOSE_MULTIPLE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
-    CONTROL         "&Mouse clicks switch pages in fullscreen mode",IDC_FULLSCREEN_CLICKS,
+    CONTROL         "Generate &thumbnails for all pages in background",IDC_GEN_ALL_THUMBNAILS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,208,10
-    CONTROL         "Always &hide scrollbars in fullscreen mode",IDC_FULLSCREEN_HIDESCROLL,
+    CONTROL         "&Mouse clicks switch pages in fullscreen mode",IDC_FULLSCREEN_CLICKS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,208,10
-    CONTROL         "&Invert Ctrl+Mouse Wheel zooming direction",IDC_INVERT_WHEEL_ZOOM,
+    CONTROL         "Always &hide scrollbars in fullscreen mode",IDC_FULLSCREEN_HIDESCROLL,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,208,10
-    CONTROL         "Close the program when &Escape key is pressed",IDC_CLOSE_ON_ESC,
+    CONTROL         "&Invert Ctrl+Mouse Wheel zooming direction",IDC_INVERT_WHEEL_ZOOM,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,77,208,10
-    CONTROL         "Wrap &long bookmarks",IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,208,10
+    CONTROL         "Close the program when &Escape key is pressed",IDC_CLOSE_ON_ESC,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,208,10
+    CONTROL         "Wrap &long bookmarks",IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,105,208,10
     CONTROL         "Restore open &page and view settings when opening a file",IDC_RESTORE_VIEW,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,105,208,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,119,208,10
 END
 
-IDD_FIND DIALOG  0, 0, 287, 64
+IDD_FIND DIALOGEX 0, 0, 287, 64
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Find"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "Fi&nd what:",IDC_STATIC,7,10,35,9
     CONTROL         "",IDC_FIND,"ComboBoxEx32",CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP,47,7,173,95
@@ -561,18 +563,18 @@ BEGIN
     LTEXT           "Searching page 1 of 10...",IDC_SEARCH_STATUS,7,48,214,9,NOT WS_VISIBLE
 END
 
-IDD_UPDATE DIALOG  0, 0, 167, 34
+IDD_UPDATE DIALOGEX 0, 0, 167, 34
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "Checking for update. Please wait...",IDC_STATIC,39,10,118,11
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
 END
 
-IDD_GOTO_PAGE DIALOG  0, 0, 123, 48
+IDD_GOTO_PAGE DIALOGEX 0, 0, 123, 48
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Go To Page"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "&Page:",IDC_STATIC,7,7,21,12,SS_CENTERIMAGE
     EDITTEXT        IDC_PAGE,30,7,55,12,ES_AUTOHSCROLL
@@ -582,10 +584,10 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,64,27,50,14
 END
 
-IDD_SETTINGS_DISPLAY DIALOG  0, 0, 222, 134
+IDD_SETTINGS_DISPLAY DIALOGEX 0, 0, 222, 134
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Display"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     CONTROL         "&Sharp scaling at low zoom levels (slower)",IDC_HQ_SCALING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,208,10
@@ -604,10 +606,10 @@ BEGIN
     COMBOBOX        IDC_COMBO_UNITS,32,115,87,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_ANNOTATION DIALOG  0, 0, 200, 260
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ANNOTATION DIALOGEX 0, 0, 200, 260
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Edit Annotation"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,30,11,163,1,WS_EX_STATICEDGE
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,19,59,174,1,WS_EX_STATICEDGE
@@ -638,10 +640,10 @@ BEGIN
     EDITTEXT        IDC_BOOKMARK_TITLE,43,198,150,47,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
 END
 
-IDD_RENAME_BOOKMARK DIALOG  0, 0, 206, 90
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_RENAME_BOOKMARK DIALOGEX 0, 0, 206, 90
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Rename Bookmark"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "T&itle:",IDC_STATIC,7,7,20,13,SS_CENTERIMAGE
     EDITTEXT        IDC_BOOKMARK_TITLE,28,7,171,53,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
@@ -649,10 +651,10 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,149,69,50,14
 END
 
-IDD_INSTALL_DIC DIALOG  0, 0, 190, 138
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_INSTALL_DIC DIALOGEX 0, 0, 190, 138
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Install Dictionary"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Install this dictionary for the current user",IDC_CURRENT_USER,
                     "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,7,7,176,11
@@ -668,10 +670,10 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,133,117,50,14
 END
 
-IDD_INSTALL_DIC_REPLACE DIALOG  0, 0, 190, 91
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_INSTALL_DIC_REPLACE DIALOGEX 0, 0, 190, 91
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Install Dictionary"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Please uncheck the following box if you want to move the current file to the Recycle Bin after the installation:",IDC_STATIC,7,35,176,18
     CONTROL         "Keep the original file",IDC_KEEP_ORIGINAL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,54,86,11
@@ -680,10 +682,10 @@ BEGIN
     LTEXT           "A dictionary with this name is already installed in the system. Installation will replace the existing dictionary with the currently open file.",IDC_STATIC,7,7,176,26
 END
 
-IDD_SETTINGS_ASSOCS DIALOG  0, 0, 222, 134
+IDD_SETTINGS_ASSOCS DIALOGEX 0, 0, 222, 134
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "File Associations"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "Press to associate WinDjView with .djvu and .djv files:",-1,7,7,182,9
     PUSHBUTTON      "&Associate",IDC_ASSOCIATE,7,19,50,14
@@ -694,7 +696,7 @@ END
 IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 134
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Dictionaries"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_TABSTOP,7,42,208,67,WS_EX_CLIENTEDGE
     LTEXT           "Installed dictionaries:",IDC_STATIC,7,31,69,9
@@ -789,7 +791,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 127
+        BOTTOMMARGIN, 129
     END
 
     IDD_FIND, DIALOG
@@ -1248,6 +1250,7 @@ BEGIN
     IDS_DICT_LOCATION_PROMPT "Select a custom location for dictionaries:"
     IDS_INVALID_DIR         "The typed folder name is invalid. Please select an existing folder from the list, or use the ""Make New Folder"" button."
     IDS_COPY_SELECTION      "&Copy Selection"
+    IDS_RESTART_NEEDED      "Please restart WinDjView for the new settings to take effect."
 END
 
 STRINGTABLE 

@@ -90,6 +90,8 @@
 #include "stdafx.h"
 #include "Global.h"
 
+#include "MyTheme.h"
+
 
 // RefCount
 
@@ -436,6 +438,305 @@ bool MakeWString(const GUTF8String& text, wstring& result)
 		if (nSize > 1)
 			::MultiByteToWideChar(CP_ACP, 0, (LPCSTR) text, -1, (LPWSTR) result.data(), nSize);
 		return true;
+	}
+}
+
+void CreateSystemDialogFont(CFont& font)
+{
+	LOGFONT lf;
+
+	HGDIOBJ hFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
+	::GetObject(hFont, sizeof(LOGFONT), &lf);
+
+	if (IsWin2kOrLater())
+		_tcscpy(lf.lfFaceName, _T("MS Shell Dlg 2"));
+
+	font.CreateFontIndirect(&lf);
+}
+
+void CreateSystemIconFont(CFont& font)
+{
+	LOGFONT lf;
+
+	if (IsThemed())
+	{
+		LOGFONTW lfw;
+		HRESULT hr = XPGetThemeSysFont(NULL, TMT_ICONTITLEFONT, &lfw);
+		if (SUCCEEDED(hr))
+		{
+#ifdef UNICODE
+			memcpy(&lf, &lfw, sizeof(LOGFONT));
+#else
+			memcpy(&lf, &lfw, (char*)&lfw.lfFaceName - (char*)&lfw);
+			_tcscpy(lf.lfFaceName, CString(lfw.lfFaceName));
+#endif
+			font.CreateFontIndirect(&lf);
+			return;
+		}
+	}
+
+	if (!SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &lf, 0))
+	{
+		CreateSystemDialogFont(font);
+		return;
+	}
+
+	font.CreateFontIndirect(&lf);
+}
+
+void CreateSystemMenuFont(CFont& font)
+{
+	LOGFONT lf;
+
+	if (IsThemed())
+	{
+		LOGFONTW lfw;
+		HRESULT hr = XPGetThemeSysFont(NULL, TMT_MENUFONT, &lfw);
+		if (SUCCEEDED(hr))
+		{
+#ifdef UNICODE
+			memcpy(&lf, &lfw, sizeof(LOGFONT));
+#else
+			memcpy(&lf, &lfw, (char*)&lfw.lfFaceName - (char*)&lfw);
+			_tcscpy(lf.lfFaceName, CString(lfw.lfFaceName));
+#endif
+			font.CreateFontIndirect(&lf);
+			return;
+		}
+	}
+
+	NONCLIENTMETRICS ncm;
+	ncm.cbSize = sizeof(NONCLIENTMETRICS);
+	if (!SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0))
+	{
+		CreateSystemDialogFont(font);
+		return;
+	}
+
+	font.CreateFontIndirect(&ncm.lfMenuFont);
+}
+
+
+// MonitorAPI
+
+struct MonitorAPI
+{
+	MonitorAPI();
+	~MonitorAPI();
+
+	struct MonitorInfo
+	{
+		MonitorInfo() : cbSize(sizeof(MonitorInfo)) {}
+
+		DWORD cbSize;
+		RECT rcMonitor;
+		RECT rcWork;
+		DWORD dwFlags;
+	};
+
+	enum
+	{
+		DefaultToNull = 0,
+		DefaultToPrimary = 1,
+		DefaultToNearest = 2
+	};
+
+	typedef HANDLE (WINAPI* pfnMonitorFromPoint)(POINT pt, DWORD dwFlags);
+	typedef BOOL (WINAPI* pfnGetMonitorInfo)(HANDLE hMonitor, MonitorInfo* pmi);
+	typedef HANDLE (WINAPI* pfnMonitorFromWindow)(HWND hWnd, DWORD dwFlags);
+
+	pfnMonitorFromPoint pMonitorFromPoint;
+	pfnMonitorFromWindow pMonitorFromWindow;
+	pfnGetMonitorInfo pGetMonitorInfo;
+
+	bool IsLoaded() const { return hUser32 != NULL; }
+
+	HINSTANCE hUser32;
+};
+
+static MonitorAPI theMonitorAPI;
+
+MonitorAPI::MonitorAPI()
+	: pMonitorFromPoint(NULL),
+	  pMonitorFromWindow(NULL),
+	  pGetMonitorInfo(NULL)
+{
+	hUser32 = ::LoadLibrary(_T("user32.dll"));
+	if (hUser32 != NULL)
+	{
+		pMonitorFromPoint = (pfnMonitorFromPoint) ::GetProcAddress(hUser32, "MonitorFromPoint");
+		pMonitorFromWindow = (pfnMonitorFromWindow) ::GetProcAddress(hUser32, "MonitorFromWindow");
+		pGetMonitorInfo = (pfnGetMonitorInfo) ::GetProcAddress(hUser32, "GetMonitorInfoA");
+
+		if (pMonitorFromPoint == NULL
+				|| pMonitorFromWindow == NULL
+				|| pGetMonitorInfo == NULL)
+		{
+			::FreeLibrary(hUser32);
+			hUser32 = NULL;
+		}
+	}
+}
+
+MonitorAPI::~MonitorAPI()
+{
+	if (hUser32 != NULL)
+		::FreeLibrary(hUser32);
+}
+
+CRect GetMonitorWorkArea(const CPoint& point)
+{
+	CRect rcWorkArea;
+
+	if (!::SystemParametersInfo(SPI_GETWORKAREA, 0, (PVOID)&rcWorkArea, false))
+	{
+		CSize szScreen(::GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN));
+		rcWorkArea = CRect(CPoint(0, 0), szScreen);
+	}
+
+	if (theMonitorAPI.IsLoaded())
+	{
+		MonitorAPI::MonitorInfo mi;
+		HANDLE hMonitor = theMonitorAPI.pMonitorFromPoint(point, MonitorAPI::DefaultToNearest);
+		if (hMonitor != NULL && theMonitorAPI.pGetMonitorInfo(hMonitor, &mi))
+			rcWorkArea = mi.rcWork;
+	}
+
+	return rcWorkArea;
+}
+
+CRect GetMonitorWorkArea(CWnd* pWnd)
+{
+	CRect rcWorkArea;
+
+	if (!::SystemParametersInfo(SPI_GETWORKAREA, 0, (PVOID)&rcWorkArea, false))
+	{
+		CSize szScreen(::GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN));
+		rcWorkArea = CRect(CPoint(0, 0), szScreen);
+	}
+
+	if (theMonitorAPI.IsLoaded())
+	{
+		MonitorAPI::MonitorInfo mi;
+		HANDLE hMonitor = theMonitorAPI.pMonitorFromWindow(pWnd->GetSafeHwnd(), MonitorAPI::DefaultToNearest);
+		if (hMonitor != NULL && theMonitorAPI.pGetMonitorInfo(hMonitor, &mi))
+			rcWorkArea = mi.rcWork;
+	}
+
+	return rcWorkArea;
+}
+
+CRect GetMonitorRect(CWnd* pWnd)
+{
+	CSize szScreen(::GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN));
+	CRect rcMonitor(CPoint(0, 0), szScreen);
+
+	if (theMonitorAPI.IsLoaded())
+	{
+		MonitorAPI::MonitorInfo mi;
+		HANDLE hMonitor = theMonitorAPI.pMonitorFromWindow(pWnd->GetSafeHwnd(), MonitorAPI::DefaultToNearest);
+		if (hMonitor != NULL && theMonitorAPI.pGetMonitorInfo(hMonitor, &mi))
+			rcMonitor = mi.rcMonitor;
+	}
+
+	return rcMonitor;
+}
+
+UINT GetMouseScrollLines()
+{
+	static UINT uCachedScrollLines;
+	static bool bGotScrollLines = false;
+
+	// If we've already got it and we're not refreshing,
+	// return what we've already got
+
+	if (bGotScrollLines)
+		return uCachedScrollLines;
+
+	// see if we can find the mouse window
+
+	bGotScrollLines = true;
+
+	static UINT msgGetScrollLines;
+	static WORD nRegisteredMessage;
+
+	if (afxData.bWin95)
+	{
+		if (nRegisteredMessage == 0)
+		{
+			msgGetScrollLines = ::RegisterWindowMessage(MSH_SCROLL_LINES);
+			if (msgGetScrollLines == 0)
+				nRegisteredMessage = 1;     // couldn't register!  never try again
+			else
+				nRegisteredMessage = 2;     // it worked: use it
+		}
+
+		if (nRegisteredMessage == 2)
+		{
+			HWND hwMouseWheel = NULL;
+			hwMouseWheel = FindWindow(MSH_WHEELMODULE_CLASS, MSH_WHEELMODULE_TITLE);
+			if (hwMouseWheel && msgGetScrollLines)
+			{
+				uCachedScrollLines = (UINT)::SendMessage(hwMouseWheel, msgGetScrollLines, 0, 0);
+			}
+		}
+	}
+
+	if (uCachedScrollLines == 0)
+	{
+		::SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &uCachedScrollLines, false);
+		if (uCachedScrollLines == 0)
+			uCachedScrollLines = 3; // reasonable default
+	}
+
+	return uCachedScrollLines;
+}
+
+bool IsFromCurrentProcess(CWnd* pWnd)
+{
+	DWORD dwProcessId = 0;
+	::GetWindowThreadProcessId(pWnd->GetSafeHwnd(), &dwProcessId);
+	return (dwProcessId == ::GetCurrentProcessId());
+}
+
+CString FormatDouble(double fValue)
+{
+	char nDecimalPoint = localeconv()->decimal_point[0];
+
+	CString strResult = FormatString(_T("%.6f"), fValue);
+	while (!strResult.IsEmpty() && strResult[strResult.GetLength() - 1] == '0')
+		strResult = strResult.Left(strResult.GetLength() - 1);
+
+	if (!strResult.IsEmpty() && strResult[strResult.GetLength() - 1] == nDecimalPoint)
+		strResult = strResult.Left(strResult.GetLength() - 1);
+
+	if (strResult.IsEmpty())
+		strResult = _T("0");
+
+	return strResult;
+}
+
+void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, double& value, double def, LPCTSTR pszSuffix)
+{
+	CString strText = FormatDouble(value) + pszSuffix;
+	DDX_Text(pDX, nIDC, strText);
+
+	if (pDX->m_bSaveAndValidate)
+	{
+		if (_stscanf(strText, _T("%lf"), &value) != 1)
+			value = def;
+	}
+}
+
+void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def, LPCTSTR pszSuffix)
+{
+	CString strText = FormatString(_T("%u%s"), value, CString(pszSuffix));
+	DDX_Text(pDX, nIDC, strText);
+
+	if (pDX->m_bSaveAndValidate)
+	{
+		if (_stscanf(strText, _T("%u"), &value) != 1)
+			value = def;
 	}
 }
 

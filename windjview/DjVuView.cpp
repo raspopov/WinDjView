@@ -5442,6 +5442,7 @@ int CDjVuView::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
 
 		// set focus to this view, but don't notify the parent frame
 		OnActivateView(TRUE, this, this);
+
 		return nResult;
 	}
 

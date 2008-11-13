@@ -54,6 +54,7 @@ CAppSettings::CAppSettings()
 	nNavPaneWidth = 200;
 
 	bRestoreAssocs = false;
+	bTopLevelDocs = false;
 	bGenAllThumbnails = true;
 	bFullscreenClicks = true;
 	bFullscreenHideScroll = true;
@@ -64,10 +65,6 @@ CAppSettings::CAppSettings()
 	bRestoreView = true;
 
 	nLanguage = 0x409;
-
-	bLocalized = false;
-	hDjVuMenu = NULL;
-	hDefaultMenu = NULL;
 
 	bMatchCase = false;
 

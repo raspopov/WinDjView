@@ -71,6 +71,7 @@ const TCHAR* s_pszInvertColors = _T("invert");
 const TCHAR* s_pszUnits = _T("units");
 
 const TCHAR* s_pszGlobalSection = _T("Settings");
+const TCHAR* s_pszTopLevelDocs = _T("top-level-docs");
 const TCHAR* s_pszRestoreAssocs = _T("assocs");
 const TCHAR* s_pszGenAllThumbnails = _T("gen-all-thumbs");
 const TCHAR* s_pszFullscreenClicks = _T("fullscreen-clicks");
@@ -130,6 +131,7 @@ const TCHAR* s_pszLangTo = _T("lang-to");
 
 BEGIN_MESSAGE_MAP(CDjViewApp, CWinApp)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
+	ON_COMMAND(ID_APP_EXIT, OnAppExit)
 	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
 	ON_COMMAND(ID_FILE_SETTINGS, OnFileSettings)
 	ON_COMMAND(ID_CHECK_FOR_UPDATE, OnCheckForUpdate)
@@ -143,9 +145,9 @@ END_MESSAGE_MAP()
 // CDjViewApp construction
 
 CDjViewApp::CDjViewApp()
-	: m_bInitialized(false), m_pDjVuTemplate(NULL), m_nThreadCount(0), m_hHook(NULL),
-	  m_pPendingSource(NULL), m_bShiftPressed(false), m_bControlPressed(false),
-	  m_nLangIndex(0), m_nTimerID(0)
+	: m_bInitialized(false), m_bTopLevelDocs(false), m_pDjVuTemplate(NULL),
+	  m_nThreadCount(0), m_hHook(NULL), m_pPendingSource(NULL), m_bShiftPressed(false),
+	  m_bControlPressed(false), m_nLangIndex(0), m_nTimerID(0)
 {
 	DjVuSource::SetApplication(this);
 }
@@ -182,6 +184,8 @@ BOOL CDjViewApp::InitInstance()
 	LoadLanguages();
 	LoadDictionaries();
 
+	m_bTopLevelDocs = m_appSettings.bTopLevelDocs;
+
 	m_pDocManager = new CMyDocManager();
 
 	// Register the application's document template
@@ -193,21 +197,7 @@ BOOL CDjViewApp::InitInstance()
 		return FALSE;
 	AddDocTemplate(m_pDjVuTemplate);
 
-	// Create main MDI Frame window
-	CMainFrame* pMainFrame = new CMainFrame;
-	if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
-		return false;
-	m_pMainWnd = pMainFrame;
-	pMainFrame->SetRedraw(false);
-
-	pMainFrame->UpdateToolbars();
-
-	pMainFrame->SetWindowPos(NULL, m_appSettings.nWindowPosX, m_appSettings.nWindowPosY,
-				m_appSettings.nWindowWidth, m_appSettings.nWindowHeight,
-				SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
-
-	// Enable drag/drop open
-	m_pMainWnd->DragAcceptFiles();
+	SetStartupLanguage();
 
 	// Enable DDE Execute open
 	EnableShellOpen();
@@ -215,37 +205,120 @@ BOOL CDjViewApp::InitInstance()
 	if (m_appSettings.bRestoreAssocs)
 		RegisterShellFileTypes();
 
-	// Parse command line for standard shell commands, DDE, file open
-	CCommandLineInfo cmdInfo;
-	ParseCommandLine(cmdInfo);
-	if (cmdInfo.m_nShellCommand == CCommandLineInfo::FileNew)
-		cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
-
-	if (m_appSettings.bWindowMaximized && (m_nCmdShow == -1 || m_nCmdShow == SW_SHOWNORMAL))
-		m_nCmdShow = SW_SHOWMAXIMIZED;
-
-	// The main window has been initialized, so show and update it
-	pMainFrame->ShowWindow(m_nCmdShow);
-	SetStartupLanguage();
-
-	pMainFrame->SetRedraw(true);
-	pMainFrame->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-
-	// Dispatch commands specified on the command line.  Will return false if
-	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
-	if (!ProcessShellCommand(cmdInfo))
+	// Create main MDI Frame window
+	CMainFrame* pMainFrame = CreateMainFrame(m_nCmdShow, true);
+	if (pMainFrame == NULL)
 		return false;
 
 	m_hHook = ::SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, NULL, ::GetCurrentThreadId());
 	m_nTimerID = ::SetTimer(NULL, 1, 100, TimerProc);
-
-	m_bInitialized = true;
 
 	if (m_appSettings.strVersion != CURRENT_VERSION)
 		OnAppAbout();
 
 	ThreadStarted();
 	return true;
+}
+
+CMainFrame* CDjViewApp::CreateMainFrame(int nCmdShow, bool bProcessCmdLine)
+{
+	bool bInitialized = m_bInitialized;
+	m_bInitialized = false;
+
+	// Create main MDI Frame window
+	CMainFrame* pMainFrame = new CMainFrame;
+	if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
+	{
+		m_bInitialized = bInitialized;
+		delete pMainFrame;
+		return NULL;
+	}
+	pMainFrame->SetRedraw(false);
+	pMainFrame->UpdateToolbars();
+
+	pMainFrame->SetWindowPos(NULL, m_appSettings.nWindowPosX, m_appSettings.nWindowPosY,
+				m_appSettings.nWindowWidth, m_appSettings.nWindowHeight,
+				SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+
+	if (m_pMainWnd != NULL)
+	{
+		// Cascade the new window
+		CRect rcMain;
+		pMainFrame->GetWindowRect(rcMain);
+		CRect rcMonitor = GetMonitorWorkArea(pMainFrame);
+		if (rcMain.right + 20 <= rcMonitor.right && rcMain.bottom + 20 <= rcMonitor.bottom)
+			pMainFrame->MoveWindow(rcMain + CPoint(20, 20));
+		else
+			pMainFrame->MoveWindow(CRect(rcMonitor.TopLeft(), rcMain.Size()));
+	}
+
+	// Enable drag/drop open
+	pMainFrame->DragAcceptFiles();
+
+	if (bProcessCmdLine)
+	{
+		// Parse command line for standard shell commands, DDE, file open
+		CCommandLineInfo cmdInfo;
+		ParseCommandLine(cmdInfo);
+		if (cmdInfo.m_nShellCommand == CCommandLineInfo::FileNew)
+			cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
+
+		// Dispatch commands specified on the command line.  Will return false if
+		// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
+		if (!ProcessShellCommand(cmdInfo))
+		{
+			m_bInitialized = bInitialized;
+			delete pMainFrame;
+			return NULL;
+		}
+	}
+
+	if (m_appSettings.bWindowMaximized && (nCmdShow == -1 || nCmdShow == SW_SHOWNORMAL || nCmdShow == SW_SHOW))
+		nCmdShow = SW_SHOWMAXIMIZED;
+
+	// The main window has been initialized, so show and update it
+	pMainFrame->ShowWindow(nCmdShow);
+
+	pMainFrame->SetRedraw(true);
+	pMainFrame->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+
+	m_pMainWnd = pMainFrame;
+	AfxGetThread()->m_pMainWnd = m_pMainWnd;
+	m_frames.push_front(pMainFrame);
+
+	m_bInitialized = true;
+	return pMainFrame;
+}
+
+void CDjViewApp::RemoveMainFrame(CMainFrame* pMainFrame)
+{
+	ASSERT(m_frames.size() > 1);
+	list<CMainFrame*>::iterator it = find(m_frames.begin(), m_frames.end(), pMainFrame);
+	if (it != m_frames.end())
+		m_frames.erase(it);
+
+	if (m_pMainWnd == pMainFrame)
+	{
+		m_pMainWnd = m_frames.front();
+		AfxGetThread()->m_pMainWnd = m_pMainWnd;
+		((CMainFrame*) m_pMainWnd)->ActivateFrame();
+	}
+}
+
+void CDjViewApp::ChangeMainWnd(CMainFrame* pMainFrame)
+{
+	list<CMainFrame*>::iterator it = find(m_frames.begin(), m_frames.end(), pMainFrame);
+	if (it != m_frames.end())
+	{
+		if (it != m_frames.begin())
+		{
+			list<CMainFrame*>::iterator it2 = it;
+			m_frames.splice(m_frames.begin(), m_frames, it, ++it2);
+		}
+
+		m_pMainWnd = pMainFrame;
+		AfxGetThread()->m_pMainWnd = m_pMainWnd;
+	}
 }
 
 void CDjViewApp::EnableShellOpen()
@@ -478,6 +551,7 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.nNavPaneWidth = GetProfileInt(s_pszDisplaySection, s_pszNavWidth, m_appSettings.nNavPaneWidth);
 
 	m_appSettings.bRestoreAssocs = !!GetProfileInt(s_pszGlobalSection, s_pszRestoreAssocs, m_appSettings.bRestoreAssocs);
+	m_appSettings.bTopLevelDocs = !!GetProfileInt(s_pszGlobalSection, s_pszTopLevelDocs, m_appSettings.bTopLevelDocs);
 	m_appSettings.bGenAllThumbnails = !!GetProfileInt(s_pszGlobalSection, s_pszGenAllThumbnails, m_appSettings.bGenAllThumbnails);
 	m_appSettings.bFullscreenClicks = !!GetProfileInt(s_pszGlobalSection, s_pszFullscreenClicks, m_appSettings.bFullscreenClicks);
 	m_appSettings.bFullscreenHideScroll = !!GetProfileInt(s_pszGlobalSection, s_pszFullscreenHideScroll, m_appSettings.bFullscreenHideScroll);
@@ -575,6 +649,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySection, s_pszNavWidth, m_appSettings.nNavPaneWidth);
 
 	WriteProfileInt(s_pszGlobalSection, s_pszRestoreAssocs, m_appSettings.bRestoreAssocs);
+	WriteProfileInt(s_pszGlobalSection, s_pszTopLevelDocs, m_appSettings.bTopLevelDocs);
 	WriteProfileInt(s_pszGlobalSection, s_pszGenAllThumbnails, m_appSettings.bGenAllThumbnails);
 	WriteProfileInt(s_pszGlobalSection, s_pszFullscreenClicks, m_appSettings.bFullscreenClicks);
 	WriteProfileInt(s_pszGlobalSection, s_pszFullscreenHideScroll, m_appSettings.bFullscreenHideScroll);
@@ -975,6 +1050,7 @@ void CDjViewApp::OnFileSettings()
 	{
 		m_appSettings.bRestoreAssocs = !!dlg.m_pageAssocs.m_bRestoreAssocs;
 
+		m_appSettings.bTopLevelDocs = !!dlg.m_pageGeneral.m_bTopLevelDocs;
 		m_appSettings.bGenAllThumbnails = !!dlg.m_pageGeneral.m_bGenAllThumbnails;
 		m_appSettings.bFullscreenClicks = !!dlg.m_pageGeneral.m_bFullscreenClicks;
 		m_appSettings.bFullscreenHideScroll = !!dlg.m_pageGeneral.m_bFullscreenHideScroll;
@@ -998,6 +1074,9 @@ void CDjViewApp::OnFileSettings()
 		SaveSettings();
 
 		UpdateObservers(APP_SETTINGS_CHANGED);
+
+		if (m_bTopLevelDocs != m_appSettings.bTopLevelDocs)
+			AfxMessageBox(IDS_RESTART_NEEDED);
 	}
 }
 
@@ -1160,32 +1239,12 @@ void CDjViewApp::SetLanguage(UINT nLangIndex)
 		}
 	}
 
-	m_appSettings.bLocalized = (info.hInstance != AfxGetInstanceHandle());
-	m_appSettings.nLanguage = info.nLanguage;
-
 	if (nLangIndex == m_nLangIndex)
 		return;
 
 	m_nLangIndex = nLangIndex;
 	AfxSetResourceHandle(info.hInstance);
-
-	if (m_appSettings.hDjVuMenu != NULL)
-	{
-		::DestroyMenu(m_appSettings.hDjVuMenu);
-		::DestroyMenu(m_appSettings.hDefaultMenu);
-		m_appSettings.hDjVuMenu = NULL;
-		m_appSettings.hDefaultMenu = NULL;
-	}
-
-	if (m_appSettings.bLocalized)
-	{
-		CMenu menuDjVu, menuDefault;
-		menuDjVu.LoadMenu(IDR_DjVuTYPE);
-		menuDefault.LoadMenu(IDR_MAINFRAME);
-
-		m_appSettings.hDjVuMenu = menuDjVu.Detach();
-		m_appSettings.hDefaultMenu = menuDefault.Detach();
-	}
+	m_appSettings.nLanguage = info.nLanguage;
 
 	m_pDjVuTemplate->UpdateTemplate();
 	UpdateDictProperties();
@@ -1899,301 +1958,49 @@ void CDjViewApp::Lookup(const CString& strLookup, DictionaryInfo* pInfo)
 	pIndex->Lookup(strLookup);
 }
 
-bool IsFromCurrentProcess(CWnd* pWnd)
+void CDjViewApp::OnAppExit()
 {
-	DWORD dwProcessId = 0;
-	::GetWindowThreadProcessId(pWnd->GetSafeHwnd(), &dwProcessId);
-	return (dwProcessId == ::GetCurrentProcessId());
-}
-
-UINT GetMouseScrollLines()
-{
-	static UINT uCachedScrollLines;
-	static bool bGotScrollLines = false;
-
-	// If we've already got it and we're not refreshing,
-	// return what we've already got
-
-	if (bGotScrollLines)
-		return uCachedScrollLines;
-
-	// see if we can find the mouse window
-
-	bGotScrollLines = true;
-
-	static UINT msgGetScrollLines;
-	static WORD nRegisteredMessage;
-
-	if (afxData.bWin95)
-	{
-		if (nRegisteredMessage == 0)
-		{
-			msgGetScrollLines = ::RegisterWindowMessage(MSH_SCROLL_LINES);
-			if (msgGetScrollLines == 0)
-				nRegisteredMessage = 1;     // couldn't register!  never try again
-			else
-				nRegisteredMessage = 2;     // it worked: use it
-		}
-
-		if (nRegisteredMessage == 2)
-		{
-			HWND hwMouseWheel = NULL;
-			hwMouseWheel = FindWindow(MSH_WHEELMODULE_CLASS, MSH_WHEELMODULE_TITLE);
-			if (hwMouseWheel && msgGetScrollLines)
-			{
-				uCachedScrollLines = (UINT)::SendMessage(hwMouseWheel, msgGetScrollLines, 0, 0);
-			}
-		}
-	}
-
-	if (uCachedScrollLines == 0)
-	{
-		::SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &uCachedScrollLines, false);
-		if (uCachedScrollLines == 0)
-			uCachedScrollLines = 3; // reasonable default
-	}
-
-	return uCachedScrollLines;
-}
-
-CString FormatDouble(double fValue)
-{
-	char nDecimalPoint = localeconv()->decimal_point[0];
-
-	CString strResult = FormatString(_T("%.6f"), fValue);
-	while (!strResult.IsEmpty() && strResult[strResult.GetLength() - 1] == '0')
-		strResult = strResult.Left(strResult.GetLength() - 1);
-
-	if (!strResult.IsEmpty() && strResult[strResult.GetLength() - 1] == nDecimalPoint)
-		strResult = strResult.Left(strResult.GetLength() - 1);
-
-	if (strResult.IsEmpty())
-		strResult = _T("0");
-
-	return strResult;
-}
-
-void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, double& value, double def, LPCTSTR pszSuffix)
-{
-	CString strText = FormatDouble(value) + pszSuffix;
-	DDX_Text(pDX, nIDC, strText);
-
-	if (pDX->m_bSaveAndValidate)
-	{
-		if (_stscanf(strText, _T("%lf"), &value) != 1)
-			value = def;
-	}
-}
-
-void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def, LPCTSTR pszSuffix)
-{
-	CString strText = FormatString(_T("%u%s"), value, CString(pszSuffix));
-	DDX_Text(pDX, nIDC, strText);
-
-	if (pDX->m_bSaveAndValidate)
-	{
-		if (_stscanf(strText, _T("%u"), &value) != 1)
-			value = def;
-	}
-}
-
-void CreateSystemDialogFont(CFont& font)
-{
-	LOGFONT lf;
-
-	HGDIOBJ hFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
-	::GetObject(hFont, sizeof(LOGFONT), &lf);
-
-	if (IsWin2kOrLater())
-		_tcscpy(lf.lfFaceName, _T("MS Shell Dlg 2"));
-
-	font.CreateFontIndirect(&lf);
-}
-
-void CreateSystemIconFont(CFont& font)
-{
-	LOGFONT lf;
-
-	if (IsThemed())
-	{
-		LOGFONTW lfw;
-		HRESULT hr = XPGetThemeSysFont(NULL, TMT_ICONTITLEFONT, &lfw);
-		if (SUCCEEDED(hr))
-		{
-#ifdef UNICODE
-			memcpy(&lf, &lfw, sizeof(LOGFONT));
-#else
-			memcpy(&lf, &lfw, (char*)&lfw.lfFaceName - (char*)&lfw);
-			_tcscpy(lf.lfFaceName, CString(lfw.lfFaceName));
-#endif
-			font.CreateFontIndirect(&lf);
-			return;
-		}
-	}
-
-	if (!SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &lf, 0))
-	{
-		CreateSystemDialogFont(font);
+	if (m_bTopLevelDocs && !SaveAllModified())
 		return;
-	}
 
-	font.CreateFontIndirect(&lf);
+	// Close every main frame. This will work in both MDI and top-level mode.
+	int nWindows = m_frames.size();
+	for (int i = 0; i < nWindows; ++i)
+		m_frames.front()->SendMessage(WM_CLOSE);
 }
 
-void CreateSystemMenuFont(CFont& font)
+int CDjViewApp::GetDocumentCount()
 {
-	LOGFONT lf;
-
-	if (IsThemed())
+	int nCount = 0;
+	POSITION pos = GetFirstDocTemplatePosition();
+	while (pos != NULL)
 	{
-		LOGFONTW lfw;
-		HRESULT hr = XPGetThemeSysFont(NULL, TMT_MENUFONT, &lfw);
-		if (SUCCEEDED(hr))
+		CDocTemplate* pTemplate = GetNextDocTemplate(pos);
+		ASSERT_KINDOF(CDocTemplate, pTemplate);
+
+		POSITION posDoc = pTemplate->GetFirstDocPosition();
+		while (posDoc != NULL)
 		{
-#ifdef UNICODE
-			memcpy(&lf, &lfw, sizeof(LOGFONT));
-#else
-			memcpy(&lf, &lfw, (char*)&lfw.lfFaceName - (char*)&lfw);
-			_tcscpy(lf.lfFaceName, CString(lfw.lfFaceName));
-#endif
-			font.CreateFontIndirect(&lf);
-			return;
+			pTemplate->GetNextDoc(posDoc);
+			++nCount;
 		}
 	}
 
-	NONCLIENTMETRICS ncm;
-	ncm.cbSize = sizeof(NONCLIENTMETRICS);
-	if (!SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0))
-	{
-		CreateSystemDialogFont(font);
-		return;
-	}
-
-	font.CreateFontIndirect(&ncm.lfMenuFont);
+	return nCount;
 }
 
-
-// MonitorAPI
-
-struct MonitorAPI
+BOOL CDjViewApp::SaveAllModified()
 {
-	MonitorAPI();
-	~MonitorAPI();
-
-	struct MonitorInfo
+	if (m_appSettings.bWarnCloseMultiple)
 	{
-		MonitorInfo() : cbSize(sizeof(MonitorInfo)) {}
-
-		DWORD cbSize;
-		RECT rcMonitor;
-		RECT rcWork;
-		DWORD dwFlags;
-	};
-
-	enum
-	{
-		DefaultToNull = 0,
-		DefaultToPrimary = 1,
-		DefaultToNearest = 2
-	};
-
-	typedef HANDLE (WINAPI* pfnMonitorFromPoint)(POINT pt, DWORD dwFlags);
-	typedef BOOL (WINAPI* pfnGetMonitorInfo)(HANDLE hMonitor, MonitorInfo* pmi);
-	typedef HANDLE (WINAPI* pfnMonitorFromWindow)(HWND hWnd, DWORD dwFlags);
-
-	pfnMonitorFromPoint pMonitorFromPoint;
-	pfnMonitorFromWindow pMonitorFromWindow;
-	pfnGetMonitorInfo pGetMonitorInfo;
-
-	bool IsLoaded() const { return hUser32 != NULL; }
-
-	HINSTANCE hUser32;
-};
-
-static MonitorAPI theMonitorAPI;
-
-MonitorAPI::MonitorAPI()
-	: pMonitorFromPoint(NULL),
-	  pMonitorFromWindow(NULL),
-	  pGetMonitorInfo(NULL)
-{
-	hUser32 = ::LoadLibrary(_T("user32.dll"));
-	if (hUser32 != NULL)
-	{
-		pMonitorFromPoint = (pfnMonitorFromPoint) ::GetProcAddress(hUser32, "MonitorFromPoint");
-		pMonitorFromWindow = (pfnMonitorFromWindow) ::GetProcAddress(hUser32, "MonitorFromWindow");
-		pGetMonitorInfo = (pfnGetMonitorInfo) ::GetProcAddress(hUser32, "GetMonitorInfoA");
-
-		if (pMonitorFromPoint == NULL
-				|| pMonitorFromWindow == NULL
-				|| pGetMonitorInfo == NULL)
+		int nOpenDocuments = GetDocumentCount();
+		if (nOpenDocuments > 1)
 		{
-			::FreeLibrary(hUser32);
-			hUser32 = NULL;
+			if (AfxMessageBox(FormatString(IDS_WARN_CLOSE_MULTIPLE, nOpenDocuments),
+					MB_ICONEXCLAMATION | MB_YESNO) != IDYES)
+				return false;
 		}
 	}
-}
 
-MonitorAPI::~MonitorAPI()
-{
-	if (hUser32 != NULL)
-		::FreeLibrary(hUser32);
-}
-
-CRect GetMonitorWorkArea(const CPoint& point)
-{
-	CRect rcWorkArea;
-
-	if (!::SystemParametersInfo(SPI_GETWORKAREA, 0, (PVOID)&rcWorkArea, false))
-	{
-		CSize szScreen(::GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN));
-		rcWorkArea = CRect(CPoint(0, 0), szScreen);
-	}
-
-	if (theMonitorAPI.IsLoaded())
-	{
-		MonitorAPI::MonitorInfo mi;
-		HANDLE hMonitor = theMonitorAPI.pMonitorFromPoint(point, MonitorAPI::DefaultToNearest);
-		if (hMonitor != NULL && theMonitorAPI.pGetMonitorInfo(hMonitor, &mi))
-			rcWorkArea = mi.rcWork;
-	}
-
-	return rcWorkArea;
-}
-
-CRect GetMonitorWorkArea(CWnd* pWnd)
-{
-	CRect rcWorkArea;
-
-	if (!::SystemParametersInfo(SPI_GETWORKAREA, 0, (PVOID)&rcWorkArea, false))
-	{
-		CSize szScreen(::GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN));
-		rcWorkArea = CRect(CPoint(0, 0), szScreen);
-	}
-
-	if (theMonitorAPI.IsLoaded())
-	{
-		MonitorAPI::MonitorInfo mi;
-		HANDLE hMonitor = theMonitorAPI.pMonitorFromWindow(pWnd->GetSafeHwnd(), MonitorAPI::DefaultToNearest);
-		if (hMonitor != NULL && theMonitorAPI.pGetMonitorInfo(hMonitor, &mi))
-			rcWorkArea = mi.rcWork;
-	}
-
-	return rcWorkArea;
-}
-
-CRect GetMonitorRect(CWnd* pWnd)
-{
-	CSize szScreen(::GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN));
-	CRect rcMonitor(CPoint(0, 0), szScreen);
-
-	if (theMonitorAPI.IsLoaded())
-	{
-		MonitorAPI::MonitorInfo mi;
-		HANDLE hMonitor = theMonitorAPI.pMonitorFromWindow(pWnd->GetSafeHwnd(), MonitorAPI::DefaultToNearest);
-		if (hMonitor != NULL && theMonitorAPI.pGetMonitorInfo(hMonitor, &mi))
-			rcMonitor = mi.rcMonitor;
-	}
-
-	return rcMonitor;
+	return true;
 }

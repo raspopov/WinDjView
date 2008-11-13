@@ -58,7 +58,7 @@ BOOL CFullscreenWnd::Create()
 			::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME)));
 
 	return CreateEx(0, strWndClass, NULL,
-		WS_POPUP, CRect(0, 0, m_nWidth, m_nHeight), NULL, 0);
+		WS_POPUP, CRect(0, 0, 0, 0), NULL, 0);
 }
 
 void CFullscreenWnd::Show(CDjVuView* pOwner, CDjVuView* pContents)
@@ -69,11 +69,11 @@ void CFullscreenWnd::Show(CDjVuView* pOwner, CDjVuView* pContents)
 	m_pView = pContents;
 
 	CRect rcMonitor = GetMonitorRect(pOwner);
-	m_nWidth = rcMonitor.Width();
-	m_nHeight = rcMonitor.Height();
+	int nWidth = rcMonitor.Width();
+	int nHeight = rcMonitor.Height();
 
-	MoveWindow(rcMonitor.left, rcMonitor.top, m_nWidth, m_nHeight);
-	m_pView->MoveWindow(0, 0, m_nWidth, m_nHeight);
+	MoveWindow(rcMonitor.left, rcMonitor.top, nWidth, nHeight);
+	m_pView->MoveWindow(0, 0, nWidth, nHeight);
 
 	CString strText;
 	pOwner->GetTopLevelParent()->GetWindowText(strText);

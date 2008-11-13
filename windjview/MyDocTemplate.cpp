@@ -113,3 +113,23 @@ void CMyDocTemplate::InitialUpdateFrame(CFrameWnd* pFrame, CDocument* pDoc, BOOL
 
 	pView->UpdateObservers(VIEW_INITIALIZED);
 }
+
+CFrameWnd* CMyDocTemplate::CreateNewFrame(CDocument* pDoc, CFrameWnd* pOther)
+{
+	if (theApp.m_bTopLevelDocs)
+	{
+		CMainFrame* pMainFrame = (CMainFrame*) theApp.m_pMainWnd;
+		ASSERT(pMainFrame != NULL);
+		if (pMainFrame->MDIGetActive() != NULL)
+		{
+			// Create a new MDI Frame window
+			pMainFrame = theApp.CreateMainFrame(SW_SHOWNORMAL);
+			if (pMainFrame == NULL)
+				return NULL;
+
+			pMainFrame->ActivateFrame();
+		}
+	}
+
+	return CDocTemplate::CreateNewFrame(pDoc, pOther);
+}

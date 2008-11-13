@@ -41,6 +41,7 @@ public:
 // Attributes
 public:
 	CFindDlg* m_pFindDlg;
+	CMenu m_childMenu;
 
 // Operations
 public:
@@ -54,7 +55,6 @@ public:
 	bool IsFullscreenMode();
 	CMagnifyWnd* GetMagnifyWnd();
 
-	int GetDocumentCount();
 	void UpdateToolbars();
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
@@ -63,7 +63,6 @@ public:
 protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
-	virtual void OnUpdateFrameMenu(HMENU hMenuAlt);
 	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
@@ -129,6 +128,7 @@ protected:
 	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
 	afx_msg void OnViewToolbar();
 	afx_msg void OnViewStatusBar();
 	afx_msg void OnViewSidebar();
@@ -170,6 +170,9 @@ protected:
 	afx_msg void OnUpdateDictionaryPrev(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateDictionaryLookup(CCmdUI* pCmdUI);
 	afx_msg void OnIdleUpdateCmdUI();
+	afx_msg void OnWindowCascade();
+	afx_msg void OnWindowTileHorz();
+	afx_msg void OnWindowTileVert();
 	DECLARE_MESSAGE_MAP()
 };
 

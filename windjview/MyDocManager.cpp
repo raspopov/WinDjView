@@ -198,7 +198,7 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 	}
 
 	TCHAR szLinkName[_MAX_PATH];
-	if (AfxResolveShortcut(AfxGetApp()->GetMainWnd(), szPath, szLinkName, _MAX_PATH))
+	if (AfxResolveShortcut(GetMainWnd(), szPath, szLinkName, _MAX_PATH))
 		lstrcpy(szPath, szLinkName);
 
 	// find the highest confidence
@@ -206,6 +206,7 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 	CDocTemplate* pBestTemplate = NULL;
 	CDocument* pOpenDocument = NULL;
 	bool bFullscreenDoc = false;
+	CMainFrame* pOldMainFrm = (CMainFrame*) theApp.m_pMainWnd;
 
 	POSITION pos = m_templateList.GetHeadPosition();
 	while (pos != NULL)
@@ -275,6 +276,11 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 		}
 		else if (pMainFrm->IsFullscreenMode())
 			pMainFrm->GetFullscreenWnd()->Hide();
+
+		// CDocManager::OnDDECommand shows the previous main window.
+		// If it was in the fullscreen mode, hide it back.
+		if (pOldMainFrm != NULL && pOldMainFrm != pMainFrm && pOldMainFrm->IsFullscreenMode())
+			pOldMainFrm->ShowWindow(SW_HIDE);
 
 		int nAddToHistory = (bAddToHistory ? CDjVuView::AddTarget : 0);
 		if (bAddToHistory && bestMatch == CDocTemplate::yesAlreadyOpen)

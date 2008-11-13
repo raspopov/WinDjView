@@ -48,6 +48,7 @@ BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 	ON_WM_CLOSE()
 	ON_WM_NCPAINT()
 	ON_WM_DESTROY()
+	ON_WM_SYSCOMMAND()
 END_MESSAGE_MAP()
 
 
@@ -89,7 +90,7 @@ BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 	if (!CMDIChildWnd::PreCreateWindow(cs))
 		return false;
 
-	if (theApp.GetAppSettings()->bChildMaximized)
+	if (theApp.GetAppSettings()->bChildMaximized || theApp.m_bTopLevelDocs)
 		cs.style |= WS_MAXIMIZE;
 
 	return true;
@@ -152,7 +153,7 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 	CMDIFrameWnd* pFrame = GetMDIFrame();
 	CDjVuView* pView = GetDjVuView();
 
-	if (theApp.GetAppSettings()->bChildMaximized)
+	if (theApp.GetAppSettings()->bChildMaximized || theApp.m_bTopLevelDocs)
 	{
 		nCmdShow = SW_SHOWMAXIMIZED;
 
@@ -370,13 +371,8 @@ void CChildFrame::OnUpdateFrameMenu(
 	}
 
 	// use default menu stored in frame if none from document
-	// use localized menu if localization is enabled
 	if (hMenuAlt == NULL)
-	{
-		hMenuAlt = m_hMenuShared;
-		if (theApp.GetAppSettings()->bLocalized)
-			hMenuAlt = theApp.GetAppSettings()->hDjVuMenu;
-	}
+		hMenuAlt = GetMainFrame()->m_childMenu.m_hMenu;
 
 	if (hMenuAlt != NULL && bActivate)
 	{
@@ -387,9 +383,7 @@ void CChildFrame::OnUpdateFrameMenu(
 	}
 	else if (hMenuAlt != NULL && !bActivate && pActivateWnd == NULL)
 	{
-		HMENU hMainMenu = pFrame->m_hMenuDefault;
-		if (theApp.GetAppSettings()->bLocalized)
-			hMainMenu = theApp.GetAppSettings()->hDefaultMenu;
+		HMENU hMainMenu = GetMainFrame()->m_hMenuDefault;
 
 		// destroying last child
 		::SendMessage(pFrame->m_hWndMDIClient, WM_MDISETMENU, (WPARAM)hMainMenu, NULL);
@@ -417,7 +411,14 @@ void CChildFrame::OnClose()
 	if (GetMainFrame()->IsFullscreenMode())
 		return;
 
+	// Close the parent frame if it is not the last MDI frame.
+	bool bCloseParent = theApp.m_bTopLevelDocs && theApp.m_frames.size() > 1;
+	CMainFrame* pMainFrame = GetMainFrame();
+
 	CMDIChildWnd::OnClose();
+
+	if (bCloseParent)
+		pMainFrame->SendMessage(WM_CLOSE);
 
 	theApp.SaveSettings();
 }
@@ -508,4 +509,30 @@ void CChildFrame::OnNcPaint()
 CMainFrame* CChildFrame::GetMainFrame()
 {
 	return (CMainFrame*) GetMDIFrame();
+}
+
+void CChildFrame::OnSysCommand(UINT nID, LPARAM lParam)
+{
+	if (theApp.m_bTopLevelDocs)
+	{
+		// Pass certain commands to the main frame instead.
+		CMainFrame* pMainFrame = GetMainFrame();
+
+		if (nID == SC_MINIMIZE)
+		{
+			GetMainFrame()->SendMessage(WM_SYSCOMMAND, SC_MINIMIZE, 0);
+			return;
+		}
+
+		if (nID == SC_MAXIMIZE || nID == SC_RESTORE)
+		{
+			if (GetMainFrame()->IsZoomed())
+				GetMainFrame()->SendMessage(WM_SYSCOMMAND, SC_RESTORE, 0);
+			else
+				GetMainFrame()->SendMessage(WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+			return;
+		}
+	}
+
+	CMDIChildWnd::OnSysCommand(nID, lParam);
 }

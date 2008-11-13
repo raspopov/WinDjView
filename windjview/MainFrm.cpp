@@ -43,6 +43,7 @@ IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWnd)
 
 BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_WM_CREATE()
+	ON_WM_ACTIVATE()
 	ON_COMMAND(ID_VIEW_TOOLBAR, OnViewToolbar)
 	ON_COMMAND(ID_VIEW_STATUS_BAR, OnViewStatusBar)
 	ON_COMMAND(ID_VIEW_SIDEBAR, OnViewSidebar)
@@ -90,6 +91,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_DICTIONARY_PREV, OnUpdateDictionaryPrev)
 	ON_UPDATE_COMMAND_UI(ID_DICTIONARY_LOOKUP, OnUpdateDictionaryLookup)
 	ON_MESSAGE_VOID(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
+	ON_COMMAND(ID_WINDOW_CASCADE, OnWindowCascade)
+	ON_COMMAND(ID_WINDOW_TILE_HORZ, OnWindowTileHorz)
+	ON_COMMAND(ID_WINDOW_TILE_VERT, OnWindowTileVert)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -110,6 +114,7 @@ CMainFrame::CMainFrame()
 	: m_pFindDlg(NULL), m_historyPos(m_history.end()), m_pFullscreenWnd(NULL),
 	  m_pMagnifyWnd(NULL), m_nCurLang(CB_ERR), m_nCurDict(CB_ERR)
 {
+	m_childMenu.LoadMenu(IDR_DjVuTYPE);
 }
 
 CMainFrame::~CMainFrame()
@@ -158,6 +163,14 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	theApp.AddObserver(this);
 
 	return 0;
+}
+
+void CMainFrame::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
+{
+	if (nState == WA_ACTIVE)
+		theApp.ChangeMainWnd(this);
+
+	CMDIFrameWnd::OnActivate(nState, pWndOther, bMinimized);
 }
 
 void CMainFrame::InitToolBar()
@@ -951,33 +964,16 @@ void CMainFrame::OnActivateWindow(UINT nID)
 			if (nDoc == nActivateDoc)
 			{
 				CDjVuView* pView = ((CDjVuDoc*)pDoc)->GetDjVuView();
+				CMainFrame* pMainFrame = pView->GetMainFrame();
+				pMainFrame->ActivateFrame();
 				CFrameWnd* pFrame = pView->GetParentFrame();
 				pFrame->ActivateFrame();
+				return;
 			}
 
 			++nDoc;
 		}
 	}
-}
-
-int CMainFrame::GetDocumentCount()
-{
-	int nCount = 0;
-	POSITION pos = theApp.GetFirstDocTemplatePosition();
-	while (pos != NULL)
-	{
-		CDocTemplate* pTemplate = theApp.GetNextDocTemplate(pos);
-		ASSERT_KINDOF(CDocTemplate, pTemplate);
-
-		POSITION posDoc = pTemplate->GetFirstDocPosition();
-		while (posDoc != NULL)
-		{
-			pTemplate->GetNextDoc(posDoc);
-			++nCount;
-		}
-	}
-
-	return nCount;
 }
 
 void CMainFrame::GoToHistoryPos(const HistoryPos& pos, const HistoryPos* pCurPos)
@@ -1119,31 +1115,27 @@ bool CMainFrame::AddToHistory(const HistoryPos& pos, bool bForce)
 
 void CMainFrame::OnUpdateStatusAdjust(CCmdUI* pCmdUI)
 {
-	static CString strMessage, strTooltip;
-	CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
-
 	CDisplaySettings* pDisplaySettings = theApp.GetDisplaySettings();
 
 	if (!pDisplaySettings->IsAdjusted() || MDIGetActive() == NULL)
 	{
 		m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_ADJUST, SBPS_DISABLED | SBPS_NOBORDERS, 0);
 		pCmdUI->Enable(false);
-		strMessage.Empty();
 		return;
 	}
 
 	CString strNewMessage;
 	strNewMessage.LoadString(ID_INDICATOR_ADJUST);
 
-	if (strMessage != strNewMessage)
+	CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
+	if (status.GetText(1, 0) != strNewMessage)
 	{
-		strMessage = strNewMessage;
-		pCmdUI->SetText(strMessage + _T("          "));
-		status.SetText(strMessage + _T("          "), 1, 0);
+		pCmdUI->SetText(strNewMessage + _T("          "));
+		status.SetText(strNewMessage + _T("          "), 1, 0);
 
 		CWindowDC dc(&status);
 		CFont* pOldFont = dc.SelectObject(status.GetFont());
-		m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_ADJUST, 0, dc.GetTextExtent(strMessage).cx + 2);
+		m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_ADJUST, 0, dc.GetTextExtent(strNewMessage).cx + 2);
 		dc.SelectObject(pOldFont);
 	}
 
@@ -1170,17 +1162,12 @@ void CMainFrame::OnUpdateStatusAdjust(CCmdUI* pCmdUI)
 		strNewTooltip += (!strNewTooltip.IsEmpty() ? _T(", ") : _T("")) + strTemp;
 	}
 
-	if (strTooltip != strNewTooltip)
-	{
-		strTooltip = strNewTooltip;
-		status.SetTipText(1, strTooltip);
-	}
+	if (status.GetTipText(1) != strNewTooltip)
+		status.SetTipText(1, strNewTooltip);
 }
 
 void CMainFrame::OnUpdateStatusMode(CCmdUI* pCmdUI)
 {
-	static CString strMessage;
-
 	CString strNewMessage;
 	CMDIChildWnd* pActive = MDIGetActive();
 	if (pActive != NULL)
@@ -1205,37 +1192,31 @@ void CMainFrame::OnUpdateStatusMode(CCmdUI* pCmdUI)
 		}
 	}
 
+	CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
 	if (strNewMessage.IsEmpty())
 	{
 		m_wndStatusBar.SetPaneInfo(2, ID_INDICATOR_MODE, SBPS_DISABLED | SBPS_NOBORDERS, 0);
 		pCmdUI->Enable(false);
-		strMessage.Empty();
 	}
-	else if (strMessage != strNewMessage)
+	else if (status.GetText(2, 0) != strNewMessage)
 	{
-		CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
-
-		strMessage = strNewMessage;
-		pCmdUI->SetText(strMessage);
-		status.SetText(strMessage, 2, 0);
+		pCmdUI->SetText(strNewMessage);
+		status.SetText(strNewMessage, 2, 0);
 
 		CWindowDC dc(&status);
 		CFont* pOldFont = dc.SelectObject(status.GetFont());
-		m_wndStatusBar.SetPaneInfo(2, ID_INDICATOR_MODE, 0, dc.GetTextExtent(strMessage).cx + 2);
+		m_wndStatusBar.SetPaneInfo(2, ID_INDICATOR_MODE, 0, dc.GetTextExtent(strNewMessage).cx + 2);
 		dc.SelectObject(pOldFont);
 	}
 }
 
 void CMainFrame::OnUpdateStatusPage(CCmdUI* pCmdUI)
 {
-	static CString strMessage;
-
 	CMDIChildWnd* pActive = MDIGetActive();
 	if (pActive == NULL)
 	{
 		m_wndStatusBar.SetPaneInfo(s_nIndicatorPage, ID_INDICATOR_PAGE, SBPS_DISABLED | SBPS_NOBORDERS, 0);
 		pCmdUI->Enable(false);
-		strMessage.Empty();
 		return;
 	}
 
@@ -1245,31 +1226,26 @@ void CMainFrame::OnUpdateStatusPage(CCmdUI* pCmdUI)
 	CString strNewMessage;
 	strNewMessage.Format(ID_INDICATOR_PAGE, pView->GetCurrentPage() + 1, pView->GetPageCount());
 
-	if (strMessage != strNewMessage)
+	CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
+	if (status.GetText(s_nIndicatorPage, 0) != strNewMessage)
 	{
-		CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
-
-		strMessage = strNewMessage;
-		pCmdUI->SetText(strMessage);
-		status.SetText(strMessage, s_nIndicatorPage, 0);
+		pCmdUI->SetText(strNewMessage);
+		status.SetText(strNewMessage, s_nIndicatorPage, 0);
 
 		CWindowDC dc(&status);
 		CFont* pOldFont = dc.SelectObject(status.GetFont());
-		m_wndStatusBar.SetPaneInfo(s_nIndicatorPage, ID_INDICATOR_PAGE, 0, dc.GetTextExtent(strMessage).cx + 2);
+		m_wndStatusBar.SetPaneInfo(s_nIndicatorPage, ID_INDICATOR_PAGE, 0, dc.GetTextExtent(strNewMessage).cx + 2);
 		dc.SelectObject(pOldFont);
 	}
 }
 
 void CMainFrame::OnUpdateStatusSize(CCmdUI* pCmdUI)
 {
-	static CString strMessage;
-
 	CMDIChildWnd* pActive = MDIGetActive();
 	if (pActive == NULL)
 	{
 		m_wndStatusBar.SetPaneInfo(4, ID_INDICATOR_SIZE, SBPS_DISABLED | SBPS_NOBORDERS, 0);
 		pCmdUI->Enable(false);
-		strMessage.Empty();
 		return;
 	}
 
@@ -1289,20 +1265,18 @@ void CMainFrame::OnUpdateStatusSize(CCmdUI* pCmdUI)
 	CString strUnits;
 	AfxExtractSubString(strUnits, LoadString(IDS_UNITS_SHORT), nUnits, ',');
 
-	strNewMessage.Format(ID_INDICATOR_SIZE, 
+	strNewMessage.Format(ID_INDICATOR_SIZE,
 			(LPCTSTR)FormatDouble(fWidth), (LPCTSTR)FormatDouble(fHeight), strUnits);
 
-	if (strMessage != strNewMessage)
+	CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
+	if (status.GetText(4, 0) != strNewMessage)
 	{
-		CStatusBarCtrl& status = m_wndStatusBar.GetStatusBarCtrl();
-
-		strMessage = strNewMessage;
-		pCmdUI->SetText(strMessage);
-		status.SetText(strMessage, 4, 0);
+		pCmdUI->SetText(strNewMessage);
+		status.SetText(strNewMessage, 4, 0);
 
 		CWindowDC dc(&status);
 		CFont* pOldFont = dc.SelectObject(status.GetFont());
-		m_wndStatusBar.SetPaneInfo(4, ID_INDICATOR_SIZE, 0, dc.GetTextExtent(strMessage).cx + 2);
+		m_wndStatusBar.SetPaneInfo(4, ID_INDICATOR_SIZE, 0, dc.GetTextExtent(strNewMessage).cx + 2);
 		dc.SelectObject(pOldFont);
 	}
 }
@@ -1347,6 +1321,13 @@ void CMainFrame::OnDestroy()
 		m_pMagnifyWnd = NULL;
 	}
 
+	if (m_pFindDlg != NULL)
+	{
+		m_pFindDlg->DestroyWindow();
+		delete m_pFindDlg;
+		m_pFindDlg = NULL;
+	}
+
 	theApp.GetAppSettings()->nCurLang = m_nCurLang;
 	theApp.GetAppSettings()->nCurDict = m_nCurDict;
 
@@ -1355,36 +1336,19 @@ void CMainFrame::OnDestroy()
 	CMDIFrameWnd::OnDestroy();
 }
 
-void CMainFrame::OnUpdateFrameMenu(HMENU hMenuAlt)
-{
-	// From MFC's CMDIFrameWnd::OnUpdateFrameMenu
-	// Takes into account localized menus
-
-	CMDIChildWnd* pActiveWnd = MDIGetActive();
-	if (pActiveWnd != NULL)
-	{
-		// let child update the menu bar
-		pActiveWnd->OnUpdateFrameMenu(TRUE, pActiveWnd, hMenuAlt);
-	}
-	else
-	{
-		// no child active, so have to update it ourselves
-		//  (we can't send it to a child window, since pActiveWnd is NULL)
-		// use localized menu if localization is enabled
-		if (hMenuAlt == NULL)
-		{
-			hMenuAlt = m_hMenuDefault;
-			if (theApp.GetAppSettings()->bLocalized)
-				hMenuAlt = theApp.GetAppSettings()->hDefaultMenu;
-		}
-		::SendMessage(m_hWndMDIClient, WM_MDISETMENU, (WPARAM)hMenuAlt, NULL);
-	}
-}
-
 void CMainFrame::LanguageChanged()
 {
+	HMENU hOldMenuDefault = m_hMenuDefault;
+	m_hMenuDefault = ::LoadMenu(AfxFindResourceHandle(MAKEINTRESOURCE(IDR_MAINFRAME), RT_MENU),
+			MAKEINTRESOURCE(IDR_MAINFRAME));
+	HMENU hOldChildMenu = m_childMenu.Detach();
+	m_childMenu.LoadMenu(IDR_DjVuTYPE);
+
 	OnUpdateFrameMenu(NULL);
 	DrawMenuBar();
+
+	::DestroyMenu(hOldMenuDefault);
+	::DestroyMenu(hOldChildMenu);
 
 	UpdateLangAndDict(NULL, true);
 
@@ -1425,14 +1389,13 @@ void CMainFrame::LanguageChanged()
 
 void CMainFrame::OnClose()
 {
-	if (theApp.GetAppSettings()->bWarnCloseMultiple)
+	if (theApp.m_bTopLevelDocs)
 	{
-		int nOpenDocuments = GetDocumentCount();
-		if (nOpenDocuments > 1)
+		if (theApp.m_frames.size() > 1)
 		{
-			if (AfxMessageBox(FormatString(IDS_WARN_CLOSE_MULTIPLE, nOpenDocuments),
-					MB_ICONEXCLAMATION | MB_YESNO) != IDYES)
-				return;
+			// This is not the last top-level window.
+			// Remove it from the application list before closing.
+			theApp.RemoveMainFrame(this);
 		}
 	}
 
@@ -1441,10 +1404,6 @@ void CMainFrame::OnClose()
 		m_pFindDlg->UpdateData();
 		theApp.GetAppSettings()->strFind = m_pFindDlg->m_strFind;
 		theApp.GetAppSettings()->bMatchCase = !!m_pFindDlg->m_bMatchCase;
-
-		m_pFindDlg->DestroyWindow();
-		delete m_pFindDlg;
-		m_pFindDlg = NULL;
 	}
 
 	CMDIFrameWnd::OnClose();
@@ -1567,5 +1526,32 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 	else if (message->code == DICT_LIST_CHANGED)
 	{
 		UpdateLangAndDict(NULL, true);
+	}
+}
+
+void CMainFrame::OnWindowCascade()
+{
+	if (!theApp.m_bTopLevelDocs)
+	{
+		OnMDIWindowCmd(ID_WINDOW_CASCADE);
+		return;
+	}
+}
+
+void CMainFrame::OnWindowTileHorz()
+{
+	if (!theApp.m_bTopLevelDocs)
+	{
+		OnMDIWindowCmd(ID_WINDOW_TILE_HORZ);
+		return;
+	}
+}
+
+void CMainFrame::OnWindowTileVert()
+{
+	if (!theApp.m_bTopLevelDocs)
+	{
+		OnMDIWindowCmd(ID_WINDOW_TILE_VERT);
+		return;
 	}
 }

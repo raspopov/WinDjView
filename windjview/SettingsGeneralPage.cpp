@@ -33,14 +33,17 @@ IMPLEMENT_DYNAMIC(CSettingsGeneralPage, CPropertyPage)
 CSettingsGeneralPage::CSettingsGeneralPage()
 	: CPropertyPage(CSettingsGeneralPage::IDD)
 {
-	m_bGenAllThumbnails = theApp.GetAppSettings()->bGenAllThumbnails;
-	m_bFullscreenClicks = theApp.GetAppSettings()->bFullscreenClicks;
-	m_bFullscreenHideScroll = theApp.GetAppSettings()->bFullscreenHideScroll;
-	m_bWarnCloseMultiple = theApp.GetAppSettings()->bWarnCloseMultiple;
-	m_bInvertWheelZoom = theApp.GetAppSettings()->bInvertWheelZoom;
-	m_bCloseOnEsc = theApp.GetAppSettings()->bCloseOnEsc;
-	m_bWrapLongBookmarks = theApp.GetAppSettings()->bWrapLongBookmarks;
-	m_bRestoreView = theApp.GetAppSettings()->bRestoreView;
+	const CAppSettings& appSettings = *theApp.GetAppSettings();
+
+	m_bTopLevelDocs = appSettings.bTopLevelDocs;
+	m_bGenAllThumbnails = appSettings.bGenAllThumbnails;
+	m_bFullscreenClicks = appSettings.bFullscreenClicks;
+	m_bFullscreenHideScroll = appSettings.bFullscreenHideScroll;
+	m_bWarnCloseMultiple = appSettings.bWarnCloseMultiple;
+	m_bInvertWheelZoom = appSettings.bInvertWheelZoom;
+	m_bCloseOnEsc = appSettings.bCloseOnEsc;
+	m_bWrapLongBookmarks = appSettings.bWrapLongBookmarks;
+	m_bRestoreView = appSettings.bRestoreView;
 }
 
 CSettingsGeneralPage::~CSettingsGeneralPage()
@@ -50,6 +53,7 @@ CSettingsGeneralPage::~CSettingsGeneralPage()
 void CSettingsGeneralPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
+	DDX_Check(pDX, IDC_TOP_LEVEL_DOCUMENTS, m_bTopLevelDocs);
 	DDX_Check(pDX, IDC_GEN_ALL_THUMBNAILS, m_bGenAllThumbnails);
 	DDX_Check(pDX, IDC_FULLSCREEN_CLICKS, m_bFullscreenClicks);
 	DDX_Check(pDX, IDC_FULLSCREEN_HIDESCROLL, m_bFullscreenHideScroll);

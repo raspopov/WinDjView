@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by WinDjView.rc
 //
 #define IDD_ABOUTBOX                    100
@@ -141,6 +141,7 @@
 #define IDS_DICT_LOCATION_PROMPT        297
 #define IDS_INVALID_DIR                 298
 #define IDS_COPY_SELECTION              299
+#define IDS_RESTART_NEEDED              300
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -185,6 +186,7 @@
 #define IDC_STATIC_LIB_LINK             1041
 #define IDC_FULLSCREEN_HIDESCROLL       1041
 #define IDC_ASSOCIATE                   1042
+#define IDC_TOP_LEVEL_DOCUMENTS         1042
 #define IDC_FULLSCREEN_CLICKS           1043
 #define IDC_STATIC_ABOUT                1044
 #define IDC_FIND                        1045

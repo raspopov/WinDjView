@@ -132,6 +132,7 @@ struct CAppSettings
 	int nNavPaneWidth;
 
 	bool bRestoreAssocs;
+	bool bTopLevelDocs;
 	bool bGenAllThumbnails;
 	bool bFullscreenClicks;
 	bool bFullscreenHideScroll;
@@ -144,10 +145,6 @@ struct CAppSettings
 	DWORD nLanguage;
 
 	CString strVersion;
-
-	bool bLocalized;
-	HMENU hDjVuMenu;
-	HMENU hDefaultMenu;
 
 	enum { HistorySize = 15 };
 	list<CString> searchHistory;

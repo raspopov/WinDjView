@@ -32,6 +32,7 @@ public:
 
 // Dialog Data
 	enum { IDD = IDD_SETTINGS_GENERAL };
+	BOOL m_bTopLevelDocs;
 	BOOL m_bGenAllThumbnails;
 	BOOL m_bFullscreenClicks;
 	BOOL m_bFullscreenHideScroll;

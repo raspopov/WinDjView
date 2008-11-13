@@ -99,5 +99,6 @@ protected:
 	afx_msg void OnDestroy();
 	afx_msg void OnClose();
 	afx_msg void OnNcPaint();
+	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };

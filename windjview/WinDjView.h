@@ -28,26 +28,10 @@
 #include "Global.h"
 #include "DjVuSource.h"
 
-extern CString CURRENT_VERSION;
-
-
-CString FormatDouble(double fValue);
-void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, double& value, double def = 0.0, LPCTSTR pszSuffix = NULL);
-void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0, LPCTSTR pszSuffix = NULL);
-
 class CDjVuDoc;
 class CMyDocTemplate;
+class CMainFrame;
 struct DocSettings;
-
-void CreateSystemDialogFont(CFont& font);
-void CreateSystemIconFont(CFont& font);
-void CreateSystemMenuFont(CFont& font);
-UINT GetMouseScrollLines();
-CRect GetMonitorWorkArea(const CPoint& point);
-CRect GetMonitorWorkArea(CWnd* pWnd);
-CRect GetMonitorRect(CWnd* pWnd);
-
-bool IsFromCurrentProcess(CWnd* pWnd);
 
 
 // CDjViewApp
@@ -73,6 +57,11 @@ public:
 
 	CDjVuDoc* OpenDocument(LPCTSTR lpszFileName, const GUTF8String& strPage, bool bAddToHistory = true);
 	CDjVuDoc* FindOpenDocument(LPCTSTR lpszFileName);
+	int GetDocumentCount();
+
+	CMainFrame* CreateMainFrame(int nCmdShow, bool bProcessCmdLine = false);
+	void RemoveMainFrame(CMainFrame* pMainFrame);
+	void ChangeMainWnd(CMainFrame* pMainFrame);
 
 	void SaveSettings();
 	bool RegisterShellFileTypes();
@@ -104,10 +93,13 @@ public:
 public:
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
+	virtual BOOL SaveAllModified();
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
 	bool m_bInitialized;
+	bool m_bTopLevelDocs;
+	list<CMainFrame*> m_frames;
 
 // Implementation
 protected:
@@ -164,6 +156,7 @@ protected:
 
 	// Generated message map functions
 	afx_msg void OnAppAbout();
+	afx_msg void OnAppExit();
 	afx_msg void OnFileSettings();
 	afx_msg void OnCheckForUpdate();
 	afx_msg BOOL OnOpenRecentFile(UINT nID);
@@ -174,4 +167,4 @@ protected:
 };
 
 extern CDjViewApp theApp;
-
+extern CString CURRENT_VERSION;
