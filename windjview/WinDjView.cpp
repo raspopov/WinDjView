@@ -909,6 +909,68 @@ bool SetRegKey(LPCTSTR lpszKey, LPCTSTR lpszValue)
 	return true;
 }
 
+struct ShellAPI
+{
+	ShellAPI();
+	~ShellAPI();
+
+	typedef HRESULT (WINAPI* pfnSHGetFolderPath)(HWND hwndOwner, int nFolder,
+		HANDLE hToken, DWORD dwFlags, LPTSTR pszPath);
+	typedef BOOL (WINAPI* pfnSHGetSpecialFolderPath)(HWND hwndOwner, LPTSTR lpszPath,
+		int nFolder, BOOL fCreate);
+	typedef void (WINAPI* pfnSHChangeNotify)(LONG wEventId, UINT uFlags,
+		LPCVOID dwItem1, LPCVOID dwItem2);
+
+	pfnSHGetFolderPath pSHGetFolderPath;
+	pfnSHGetSpecialFolderPath pSHGetSpecialFolderPath;
+	pfnSHChangeNotify pSHChangeNotify;
+
+	bool IsLoaded() const { return hShell32 != NULL; }
+	HINSTANCE hShell32, hSHFolder;
+};
+
+static ShellAPI theShellAPI;
+
+ShellAPI::ShellAPI()
+	: pSHGetFolderPath(NULL), pSHGetSpecialFolderPath(NULL),
+	  hShell32(NULL), hSHFolder(NULL)
+{
+	hShell32 = ::LoadLibrary(_T("shell32.dll"));
+	if (hShell32 != NULL)
+	{
+		pSHChangeNotify = (pfnSHChangeNotify) ::GetProcAddress(hShell32, "SHChangeNotify");
+
+#ifdef UNICODE
+		pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hShell32, "SHGetFolderPathW");
+		pSHGetSpecialFolderPath = (pfnSHGetSpecialFolderPath) ::GetProcAddress(hShell32, "SHGetSpecialFolderPathW");
+#else
+		pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hShell32, "SHGetFolderPathA");
+		pSHGetSpecialFolderPath = (pfnSHGetSpecialFolderPath) ::GetProcAddress(hShell32, "SHGetSpecialFolderPathA");
+#endif
+
+		if (pSHGetFolderPath == NULL)
+		{
+			hSHFolder = ::LoadLibrary(_T("shfolder.dll"));
+			if (hSHFolder != NULL)
+			{
+#ifdef UNICODE
+				pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hSHFolder, "SHGetFolderPathW");
+#else
+				pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hSHFolder, "SHGetFolderPathA");
+#endif
+			}
+		}
+	}
+}
+
+ShellAPI::~ShellAPI()
+{
+	if (hShell32 != NULL)
+		::FreeLibrary(hShell32);
+	if (hSHFolder != NULL)
+		::FreeLibrary(hSHFolder);
+}
+
 bool CDjViewApp::RegisterShellFileTypes()
 {
 	bool bSuccess = true;
@@ -1039,6 +1101,9 @@ bool CDjViewApp::RegisterShellFileTypes()
 			}
 		}
 	}
+
+	ASSERT (theShellAPI.pSHChangeNotify != NULL);
+	theShellAPI.pSHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
 
 	return bSuccess;
 }
@@ -1335,63 +1400,6 @@ void CDjViewApp::ReportFatalError()
 			ExitProcess(1);
 		}
 	}
-}
-
-struct ShellAPI
-{
-	ShellAPI();
-	~ShellAPI();
-
-	typedef HRESULT (WINAPI* pfnSHGetFolderPath)(HWND hwndOwner, int nFolder,
-		HANDLE hToken, DWORD dwFlags, LPTSTR pszPath);
-	typedef BOOL (WINAPI* pfnSHGetSpecialFolderPath)(HWND hwndOwner, LPTSTR lpszPath,
-		int nFolder, BOOL fCreate);
-
-	pfnSHGetFolderPath pSHGetFolderPath;
-	pfnSHGetSpecialFolderPath pSHGetSpecialFolderPath;
-
-	bool IsLoaded() const { return hShell32 != NULL; }
-	HINSTANCE hShell32, hSHFolder;
-};
-
-static ShellAPI theShellAPI;
-
-ShellAPI::ShellAPI()
-	: pSHGetFolderPath(NULL), pSHGetSpecialFolderPath(NULL),
-	  hShell32(NULL), hSHFolder(NULL)
-{
-	hShell32 = ::LoadLibrary(_T("shell32.dll"));
-	if (hShell32 != NULL)
-	{
-#ifdef UNICODE
-		pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hShell32, "SHGetFolderPathW");
-		pSHGetSpecialFolderPath = (pfnSHGetSpecialFolderPath) ::GetProcAddress(hShell32, "SHGetSpecialFolderPathW");
-#else
-		pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hShell32, "SHGetFolderPathA");
-		pSHGetSpecialFolderPath = (pfnSHGetSpecialFolderPath) ::GetProcAddress(hShell32, "SHGetSpecialFolderPathA");
-#endif
-
-		if (pSHGetFolderPath == NULL)
-		{
-			hSHFolder = ::LoadLibrary(_T("shfolder.dll"));
-			if (hSHFolder != NULL)
-			{
-#ifdef UNICODE
-				pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hSHFolder, "SHGetFolderPathW");
-#else
-				pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hSHFolder, "SHGetFolderPathA");
-#endif
-			}
-		}
-	}
-}
-
-ShellAPI::~ShellAPI()
-{
-	if (hShell32 != NULL)
-		::FreeLibrary(hShell32);
-	if (hSHFolder != NULL)
-		::FreeLibrary(hSHFolder);
 }
 
 void CDjViewApp::LoadDictionaries()
