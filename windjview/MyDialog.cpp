@@ -13,14 +13,55 @@
 //
 //	You should have received a copy of the GNU General Public License along
 //	with this program; if not, write to the Free Software Foundation, Inc.,
-//	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//	51 Franklin Street, Fifth Floor, Boston, MA 02111-1307 USA.
 //	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
 
-// stdafx.cpp : source file that includes just the standard includes
-// WinDjView.pch will be the pre-compiled header
-// stdafx.obj will contain the pre-compiled type information
-
 #include "stdafx.h"
+#include "WinDjView.h"
+#include "MyDialog.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+// CMyDialog
+
+IMPLEMENT_DYNAMIC(CMyDialog, CDialog)
+CMyDialog::CMyDialog()
+{
+}
+
+CMyDialog::CMyDialog(LPCTSTR lpszTemplateName, CWnd* pParentWnd)
+	: CDialog(lpszTemplateName, pParentWnd)
+{
+}
+
+CMyDialog::CMyDialog(UINT nIDTemplate, CWnd* pParentWnd)
+	: CDialog(nIDTemplate, pParentWnd)
+{
+}
+
+CMyDialog::~CMyDialog()
+{
+}
+
+
+BEGIN_MESSAGE_MAP(CMyDialog, CDialog)
+END_MESSAGE_MAP()
+
+
+// CMyDialog message handlers
+
+int CMyDialog::DoModal()
+{
+	set<CWnd*> disabled;
+	theApp.DisableTopLevelWindows(disabled);
+
+	int nResult = CDialog::DoModal();
+
+	theApp.EnableWindows(disabled);
+	return nResult;
+}

@@ -1,18 +1,19 @@
 //	WinDjView
-//	Copyright (C) 2004-2007 Andrew Zhezherun
+//	Copyright (C) 2004-2008 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License version 2
-//	as published by the Free Software Foundation.
+//	it under the terms of the GNU General Public License as published by
+//	the Free Software Foundation; either version 2 of the License, or
+//	(at your option) any later version.
 //
 //	This program is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program; if not, write to the Free Software
-//	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//	You should have received a copy of the GNU General Public License along
+//	with this program; if not, write to the Free Software Foundation, Inc.,
+//	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
@@ -30,9 +31,10 @@
 
 // CFindDlg dialog
 
-IMPLEMENT_DYNAMIC(CFindDlg, CDialog)
+IMPLEMENT_DYNAMIC(CFindDlg, CMyDialog)
+
 CFindDlg::CFindDlg(CWnd* pParent)
-	: CDialog(CFindDlg::IDD, pParent)
+	: CMyDialog(CFindDlg::IDD, pParent)
 {
 	m_bMatchCase = theApp.GetAppSettings()->bMatchCase;
 	m_strFind = theApp.GetAppSettings()->strFind;
@@ -44,14 +46,14 @@ CFindDlg::~CFindDlg()
 
 void CFindDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+	CMyDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_FIND, m_cboFind);
 	DDX_Text(pDX, IDC_FIND, m_strFind);
 	DDX_Check(pDX, IDC_MATCH_CASE, m_bMatchCase);
 }
 
 
-BEGIN_MESSAGE_MAP(CFindDlg, CDialog)
+BEGIN_MESSAGE_MAP(CFindDlg, CMyDialog)
 	ON_BN_CLICKED(IDC_FIND_ALL, OnFindAll)
 	ON_WM_CLOSE()
 	ON_CBN_EDITCHANGE(IDC_FIND, OnEnChangeFind)
@@ -64,7 +66,7 @@ END_MESSAGE_MAP()
 
 BOOL CFindDlg::OnInitDialog()
 {
-	CDialog::OnInitDialog();
+	CMyDialog::OnInitDialog();
 
 	m_cboFind.SetExtendedStyle(CBES_EX_CASESENSITIVE | CBES_EX_NOEDITIMAGE,
 			CBES_EX_CASESENSITIVE | CBES_EX_NOEDITIMAGE);
@@ -142,7 +144,7 @@ void CFindDlg::UpdateButtons()
 
 void CFindDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 {
-	CDialog::OnShowWindow(bShow, nStatus);
+	CMyDialog::OnShowWindow(bShow, nStatus);
 
 	if (bShow)
 		UpdateButtons();
@@ -168,5 +170,5 @@ void CFindDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 	if (nState == WA_ACTIVE || nState == WA_CLICKACTIVE)
 		InitSearchHistory();
 
-	CDialog::OnActivate(nState, pWndOther, bMinimized);
+	CMyDialog::OnActivate(nState, pWndOther, bMinimized);
 }

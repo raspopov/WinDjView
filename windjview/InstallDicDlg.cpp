@@ -1,18 +1,19 @@
 //	WinDjView
-//	Copyright (C) 2004-2007 Andrew Zhezherun
+//	Copyright (C) 2004-2008 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License version 2
-//	as published by the Free Software Foundation.
+//	it under the terms of the GNU General Public License as published by
+//	the Free Software Foundation; either version 2 of the License, or
+//	(at your option) any later version.
 //
 //	This program is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program; if not, write to the Free Software
-//	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//	You should have received a copy of the GNU General Public License along
+//	with this program; if not, write to the Free Software Foundation, Inc.,
+//	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
@@ -29,10 +30,10 @@
 
 // CInstallDicDlg dialog
 
-IMPLEMENT_DYNAMIC(CInstallDicDlg, CDialog)
+IMPLEMENT_DYNAMIC(CInstallDicDlg, CMyDialog)
 
 CInstallDicDlg::CInstallDicDlg(UINT nID, CWnd* pParent)
-	: CDialog(nID, pParent), m_nTemplateID(nID), m_bKeepOriginal(true), m_nChoice(0)
+	: CMyDialog(nID, pParent), m_nTemplateID(nID), m_bKeepOriginal(true), m_nChoice(0)
 {
 	m_strDictLocation = theApp.GetAppSettings()->strDictLocation;
 
@@ -50,7 +51,7 @@ CInstallDicDlg::~CInstallDicDlg()
 
 void CInstallDicDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+	CMyDialog::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_KEEP_ORIGINAL, m_bKeepOriginal);
 
 	if (m_nTemplateID == IDD_INSTALL_DIC)
@@ -63,7 +64,7 @@ void CInstallDicDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(CInstallDicDlg, CDialog)
+BEGIN_MESSAGE_MAP(CInstallDicDlg, CMyDialog)
 	ON_WM_CTLCOLOR()
 	ON_BN_CLICKED(IDC_BROWSE_LOCATION, OnBrowseLocation)
 END_MESSAGE_MAP()
@@ -73,7 +74,7 @@ END_MESSAGE_MAP()
 
 BOOL CInstallDicDlg::OnInitDialog()
 {
-	CDialog::OnInitDialog();
+	CMyDialog::OnInitDialog();
 
 	if (m_nTemplateID == IDD_INSTALL_DIC)
 	{
@@ -88,7 +89,7 @@ BOOL CInstallDicDlg::OnInitDialog()
 
 HBRUSH CInstallDicDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
-	HBRUSH brush = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+	HBRUSH brush = CMyDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 
 	if (pWnd->GetDlgCtrlID() == IDC_CUSTOM_LOCATION && m_strDictLocation.IsEmpty())
 	{

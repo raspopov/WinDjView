@@ -74,6 +74,7 @@ LINK_OBJS = \
 	"$(INTDIR)\MyBitmapButton.obj" \
 	"$(INTDIR)\MyColorPicker.obj" \
 	"$(INTDIR)\MyComboBox.obj" \
+	"$(INTDIR)\MyDialog.obj" \
 	"$(INTDIR)\MyDocManager.obj" \
 	"$(INTDIR)\MyDocTemplate.obj" \
 	"$(INTDIR)\MyEdit.obj" \
@@ -127,6 +128,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\MyBitmapButton.obj" : MyBitmapButton.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyColorPicker.obj" : MyColorPicker.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyComboBox.obj" : MyComboBox.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MyDialog.obj" : MyDialog.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDocManager.obj" : MyDocManager.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDocTemplate.obj" : MyDocTemplate.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyEdit.obj" : MyEdit.cpp "$(INTDIR)" $(PCH)

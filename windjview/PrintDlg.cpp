@@ -1,18 +1,19 @@
 //	WinDjView
-//	Copyright (C) 2004-2007 Andrew Zhezherun
+//	Copyright (C) 2004-2008 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License version 2
-//	as published by the Free Software Foundation.
+//	it under the terms of the GNU General Public License as published by
+//	the Free Software Foundation; either version 2 of the License, or
+//	(at your option) any later version.
 //
 //	This program is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program; if not, write to the Free Software
-//	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//	You should have received a copy of the GNU General Public License along
+//	with this program; if not, write to the Free Software Foundation, Inc.,
+//	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
@@ -35,10 +36,10 @@
 
 map<CString, vector<byte> > CPrintDlg::s_devModes;
 
-IMPLEMENT_DYNAMIC(CPrintDlg, CDialog)
+IMPLEMENT_DYNAMIC(CPrintDlg, CMyDialog)
 
 CPrintDlg::CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, int nMode, CWnd* pParent)
-	: CDialog(CPrintDlg::IDD, pParent),
+	: CMyDialog(CPrintDlg::IDD, pParent),
 	  m_pSource(pDoc->GetSource()), m_strPages(_T("")), m_bPrintToFile(false),
 	  m_nRangeType(AllPages), m_pPrinter(NULL), m_hPrinter(NULL), m_pPaper(NULL),
 	  m_bReverse(false), m_pDoc(pDoc), m_nCurPage(nPage), m_nRotate(nRotate),
@@ -57,7 +58,7 @@ CPrintDlg::~CPrintDlg()
 
 void CPrintDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+	CMyDialog::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_CENTER_IMAGE, m_settings.bCenterImage);
 	DDX_Check(pDX, IDC_AUTO_ROTATE, m_settings.bAutoRotate);
 	DDX_Check(pDX, IDC_CLIP_CONTENT, m_settings.bClipContent);
@@ -133,7 +134,7 @@ void CPrintDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(CPrintDlg, CDialog)
+BEGIN_MESSAGE_MAP(CPrintDlg, CMyDialog)
 	ON_WM_PAINT()
 	ON_CBN_SELCHANGE(IDC_COMBO_PAGESPERSHEET, OnChangePagesPerSheet)
 	ON_CBN_SELCHANGE(IDC_COMBO_PAPER, OnChangePaper)
@@ -166,7 +167,7 @@ END_MESSAGE_MAP()
 
 BOOL CPrintDlg::OnInitDialog()
 {
-	CDialog::OnInitDialog();
+	CMyDialog::OnInitDialog();
 
 	m_settings = *theApp.GetPrintSettings();
 	if (m_settings.bBooklet)
@@ -352,7 +353,7 @@ void CPrintDlg::OnOK()
 		m_hPrinter = NULL;
 	}
 
-	CDialog::OnOK();
+	CMyDialog::OnOK();
 }
 
 void CPrintDlg::OnCancel()
@@ -371,7 +372,7 @@ void CPrintDlg::OnCancel()
 		m_pPrinter = NULL;
 	}
 
-	CDialog::OnCancel();
+	CMyDialog::OnCancel();
 }
 
 void CPrintDlg::OnPaint()

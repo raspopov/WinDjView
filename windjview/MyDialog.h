@@ -13,14 +13,34 @@
 //
 //	You should have received a copy of the GNU General Public License along
 //	with this program; if not, write to the Free Software Foundation, Inc.,
-//	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//	51 Franklin Street, Fifth Floor, Boston, MA 02111-1307 USA.
 //	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
 
-// stdafx.cpp : source file that includes just the standard includes
-// WinDjView.pch will be the pre-compiled header
-// stdafx.obj will contain the pre-compiled type information
+#pragma once
 
-#include "stdafx.h"
+
+// CMyDialog
+
+class CMyDialog : public CDialog
+{
+	DECLARE_DYNAMIC(CMyDialog)
+
+public:
+	CMyDialog();
+	explicit CMyDialog(LPCTSTR lpszTemplateName, CWnd* pParentWnd = NULL);
+	explicit CMyDialog(UINT nIDTemplate, CWnd* pParentWnd = NULL);
+
+	virtual ~CMyDialog();
+
+// Overrides
+public:
+	virtual int DoModal();
+
+// Implementation
+protected:
+	// Message map functions
+	DECLARE_MESSAGE_MAP()
+};
 

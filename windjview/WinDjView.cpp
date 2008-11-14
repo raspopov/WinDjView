@@ -1,18 +1,19 @@
 //	WinDjView
-//	Copyright (C) 2004-2007 Andrew Zhezherun
+//	Copyright (C) 2004-2008 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License version 2
-//	as published by the Free Software Foundation.
+//	it under the terms of the GNU General Public License as published by
+//	the Free Software Foundation; either version 2 of the License, or
+//	(at your option) any later version.
 //
 //	This program is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program; if not, write to the Free Software
-//	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//	You should have received a copy of the GNU General Public License along
+//	with this program; if not, write to the Free Software Foundation, Inc.,
+//	51 Franklin Street, Fifth Floor, Boston, MA 02111-1307 USA.
 //	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
@@ -34,7 +35,9 @@
 #include "BookmarksWnd.h"
 #include "PageIndexWnd.h"
 #include "NavPane.h"
+#include "FullscreenWnd.h"
 #include "XMLParser.h"
+#include "MyDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -351,7 +354,7 @@ void CDjViewApp::ThreadTerminated()
 
 // CAboutDlg dialog used for App About
 
-class CAboutDlg : public CDialog
+class CAboutDlg : public CMyDialog
 {
 public:
 	CAboutDlg();
@@ -381,13 +384,13 @@ protected:
 };
 
 CAboutDlg::CAboutDlg()
-	: CDialog(CAboutDlg::IDD)
+	: CMyDialog(CAboutDlg::IDD)
 {
 }
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+	CMyDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_STATIC_LINK, m_weblink);
 	DDX_Control(pDX, IDC_STATIC_LIB_LINK, m_weblinkLibrary);
 	DDX_Control(pDX, IDC_DONATE, m_btnDonate);
@@ -396,7 +399,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_STATIC_VERSION, strVersion);
 }
 
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
+BEGIN_MESSAGE_MAP(CAboutDlg, CMyDialog)
 	ON_WM_CTLCOLOR()
 	ON_WM_SETCURSOR()
 	ON_WM_LBUTTONDOWN()
@@ -412,7 +415,7 @@ void CDjViewApp::OnAppAbout()
 
 HBRUSH CAboutDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
-	HBRUSH brush = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+	HBRUSH brush = CMyDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 
 	if (pWnd->GetSafeHwnd() == m_weblink.m_hWnd
 			|| pWnd->GetSafeHwnd() == m_weblinkLibrary.m_hWnd)
@@ -454,7 +457,7 @@ BOOL CAboutDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		return true;
 	}
 
-	return CDialog::OnSetCursor(pWnd, nHitTest, message);
+	return CMyDialog::OnSetCursor(pWnd, nHitTest, message);
 }
 
 void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
@@ -481,7 +484,7 @@ void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 		return;
 	}
 
-	CDialog::OnLButtonDown(nFlags, point);
+	CMyDialog::OnLButtonDown(nFlags, point);
 }
 
 void CAboutDlg::OnDonate()
@@ -492,7 +495,7 @@ void CAboutDlg::OnDonate()
 
 BOOL CAboutDlg::OnInitDialog()
 {
-	CDialog::OnInitDialog();
+	CMyDialog::OnInitDialog();
 
 	CFont fnt;
 	CreateSystemDialogFont(fnt);
@@ -2017,4 +2020,46 @@ BOOL CDjViewApp::SaveAllModified()
 	}
 
 	return true;
+}
+
+void CDjViewApp::DisableTopLevelWindows(set<CWnd*>& disabled)
+{
+	for (list<CMainFrame*>::iterator it = m_frames.begin(); it != m_frames.end(); ++it)
+	{
+		CMainFrame* pFrame = *it;
+		if (pFrame->IsFullscreenMode())
+		{
+			CWnd* pFullscreenWnd = pFrame->GetFullscreenWnd();
+			if (pFullscreenWnd->IsWindowEnabled())
+			{
+				disabled.insert(pFullscreenWnd);
+				pFullscreenWnd->EnableWindow(false);
+			}
+		}
+		if (pFrame->IsWindowEnabled())
+		{
+			disabled.insert(pFrame);
+			pFrame->EnableWindow(false);
+		}
+	}
+}
+
+void CDjViewApp::EnableWindows(set<CWnd*>& disabled)
+{
+	for (set<CWnd*>::iterator it = disabled.begin(); it != disabled.end(); ++it)
+	{
+		CWnd* pWnd = *it;
+		pWnd->EnableWindow();
+	}
+}
+
+int CDjViewApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDPrompt)
+{
+	set<CWnd*> disabled;
+	DisableTopLevelWindows(disabled);
+
+	int nResult = CWinApp::DoMessageBox(lpszPrompt, nType, nIDPrompt);
+
+	EnableWindows(disabled);
+	return nResult;
 }

@@ -1155,6 +1155,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\MyDialog.cpp"
+				>
+			</File>
+			<File
 				RelativePath="MyDocManager.cpp"
 				>
 				<FileConfiguration
@@ -2339,6 +2343,10 @@
 			</File>
 			<File
 				RelativePath="MyComboBox.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MyDialog.h"
 				>
 			</File>
 			<File
