@@ -539,6 +539,8 @@ void CNavPaneWnd::ActivateTab(int nTab, bool bExpand)
 	{
 		GetParentFrame()->SendMessage(ID_EXPAND_PANE);
 	}
+
+	UpdateObservers(SIDEBAR_TAB_CHANGED);
 }
 
 void CNavPaneWnd::PostNcDestroy()
@@ -620,4 +622,9 @@ void CNavPaneWnd::OnSetFocus(CWnd* pOldWnd)
 CChildFrame* CNavPaneWnd::GetParentFrame() const
 {
 	return (CChildFrame*) CWnd::GetParentFrame();
+}
+
+CWnd* CNavPaneWnd::GetActiveTab() const
+{
+	return (m_nActiveTab != -1 ? m_tabs[m_nActiveTab].pWnd : NULL);
 }

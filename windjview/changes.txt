@@ -2,11 +2,12 @@ WinDjView changes history
 Copyright (C) 2004-2008 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 0.5.1 (2008-??-??):
+Changes in version 0.6 (2008-??-??):
 ! Implemented multiple top-level documents mode.
 + Added support for Unicode Supplementary Planes in contents and index.
 + Added support for dictionaries that look up the word under mouse pointer.
 + DPI value is now set when exporting page or selection as bitmap.
++ Added an option to enable continuous scrolling in fullscreen mode.
 * Fixed saving "First page alone" setting for every document.
 * Fixed crash in magnify tool after rotating the page.
 * Fixed crash when compiled with Visual Studio 2005.

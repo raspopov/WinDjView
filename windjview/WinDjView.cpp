@@ -76,6 +76,7 @@ const TCHAR* s_pszRestoreAssocs = _T("assocs");
 const TCHAR* s_pszGenAllThumbnails = _T("gen-all-thumbs");
 const TCHAR* s_pszFullscreenClicks = _T("fullscreen-clicks");
 const TCHAR* s_pszFullscreenHideScroll = _T("fullscreen-hide-scroll");
+const TCHAR* s_pszFullscreenContinuousScroll = _T("fullscreen-continuous");
 const TCHAR* s_pszWarnCloseMultiple = _T("warn-close-multiple");
 const TCHAR* s_pszInvertWheelZoom = _T("invert-wheel-zoom");
 const TCHAR* s_pszCloseOnEsc = _T("close-on-esc");
@@ -206,7 +207,7 @@ BOOL CDjViewApp::InitInstance()
 		RegisterShellFileTypes();
 
 	// Create main MDI Frame window
-	CMainFrame* pMainFrame = CreateMainFrame(m_nCmdShow, true);
+	CMainFrame* pMainFrame = CreateMainFrame(true, m_nCmdShow);
 	if (pMainFrame == NULL)
 		return false;
 
@@ -220,44 +221,51 @@ BOOL CDjViewApp::InitInstance()
 	return true;
 }
 
-CMainFrame* CDjViewApp::CreateMainFrame(int nCmdShow, bool bProcessCmdLine)
+CMainFrame* CDjViewApp::CreateMainFrame(bool bAppStartup, int nCmdShow)
 {
 	bool bInitialized = m_bInitialized;
 	m_bInitialized = false;
 
 	// Create main MDI Frame window
 	CMainFrame* pMainFrame = new CMainFrame;
-	if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
+	if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE))
 	{
 		m_bInitialized = bInitialized;
 		delete pMainFrame;
 		return NULL;
 	}
-	pMainFrame->SetRedraw(false);
+
+	CWnd* pPrevMainWnd = m_pMainWnd;
+	m_pMainWnd = pMainFrame;
+	AfxGetThread()->m_pMainWnd = m_pMainWnd;
+	m_frames.push_front(pMainFrame);
+
 	pMainFrame->UpdateToolbars();
 
 	pMainFrame->SetWindowPos(NULL, m_appSettings.nWindowPosX, m_appSettings.nWindowPosY,
-				m_appSettings.nWindowWidth, m_appSettings.nWindowHeight,
-				SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+			m_appSettings.nWindowWidth, m_appSettings.nWindowHeight,
+			SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
 
-	if (m_pMainWnd != NULL)
+	if (pPrevMainWnd != NULL)
 	{
 		// Cascade the new window
 		CRect rcMain;
 		pMainFrame->GetWindowRect(rcMain);
 		CRect rcMonitor = GetMonitorWorkArea(pMainFrame);
 		if (rcMain.right + 20 <= rcMonitor.right && rcMain.bottom + 20 <= rcMonitor.bottom)
-			pMainFrame->MoveWindow(rcMain + CPoint(20, 20));
+			rcMain += CPoint(20, 20);
 		else
-			pMainFrame->MoveWindow(CRect(rcMonitor.TopLeft(), rcMain.Size()));
+			rcMain += rcMonitor.TopLeft() - rcMain.TopLeft();
+		pMainFrame->SetWindowPos(NULL, rcMain.left, rcMain.top, rcMain.Width(), rcMain.Height(),
+				SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
 	}
 
 	// Enable drag/drop open
 	pMainFrame->DragAcceptFiles();
 
-	if (bProcessCmdLine)
+	// Parse command line for standard shell commands, DDE, file open
+	if (bAppStartup)
 	{
-		// Parse command line for standard shell commands, DDE, file open
 		CCommandLineInfo cmdInfo;
 		ParseCommandLine(cmdInfo);
 		if (cmdInfo.m_nShellCommand == CCommandLineInfo::FileNew)
@@ -273,18 +281,19 @@ CMainFrame* CDjViewApp::CreateMainFrame(int nCmdShow, bool bProcessCmdLine)
 		}
 	}
 
-	if (m_appSettings.bWindowMaximized && (nCmdShow == -1 || nCmdShow == SW_SHOWNORMAL || nCmdShow == SW_SHOW))
-		nCmdShow = SW_SHOWMAXIMIZED;
-
 	// The main window has been initialized, so show and update it
-	pMainFrame->ShowWindow(nCmdShow);
+	if (bAppStartup)
+	{
+		pMainFrame->SetRedraw(false);
 
-	pMainFrame->SetRedraw(true);
-	pMainFrame->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+		if (m_appSettings.bWindowMaximized && (nCmdShow == -1 || nCmdShow == SW_SHOWNORMAL || nCmdShow == SW_SHOW))
+			nCmdShow = SW_SHOWMAXIMIZED;
 
-	m_pMainWnd = pMainFrame;
-	AfxGetThread()->m_pMainWnd = m_pMainWnd;
-	m_frames.push_front(pMainFrame);
+		pMainFrame->ShowWindow(nCmdShow);
+
+		pMainFrame->SetRedraw(true);
+		pMainFrame->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+	}
 
 	m_bInitialized = true;
 	return pMainFrame;
@@ -555,6 +564,7 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.bGenAllThumbnails = !!GetProfileInt(s_pszGlobalSection, s_pszGenAllThumbnails, m_appSettings.bGenAllThumbnails);
 	m_appSettings.bFullscreenClicks = !!GetProfileInt(s_pszGlobalSection, s_pszFullscreenClicks, m_appSettings.bFullscreenClicks);
 	m_appSettings.bFullscreenHideScroll = !!GetProfileInt(s_pszGlobalSection, s_pszFullscreenHideScroll, m_appSettings.bFullscreenHideScroll);
+	m_appSettings.bFullscreenContinuousScroll = !!GetProfileInt(s_pszGlobalSection, s_pszFullscreenContinuousScroll, m_appSettings.bFullscreenContinuousScroll);
 	m_appSettings.bWarnCloseMultiple = !!GetProfileInt(s_pszGlobalSection, s_pszWarnCloseMultiple, m_appSettings.bWarnCloseMultiple);
 	m_appSettings.bInvertWheelZoom = !!GetProfileInt(s_pszGlobalSection, s_pszInvertWheelZoom, m_appSettings.bInvertWheelZoom);
 	m_appSettings.bCloseOnEsc = !!GetProfileInt(s_pszGlobalSection, s_pszCloseOnEsc, m_appSettings.bCloseOnEsc);
@@ -653,6 +663,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszGlobalSection, s_pszGenAllThumbnails, m_appSettings.bGenAllThumbnails);
 	WriteProfileInt(s_pszGlobalSection, s_pszFullscreenClicks, m_appSettings.bFullscreenClicks);
 	WriteProfileInt(s_pszGlobalSection, s_pszFullscreenHideScroll, m_appSettings.bFullscreenHideScroll);
+	WriteProfileInt(s_pszGlobalSection, s_pszFullscreenContinuousScroll, m_appSettings.bFullscreenContinuousScroll);
 	WriteProfileInt(s_pszGlobalSection, s_pszWarnCloseMultiple, m_appSettings.bWarnCloseMultiple);
 	WriteProfileInt(s_pszGlobalSection, s_pszInvertWheelZoom, m_appSettings.bInvertWheelZoom);
 	WriteProfileInt(s_pszGlobalSection, s_pszCloseOnEsc, m_appSettings.bCloseOnEsc);
@@ -909,68 +920,6 @@ bool SetRegKey(LPCTSTR lpszKey, LPCTSTR lpszValue)
 	return true;
 }
 
-struct ShellAPI
-{
-	ShellAPI();
-	~ShellAPI();
-
-	typedef HRESULT (WINAPI* pfnSHGetFolderPath)(HWND hwndOwner, int nFolder,
-		HANDLE hToken, DWORD dwFlags, LPTSTR pszPath);
-	typedef BOOL (WINAPI* pfnSHGetSpecialFolderPath)(HWND hwndOwner, LPTSTR lpszPath,
-		int nFolder, BOOL fCreate);
-	typedef void (WINAPI* pfnSHChangeNotify)(LONG wEventId, UINT uFlags,
-		LPCVOID dwItem1, LPCVOID dwItem2);
-
-	pfnSHGetFolderPath pSHGetFolderPath;
-	pfnSHGetSpecialFolderPath pSHGetSpecialFolderPath;
-	pfnSHChangeNotify pSHChangeNotify;
-
-	bool IsLoaded() const { return hShell32 != NULL; }
-	HINSTANCE hShell32, hSHFolder;
-};
-
-static ShellAPI theShellAPI;
-
-ShellAPI::ShellAPI()
-	: pSHGetFolderPath(NULL), pSHGetSpecialFolderPath(NULL),
-	  hShell32(NULL), hSHFolder(NULL)
-{
-	hShell32 = ::LoadLibrary(_T("shell32.dll"));
-	if (hShell32 != NULL)
-	{
-		pSHChangeNotify = (pfnSHChangeNotify) ::GetProcAddress(hShell32, "SHChangeNotify");
-
-#ifdef UNICODE
-		pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hShell32, "SHGetFolderPathW");
-		pSHGetSpecialFolderPath = (pfnSHGetSpecialFolderPath) ::GetProcAddress(hShell32, "SHGetSpecialFolderPathW");
-#else
-		pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hShell32, "SHGetFolderPathA");
-		pSHGetSpecialFolderPath = (pfnSHGetSpecialFolderPath) ::GetProcAddress(hShell32, "SHGetSpecialFolderPathA");
-#endif
-
-		if (pSHGetFolderPath == NULL)
-		{
-			hSHFolder = ::LoadLibrary(_T("shfolder.dll"));
-			if (hSHFolder != NULL)
-			{
-#ifdef UNICODE
-				pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hSHFolder, "SHGetFolderPathW");
-#else
-				pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hSHFolder, "SHGetFolderPathA");
-#endif
-			}
-		}
-	}
-}
-
-ShellAPI::~ShellAPI()
-{
-	if (hShell32 != NULL)
-		::FreeLibrary(hShell32);
-	if (hSHFolder != NULL)
-		::FreeLibrary(hSHFolder);
-}
-
 bool CDjViewApp::RegisterShellFileTypes()
 {
 	bool bSuccess = true;
@@ -1102,8 +1051,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 		}
 	}
 
-	ASSERT (theShellAPI.pSHChangeNotify != NULL);
-	theShellAPI.pSHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+	::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
 
 	return bSuccess;
 }
@@ -1117,13 +1065,14 @@ void CDjViewApp::OnFileSettings()
 
 		m_appSettings.bTopLevelDocs = !!dlg.m_pageGeneral.m_bTopLevelDocs;
 		m_appSettings.bGenAllThumbnails = !!dlg.m_pageGeneral.m_bGenAllThumbnails;
-		m_appSettings.bFullscreenClicks = !!dlg.m_pageGeneral.m_bFullscreenClicks;
-		m_appSettings.bFullscreenHideScroll = !!dlg.m_pageGeneral.m_bFullscreenHideScroll;
 		m_appSettings.bWarnCloseMultiple = !!dlg.m_pageGeneral.m_bWarnCloseMultiple;
 		m_appSettings.bInvertWheelZoom = !!dlg.m_pageGeneral.m_bInvertWheelZoom;
 		m_appSettings.bCloseOnEsc = !!dlg.m_pageGeneral.m_bCloseOnEsc;
 		m_appSettings.bWrapLongBookmarks = !!dlg.m_pageGeneral.m_bWrapLongBookmarks;
 		m_appSettings.bRestoreView = !!dlg.m_pageGeneral.m_bRestoreView;
+		m_appSettings.bFullscreenClicks = !!dlg.m_pageGeneral.m_bFullscreenClicks;
+		m_appSettings.bFullscreenHideScroll = !!dlg.m_pageGeneral.m_bFullscreenHideScroll;
+		m_appSettings.bFullscreenContinuousScroll = !!dlg.m_pageGeneral.m_bFullscreenContinuousScroll;
 
 		m_appSettings.nUnits = dlg.m_pageDisplay.m_nUnits;
 		m_displaySettings = dlg.m_pageDisplay.m_displaySettings;
@@ -1400,6 +1349,63 @@ void CDjViewApp::ReportFatalError()
 			ExitProcess(1);
 		}
 	}
+}
+
+struct ShellAPI
+{
+	ShellAPI();
+	~ShellAPI();
+
+	typedef HRESULT (WINAPI* pfnSHGetFolderPath)(HWND hwndOwner, int nFolder,
+		HANDLE hToken, DWORD dwFlags, LPTSTR pszPath);
+	typedef BOOL (WINAPI* pfnSHGetSpecialFolderPath)(HWND hwndOwner, LPTSTR lpszPath,
+		int nFolder, BOOL fCreate);
+
+	pfnSHGetFolderPath pSHGetFolderPath;
+	pfnSHGetSpecialFolderPath pSHGetSpecialFolderPath;
+
+	bool IsLoaded() const { return hShell32 != NULL; }
+	HINSTANCE hShell32, hSHFolder;
+};
+
+static ShellAPI theShellAPI;
+
+ShellAPI::ShellAPI()
+	: pSHGetFolderPath(NULL), pSHGetSpecialFolderPath(NULL),
+	  hShell32(NULL), hSHFolder(NULL)
+{
+	hShell32 = ::LoadLibrary(_T("shell32.dll"));
+	if (hShell32 != NULL)
+	{
+#ifdef UNICODE
+		pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hShell32, "SHGetFolderPathW");
+		pSHGetSpecialFolderPath = (pfnSHGetSpecialFolderPath) ::GetProcAddress(hShell32, "SHGetSpecialFolderPathW");
+#else
+		pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hShell32, "SHGetFolderPathA");
+		pSHGetSpecialFolderPath = (pfnSHGetSpecialFolderPath) ::GetProcAddress(hShell32, "SHGetSpecialFolderPathA");
+#endif
+
+		if (pSHGetFolderPath == NULL)
+		{
+			hSHFolder = ::LoadLibrary(_T("shfolder.dll"));
+			if (hSHFolder != NULL)
+			{
+#ifdef UNICODE
+				pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hSHFolder, "SHGetFolderPathW");
+#else
+				pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hSHFolder, "SHGetFolderPathA");
+#endif
+			}
+		}
+	}
+}
+
+ShellAPI::~ShellAPI()
+{
+	if (hShell32 != NULL)
+		::FreeLibrary(hShell32);
+	if (hSHFolder != NULL)
+		::FreeLibrary(hSHFolder);
 }
 
 void CDjViewApp::LoadDictionaries()

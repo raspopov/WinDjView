@@ -525,7 +525,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS_GENERAL DIALOGEX 0, 0, 222, 136
+IDD_SETTINGS_GENERAL DIALOGEX 0, 0, 222, 160
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "General"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
@@ -536,17 +536,21 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
     CONTROL         "Generate &thumbnails for all pages in background",IDC_GEN_ALL_THUMBNAILS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,208,10
-    CONTROL         "&Mouse clicks switch pages in fullscreen mode",IDC_FULLSCREEN_CLICKS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,208,10
-    CONTROL         "Always &hide scrollbars in fullscreen mode",IDC_FULLSCREEN_HIDESCROLL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,208,10
     CONTROL         "&Invert Ctrl+Mouse Wheel zooming direction",IDC_INVERT_WHEEL_ZOOM,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,77,208,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,208,10
     CONTROL         "Close the program when &Escape key is pressed",IDC_CLOSE_ON_ESC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,208,10
-    CONTROL         "Wrap &long bookmarks",IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,105,208,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,208,10
+    CONTROL         "Wrap &long bookmarks",IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,77,208,10
     CONTROL         "Restore open &page and view settings when opening a file",IDC_RESTORE_VIEW,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,119,208,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,208,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,109,208,1
+    LTEXT           "Fullscreen mode:",IDC_STATIC,7,115,57,10,SS_CENTERIMAGE
+    CONTROL         "&Mouse clicks switch pages",IDC_FULLSCREEN_CLICKS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,68,115,147,10
+    CONTROL         "Always &hide scrollbars",IDC_FULLSCREEN_HIDESCROLL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,68,129,147,10
+    CONTROL         "Enable &continuous scrolling",IDC_FULLSCREEN_CONTINUOUS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,68,143,147,10
 END
 
 IDD_FIND DIALOGEX 0, 0, 287, 64
@@ -791,7 +795,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 129
+        BOTTOMMARGIN, 153
     END
 
     IDD_FIND, DIALOG
@@ -1041,7 +1045,7 @@ BEGIN
     IDS_PAPER_SIZE          "%s x %s %s"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "0.5"
+    IDS_CURRENT_VERSION     "0.6"
     IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
     IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure you want to proceed?"
     IDS_OPENFILE            "Open"

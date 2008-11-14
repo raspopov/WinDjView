@@ -34,6 +34,9 @@ public:
 	enum { IDD = IDD_UPDATE };
 
 protected:
+	bool m_bOk;
+	CString m_strVersion;
+
 	HANDLE m_hThread;
 	static unsigned int __stdcall UpdateThreadProc(void* pvData);
 

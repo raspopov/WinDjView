@@ -283,6 +283,19 @@ void CChildFrame::CreateNavPanes()
 		CBookmarksWnd* pBookmarks = GetBookmarks(false);
 		pBookmarks->LoadUserBookmarks();
 	}
+
+	int nOpenTab = pSource->GetSettings()->nOpenSidebarTab;
+	if (nOpenTab == DocSettings::Thumbnails)
+		pNavPane->ActivateTab(m_pThumbnailsView, false);
+	else if (nOpenTab == DocSettings::Contents && m_pContentsWnd != NULL)
+		pNavPane->ActivateTab(m_pContentsWnd, false);
+	else if (nOpenTab == DocSettings::Bookmarks && m_pBookmarksWnd != NULL)
+		pNavPane->ActivateTab(m_pBookmarksWnd, false);
+	else if (nOpenTab == DocSettings::PageIndex && m_pPageIndexWnd != NULL)
+		pNavPane->ActivateTab(m_pPageIndexWnd, false);
+
+	pNavPane->AddObserver(this);
+	pNavPane->UpdateObservers(SIDEBAR_TAB_CHANGED);
 }
 
 void CChildFrame::OnCollapsePane()
@@ -494,6 +507,27 @@ void CChildFrame::OnUpdate(const Observable* source, const Message* message)
 		if (m_pResultsView != NULL)
 			pNavPane->SetTabName(m_pResultsView, LoadString(IDS_SEARCH_RESULTS_TAB));
 	}
+	else if (message->code == SIDEBAR_TAB_CHANGED)
+	{
+		CWnd* pActiveTab = GetNavPane()->GetActiveTab();
+		DocSettings* pSettings = GetDjVuView()->GetDocument()->GetSource()->GetSettings();
+
+		if (pActiveTab != NULL)
+		{
+			if (pActiveTab == m_pThumbnailsView)
+				pSettings->nOpenSidebarTab = DocSettings::Thumbnails;
+			else if (pActiveTab == m_pContentsWnd)
+				pSettings->nOpenSidebarTab = DocSettings::Contents;
+			else if (pActiveTab == m_pBookmarksWnd)
+				pSettings->nOpenSidebarTab = DocSettings::Bookmarks;
+			else if (pActiveTab == m_pPageIndexWnd)
+				pSettings->nOpenSidebarTab = DocSettings::PageIndex;
+			else
+				pSettings->nOpenSidebarTab = -1;
+		}
+		else
+			pSettings->nOpenSidebarTab = -1;
+	}
 }
 
 void CChildFrame::OnNcPaint()
@@ -515,16 +549,18 @@ void CChildFrame::OnSysCommand(UINT nID, LPARAM lParam)
 {
 	if (theApp.m_bTopLevelDocs)
 	{
+		UINT nCommand = nID & 0xFFF0;
+
 		// Pass certain commands to the main frame instead.
 		CMainFrame* pMainFrame = GetMainFrame();
 
-		if (nID == SC_MINIMIZE)
+		if (nCommand == SC_MINIMIZE)
 		{
 			GetMainFrame()->SendMessage(WM_SYSCOMMAND, SC_MINIMIZE, 0);
 			return;
 		}
 
-		if (nID == SC_MAXIMIZE || nID == SC_RESTORE)
+		if (nCommand == SC_MAXIMIZE || nCommand == SC_RESTORE)
 		{
 			if (GetMainFrame()->IsZoomed())
 				GetMainFrame()->SendMessage(WM_SYSCOMMAND, SC_RESTORE, 0);

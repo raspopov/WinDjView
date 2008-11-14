@@ -123,6 +123,7 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0
 #define SOURCE_RELEASED 19
 #define KEY_STATE_CHANGED 20
 #define DICT_LIST_CHANGED 21
+#define SIDEBAR_TAB_CHANGED 22
 
 class CDIB;
 struct Bookmark;

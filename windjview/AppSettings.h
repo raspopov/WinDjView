@@ -134,13 +134,14 @@ struct CAppSettings
 	bool bRestoreAssocs;
 	bool bTopLevelDocs;
 	bool bGenAllThumbnails;
-	bool bFullscreenClicks;
-	bool bFullscreenHideScroll;
 	bool bWarnCloseMultiple;
 	bool bInvertWheelZoom;
 	bool bCloseOnEsc;
 	bool bWrapLongBookmarks;
 	bool bRestoreView;
+	bool bFullscreenClicks;
+	bool bFullscreenHideScroll;
+	bool bFullscreenContinuousScroll;
 
 	DWORD nLanguage;
 

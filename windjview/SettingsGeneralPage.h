@@ -34,13 +34,14 @@ public:
 	enum { IDD = IDD_SETTINGS_GENERAL };
 	BOOL m_bTopLevelDocs;
 	BOOL m_bGenAllThumbnails;
-	BOOL m_bFullscreenClicks;
-	BOOL m_bFullscreenHideScroll;
 	BOOL m_bWarnCloseMultiple;
 	BOOL m_bInvertWheelZoom;
 	BOOL m_bCloseOnEsc;
 	BOOL m_bWrapLongBookmarks;
 	BOOL m_bRestoreView;
+	BOOL m_bFullscreenClicks;
+	BOOL m_bFullscreenHideScroll;
+	BOOL m_bFullscreenContinuousScroll;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

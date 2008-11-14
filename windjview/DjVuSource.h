@@ -123,6 +123,14 @@ struct DocSettings : public Observable
 {
 	DocSettings();
 
+	enum SidebarTab
+	{
+		Thumbnails = 0,
+		Contents = 1,
+		Bookmarks = 2,
+		PageIndex = 3
+	};
+
 	int nPage;
 	CPoint ptOffset;
 	int nZoomType;
@@ -131,6 +139,7 @@ struct DocSettings : public Observable
 	bool bFirstPageAlone;
 	int nDisplayMode;
 	int nRotate;
+	int nOpenSidebarTab;
 
 	map<int, PageSettings> pageSettings;
 	list<Bookmark> bookmarks;

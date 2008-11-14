@@ -59,7 +59,7 @@ public:
 	CDjVuDoc* FindOpenDocument(LPCTSTR lpszFileName);
 	int GetDocumentCount();
 
-	CMainFrame* CreateMainFrame(int nCmdShow, bool bProcessCmdLine = false);
+	CMainFrame* CreateMainFrame(bool bAppStartup = false, int nCmdShow = -1);
 	void RemoveMainFrame(CMainFrame* pMainFrame);
 	void ChangeMainWnd(CMainFrame* pMainFrame);
 

@@ -268,15 +268,6 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 		CDjVuView* pView = pDoc->GetDjVuView();
 		CMainFrame* pMainFrm = pView->GetMainFrame();
 
-		if (bFullscreenDoc)
-		{
-			pView = pMainFrm->GetFullscreenWnd()->GetOwner();
-			pMainFrm->ShowWindow(SW_HIDE);
-			pMainFrm->GetFullscreenWnd()->SetFocus();
-		}
-		else if (pMainFrm->IsFullscreenMode())
-			pMainFrm->GetFullscreenWnd()->Hide();
-
 		// CDocManager::OnDDECommand shows the previous main window.
 		// If it was in the fullscreen mode, hide it back.
 		if (pOldMainFrm != NULL && pOldMainFrm != pMainFrm && pOldMainFrm->IsFullscreenMode())
@@ -290,6 +281,32 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 			pView->GoToURL(MakeUTF8String(_T("#") + strPage), nAddToHistory);
 		if (bAddToHistory)
 			pMainFrm->AddToHistory(pView);
+
+		if (bFullscreenDoc)
+		{
+			pView = pMainFrm->GetFullscreenWnd()->GetOwner();
+			pMainFrm->ShowWindow(SW_HIDE);
+			pMainFrm->GetFullscreenWnd()->SetFocus();
+		}
+		else if (pMainFrm->IsFullscreenMode())
+		{
+			pMainFrm->GetFullscreenWnd()->Hide();
+		}
+		else if (pOldMainFrm != NULL && pOldMainFrm != pMainFrm && !pMainFrm->IsWindowVisible())
+		{
+			// In multiple top-level documents mode, a new main frame
+			// will be created hidden. Show it now.
+
+			bool bMaximize = !!pOldMainFrm->IsZoomed();
+
+			pMainFrm->SetRedraw(false);
+			pMainFrm->ShowWindow(bMaximize ? SW_SHOWMAXIMIZED : SW_SHOW);
+			pMainFrm->SetRedraw(true);
+			pMainFrm->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+
+			pMainFrm->ActivateFrame();
+			pView->GetParentFrame()->ActivateFrame();
+		}
 	}
 
 	return pOpenDocument;

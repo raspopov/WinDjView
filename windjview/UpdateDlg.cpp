@@ -30,7 +30,7 @@
 
 IMPLEMENT_DYNAMIC(CUpdateDlg, CDialog)
 CUpdateDlg::CUpdateDlg(CWnd* pParent)
-	: CDialog(CUpdateDlg::IDD, pParent), m_hThread(NULL)
+	: CDialog(CUpdateDlg::IDD, pParent), m_hThread(NULL), m_bOk(false)
 {
 }
 
@@ -66,7 +66,7 @@ void CUpdateDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	CDialog::OnShowWindow(bShow, nStatus);
 
-	if (bShow)
+	if (bShow && m_hThread == NULL)
 	{
 		UINT nThreadId;
 		m_hThread = (HANDLE)_beginthreadex(NULL, 0, UpdateThreadProc, this, 0, &nThreadId);
@@ -97,27 +97,33 @@ unsigned int __stdcall CUpdateDlg::UpdateThreadProc(void* pvData)
 		szBuffer[nRead] = '\0';
 
 		strVersion = szBuffer;
+		strVersion.TrimLeft();
+		strVersion.TrimRight();
 	}
 	catch (CException* e)
 	{
 		bOk = false;
 		e->Delete();
-
-		AfxMessageBox(IDS_CONNECT_ERROR, MB_ICONEXCLAMATION | MB_OK);
 	}
 
-	if (bOk)
-	{
-		strVersion.TrimLeft();
-		strVersion.TrimRight();
+	pDlg->m_bOk = bOk;
+	pDlg->m_strVersion = strVersion;
 
-		if (strVersion == CURRENT_VERSION)
+	pDlg->SendMessage(WM_ENDDIALOG);
+	return 0;
+}
+
+void CUpdateDlg::OnEndDialog()
+{
+	if (m_bOk)
+	{
+		if (m_strVersion == CURRENT_VERSION)
 		{
 			AfxMessageBox(IDS_NO_UPDATES_AVAILABLE, MB_ICONINFORMATION | MB_OK);
 		}
-		else if (strVersion.GetLength() < 16 && strVersion.Find('<') == -1)
+		else if (!m_strVersion.IsEmpty() && m_strVersion.GetLength() < 16 && m_strVersion.Find('<') == -1)
 		{
-			if (AfxMessageBox(FormatString(IDS_NEW_VERSION_AVAILABLE, strVersion),
+			if (AfxMessageBox(FormatString(IDS_NEW_VERSION_AVAILABLE, m_strVersion),
 					MB_ICONQUESTION | MB_YESNO) == IDYES)
 			{
 				::ShellExecute(NULL, _T("open"), LoadString(IDS_WEBSITE_URL),
@@ -129,12 +135,10 @@ unsigned int __stdcall CUpdateDlg::UpdateThreadProc(void* pvData)
 			AfxMessageBox(IDS_CONNECT_ERROR, MB_ICONINFORMATION | MB_OK);
 		}
 	}
+	else
+	{
+		AfxMessageBox(IDS_CONNECT_ERROR, MB_ICONEXCLAMATION | MB_OK);
+	}
 
-	pDlg->SendMessage(WM_ENDDIALOG);
-	return 0;
-}
-
-void CUpdateDlg::OnEndDialog()
-{
 	EndDialog(IDOK);
 }

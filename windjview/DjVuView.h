@@ -192,6 +192,7 @@ protected:
 	CSize m_szDisplay;
 	int CalcTopPage() const;
 	int CalcCurrentPage() const;
+	int CalcBottomPage(int nTopPage) const;
 	void RenderPage(int nPage, int nTimeout = -1, bool bUpdateWindow = true);
 
 	bool InvalidatePage(int nPage);

@@ -189,6 +189,7 @@
 #define IDC_TOP_LEVEL_DOCUMENTS         1042
 #define IDC_FULLSCREEN_CLICKS           1043
 #define IDC_STATIC_ABOUT                1044
+#define IDC_FULLSCREEN_CONTINUOUS       1044
 #define IDC_FIND                        1045
 #define IDC_INVERT_WHEEL_ZOOM           1045
 #define IDC_HQ_SCALING                  1046

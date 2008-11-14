@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="WinDjView"
 	ProjectGUID="{0352355C-CC2D-4190-8BF8-F280F7382B8C}"
+	RootNamespace="WinDjView"
 	Keyword="MFCProj"
 	>
 	<Platforms>
@@ -2608,5 +2609,9 @@
 		</Filter>
 	</Files>
 	<Globals>
+		<Global
+			Name="RESOURCE_FILE"
+			Value="WinDjView.rc"
+		/>
 	</Globals>
 </VisualStudioProject>

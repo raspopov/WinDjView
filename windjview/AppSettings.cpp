@@ -58,6 +58,7 @@ CAppSettings::CAppSettings()
 	bGenAllThumbnails = true;
 	bFullscreenClicks = true;
 	bFullscreenHideScroll = true;
+	bFullscreenContinuousScroll = false;
 	bWarnCloseMultiple = false;
 	bInvertWheelZoom = false;
 	bCloseOnEsc = false;

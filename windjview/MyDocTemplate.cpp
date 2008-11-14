@@ -123,11 +123,9 @@ CFrameWnd* CMyDocTemplate::CreateNewFrame(CDocument* pDoc, CFrameWnd* pOther)
 		if (pMainFrame->MDIGetActive() != NULL)
 		{
 			// Create a new MDI Frame window
-			pMainFrame = theApp.CreateMainFrame(SW_SHOWNORMAL);
+			pMainFrame = theApp.CreateMainFrame();
 			if (pMainFrame == NULL)
 				return NULL;
-
-			pMainFrame->ActivateFrame();
 		}
 	}
 

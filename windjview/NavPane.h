@@ -26,7 +26,7 @@ class CChildFrame;
 
 // CNavPaneWnd
 
-class CNavPaneWnd : public CWnd, public Observer
+class CNavPaneWnd : public CWnd, public Observer, public Observable
 {
 	DECLARE_DYNCREATE(CNavPaneWnd)
 
@@ -55,6 +55,7 @@ public:
 	void SetTabName(int nTab, const CString& strName);
 	void SetTabBorder(CWnd* pTabContent, bool bDrawBorder);
 	void SetTabBorder(int nTab, bool bDrawBorder);
+	CWnd* GetActiveTab() const;
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 	CChildFrame* GetParentFrame() const;
