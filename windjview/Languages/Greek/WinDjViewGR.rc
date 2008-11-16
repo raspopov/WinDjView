@@ -1,0 +1,1296 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+#ifndef VK_OEM_PLUS
+#define VK_OEM_PLUS 0xBB
+#define VK_OEM_COMMA 0xBC
+#define VK_OEM_MINUS 0xBD
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Greek resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ELL)
+#ifdef _WIN32
+LANGUAGE LANG_GREEK, SUBLANG_DEFAULT
+#pragma code_page(1253)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "#ifndef VK_OEM_PLUS\r\n"
+    "#define VK_OEM_PLUS 0xBB\r\n"
+    "#define VK_OEM_COMMA 0xBC\r\n"
+    "#define VK_OEM_MINUS 0xBD\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ELL)\r\n"
+    "LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""..\\..\\res\\WinDjView.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#include ""afxprint.rc""       // printing/print preview resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_CURSOR_DRAG         CURSOR                  "..\\..\\res\\drag.cur"
+IDC_CURSOR_LINK         CURSOR                  "..\\..\\res\\link.cur"
+IDC_CURSOR_HAND         CURSOR                  "..\\..\\res\\hand.cur"
+IDC_CURSOR_MAGNIFY      CURSOR                  "..\\..\\res\\magnify.cur"
+IDC_CURSOR_PAN_UR       CURSOR                  "..\\..\\res\\pan_ur.cur"
+IDC_CURSOR_PAN_ALL      CURSOR                  "..\\..\\res\\pan_all.cur"
+IDC_CURSOR_PAN_D        CURSOR                  "..\\..\\res\\pan_d.cur"
+IDC_CURSOR_PAN_DL       CURSOR                  "..\\..\\res\\pan_dl.cur"
+IDC_CURSOR_PAN_DR       CURSOR                  "..\\..\\res\\pan_dr.cur"
+IDC_CURSOR_PAN_L        CURSOR                  "..\\..\\res\\pan_l.cur"
+IDC_CURSOR_PAN_LR       CURSOR                  "..\\..\\res\\pan_lr.cur"
+IDC_CURSOR_PAN_R        CURSOR                  "..\\..\\res\\pan_r.cur"
+IDC_CURSOR_PAN_U        CURSOR                  "..\\..\\res\\pan_u.cur"
+IDC_CURSOR_PAN_UD       CURSOR                  "..\\..\\res\\pan_ud.cur"
+IDC_CURSOR_PAN_UL       CURSOR                  "..\\..\\res\\pan_ul.cur"
+IDC_CURSOR_ZOOM_RECT    CURSOR                  "..\\..\\res\\zoom_rect.cur"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "..\\..\\res\\WinDjView.ico"
+IDR_DjVuTYPE            ICON                    "..\\..\\res\\DjVuDoc.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP                  "..\\..\\res\\Toolbar.bmp"
+IDB_CLOSE               BITMAP                  "..\\..\\res\\close.bmp"
+IDB_BOOKMARKS           BITMAP                  "..\\..\\res\\bookmarks.bmp"
+IDB_DONATE              BITMAP                  "..\\..\\res\\donate.bmp"
+IDB_PAN_ANCHOR          BITMAP                  "..\\..\\res\\pan_anchor.bmp"
+IDB_HOURGLASS           BITMAP                  "..\\..\\res\\hourglass.bmp"
+IDR_DICTIONARIES_BAR    BITMAP                  "..\\..\\res\\dictbar.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR  16, 16
+BEGIN
+    BUTTON      ID_FILE_OPEN
+    SEPARATOR
+    BUTTON      ID_FILE_PRINT
+    BUTTON      ID_EDIT_FIND
+    BUTTON      ID_APP_ABOUT
+    SEPARATOR
+    BUTTON      ID_MODE_DRAG
+    BUTTON      ID_MODE_SELECT
+    BUTTON      ID_MODE_SELECT_RECT
+    BUTTON      ID_MODE_MAGNIFY
+    BUTTON      ID_MODE_ZOOM_RECT
+    SEPARATOR
+    BUTTON      ID_VIEW_FIRSTPAGE
+    BUTTON      ID_VIEW_PREVIOUSPAGE
+    SEPARATOR
+    BUTTON      ID_VIEW_NEXTPAGE
+    BUTTON      ID_VIEW_LASTPAGE
+    SEPARATOR
+    BUTTON      ID_VIEW_BACK
+    BUTTON      ID_VIEW_FORWARD
+    SEPARATOR
+    BUTTON      ID_LAYOUT_SINGLEPAGE
+    BUTTON      ID_LAYOUT_CONTINUOUS
+    BUTTON      ID_LAYOUT_FACING
+    BUTTON      ID_LAYOUT_CONTINUOUS_FACING
+    SEPARATOR
+    BUTTON      ID_ZOOM_OUT
+    SEPARATOR
+    BUTTON      ID_ZOOM_IN
+    BUTTON      ID_ZOOM_100
+    BUTTON      ID_ZOOM_FITPAGE
+    BUTTON      ID_ZOOM_FITWIDTH
+    SEPARATOR
+    BUTTON      ID_ROTATE_LEFT
+    BUTTON      ID_ROTATE_RIGHT
+END
+
+IDR_DICTIONARIES_BAR TOOLBAR  16, 15
+BEGIN
+    BUTTON      ID_DICTIONARY_LOOKUP
+    BUTTON      ID_DICTIONARY_PREV
+    BUTTON      ID_DICTIONARY_NEXT
+    BUTTON      ID_DICTIONARY_INFO
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU 
+BEGIN
+    POPUP "&Αρχείο"
+    BEGIN
+        MENUITEM "&’νοιγμα...\tCtrl+O",         ID_FILE_OPEN
+        MENUITEM "&Ρυθμίσεις...\tCtrl+,",       ID_FILE_SETTINGS
+        MENUITEM SEPARATOR
+        MENUITEM "Ιστορικό",                    ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&Έξοδος\tCtrl+Q",             ID_APP_EXIT
+    END
+    POPUP "&Προβολή"
+    BEGIN
+        MENUITEM "Γραμμή &εργαλείων",           ID_VIEW_TOOLBAR
+        MENUITEM "Γραμμή &κατάστασης",          ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        POPUP "&Language"
+        BEGIN
+            MENUITEM "&English",                    ID_LANGUAGE_FIRST
+        END
+    END
+    POPUP "&Βοήθεια"
+    BEGIN
+        MENUITEM "&Έλεγχος αναβαθμίσεων...",    ID_CHECK_FOR_UPDATE
+        MENUITEM "&Περί του προγράμματος WinDjView...", ID_APP_ABOUT
+    END
+END
+
+IDR_DjVuTYPE MENU 
+BEGIN
+    POPUP "&Αρχείο"
+    BEGIN
+        MENUITEM "&’νοιγμα...\tCtrl+O",         ID_FILE_OPEN
+        MENUITEM "&Αποθήκευση αντιγράφου ως...\tCtrl+S", ID_FILE_SAVE_COPY_AS
+        MENUITEM "&Κλείσιμο\tCtrl+W",           ID_FILE_CLOSE
+        MENUITEM SEPARATOR
+        MENUITEM "&Ρυθμίσεις...\tCtrl+,",       ID_FILE_SETTINGS
+        MENUITEM "Ε&ξαγωγή κειμένου...",        ID_FILE_EXPORT_TEXT
+        MENUITEM "Εκ&τύπωση...\tCtrl+P",        ID_FILE_PRINT
+        MENUITEM SEPARATOR
+        MENUITEM "&Ιστορικό",                   ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&Έξοδος\tCtrl+Q",             ID_APP_EXIT
+    END
+    POPUP "&Επεξεργασία"
+    BEGIN
+        MENUITEM "&Αντιγραφή\tCtrl+C",          ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "Προσθήκη &σελιδοδείκτη...\tCtrl+B", ID_BOOKMARK_ADD
+        MENUITEM SEPARATOR
+        MENUITEM "&Μαρκάρισμα επιλογής...\tCtrl+H", ID_HIGHLIGHT_SELECTION
+        MENUITEM "&Εξαγωγή επιλογής...",        ID_EXPORT_SELECTION
+        MENUITEM SEPARATOR
+        MENUITEM "Α&ναζήτηση...\tCtrl+F",       ID_EDIT_FIND
+    END
+    POPUP "&Προβολή"
+    BEGIN
+        MENUITEM "Γραμμή &εργαλείων",           ID_VIEW_TOOLBAR
+        MENUITEM "Γραμμή &κατάστασης",          ID_VIEW_STATUS_BAR
+        MENUITEM "Πλε&υρικό μενού",             ID_VIEW_SIDEBAR
+        MENUITEM SEPARATOR
+        MENUITEM "Πλήρης &οθόνη\tCtrl+L",       ID_VIEW_FULLSCREEN
+        MENUITEM SEPARATOR
+        MENUITEM "Ολόκλ&ηρη σελίδα\tCtrl+0",    ID_ZOOM_FITPAGE
+        MENUITEM "Σε πλάτο&ς\tCtrl+2",          ID_ZOOM_FITWIDTH
+        MENUITEM "&Τέντωμα\tCtrl+3",            ID_ZOOM_STRETCH
+        MENUITEM "&Αρχικό μέγεθος\tCtrl+4",     ID_ZOOM_ACTUALSIZE
+        POPUP "Κ&λίμακα"
+        BEGIN
+            MENUITEM "&Μεγέθυνση\tCtrl+Συν",        ID_ZOOM_IN
+            MENUITEM "&Σμίκρυνση\tCtrl+Μείον",      ID_ZOOM_OUT
+            MENUITEM SEPARATOR
+            MENUITEM "&50%",                        ID_ZOOM_50
+            MENUITEM "&75%",                        ID_ZOOM_75
+            MENUITEM "&100%\tCtrl+1",               ID_ZOOM_100
+            MENUITEM "&200%",                       ID_ZOOM_200
+            MENUITEM "&400%",                       ID_ZOOM_400
+            MENUITEM SEPARATOR
+            MENUITEM "&’λλο...\tCtrl+M",            ID_ZOOM_CUSTOM
+        END
+        MENUITEM SEPARATOR
+        POPUP "&Μετάβαση"
+        BEGIN
+            MENUITEM "Στην &πρώτη σελίδα\tCtrl+Home", ID_VIEW_FIRSTPAGE
+            MENUITEM "Στην π&ροηγούμενη σελίδα\tCtrl+PgUp", ID_VIEW_PREVIOUSPAGE
+            MENUITEM "Στην &επόμενη σελίδα\tCtrl+PgDn", ID_VIEW_NEXTPAGE
+            MENUITEM "Στην &τελευταία σελίδα\tCtrl+End", ID_VIEW_LASTPAGE
+            MENUITEM "Επι&λογή σελίδας...\tCtrl+G", ID_VIEW_GOTO_PAGE
+            MENUITEM SEPARATOR
+            MENUITEM "Πί&σω\tAlt+Βέλος αριστερά",   ID_VIEW_BACK_SHORTCUT
+            MENUITEM "Ε&μπρός\tAlt+Βέλος δεξιά",    ID_VIEW_FORWARD_SHORTCUT
+        END
+        POPUP "&Περιστροφή"
+        BEGIN
+            MENUITEM "&Αριστερά\tCtrl+Shift+Βέλος αριστερά", ID_ROTATE_LEFT
+            MENUITEM "&Δεξιά\tCtrl+Shift+Βέλος δεξιά", ID_ROTATE_RIGHT
+            MENUITEM "&180°\tCtrl+Shift+Βέλος κάτω", ID_ROTATE_180
+        END
+        POPUP "&Χωροθέτηση"
+        BEGIN
+            MENUITEM "&Μία σελίδα\tCtrl+Alt+1",     ID_LAYOUT_SINGLEPAGE
+            MENUITEM "&Συνεχόμενες\tCtrl+Alt+2",    ID_LAYOUT_CONTINUOUS
+            MENUITEM "&Γειτονικές\tCtrl+Alt+3",     ID_LAYOUT_FACING
+            MENUITEM "Σ&υνεχόμενες - Γειτονικές\tCtrl+Alt+4", ID_LAYOUT_CONTINUOUS_FACING
+            MENUITEM SEPARATOR
+            MENUITEM "&Η πρώτη σελίδα χωριστά",     ID_LAYOUT_FIRSTPAGE_ALONE
+        END
+        POPUP "Κατά&σταση"
+        BEGIN
+            MENUITEM "&Έγχρωμο\tCrtl+Shift+1",      ID_DISPLAY_COLOR
+            MENUITEM "&Ασπρόμαυρο\tCtrl+Shift+2",   ID_DISPLAY_BW
+            MENUITEM "&Παρασκήνιο\tCtrl+Shift+3",   ID_DISPLAY_BACKGROUND
+            MENUITEM "Π&ροσκήνιο\tCtrl+Shift+4",    ID_DISPLAY_FOREGROUND
+        END
+        MENUITEM SEPARATOR
+        POPUP "&Language"
+        BEGIN
+            MENUITEM "&English",                    ID_LANGUAGE_FIRST
+        END
+    END
+    POPUP "Ε&ργαλεία"
+    BEGIN
+        MENUITEM "&Μετακίνηση (εργαλείου χεριού)", ID_MODE_DRAG
+        MENUITEM "Επιλογή &κειμένου",           ID_MODE_SELECT
+        MENUITEM "Επιλογή &περιοχής",           ID_MODE_SELECT_RECT
+        MENUITEM "Μ&εγέθυνση",                  ID_MODE_MAGNIFY
+        MENUITEM "Επιλογή και &αλλαγή κλίμακας", ID_MODE_ZOOM_RECT
+    END
+    POPUP "Παρά&θυρο"
+    BEGIN
+        MENUITEM "&Πολλαπλά παράθυρα",          ID_WINDOW_CASCADE
+        MENUITEM "Ο&ριζόντια",                  ID_WINDOW_TILE_HORZ
+        MENUITEM "&Κάθετα",                     ID_WINDOW_TILE_VERT
+        MENUITEM "&Τακτοποίηση ελαχιστοποιημένων", ID_WINDOW_ARRANGE
+        MENUITEM SEPARATOR
+        MENUITEM "Πλήρης &οθόνη\tCtrl+L",       ID_VIEW_FULLSCREEN
+        MENUITEM SEPARATOR
+        MENUITEM "Πέρασμα σε αυτό το παράθυρο", ID_WINDOW_ACTIVATE_FIRST
+    END
+    POPUP "&Βοήθεια"
+    BEGIN
+        MENUITEM "&Έλεγχος αναβαθμίσεων...",    ID_CHECK_FOR_UPDATE
+        MENUITEM "&Περί του προγράμματος WinDjView...", ID_APP_ABOUT
+    END
+END
+
+IDR_POPUP MENU 
+BEGIN
+    POPUP "Σελίδα"
+    BEGIN
+        MENUITEM "&Αντιγραφή κειμένου",         ID_EDIT_COPY
+        MENUITEM "&Επικόλληση κειμένου...",     ID_HIGHLIGHT_TEXT
+        MENUITEM "&Μαρκάρισμα επιλογής...",     ID_HIGHLIGHT_SELECTION
+        MENUITEM "Εξαγ&ωγή επιλογής...",        ID_EXPORT_SELECTION
+        MENUITEM "&Κλίμακα επιλογής",           ID_ZOOM_TO_SELECTION
+        MENUITEM "&Παράμετροι περίληψης...",    ID_ANNOTATION_EDIT
+        MENUITEM "&Διαγραφή περίληψης",         ID_ANNOTATION_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Προσθήκη &σελιδοδείκτη...",   ID_BOOKMARK_ADD
+        MENUITEM SEPARATOR
+        MENUITEM "Π&ληροφορίες σελίδας",        ID_PAGE_INFORMATION
+        MENUITEM "Ε&ξαγωγή σελίδας...",         ID_EXPORT_PAGE
+    END
+    POPUP "Σελιδοδείκτης"
+    BEGIN
+        MENUITEM "&Μετονομασία",                ID_BOOKMARK_RENAME
+        MENUITEM "&Διαγραφή",                   ID_BOOKMARK_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Μετακίνηση &επάνω",           ID_BOOKMARK_MOVEUP
+        MENUITEM "Μετακίνηση &κάτω",            ID_BOOKMARK_MOVEDOWN
+        MENUITEM SEPARATOR
+        MENUITEM "&Ανακατεύθυνση",              ID_BOOKMARK_SETDESTINATION
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS 
+BEGIN
+    "0",            ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_ZOOM_100,            VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_LAYOUT_SINGLEPAGE,   VIRTKEY, CONTROL, ALT, NOINVERT
+    "1",            ID_DISPLAY_COLOR,       VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_OEM_PLUS,    ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_PLUS,    ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_OEM_COMMA,   ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_MINUS,   ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_MINUS,   ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_LAYOUT_CONTINUOUS,   VIRTKEY, CONTROL, ALT, NOINVERT
+    "2",            ID_DISPLAY_BW,          VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_LAYOUT_FACING,       VIRTKEY, CONTROL, ALT, NOINVERT
+    "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "4",            ID_ZOOM_ACTUALSIZE,     VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_LAYOUT_CONTINUOUS_FACING, VIRTKEY, CONTROL, ALT, NOINVERT
+    "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "B",            ID_BOOKMARK_ADD,        VIRTKEY, CONTROL, NOINVERT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_FOCUS_TO_LOOKUP,     VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_HIGHLIGHT_SELECTION, VIRTKEY, CONTROL, NOINVERT
+    "I",            ID_DICTIONARY_INFO,     VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_DICTIONARY_LOOKUP,   VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_VIEW_GOTO_PAGE,      VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
+    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_DOWN,        ID_DICTIONARY_NEXT,     VIRTKEY, ALT, NOINVERT
+    VK_DOWN,        ID_ROTATE_180,          VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_END,         ID_VIEW_LASTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
+    VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_HOME,        ID_VIEW_FIRSTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_LEFT,        ID_VIEW_BACK_SHORTCUT,  VIRTKEY, ALT, NOINVERT
+    VK_LEFT,        ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
+    VK_NEXT,        ID_VIEW_NEXTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
+    VK_PRIOR,       ID_VIEW_PREVIOUSPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
+    VK_RIGHT,       ID_VIEW_FORWARD_SHORTCUT, VIRTKEY, ALT, NOINVERT
+    VK_RIGHT,       ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_TAB,         ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_UP,          ID_DICTIONARY_PREV,     VIRTKEY, ALT, NOINVERT
+    "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 287, 132
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Περί του προγράμματος WinDjView"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
+    LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2004-2007 Andrew Zhezherun",IDC_STATIC,40,17,147,11
+    LTEXT           "Μετάφραση στα ελληνικά: Τριαντάφυλλος Μεϊμάρης",IDC_STATIC,40,51,176,8
+    DEFPUSHBUTTON   "Κλείσιμο",IDOK,230,7,50,14,WS_GROUP
+    LTEXT           "Ιστοσελίδα WinDjView:",IDC_STATIC,40,29,76,8
+    LTEXT           "Ιστοσελίδα DjVuLibre:",IDC_STATIC,40,39,72,8
+    LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,117,29,115,8
+    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,113,39,96,8
+    LTEXT           "Αυτό το πρόγραμμα διατίθεται ελεύθερα. Έχετε το δικαίωμα διακίνησης ή/και τροποποποίησης, τηρώντας τους όρους της Γενικής ’δειας Δημόσιας Χρήσης (GPL) GNU 2, του Ιδρύματος Ελεύθερου Λογισμικού (Free Software Foundation).",IDC_STATIC,40,64,240,35
+    LTEXT           "Μπορείτε να στηρίξετε την περαιτέρω ανάπτυξη του προγράμματος, με δωρεά μέσω του PayPal",IDC_STATIC,40,104,174,17
+    CONTROL         "Donate",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | WS_TABSTOP,217,104,63,21
+END
+
+IDD_PRINT DIALOGEX 0, 0, 456, 316
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Εκτύπωση"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "&Όνομα:",IDC_STATIC,174,21,37,9,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_PRINTER,223,19,161,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "&Ιδιότητες",IDC_PROPERTIES,391,18,50,14
+    CONTROL         "Εκτύπωση σε αρχείο",IDC_PRINT_TO_FILE,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,357,78,84,11
+    CONTROL         "&Κατακόρυφη",IDC_PORTRAIT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,174,112,53,11
+    CONTROL         "&Οριζόντια",IDC_LANDSCAPE,"Button",BS_AUTORADIOBUTTON,174,129,53,11
+    LTEXT           "Α&ριθμός αντιτύπων:",IDC_STATIC,319,112,68,11
+    EDITTEXT        IDC_EDIT_COPIES,389,110,38,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_SPIN_COPIES,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,415,112,11,14
+    CONTROL         "Συρραφή",IDC_COLLATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,319,129,94,11
+    CONTROL         "Ό&λες",IDC_RANGE_ALL,"Button",BS_AUTORADIOBUTTON | WS_GROUP,14,166,37,11
+    CONTROL         "&Τρέχουσα σελίδα",IDC_RANGE_CURRENT,"Button",BS_AUTORADIOBUTTON,14,180,80,11
+    CONTROL         "Επιλογή",IDC_RANGE_SELECTION,"Button",BS_AUTORADIOBUTTON,99,180,55,11
+    CONTROL         "&Σελίδες:",IDC_RANGE_PAGES,"Button",BS_AUTORADIOBUTTON,14,194,50,11
+    EDITTEXT        IDC_PAGE_RANGES,56,193,95,12,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "Αριστερά:",IDC_STATIC,174,168,40,9
+    EDITTEXT        IDC_POSITION_LEFT,208,166,30,12,ES_AUTOHSCROLL
+    LTEXT           "Επάνω:",IDC_STATIC,242,168,25,9
+    EDITTEXT        IDC_POSITION_TOP,268,166,30,12,ES_AUTOHSCROLL
+    CONTROL         "Χωροθέτηση στο κέντρο",IDC_CENTER_IMAGE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,188,95,11
+    CONTROL         "Αυτόματος προσανατολισμός",IDC_AUTO_ROTATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,202,114,11
+    CONTROL         "Κόψιμο &άκρων",IDC_CLIP_CONTENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,216,67,11
+    LTEXT           "Κλίμακα:",IDC_STATIC,319,168,36,9
+    EDITTEXT        IDC_SCALE,351,166,38,12,ES_AUTOHSCROLL
+    CONTROL         "Σε όλη τη σελίδα",IDC_SCALE_TO_FIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,319,188,113,11
+    CONTROL         "Σμίκρυνση &πολύ μεγάλων",IDC_SHRINK_OVERSIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,319,202,120,11
+    CONTROL         "Χωρίς περιθώρια εκτυπωτή",IDC_IGNORE_MARGINS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,319,216,124,11
+    LTEXT           "&Αριστερά:",IDC_STATIC,14,251,40,9
+    EDITTEXT        IDC_MARGIN_LEFT,48,249,38,12,ES_AUTOHSCROLL
+    LTEXT           "&Επάνω:",IDC_STATIC,14,269,26,9
+    EDITTEXT        IDC_MARGIN_TOP,48,267,38,12,ES_AUTOHSCROLL
+    LTEXT           "&Δεξιά:",IDC_STATIC,91,251,23,9
+    EDITTEXT        IDC_MARGIN_RIGHT,113,249,38,12,ES_AUTOHSCROLL
+    LTEXT           "Κάτω:",IDC_STATIC,91,269,23,9
+    EDITTEXT        IDC_MARGIN_BOTTOM,113,267,38,12,ES_AUTOHSCROLL
+    LTEXT           "&Μέγεθος:",IDC_STATIC,174,251,31,9,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_PAPER,206,249,91,81,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_PAGESINRANGE,319,249,123,81,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_PAGESPERSHEET,319,267,123,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Αντίστροφη σειρά",IDC_REVERSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,297,114,11
+    DEFPUSHBUTTON   "Εκτύπωση",IDOK,343,295,50,14
+    PUSHBUTTON      "Κλείσιμο",IDCANCEL,399,295,50,14
+    GROUPBOX        "Εκτυπωτής",IDC_STATIC,167,7,282,87
+    LTEXT           "Θύρα:",IDC_STATIC,174,55,37,9
+    LTEXT           "Τύπος:",IDC_STATIC,174,40,37,9
+    LTEXT           "Σχόλιο:",IDC_STATIC,174,70,46,9
+    LTEXT           "Type",IDC_STATIC_TYPE,223,40,149,9
+    LTEXT           "Location",IDC_STATIC_LOCATION,223,55,149,9
+    LTEXT           "Comment",IDC_STATIC_COMMENT,223,70,149,9
+    GROUPBOX        "Σελίδες",IDC_STATIC,7,154,153,78
+    GROUPBOX        "Αντίτυπα",IDC_STATIC,311,98,138,51
+    CONTROL         "",IDC_PREVIEW_AREA,"Static",SS_BLACKFRAME | NOT WS_VISIBLE,14,20,138,115
+    GROUPBOX        "Προσανατολισμός",IDC_STATIC,167,98,137,51
+    GROUPBOX        "Προεπισκόπιση",IDC_STATIC,7,7,153,142
+    GROUPBOX        "Περιθώρια",IDC_STATIC,7,237,153,49
+    GROUPBOX        "Χαρτί",IDC_STATIC,167,237,137,49
+    LTEXT           "Ορίστε αριθμούς σελίδων ή/και περιοχές σελίδων, χωρίζοντάς τους με κόμματα.",IDC_STATIC,15,210,141,17
+    GROUPBOX        "Πρόσθετες ρυθμίσεις",IDC_STATIC,311,237,138,49
+    GROUPBOX        "Χωροθέτηση",IDC_STATIC,167,154,137,78
+    GROUPBOX        "Κλίμακα εκτύπωσης",IDC_STATIC,311,154,138,78
+    CTEXT           "Μέγεθος χαρτιού",IDC_STATIC_PAPER,14,138,138,8
+END
+
+IDD_PROGRESS DIALOG  0, 0, 171, 61
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON   "Ακύρωση",IDOK,60,40,50,14
+    CTEXT           "Εκτύπωση σελίδας 1 από 3...",IDC_STATIC_TEXT,7,7,157,9
+    CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,7,22,157,12
+END
+
+IDD_ZOOM DIALOGEX 0, 0, 119, 47
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Επιλογή κλίμακας"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "&Κλίμακα:",IDC_STATIC,13,7,35,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_ZOOM,51,7,55,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Εντάξει",IDOK,7,26,50,14
+    PUSHBUTTON      "Ακύρωση",IDCANCEL,62,26,50,14
+END
+
+IDD_GOTO_PAGE DIALOGEX 0, 0, 127, 48
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Μετάβαση στη σελίδα"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "&Σελίδα:",IDC_STATIC,9,7,32,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_PAGE,43,7,42,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_SPIN_PAGE,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,73,8,11,14
+    LTEXT           "από 9999",IDC_PAGE_COUNT,89,7,31,12,SS_CENTERIMAGE
+    DEFPUSHBUTTON   "Εντάξει",IDOK,11,27,50,14
+    PUSHBUTTON      "Ακύρωση",IDCANCEL,66,27,50,14
+END
+
+IDD_UPDATE DIALOGEX 0, 0, 215, 34
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "Έλεγχος ενημερώσεων. Παρακαλώ, περιμένετε...",IDC_STATIC,39,10,164,11
+    CONTROL         "",IDR_MAINFRAME,"Static",0x13,-1,7,7,21
+    ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
+END
+
+IDD_FIND DIALOGEX 0, 0, 287, 64
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Αναζήτηση"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "&Κείμενο:",IDC_STATIC,7,10,35,9,SS_CENTERIMAGE
+    CONTROL         "",IDC_FIND,"ComboBoxEx32",CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP,47,7,173,95
+    CONTROL         "&Ταίριασμα πεζών-κεφαλαίων",IDC_MATCH_CASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,28,114,8
+    DEFPUSHBUTTON   "&Εύρεση",IDOK,230,7,50,14
+    PUSHBUTTON      "Εύρεση &όλων",IDC_FIND_ALL,230,25,50,14
+    PUSHBUTTON      "Κλείσιμο",IDCANCEL,230,43,50,14
+    LTEXT           "Αναζήτηση στη σελίδα 1 από 10...",IDC_SEARCH_STATUS,7,48,214,9,NOT WS_VISIBLE
+END
+
+IDD_SETTINGS_GENERAL DIALOGEX 0, 0, 275, 124
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Γενικές"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    CONTROL         "Προειδοποίηση κατά το κλείσιμο &άνω του ενός εγγράφων",IDC_WARN_CLOSE_MULTIPLE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,261,10
+    CONTROL         "Δημιουργία &εικονιδίου για όλες τις σελίδες στο φόντο",IDC_GEN_ALL_THUMBNAILS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,261,10
+    CONTROL         "&Κύλιση σελίδων με κλικ του ποντικιού σε κατάσταση πλήρους οθόνης",IDC_FULLSCREEN_CLICKS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,261,10
+    CONTROL         "Πάντοτε απόκρυψη της μπάρας κύλισης σε κατάσταση πλήρους οθόνης",IDC_FULLSCREEN_HIDESCROLL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,261,10
+    CONTROL         "Κλίμακα με Ctrl+ροδέλα ποντικιού στην αντίθετη κατεύθυνση",IDC_INVERT_WHEEL_ZOOM,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,261,10
+    CONTROL         "Κλείσιμο του προγράμματος με Escape",IDC_CLOSE_ON_ESC,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,77,261,10
+    CONTROL         "Αναδίπλωση σελιδοδείκτη, &μεγαλύτερου της μιας γραμμής",IDC_WRAP_BOOKMARKS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,261,10
+    CONTROL         "Απομνημόνευση της τρέχουσας σελίδας και των ρυθμίσεων του κάθε αρχείου",IDC_RESTORE_VIEW,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,105,261,10
+END
+
+IDD_SETTINGS_DISPLAY DIALOGEX 0, 0, 250, 134
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Εικόνα"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    CONTROL         "Οξία αλλαγή κλίμακας σε χαμηλού &επιπέδου ζουμ (επιβράδυνση)",IDC_HQ_SCALING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,236,10
+    CONTROL         "Αντιμετάθεση χρωμάτων",IDC_INVERT_COLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,236,10
+    CONTROL         "&Προσαρμογή ρυθμίσεων εικόνας",IDC_ADJUST_DISPLAY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,236,9
+    LTEXT           "&Φωτεινότητα: 0",IDC_BRIGHTNESS_TEXT,7,49,61,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,80,48,163,12
+    LTEXT           "&Αντίθεση: 0",IDC_CONTRAST_TEXT,7,63,52,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,81,62,162,12
+    LTEXT           "&Διόρθωση Gamma: 1.0",IDC_GAMMA_TEXT,7,77,78,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,82,76,160,12
+    CONTROL         "Εφαρμογή κατά την εκτύπωση",IDC_ADJUST_PRINTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,93,236,9
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,107,236,1
+    LTEXT           "&Μονάδες μέτρησης:",IDC_STATIC,7,117,73,10
+    COMBOBOX        IDC_COMBO_UNITS,83,115,87,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_SETTINGS_ASSOCS DIALOGEX 0, 0, 250, 134
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Συσχέτιση αρχείων"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "Συσχέτιση των αρχείων .djvu και .djv με το πρόγραμμα WinDjView:",IDC_STATIC,7,7,219,9
+    PUSHBUTTON      "&Συσχέτιση",IDC_ASSOCIATE,7,19,50,14
+    CONTROL         "&Αποκατάσταση της συσχέτισης κατά την έναρξη του προγράμματος",IDC_RESTORE_ASSOCS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,38,236,10
+END
+
+IDD_ANNOTATION DIALOGEX 0, 0, 200, 260
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Παράμετροι περίληψης"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,40,11,153,1,WS_EX_STATICEDGE
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,39,59,154,1,WS_EX_STATICEDGE
+    LTEXT           "&Περιθώρια",IDC_STATIC,7,7,38,9
+    LTEXT           "Τύπος:",IDC_STATIC,18,19,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_BORDER_TYPE,43,19,76,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Χρώμα:",IDC_STATIC,124,19,26,12,SS_CENTERIMAGE
+    PUSHBUTTON      "",IDC_BORDER_COLOR,152,18,41,15
+    CONTROL         "Να εμφανίζεται μόνο με το ποντίκι",IDC_HIDE_INACTIVE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,37,174,11
+    LTEXT           "&Γέμισμα",IDC_STATIC,7,55,30,9
+    LTEXT           "Τύπος:",IDC_STATIC,19,67,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_FILL_TYPE,43,67,75,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Χρώμα:",IDC_STATIC,123,67,27,12,SS_CENTERIMAGE
+    PUSHBUTTON      "",IDC_FILL_COLOR,152,66,41,15
+    LTEXT           "&Διαφάνεια:",IDC_STATIC,19,85,51,12,SS_CENTERIMAGE
+    CONTROL         "Slider1",IDC_FILL_TRANSPARENCY,"msctls_trackbar32",WS_TABSTOP,70,86,101,12
+    RTEXT           "100%",IDC_FILL_TRANSPARENCY_TEXT,172,85,20,12,SS_CENTERIMAGE
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,7,105,186,1,WS_EX_STATICEDGE
+    LTEXT           "&Κείμενο:",IDC_STATIC,7,114,33,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_COMMENT,43,114,150,47,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,89,168,50,14
+    PUSHBUTTON      "’κυρο",IDCANCEL,143,168,50,14
+    PUSHBUTTON      "Σε&λιδοδείκτης >>",IDC_ADD_BOOKMARK,7,168,64,14
+    CONTROL         "",IDC_STATIC_LESS,"Static",SS_GRAYFRAME,7,189,186,1,WS_EX_STATICEDGE
+    CONTROL         "",IDC_STATIC_MORE,"Static",SS_GRAYFRAME,7,252,186,1,WS_EX_STATICEDGE
+    LTEXT           "&Όνομα:",IDC_STATIC,7,198,33,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_BOOKMARK_TITLE,43,198,150,47,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+END
+
+IDD_RENAME_BOOKMARK DIALOG  0, 0, 206, 90
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Μετονομασία σελιδοδείκτη"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "&Όνομα:",IDC_STATIC,7,7,29,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_BOOKMARK_TITLE,36,7,163,53,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,95,69,50,14
+    PUSHBUTTON      "’κυρο",IDCANCEL,149,69,50,14
+END
+
+IDD_INSTALL_DIC DIALOGEX 0, 0, 215, 138
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Εγκατάσταση λεξικού"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    CONTROL         "Εγκατάσταση για τον παρόντα χρήστη",IDC_CURRENT_USER,
+                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,7,7,201,11
+    CONTROL         "Εγκατάσταση για όλους τους χρήστες (απαιτείται δικαίωμα διαχειριστή)",IDC_ALL_USERS,
+                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,7,21,201,19
+    CONTROL         "Εγκατάσταση στον κατάλογο:",IDC_CUSTOM,"Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,7,41,157,11
+    PUSHBUTTON      "...",IDC_BROWSE_LOCATION,195,40,13,12,WS_GROUP
+    CONTROL         "(Δεν έχει επιλεγεί)",IDC_CUSTOM_LOCATION,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | SS_PATHELLIPSIS | WS_GROUP,18,53,190,9
+    LTEXT           "Το αρχείο με το λεξικό θα αντιγραφεί. Για να μεταφέρετε το αρχικό αρχείο στον κάδο ανακύκλωσης μετά την εγκατάσταση, απεπιλέξτε την ακόλουθη επιλογή:",IDC_STATIC,7,69,201,32
+    CONTROL         "Να μη διαγραφεί το αρχικό αρχείο",IDC_KEEP_ORIGINAL,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,97,201,11
+    DEFPUSHBUTTON   "OK",IDOK,103,117,50,14
+    PUSHBUTTON      "’κυρο",IDCANCEL,158,117,50,14
+END
+
+IDD_INSTALL_DIC_REPLACE DIALOGEX 0, 0, 190, 100
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Εγκατάσταση λεξικού"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    LTEXT           "Για να μεταφέρετε το αρχικό αρχείο στον κάδο ανακύκλωσης μετά την εγκατάσταση, απεπιλέξτε την ακόλουθη επιλογή:",IDC_STATIC,7,35,176,25
+    CONTROL         "Να μη διαγραφεί το αρχικό αρχείο",IDC_KEEP_ORIGINAL,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,62,176,11
+    DEFPUSHBUTTON   "OK",IDOK,78,79,50,14
+    PUSHBUTTON      "’κυρο",IDCANCEL,133,79,50,14
+    LTEXT           "Ένα λεξικό με αυτό το όνομα υπάρχει ήδη στο σύστημα. Κατά την εγκατάσταση το λεξικό που βρέθηκε θα αντικατασταθεί με το τρέχον αρχείο.",IDC_STATIC,7,7,176,26
+END
+
+IDD_SETTINGS_DICT DIALOGEX 0, 0, 250, 134
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Λεξικά"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_TABSTOP,7,42,236,67,WS_EX_CLIENTEDGE
+    LTEXT           "Εγκατεστημένα λεξικά:",IDC_STATIC,7,31,91,9
+    PUSHBUTTON      "&Απεγκατάσταση",IDC_UNINSTALL,7,113,60,14
+    LTEXT           "Επιλογή καταλόγου:",IDC_STATIC,7,7,101,9
+    LTEXT           "(Δεν έχει επιλεγεί)",IDC_CUSTOM_LOCATION,7,18,220,9
+    PUSHBUTTON      "...",IDC_BROWSE_LOCATION,230,16,13,12
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+1 VERSIONINFO
+ FILEVERSION 0,5,0,0
+ PRODUCTVERSION 0,5,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "04080000"
+        BEGIN
+            VALUE "Comments", "Ελληνικά"
+            VALUE "CompanyName", "Andrew Zhezherun"
+            VALUE "FileDescription", "WinDjView Localized Resources"
+            VALUE "FileVersion", "0.5"
+            VALUE "InternalName", "WinDjViewGR.dll"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2007 Andrew Zhezherun. All rights reserved."
+            VALUE "OriginalFilename", "WinDjViewGR.dll"
+            VALUE "ProductName", "WinDjView"
+            VALUE "ProductVersion", "0.5"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x408, 0
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 280
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 125
+    END
+
+    IDD_PRINT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 449
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 309
+    END
+
+    IDD_PROGRESS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 164
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 54
+    END
+
+    IDD_ZOOM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 112
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 40
+    END
+
+    IDD_GOTO_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 120
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 41
+    END
+
+    IDD_UPDATE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 27
+    END
+
+    IDD_FIND, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 280
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 57
+    END
+
+    IDD_SETTINGS_GENERAL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 268
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 117
+    END
+
+    IDD_SETTINGS_DISPLAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 243
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 127
+    END
+
+    IDD_SETTINGS_ASSOCS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 243
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 126
+    END
+
+    IDD_ANNOTATION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 193
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 253
+    END
+
+    IDD_RENAME_BOOKMARK, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 199
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
+    END
+
+    IDD_INSTALL_DIC, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 208
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 131
+    END
+
+    IDD_INSTALL_DIC_REPLACE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 183
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 93
+    END
+
+    IDD_SETTINGS_DICT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 243
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 127
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDR_MAINFRAME           "WinDjView"
+    IDR_DjVuTYPE            "\nDjVu\nDjVu\nΈγγραφα DjVu (*.djvu;*.djv)\n.djvu;.djv\nDjVu.Document\n"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_BOOKMARKS_TAB       "Περιεχόμενα"
+    IDS_ASSOCIATE_SUCCESSFUL 
+                            "Τα αρχεία με κατάληξη .djvu και .djv είναι πλέον συσχετισμένα με το WinDjView.\nΜε διπλό κλικ αυτά τα αρχεία θα ανοίγουν με το παρόν πρόγραμμα."
+    IDS_ASSOCIATE_FAILED    "Κατά την ανανέωση των ρυθμίσεων των Windows προέκυψε κάποιο σφάλμα.\nΊσως να μην έχετε το δικαίωμα εκτέλεσης της συγκεκριμένης ενέργειας."
+    IDS_PAGE_INDEX_TAB      "Ευρετήριο"
+    IDS_THUMBNAILS_TAB      "Σελίδες"
+    IDS_SEARCH_RESULTS_TAB  "Αποτελέσματα αναζήτησης"
+    IDS_SAVE_COPY_AS        "Αποθήκευση αντιγράφου ως"
+    IDS_DJVU_FILTER         "Έγγραφα DjVu (*.djvu)|*.djvu|Όλα τα αρχεία (*.*)|*.*||"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_CANNOT_SAVE_TO_ORIG "Αδυναμία αποθήκευσης του εγγράφου στο ίδιο αρχείο"
+    IDS_SAVE_ERROR          "Κατά την αποθήκευση του εγγράφου προέκυψε κάποιο σφάλμα"
+    IDS_ERROR_DECODING_PAGE "Αδυναμία αποκωδικοποίησης της σελίδας"
+    IDS_BMP_FILTER          "Εικόνες (*.bmp)|*.bmp|Όλα τα αρχεία (*.*)|*.*||"
+    IDS_EXPORT_PAGE         "Αποθήκευση σελίδας ως"
+    IDS_CONNECT_ERROR       "Κατά την σύνδεση με τον σέρβερ προέκυψε κάποιο σφάλμα.\nΕλέγξτε αν έχετε πρόσβαση στο διαδίκτυο."
+    IDS_NO_UPDATES_AVAILABLE 
+                            "Χρησιμοποιείτε την τελευταία έκδοση. Παρακαλώ ελέγξτε για ανανεώσεις αργότερα."
+    IDS_NEW_VERSION_AVAILABLE 
+                            "Βρέθηκε νέα έκδοση %s. Θέλετε να συνδεθείτε με την ιστοσελίδα του προγράμματος στο διαδίκτυο;"
+    IDS_VERSION_URL         "http://windjview.sourceforge.net/version.txt"
+    IDS_WEBSITE_URL         "http://windjview.sourceforge.net"
+    IDS_DJVULIBRE_URL       "http://djvu.sourceforge.net"
+    IDS_DONATE_URL          "https://sourceforge.net/donate/index.php?group_id=114927"
+    IDS_STRING_NOT_FOUND    "Το κείμενο δε βρέθηκε"
+    IDS_PRINTING            "Εκτύπωση, παρακαλώ περιμένετε..."
+    IDS_ERROR_RENDERING_PAGE "Αδυναμία εμφάνισης της σελίδας"
+    IDS_SEARCHING_PAGE      "Αναζήτηση στη σελίδα %d από %d"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_NUM_OCCURRENCES     "βρέθηκαν %d αποτελέσματα"
+    IDS_EXPORT_TEXT         "Αποθήκευση κειμένου"
+    IDS_TEXT_FILTER         "Έγγραφο κειμένου (*.txt)|*.txt|Όλα τα αρχεία (*.*)|*.*||"
+    IDS_PRINTING_PAGE       "Εκτύπωση σελίδας %d από %d..."
+    IDS_SEARCHING           "Αναζήτηση"
+    IDS_OF_PAGE_COUNT       "από %d"
+    IDS_FIT_WIDTH           "Κατά πλάτος"
+    IDS_FIT_HEIGHT          "Κατά ύψος"
+    IDS_FIT_PAGE            "Ολόκληρη σελίδα"
+    IDS_ACTUAL_SIZE         "Αρχικό μέγεθος"
+    IDS_STRETCH             "Τέντωμα"
+    IDS_TOOLTIP_BRIGHTNESS  "Φωτεινότητα: %+d"
+    IDS_TOOLTIP_CONTRAST    "Αντίθεση: %+d"
+    IDS_TOOLTIP_GAMMA       "Διόρθωση Gamma: %1.1f"
+    IDS_STATUS_BLACKANDWHITE "  Ασπρόμαυρο  "
+    IDS_STATUS_FOREGROUND   "  Προσκήνιο  "
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STATUS_BACKGROUND   "  Παρασκήνιο  "
+    IDS_PRINT_ALL_PAGES     "Όλες οι σελίδες"
+    IDS_PRINT_ODD_PAGES     "Μονές σελίδες"
+    IDS_PRINT_EVEN_PAGES    "Ζυγές σελίδες"
+    IDS_PRINT_ONE_PAGE      "Μία σελίδα"
+    IDS_PRINT_TWO_PAGES     "Δύο σελίδες"
+    IDS_PLEASE_WAIT         "Παρακαλώ περιμένετε..."
+    IDS_PAGE_NO_TOOLTIP     "σελίδα %d"
+    IDS_BRIGHTNESS_TEXT_ZERO "&Φωτεινότητα: %d"
+    IDS_BRIGHTNESS_TEXT     "&Φωτεινότητα: %+d"
+    IDS_CONTRAST_TEXT_ZERO  "&Αντίθεση: %d"
+    IDS_CONTRAST_TEXT       "&Αντίθεση: %+d"
+    IDS_GAMMA_TEXT          "&Διόρθωση Gamma: %1.1f"
+    IDS_FAILED_TO_OPEN      "Αδυναμία ανοίγματος του εγγράφου\n"
+    IDS_TOOLBAR_TITLE       "Γραμμή εργαλείων"
+    IDS_TOOLTIP_HIDE        "Απόκρυψη"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_NOT_VALID_DOCUMENT  "\nΠιθανόν αυτό να μην είναι ένα έγκυρο αρχείο DjVu."
+    IDS_PRINTING_FAILED     "Αδυναμία εκτύπωσης του εγγράφου.\n Ελέγξτε τις ρυθμίσεις του εκτυπωτή και του οδηγού (driver)."
+    IDS_PAPER_SIZE          "%s x %s %s"
+    IDS_VERSION_INFO        "WinDjView %s\n(C) Andrew Zhezherun"
+    IDS_VERSION_ABOUT       "WinDjView %s"
+    IDS_CURRENT_VERSION     "0.5"
+    IDS_FATAL_ERROR         "Προέκυψε ένα σοβαρό σφάλμα.\n\nΜπορεί να προήρθε από ένα κατεστραμμένο έγγραφο. Μετά από αυτό το σφάλμα το πρόγραμμα μπορεί να μην λειτουργήσει σωστά. Παρακαλούμε να επανακκινήσετε το πρόγραμμα.\n\nΠατήστε OK, για να βγείτε από το πρόγραμμα, ή Cancel, για να επιστρέψετε στα ανοιγμένα έγγραφα."
+    IDS_WARN_CLOSE_MULTIPLE "Η έξοδος από το πρόγραμμα θα έχει ως αποτέλεσμα το κλείσιμο των %d εγγράφων. Είστε σίγουροι ότι θέλετε να συνεχίσετε;"
+    IDS_OPENFILE            "’νοιγμα"
+    IDS_ALLFILTER           "Όλα τα αρχεία (*.*)"
+    IDS_SETTINGS            "Ρυθμίσεις"
+    IDS_BORDER_TYPES        "Κανένα,Συμπαγής,Αντιστροφή"
+    IDS_FILL_TYPES          "Κανένα,Συμπαγής,Αντιστροφή"
+    IDS_MORE_COLORS         "Περισσότερα χρώματα..."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_CUSTOM_BOOKMARKS_TAB "Σελιδοδείκτες"
+    IDS_BOOKMARK_MORE       "Σε&λιδοδείκτης >>"
+    IDS_BOOKMARK_LESS       "Σε&λιδοδείκτης <<"
+    IDS_UNITS_FULL          "Εκατοστά,Χιλιοστά,Ίντσες"
+    IDS_UNITS_SHORT         "cm,mm,in"
+    IDS_EDIT_ANNOTATION     "Παράμετροι περίληψης"
+    IDS_CREATE_ANNOTATION   "Νέα περίληψη"
+    IDS_BOOKMARK_SELECTION  "Σελιδοδείκτης στο μαρκαρισμένο"
+    IDS_BOOKMARK_ANNOTATION "Σελιδοδείκτης στην περίληψη"
+    IDS_BOOKMARK_VIEW       "Σελιδοδείκτης στην προβολή"
+    IDS_RENAME_BOOKMARK     "Μετονομασία σελιδοδείκτη"
+    IDS_PROMPT_BOOKMARK_DESTINATION 
+                            "Ο επιλεγμένος σελιδοδείκτης θα ορισθεί για την τρέχουσα θέση. Είστε σίγουροι ότι θέλετε να συνεχίσετε;"
+    IDS_PROMPT_BOOKMARK_DELETE 
+                            "Ο επιλεγμένος σελιδοδείκτης θα διαγραφεί. Είστε σίγουροι ότι θέλετε να συνεχίσετε;"
+    IDS_PROMPT_ANNOTATION_DELETE 
+                            "Η επιλεγμένη περίληψη θα διαγραφεί. Είστε σίγουροι ότι θέλετε να συνεχίσετε;"
+    IDS_FILE_INSTALL        "Εγκατάσταση..."
+    IDS_INSTALLATION_FAILED "Δεν ήταν δυνατή η εγκατάσταση του λεξικού. Πιθανοί λόγοι: περιορισμένα δικαιώματα εγγραφής στον κατάλογο προορισμού, ή το αρχείο είναι ανοικτό από άλλη εφαρμογή, ή δεν υπάρχει αρκετός χώρος στο δίσκο."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_INSTALLATION_SUCCEEDED 
+                            "Η εγκατάσταση του λεξικού ολοκληρώθηκε επιτυχώς."
+    IDS_ERROR_PARSING_RANGE "Σφάλμα στην περιοχή εκτύπωσης."
+    IDS_PATH_TOO_LONG       "Αδυναμία ανοίγματος του εγγράφου: η διαδρομή για το αρχείο είναι πολλή μεγάλη.\n%s"
+    IDR_DICTIONARIES_BAR    "Γραμμή λεξικών"
+    IDS_DICTBAR_TITLE       "Λεξικά"
+    IDS_LANG_NOT_SPECIFIED  "Δεν έχει προσδιορισθεί"
+    IDS_UNINSTALL_DICT      "Είστε σίγουροι ότι θέλετε να διαγράψετε το λεξικό ""%s"";\n\nΤο αρχείο με το λεξικό θα μεταφερθεί στον κάδο ανακύκλωσης. Για την πλήρη διαγραφή του αρχείου, καθαρίστε τον κάδο ανακύκλωσης μετά τη διαγραφή του λεξικού."
+    IDS_UNINSTALL_FAILED    "Σφάλμα κατά τη διαγραφή του λεξικού ""%s"". Για να διαγράψετε το λεξικό χειροκίνητα, κλείστε την εφαρμογή και διαγράψτε το ακόλουθο αρχείο:\n\n%s"
+    IDS_PRINT_BOOKLET       "Εκτύπωση φυλλαδίου"
+    IDS_DICT_LOCATION_PROMPT 
+                            "Επιλέξτε κατάλογο για την εγκατάσταση των λεξικών:"
+    IDS_INVALID_DIR         "Ο επιλεγμένος φάκελος δεν υπάρχει. Παρακαλώ επιλέξτε έναν κατάλογο από τη λίστα, ή χρησιμοποιείστε την επιλογή δημιουργίας νέου καταλόγου."
+    IDS_COPY_SELECTION      "&Αντιγραφή επιλογής"
+END
+
+STRINGTABLE 
+BEGIN
+    IDC_PAGENUM             "Επιλέξτε αριθμό σελίδας\nΣελίδα"
+    IDC_ZOOM                "Επιλέξτε κλίμακα\nΚλίμακα"
+    IDC_CUSTOM              "Αναζήτηση λέξης στο επιλεγμένο λεξικό\nΑναζήτηση στο λεξικό"
+    IDC_LOOKUP_LABEL        "Αναζήτηση στο λεξικό:"
+    IDC_DICTIONARY          "Επιλογή λεξικού από πτυσσόμενο μενού\nΛεξικό"
+END
+
+STRINGTABLE 
+BEGIN
+    IDC_DICTIONARY_LABEL    "Λεξικό:"
+    IDC_LANGUAGE_LIST       "Επιλογή γλωσσικού ζεύγου για αναζήτηση στο λεξικό\nΓλωσσικό ζεύγος"
+    IDC_LANGUAGE_LIST_LABEL "Γλώσσα:"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_NEXTPAGE        "Μετάβαση στην επόμενη σελίδα\nΣτην επόμενη σελίδα"
+    ID_VIEW_PREVIOUSPAGE    "Μετάβαση στην προηγούμενη σελίδα\nΣτην προηγούμενη σελίδα"
+    ID_ZOOM_50              "Κλίμακα 50%"
+    ID_ZOOM_75              "Κλίμακα 75%"
+    ID_ZOOM_100             "Κλίμακα 100%\nΚλίμακα 100%"
+    ID_ZOOM_200             "Κλίμακα 200%"
+    ID_ZOOM_400             "Κλίμακα 400%"
+    ID_ZOOM_FITWIDTH        "Το πλάτος της σελίδας να ισούται με το πλάτος του παραθύρου\nΚατά πλάτος"
+    ID_ZOOM_FITHEIGHT       "Το ύψος της σελίδας να ισούται με το ύψος του παραθύρου"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_ZOOM_FITPAGE         "Ολόκληρη η σελίδα στο παράθυρο\nΟλόκληρη σελίδα"
+    ID_ZOOM_ACTUALSIZE      "Προβολή της σελίδας στο αρχικό μέγεθος"
+    ID_ZOOM_STRETCH         "Τέντωμα της σελίδας στο μέγεθος του παραθύρου"
+    ID_ZOOM_CUSTOM          "Ορισμός άλλης κλίμακας"
+    ID_ROTATE_RIGHT         "Δεξιά περιστροφή σελίδας κατά 90 μοίρες\nΠεριστροφή δεξιά"
+    ID_ROTATE_LEFT          "Αριστερή περιστροφή σελίδας κατά 90 μοίρες\nΠεριστροφή αριστερά"
+    ID_ROTATE_180           "Περιστροφή σελίδας κατά 180 μοίρες\nΠεριστροφή 180 μοιρών"
+    ID_VIEW_FIRSTPAGE       "Μετάβαση στην πρώτη σελίδα\nΣτην πρώτη σελίδα"
+    ID_VIEW_LASTPAGE        "Μετάβαση στην τελευταία σελίδα\nΣτην τελευταία σελίδα"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_PAGE_INFORMATION     "Προβολή πληροφοριών για τη σελίδα"
+    ID_FILE_SETTINGS        "Αλλαγή ρυθμίσεων του προγράμματος"
+    ID_EXPORT_PAGE          "Εξαγωγή της τρέχουσας σελίδας σε αρχείο εικόνας bmp"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EXPORT_SELECTION     "Εξαγωγή του επιλεγμένου τμήματος της σελίδας σε αρχείο εικόνας bmp"
+    ID_VIEW_BACK_SHORTCUT   "Προβολή προηγούμενου\nΠροηγούμενο"
+    ID_VIEW_FORWARD_SHORTCUT "Προβολή επόμενου\nΕπόμενο"
+    ID_WINDOW_ACTIVATE_FIRST "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_WINDOW_ACTIVATE_1    "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_WINDOW_ACTIVATE_2    "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_WINDOW_ACTIVATE_3    "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_WINDOW_ACTIVATE_4    "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_WINDOW_ACTIVATE_5    "Ενεργοποίηση του τρέχοντος παραθύρου"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_WINDOW_ACTIVATE_6    "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_WINDOW_ACTIVATE_7    "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_WINDOW_ACTIVATE_8    "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_WINDOW_ACTIVATE_9    "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_WINDOW_ACTIVATE_10   "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_WINDOW_ACTIVATE_11   "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_WINDOW_ACTIVATE_12   "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_WINDOW_ACTIVATE_13   "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_WINDOW_ACTIVATE_14   "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_WINDOW_ACTIVATE_LAST "Ενεργοποίηση του τρέχοντος παραθύρου"
+    ID_ZOOM_IN              "Μεγέθυνση\nΜεγέθυνση"
+    ID_ZOOM_OUT             "Σμίκρυνση\nΣμίκρυνση"
+    ID_MODE_DRAG            "Ενεργοποίηση μετακίνησης (εργαλείου χεριού)\nΜετακίνηση (εργαλείου χεριού)"
+    ID_MODE_SELECT          "Ενεργοποίηση επιλογής κειμένου\nΕπιλογή κειμένου"
+    ID_MODE_MAGNIFY         "Ενεργοποίηση μεγέθυνσης εικόνας\nΜεγέθυνση"
+    ID_MODE_SELECT_RECT     "Ενεργοποίηση επιλογής περιοχής\nΕπιλογή περιοχής"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_MODE_ZOOM_RECT       "Ενεργοποίηση μεγέθυνσης επιλογής\nΕπιλογή και αλλαγή κλίμακας"
+    ID_FILE_EXPORT_TEXT     "Εξαγωγή κειμένου από το έγγραφο και αποθήκευσή του σε αρχείο"
+    ID_CHECK_FOR_UPDATE     "Έλεγχος στον ιστότοπο του προγράμματος στο διαδίκτυο για ύπαρξη αναβαθμίσεων\nΈλεγχος αναβαθμίσεων"
+    ID_DISPLAY_COLOR        "Προβολή αρχικών χρωμάτων"
+    ID_DISPLAY_BW           "Προβολή ασπρόμαυρου"
+    ID_DISPLAY_BACKGROUND   "Προβολή παρασκηνίου"
+    ID_DISPLAY_FOREGROUND   "Προβολή προσκηνίου"
+    ID_VIEW_FULLSCREEN      "’νοιγμα του εγγράφου σε πλήρη οθόνη\nΠλήρης οθόνη"
+    ID_VIEW_GOTO_PAGE       "Επιλογή σελίδας"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_LAYOUT_SINGLEPAGE    "Προβολή μίας σελίδας\nΜία σελίδα"
+    ID_LAYOUT_CONTINUOUS    "Προβολή συνεχόμενων σελίδων\nΣυνεχόμενες"
+    ID_LAYOUT_FACING        "Προβολή δύο γειτονικών σελίδων\nΓειτονικές"
+    ID_LAYOUT_CONTINUOUS_FACING 
+                            "Προβολή συνεχόμενων γειτονικών σελίδων\nΣυνεχόμενες - Γειτονικές"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_LAYOUT_FIRSTPAGE_ALONE 
+                            "Κατά την ομαδοποίηση γειτονικών σελίδων, η πρώτη σελίδα να εμφανίζεται μεμονομένα"
+    ID_HIGHLIGHT_SELECTION  "Επισήμανση της τρέχουσας επιλογής"
+    ID_ANNOTATION_EDIT      "Επεξεργασία της τρέχουσας περίληψης"
+    ID_ANNOTATION_DELETE    "Διαγραφή της τρέχουσας περίληψης"
+    ID_INDICATOR_PAGE       "  Σελ. %d από %d  "
+END
+
+STRINGTABLE 
+BEGIN
+    ID_INDICATOR_SIZE       "  %s x %s %s  "
+    ID_INDICATOR_ADJUST     "  Ρύθμιση  "
+    ID_INDICATOR_MODE       "  Κατάσταση  "
+    ID_BOOKMARK_DELETE      "Διαγραφή του επιλεγμένου σελιδοδείκτη"
+    ID_BOOKMARK_RENAME      "Μετονομασία του επιλεγμένου σελιδοδείκτη"
+    ID_BOOKMARK_SETDESTINATION 
+                            "Ο επιλεγμένος σελιδοδείκτης θα ορισθεί για την τρέχουσα θέση"
+    ID_BOOKMARK_ADD         "Δημιουργία σελιδοδείκτη στην τρέχουσα προβολή, επιλογή ή περίληψη"
+    ID_ZOOM_TO_SELECTION    "Κλίμακα επιλεγμένης περιοχής"
+    ID_VIEW_SIDEBAR         "Προβολή ή απόκρυψη πλευρικού μενού\nΠλευρικό μενού"
+    ID_DICTIONARY_NEXT      "Αναζήτηση λέξης στο επόμενο λεξικό\nΕπόμενο λεξικό"
+    ID_DICTIONARY_PREV      "Αναζήτηση λέξης στο προηγούμενο λεξικό\nΠροηγούμενο λεξικό"
+    ID_DICTIONARY_INFO      "Προβολή πληροφοριών για το επιλεγμένο λεξικό\nΠληροφορίες για το λεξικό"
+    ID_DICTIONARY_LOOKUP    "Αναζήτηση λέξης στο επιλεγμένο λεξικό\nΑναζήτηση στο λεξικό"
+    ID_VIEW_DICTBAR         "Προβολή ή απόκρυψη γραμμής λεξικών\nΓραμμή λεξικών"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_BOOKMARK_MOVEUP      "Μετακίνηση του επιλεγμένου σελιδοδείκτη επάνω"
+    ID_BOOKMARK_MOVEDOWN    "Μετακίνηση του επιλεγμένου σελιδοδείκτη κάτω"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "WinDjView"
+    AFX_IDS_IDLEMESSAGE     " "
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_NEW             "Create a new document\nNew"
+    ID_FILE_OPEN            "’νοιγμα νέου εγγράφου\n’νοιγμα"
+    ID_FILE_CLOSE           "Κλείσιμο τρέχοντος εγγράφου\nΚλείσιμο"
+    ID_FILE_SAVE            "Save the active document\nSave"
+    ID_FILE_SAVE_AS         "Αποθήκευση τρέχοντος εγγράφου σε άλλο αρχείο\nΑποθήκευση ως"
+    ID_FILE_PAGE_SETUP      "Change the printing options\nPage Setup"
+    ID_FILE_PRINT_SETUP     "Change the printer and printing options\nPrint Setup"
+    ID_FILE_PRINT           "Εκτύπωση τρέχοντος εγγράφου\nΕκτύπωση"
+    ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
+    ID_FILE_SAVE_COPY_AS    "Αποθήκευση αντιγράφου ως"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "’νοιγμα αρχείου"
+    ID_FILE_MRU_FILE2       "’νοιγμα αρχείου"
+    ID_FILE_MRU_FILE3       "’νοιγμα αρχείου"
+    ID_FILE_MRU_FILE4       "’νοιγμα αρχείου"
+    ID_FILE_MRU_FILE5       "’νοιγμα αρχείου"
+    ID_FILE_MRU_FILE6       "’νοιγμα αρχείου"
+    ID_FILE_MRU_FILE7       "’νοιγμα αρχείου"
+    ID_FILE_MRU_FILE8       "’νοιγμα αρχείου"
+    ID_FILE_MRU_FILE9       "’νοιγμα αρχείου"
+    ID_FILE_MRU_FILE10      "’νοιγμα αρχείου"
+    ID_FILE_MRU_FILE11      "’νοιγμα αρχείου"
+    ID_FILE_MRU_FILE12      "’νοιγμα αρχείου"
+    ID_FILE_MRU_FILE13      "’νοιγμα αρχείου"
+    ID_FILE_MRU_FILE14      "’νοιγμα αρχείου?"
+    ID_FILE_MRU_FILE15      "’νοιγμα αρχείου"
+    ID_FILE_MRU_FILE16      "’νοιγμα αρχείου"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection\nErase"
+    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
+    ID_EDIT_COPY            "Αντιγραφή του επιλεγμένου κειμένου στο πρόχειρο\nΑντιγραφή κειμένου"
+    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
+    ID_EDIT_FIND            "Αναζήτηση κειμένου στο τρέχον έγγραφο\nΑναζήτηση"
+    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
+    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
+    ID_WINDOW_ARRANGE       "Τακτοποίηση ελαχιστοποιημένων παραθύρων στο κάτω μέρος της οθόνης\nΤακτοποίηση ελαχιστοποιημένων"
+    ID_WINDOW_CASCADE       "Χωροθέτηση πολλαπλών παραθύρων το ένα επάνω στο άλλο, ώστε να επικαλύπτονται\nΠολλαπλά παράθυρα"
+    ID_WINDOW_TILE_HORZ     "Χωροθέτηση παραθύρων σε οριζόντιες γραμμές, ώστε να μην επικαλύπτονται\nΟριζόντια"
+    ID_WINDOW_TILE_VERT     "Χωροθέτηση παραθύρων σε κάθετες γραμμές, ώστε να μην επικαλύπτονται\nΚάθετα"
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_APP_ABOUT            "Προβολή πληροφοριών για το πρόγραμμα, την έκδοση και τα πνευματικά δικαιώματα\nΠερί του προγράμματος"
+    ID_APP_EXIT             "Έξοδος από το πρόγραμμα\nΈξοδος"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Προβολή ή απόκρυψη γραμμής εργαλείων\nΓραμμή εργαλείων"
+    ID_VIEW_STATUS_BAR      "Προβολή ή απόκρυψη γραμμής κατάστασης\nΓραμμή κατάστασης"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Αλλαγή του μεγέθους του παραθύρου"
+    AFX_IDS_SCMOVE          "Αλλαγή της θέσης του παραθύρου"
+    AFX_IDS_SCMINIMIZE      "Ελαχιστοποίηση του παραθύρου"
+    AFX_IDS_SCMAXIMIZE      "Μεγιστοποίηση του παραθύρου"
+    AFX_IDS_SCNEXTWINDOW    "Μετάβαση στο επόμενο έγγραφο"
+    AFX_IDS_SCPREVWINDOW    "Μετάβαση στο προηγούμενο έγγραφο"
+    AFX_IDS_SCCLOSE         "Κλείσιμο του τρέχοντος παραθύρου"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Επαναφορά του αρχικού μεγέθους του παραθύρου"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+    AFX_IDS_MDICHILD        "Activate this window"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
+END
+
+#endif    // Greek resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ELL)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#include "..\..\res\WinDjView.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#include "afxprint.rc"       // printing/print preview resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
