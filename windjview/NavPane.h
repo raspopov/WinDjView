@@ -27,6 +27,10 @@ class CChildFrame;
 
 // CNavPaneWnd
 
+#define WM_EXPAND_PANE (WM_APP + 5)
+#define WM_COLLAPSE_PANE (WM_APP + 6)
+#define WM_SHOW_SETTINGS (WM_APP + 7)
+
 class CNavPaneWnd : public CWnd, public Observer, public Observable
 {
 	DECLARE_DYNCREATE(CNavPaneWnd)
@@ -39,7 +43,7 @@ public:
 public:
 	enum
 	{
-		s_nTabsWidth = 20,
+		s_nTabsWidth = 21,
 		s_nTabSize = 20,
 		s_nLeftMargin = 5,
 		s_nTopMargin = 22,
@@ -54,8 +58,10 @@ public:
 	void ActivateTab(int nTab, bool bExpand = true);
 	void SetTabName(CWnd* pTabContent, const CString& strName);
 	void SetTabName(int nTab, const CString& strName);
-	void SetTabBorder(CWnd* pTabContent, bool bDrawBorder);
-	void SetTabBorder(int nTab, bool bDrawBorder);
+	void SetTabBorder(CWnd* pTabContent, bool bHasBorder);
+	void SetTabBorder(int nTab, bool bHasBorder);
+	void SetTabSettings(int nTab, bool bHasSettings);
+	void SetTabSettings(CWnd* pTabContent, bool bHasSettings);
 	CWnd* GetActiveTab() const;
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
@@ -69,24 +75,26 @@ protected:
 		CRect rcTab;
 		CWnd* pWnd;
 		bool bHasBorder;
+		bool bHasSettings;
 	};
 	vector<Tab> m_tabs;
 	CFont m_font;
 	CFont m_fontActive;
 	int m_nActiveTab;
 	void DrawTab(CDC* pDC, int nTab, bool bActive);
-	void UpdateCloseButton(bool bLButtonDown);
-	void UpdateCloseButtonImpl(bool bPressed, bool bActive, const CRect& rcButton);
+	void UpdateButtons(bool bLButtonDown);
+	void UpdateCloseButton(bool bPressed, bool bActive);
 	int GetTabFromPoint(CPoint point);
 	void UpdateTabContents();
 	bool PtInTab(int nTab, CPoint point);
 	CToolTipCtrl m_toolTip;
-	CImageList m_imgClose;
+	CImageList m_imgClose, m_imgSettings;
+	CRect m_rcClose, m_rcSettings;
 
 	COffscreenDC m_offscreenDC;
 
-	bool m_bCloseActive;
-	bool m_bClosePressed;
+	bool m_bCloseActive, m_bClosePressed;
+	bool m_bSettingsActive, m_bSettingsPressed;
 	bool m_bDragging;
 
 	// Generated message map functions
@@ -100,6 +108,5 @@ protected:
 	afx_msg void OnDestroy();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()
 };

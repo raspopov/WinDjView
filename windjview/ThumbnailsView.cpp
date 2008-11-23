@@ -57,12 +57,12 @@ BEGIN_MESSAGE_MAP(CThumbnailsView, CMyScrollView)
 	ON_WM_KILLFOCUS()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_RBUTTONDOWN()
-	ON_WM_CONTEXTMENU()
 	ON_WM_DESTROY()
 	ON_WM_MOUSEWHEEL()
 	ON_WM_MOUSEACTIVATE()
 	ON_MESSAGE(WM_THUMBNAIL_RENDERED, OnThumbnailRendered)
 	ON_WM_SHOWWINDOW()
+	ON_MESSAGE(WM_SHOW_SETTINGS, OnShowSettings)
 END_MESSAGE_MAP()
 
 // CThumbnailsView construction/destruction
@@ -501,36 +501,23 @@ void CThumbnailsView::OnRButtonDown(UINT nFlags, CPoint point)
 	CMyScrollView::OnRButtonDown(nFlags, point);
 }
 
-void CThumbnailsView::OnContextMenu(CWnd* pWnd, CPoint point)
+LRESULT CThumbnailsView::OnShowSettings(WPARAM wParam, LPARAM lParam)
 {
-/*	if (point.x < 0 || point.y < 0)
-		point = CPoint(0, 0);
-
-	CRect rcClient;
-	GetClientRect(rcClient);
-	ClientToScreen(rcClient);
-
-	if (!rcClient.PtInRect(point))
-	{
-		CMyScrollView::OnContextMenu(pWnd, point);
-		return;
-	}
-
-	ScreenToClient(&point);
-	m_nClickedPage = GetPageFromPoint(point);
-	if (m_nClickedPage == -1)
-		return;
-
 	CMenu menu;
-	menu.LoadMenu(IDR_POPUP_THUMBNAILS);
+	menu.LoadMenu(IDR_POPUP);
 
-	CMenu* pPopup = menu.GetSubMenu(0);
+	CMenu* pPopup = menu.GetSubMenu(2);
 	ASSERT(pPopup != NULL);
 
-	ClientToScreen(&point);
-	pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
-			point.x, point.y, this);
-*/
+	CRect rcButton = (LPRECT) lParam;
+	TPMPARAMS tpm;
+	tpm.cbSize = sizeof(tpm);
+	tpm.rcExclude = rcButton;
+
+	pPopup->TrackPopupMenuEx(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
+			rcButton.left, rcButton.bottom, this, &tpm);
+
+	return 0;
 }
 
 BOOL CThumbnailsView::OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll)

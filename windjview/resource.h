@@ -42,6 +42,8 @@
 #define IDB_BOOKMARKS                   152
 #define IDB_DONATE                      153
 #define IDC_CURSOR_ZOOM_RECT            154
+#define IDC_CURSOR_SPLIT_HORZ           155
+#define IDB_SETTINGS                    156
 #define IDS_CONTENTS_TAB                200
 #define IDS_ASSOCIATE_SUCCESSFUL        201
 #define IDS_ASSOCIATE_FAILED            202
@@ -142,6 +144,7 @@
 #define IDS_INVALID_DIR                 298
 #define IDS_COPY_SELECTION              299
 #define IDS_RESTART_NEEDED              300
+#define IDS_TOOLTIP_SETTINGS            301
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -317,8 +320,6 @@
 #define ID_ANNOTATION_EDIT              33130
 #define ID_ANNOTATION_DELETE            33131
 #define ID_FIND_STRING                  33132
-#define ID_EXPAND_PANE                  33133
-#define ID_COLLAPSE_PANE                33134
 #define ID_INDICATOR_PAGE               33135
 #define ID_INDICATOR_SIZE               33136
 #define ID_INDICATOR_ADJUST             33137
@@ -339,14 +340,16 @@
 #define ID_FOCUS_TO_LOOKUP              33152
 #define ID_BOOKMARK_MOVEUP              33153
 #define ID_BOOKMARK_MOVEDOWN            33154
+#define ID_THUMBNAILS_ENLARGE           33155
+#define ID_THUMBNAILS_REDUCE            33156
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        300
-#define _APS_NEXT_COMMAND_VALUE         33156
-#define _APS_NEXT_CONTROL_VALUE         1098
+#define _APS_NEXT_RESOURCE_VALUE        302
+#define _APS_NEXT_COMMAND_VALUE         33157
+#define _APS_NEXT_CONTROL_VALUE         1095
 #define _APS_NEXT_SYMED_VALUE           116
 #endif
 #endif

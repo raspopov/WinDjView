@@ -43,8 +43,8 @@ IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWnd)
 BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 	ON_WM_MDIACTIVATE()
 	ON_WM_WINDOWPOSCHANGED()
-	ON_MESSAGE_VOID(ID_EXPAND_PANE, OnExpandPane)
-	ON_MESSAGE_VOID(ID_COLLAPSE_PANE, OnCollapsePane)
+	ON_MESSAGE_VOID(WM_EXPAND_PANE, OnExpandPane)
+	ON_MESSAGE_VOID(WM_COLLAPSE_PANE, OnCollapsePane)
 	ON_WM_ERASEBKGND()
 	ON_WM_CLOSE()
 	ON_WM_NCPAINT()
@@ -200,23 +200,12 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 
 BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 {
-	m_wndSplitter.CreateStatic(this, 1, 2);
-
-	m_wndSplitter.CreateView(0, 0, RUNTIME_CLASS(CNavPaneWnd),
-		CSize(100, 0), pContext);
-
-//	m_wndDynSplitter.Create(&m_wndSplitter, 2, 2, CSize(10, 10), pContext,
-//		WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | SPLS_DYNAMIC_SPLIT,
-//		m_wndSplitter.IdFromRowCol(0, 1));
-
-	m_wndSplitter.CreateView(0, 1, RUNTIME_CLASS(CDjVuView),
-		CSize(0, 0), pContext);
-
+	m_wndSplitter.Create(this);
+	m_wndSplitter.CreateContent(RUNTIME_CLASS(CDjVuView), pContext);
 	m_bCreated = true;
 
 	SetActiveView(GetDjVuView());
 	GetDjVuView()->SetFocus();
-	m_wndSplitter.UpdateNavPane();
 
 	theApp.AddObserver(this);
 
@@ -276,6 +265,7 @@ void CChildFrame::CreateNavPanes()
 	m_pThumbnailsView->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
 		| WS_HSCROLL | WS_VSCROLL, CRect(), pNavPane, 3);
 	pNavPane->AddTab(LoadString(IDS_THUMBNAILS_TAB), m_pThumbnailsView);
+	pNavPane->SetTabSettings(m_pThumbnailsView, true);
 	m_pThumbnailsView->AddObserver(pDjVuView);
 	pDjVuView->AddObserver(m_pThumbnailsView);
 
@@ -316,8 +306,7 @@ CDjVuView* CChildFrame::GetDjVuView()
 	if (!m_bCreated)
 		return NULL;
 
-	return static_cast<CDjVuView*>(m_wndSplitter.GetPane(0, 1));
-//	return static_cast<CDjVuView*>(static_cast<CSplitterWnd*>(m_wndSplitter.GetPane(0, 1))->GetPane(0, 0));
+	return static_cast<CDjVuView*>(m_wndSplitter.GetContent());
 }
 
 CNavPaneWnd* CChildFrame::GetNavPane()
@@ -328,7 +317,6 @@ CNavPaneWnd* CChildFrame::GetNavPane()
 void CChildFrame::HideNavPane(bool bHide)
 {
 	m_wndSplitter.HideNavPane(bHide);
-	GetNavPane()->ShowWindow(bHide ? SW_HIDE : SW_SHOWNA);
 }
 
 bool CChildFrame::IsNavPaneHidden() const

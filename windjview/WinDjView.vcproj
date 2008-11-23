@@ -2559,6 +2559,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\settings.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\res\split_h.cur"
+				>
+			</File>
+			<File
 				RelativePath="res\Toolbar.bmp"
 				>
 			</File>

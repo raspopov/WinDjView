@@ -34,7 +34,7 @@
 IMPLEMENT_DYNCREATE(CNavPaneWnd, CWnd)
 CNavPaneWnd::CNavPaneWnd()
 	: m_nActiveTab(-1), m_bCloseActive(false), m_bClosePressed(false),
-	  m_bDragging(false)
+	  m_bSettingsActive(false), m_bSettingsPressed(false), m_bDragging(false)
 {
 	CFont systemFont;
 	CreateSystemDialogFont(systemFont);
@@ -143,21 +143,32 @@ void CNavPaneWnd::OnPaint()
 		dc.FillSolidRect(rcLine, clrShadow);
 	}
 
-	if (rcClient.Width() > 50)
+	if (rcClient.Width() > 70)
 	{
 		// Close button
-		CRect rcButton(CPoint(rcClient.right - 21, rcClient.top + 2), CSize(19, 18));
 		if (m_bClosePressed)
-			dc.Draw3dRect(rcButton, clrShadow, clrHilight);
+			dc.Draw3dRect(m_rcClose, clrShadow, clrHilight);
 		else if (m_bCloseActive)
-			dc.Draw3dRect(rcButton, clrHilight, clrShadow);
+			dc.Draw3dRect(m_rcClose, clrHilight, clrShadow);
 
-		CPoint ptOffset(rcButton.TopLeft());
-		ptOffset.Offset(4, 3);
+		CPoint ptOffset = m_rcClose.TopLeft() + CPoint(4, 3);
 		if (m_bClosePressed)
 			ptOffset.Offset(1, 1);
-
 		m_imgClose.Draw(&dc, 0, ptOffset, ILD_NORMAL);
+
+		// Settings button
+		if (m_nActiveTab != -1 && m_tabs[m_nActiveTab].bHasSettings)
+		{
+			if (m_bSettingsPressed)
+				dc.Draw3dRect(m_rcSettings, clrShadow, clrHilight);
+			else if (m_bSettingsActive)
+				dc.Draw3dRect(m_rcSettings, clrHilight, clrShadow);
+
+			CPoint ptOffset2 = m_rcSettings.TopLeft() + CPoint(4, 4);
+			if (m_bSettingsPressed)
+				ptOffset2.Offset(1, 1);
+			m_imgSettings.Draw(&dc, 0, ptOffset2, ILD_NORMAL);
+		}
 	}
 }
 
@@ -242,8 +253,8 @@ void CNavPaneWnd::DrawTab(CDC* pDC, int nTab, bool bActive)
 void CNavPaneWnd::OnWindowPosChanged(WINDOWPOS* lpwndpos) 
 {
 	CWnd::OnWindowPosChanged(lpwndpos);
-	UpdateCloseButton(false);
 
+	UpdateButtons(false);
 	UpdateTabContents();
 }
 
@@ -282,6 +293,7 @@ int CNavPaneWnd::AddTab(const CString& strName, CWnd* pWnd)
 	tab.pWnd = pWnd;
 	tab.strName = strName;
 	tab.bHasBorder = true;
+	tab.bHasSettings = false;
 
 	int nTop = s_nTabSize;
 	if (!m_tabs.empty())
@@ -331,14 +343,38 @@ void CNavPaneWnd::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	CRect rcClient;
 	GetClientRect(rcClient);
-	if (rcClient.Width() > 50)
+	if (rcClient.Width() > 70)
 	{
-		CRect rcButton(CPoint(rcClient.right - 21, rcClient.top + 2), CSize(19, 18));
-
-		if (rcButton.PtInRect(point))
+		if (m_rcClose.PtInRect(point))
 		{
 			m_bDragging = true;
 			SetCapture();
+			return;
+		}
+		else if (m_rcSettings.PtInRect(point))
+		{
+			m_bSettingsPressed = true;
+			InvalidateRect(m_rcSettings);
+			UpdateWindow();
+
+			CRect rcButton = m_rcSettings;
+			ClientToScreen(rcButton);
+			if (m_nActiveTab != -1)
+				m_tabs[m_nActiveTab].pWnd->SendMessage(WM_SHOW_SETTINGS, 0, (LPARAM)(LPRECT) rcButton);
+
+			// Eat mouse messages during popupmenu
+			MSG msg;
+			if (::PeekMessage(&msg, m_hWnd, WM_LBUTTONDOWN, WM_LBUTTONDOWN, PM_NOREMOVE))
+			{
+				if (rcButton.PtInRect(msg.pt))
+					::PeekMessage(&msg, m_hWnd, WM_LBUTTONDOWN, WM_LBUTTONDOWN, PM_REMOVE);
+			}
+
+			m_bSettingsPressed = false;
+			m_bSettingsActive = false;
+			InvalidateRect(m_rcSettings);
+			UpdateWindow();
+			return;
 		}
 	}
 
@@ -351,11 +387,11 @@ void CNavPaneWnd::OnLButtonDown(UINT nFlags, CPoint point)
 		}
 		else
 		{
-			GetParentFrame()->SendMessage(ID_COLLAPSE_PANE);
+			GetParentFrame()->SendMessage(WM_COLLAPSE_PANE);
 		}
 	}
 
-	UpdateCloseButton(true);
+	UpdateButtons(true);
 	CWnd::OnLButtonDown(nFlags, point);
 }
 
@@ -365,12 +401,12 @@ void CNavPaneWnd::OnLButtonUp(UINT nFlags, CPoint point)
 	{
 		CRect rcClient;
 		GetClientRect(rcClient);
-		if (rcClient.Width() > 50)
+		if (rcClient.Width() > 70)
 		{
 			CRect rcButton(CPoint(rcClient.right - 21, rcClient.top + 2), CSize(19, 18));
 			if (rcButton.PtInRect(point))
 			{
-				GetParentFrame()->SendMessage(ID_COLLAPSE_PANE);
+				GetParentFrame()->SendMessage(WM_COLLAPSE_PANE);
 				m_bCloseActive = false;
 				m_bClosePressed = false;
 			}
@@ -380,7 +416,7 @@ void CNavPaneWnd::OnLButtonUp(UINT nFlags, CPoint point)
 		ReleaseCapture();
 	}
 
-	UpdateCloseButton(false);
+	UpdateButtons(false);
 	CWnd::OnLButtonUp(nFlags, point);
 }
 
@@ -396,11 +432,11 @@ void CNavPaneWnd::OnMouseMove(UINT nFlags, CPoint point)
 	if ((nFlags & MK_LBUTTON) == 0)
 		m_bDragging = false;
 
-	UpdateCloseButton((nFlags & MK_LBUTTON) != 0);
+	UpdateButtons((nFlags & MK_LBUTTON) != 0);
 	CWnd::OnMouseMove(nFlags, point);
 }
 
-void CNavPaneWnd::UpdateCloseButton(bool bLButtonDown)
+void CNavPaneWnd::UpdateButtons(bool bLButtonDown)
 {
 	CPoint ptCursor;
 	::GetCursorPos(&ptCursor);
@@ -408,32 +444,51 @@ void CNavPaneWnd::UpdateCloseButton(bool bLButtonDown)
 
 	CRect rcClient;
 	GetClientRect(rcClient);
-	if (rcClient.Width() <= 50)
+	if (rcClient.Width() <= 70)
 	{
 		m_toolTip.Activate(false);
 		return;
 	}
 
-	CRect rcButton(CPoint(rcClient.right - 21, rcClient.top + 2), CSize(19, 18));
-	bool bInRect = !!rcButton.PtInRect(ptCursor);
+	m_rcClose = CRect(CPoint(rcClient.right - 21, rcClient.top + 2), CSize(19, 18));
+	m_rcSettings = CRect(CPoint(rcClient.right - 40, rcClient.top + 2), CSize(19, 18));
+
+	m_toolTip.Activate(true);
+	m_toolTip.SetToolRect(this, 1, m_rcClose);
+
+	bool bInCloseRect = !!m_rcClose.PtInRect(ptCursor);
 
 	if (m_bDragging)
-		UpdateCloseButtonImpl(bInRect, false, rcButton);
+		UpdateCloseButton(bInCloseRect, false);
 	else if (!bLButtonDown)
-		UpdateCloseButtonImpl(false, bInRect, rcButton);
+		UpdateCloseButton(false, bInCloseRect);
 	else
-		UpdateCloseButtonImpl(false, false, rcButton);
+		UpdateCloseButton(false, false);
 
-	m_toolTip.Activate(bInRect);
+	if (m_nActiveTab != -1 && m_tabs[m_nActiveTab].bHasSettings)
+	{
+		m_toolTip.SetToolRect(this, 2, m_rcSettings);
+
+		bool bSettingsActive = !m_bDragging && !bLButtonDown && !!m_rcSettings.PtInRect(ptCursor);
+		if (bSettingsActive != m_bSettingsActive)
+		{
+			m_bSettingsActive = bSettingsActive;
+			InvalidateRect(m_rcSettings);
+		}
+	}
+	else
+	{
+		m_toolTip.SetToolRect(this, 2, CRect(0, 0, 0, 0));
+	}
 }
 
-void CNavPaneWnd::UpdateCloseButtonImpl(bool bPressed, bool bActive, const CRect& rcButton)
+void CNavPaneWnd::UpdateCloseButton(bool bPressed, bool bActive)
 {
 	if (bPressed != m_bClosePressed || bActive != m_bCloseActive)
 	{
 		m_bClosePressed = bPressed;
 		m_bCloseActive = bActive;
-		InvalidateRect(rcButton);
+		InvalidateRect(m_rcClose);
 	}
 }
 
@@ -443,9 +498,15 @@ int CNavPaneWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
 	m_toolTip.Create(this);
-	m_toolTip.AddTool(this, LoadString(IDS_TOOLTIP_HIDE));
+	m_toolTip.AddTool(this, LoadString(IDS_TOOLTIP_HIDE), CRect(0, 0, 0, 0), 1);
+	m_toolTip.AddTool(this, LoadString(IDS_TOOLTIP_SETTINGS), CRect(0, 0, 0, 0), 2);
 
 	m_imgClose.Create(IDB_CLOSE, 10, 0, RGB(192, 192, 192));
+
+	m_imgSettings.Create(10, 10, ILC_COLOR24 | ILC_MASK, 0, 1);
+	CBitmap bitmap;
+	bitmap.LoadBitmap(IDB_SETTINGS);
+	m_imgSettings.Add(&bitmap, RGB(255, 255, 255));
 
 	theApp.AddObserver(this);
 
@@ -476,6 +537,9 @@ bool CNavPaneWnd::PtInTab(int nTab, CPoint point)
 
 	if (point.y >= rcTab.top - s_nTabSize + 1 && point.y < rcTab.top &&
 			point.x >= rcTab.left + (rcTab.top - point.y) && point.x < rcTab.right)
+		return true;
+
+	if (point.x < rcTab.left && point.y >= rcTab.top && point.y < rcTab.bottom)
 		return true;
 
 	return false;
@@ -534,20 +598,14 @@ void CNavPaneWnd::ActivateTab(int nTab, bool bExpand)
 		m_tabs[i].pWnd->ShowWindow(i == nTab ? SW_SHOW : SW_HIDE);
 
 	m_tabs[nTab].pWnd->SetFocus();
+
+	UpdateButtons(false);
 	Invalidate();
 
 	if (bExpand)
-	{
-		GetParentFrame()->SendMessage(ID_EXPAND_PANE);
-	}
+		GetParentFrame()->SendMessage(WM_EXPAND_PANE);
 
 	UpdateObservers(SIDEBAR_TAB_CHANGED);
-}
-
-void CNavPaneWnd::PostNcDestroy()
-{
-	// Should be created on heap
-	delete this;
 }
 
 void CNavPaneWnd::SetTabName(CWnd* pTabContent, const CString& strName)
@@ -591,19 +649,40 @@ void CNavPaneWnd::OnUpdate(const Observable* source, const Message* message)
 	}
 }
 
-void CNavPaneWnd::SetTabBorder(CWnd* pTabContent, bool bDrawBorder)
+void CNavPaneWnd::SetTabBorder(CWnd* pTabContent, bool bHasBorder)
 {
 	int nTab = GetTabIndex(pTabContent);
 	if (nTab == -1)
 		return;
 
-	SetTabBorder(nTab, bDrawBorder);
+	SetTabBorder(nTab, bHasBorder);
 }
 
-void CNavPaneWnd::SetTabBorder(int nTab, bool bDrawBorder)
+void CNavPaneWnd::SetTabBorder(int nTab, bool bHasBorder)
 {
 	Tab& tab = m_tabs[nTab];
-	tab.bHasBorder = bDrawBorder;
+	tab.bHasBorder = bHasBorder;
+
+	if (::IsWindow(m_hWnd))
+	{
+		UpdateTabContents();
+		Invalidate();
+	}
+}
+
+void CNavPaneWnd::SetTabSettings(CWnd* pTabContent, bool bHasSettings)
+{
+	int nTab = GetTabIndex(pTabContent);
+	if (nTab == -1)
+		return;
+
+	SetTabSettings(nTab, bHasSettings);
+}
+
+void CNavPaneWnd::SetTabSettings(int nTab, bool bHasSettings)
+{
+	Tab& tab = m_tabs[nTab];
+	tab.bHasSettings = bHasSettings;
 
 	if (::IsWindow(m_hWnd))
 	{

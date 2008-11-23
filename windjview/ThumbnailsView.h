@@ -123,7 +123,6 @@ protected:
 	CSize m_szDisplay;
 
 	// Generated message map functions
-	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
@@ -136,5 +135,6 @@ protected:
 	afx_msg void OnDestroy();
 	afx_msg LRESULT OnThumbnailRendered(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	afx_msg LRESULT OnShowSettings(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };

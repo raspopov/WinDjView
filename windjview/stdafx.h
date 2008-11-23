@@ -44,7 +44,7 @@
 #pragma warning(disable: 4200 4786)
 #endif
 
-#define WM_ENDDIALOG (WM_APP + 6)
+#define WM_ENDDIALOG (WM_APP + 4)
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
 

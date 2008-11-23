@@ -623,6 +623,14 @@ SOURCE=.\res\pan_ur.cur
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\settings.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\split_h.cur
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\Toolbar.bmp
 # End Source File
 # Begin Source File

@@ -21,28 +21,25 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "MySplitterWnd.h"
-#include "NavPane.h"
-#include "Drawing.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
+static int s_nSplitterWidth = 6;
+static HCURSOR s_hCursorSplitter = NULL;
+
 
 // CMySplitterWnd
 
-IMPLEMENT_DYNAMIC(CMySplitterWnd, CSplitterWnd)
-CMySplitterWnd::CMySplitterWnd()
-	: m_bAllowTracking(true), m_bNavHidden(false)
-{
-	m_cxOrigSplitter = m_cxSplitter;
-	m_cxOrigSplitterGap = m_cxSplitterGap;
-	m_cyOrigSplitter = m_cySplitter;
-	m_cyOrigSplitterGap = m_cySplitterGap;
+IMPLEMENT_DYNAMIC(CMySplitterWnd, CWnd)
 
-	m_nNavPaneWidth = theApp.GetAppSettings()->nNavPaneWidth;
+CMySplitterWnd::CMySplitterWnd()
+	: m_pContentWnd(NULL), m_nSplitterPos(0), m_bChildMaximized(false), m_bDragging(false)
+{
+	m_nExpandedNavWidth = max(theApp.GetAppSettings()->nNavPaneWidth, CNavPaneWnd::s_nMinExpandedWidth);
 	m_bNavCollapsed = theApp.GetAppSettings()->bNavPaneCollapsed;
-	HideNavPane(theApp.GetAppSettings()->bNavPaneHidden);
+	m_bNavHidden = theApp.GetAppSettings()->bNavPaneHidden;
 }
 
 CMySplitterWnd::~CMySplitterWnd()
@@ -50,243 +47,188 @@ CMySplitterWnd::~CMySplitterWnd()
 }
 
 
-BEGIN_MESSAGE_MAP(CMySplitterWnd, CSplitterWnd)
+BEGIN_MESSAGE_MAP(CMySplitterWnd, CWnd)
+	ON_WM_NCCREATE()
+	ON_WM_SIZE()
+	ON_WM_PAINT()
+	ON_WM_ERASEBKGND()
 	ON_WM_MOUSEMOVE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
 
 
 // CMySplitterWnd message handlers
 
-void CMySplitterWnd::StopTracking(BOOL bAccept)
+BOOL CMySplitterWnd::Create(CWnd* pParent, UINT nID)
 {
-	CSplitterWnd::StopTracking(bAccept);
+	if (!CWnd::Create(NULL, NULL, WS_CHILD | WS_VISIBLE, CRect(0, 0, 0, 0), pParent, nID, NULL))
+		return false;
 
-	if (bAccept)
-	{
-		int cxMin, cxCur;
-		GetColumnInfo(0, cxCur, cxMin);
-		if (cxCur > CNavPaneWnd::s_nMinExpandedWidth)
-		{
-			m_nNavPaneWidth = cxCur;
-			theApp.GetAppSettings()->nNavPaneWidth = m_nNavPaneWidth;
+	if (!m_navPane.Create(NULL, NULL, WS_CHILD | WS_VISIBLE, CRect(0, 0, 0, 0), this, 1))
+		return false;
 
-			m_bNavCollapsed = false;
-			theApp.GetAppSettings()->bNavPaneCollapsed = m_bNavCollapsed;
-		}
-		else
-		{
-			m_bNavCollapsed = true;
-			theApp.GetAppSettings()->bNavPaneCollapsed = m_bNavCollapsed;
-		}
+	m_nSplitterPos = CNavPaneWnd::s_nTabsWidth;
+	if (!m_bNavCollapsed)
+		m_nSplitterPos = m_nExpandedNavWidth;
 
-		UpdateNavPaneWidth(cxCur);
-	}
+	m_navPane.ShowWindow(m_bNavHidden ? SW_HIDE : SW_SHOW);
+
+	return true;
 }
 
-int CMySplitterWnd::HitTest(CPoint pt) const
+BOOL CMySplitterWnd::CreateContent(CRuntimeClass* pContentClass, CCreateContext* pContext)
 {
-	if (!m_bAllowTracking)
-		return 0;
+	m_pContentWnd = (CWnd*) pContentClass->CreateObject();
+	ASSERT_KINDOF(CWnd, m_pContentWnd);
+	ASSERT(m_pContentWnd->m_hWnd == NULL);
 
-	return CSplitterWnd::HitTest(pt);
+	if (!m_pContentWnd->Create(NULL, NULL, WS_CHILD | WS_VISIBLE, CRect(0, 0, 0, 0), this, 2, pContext))
+		return false;
+
+	return true;
+}
+
+BOOL CMySplitterWnd::OnNcCreate(LPCREATESTRUCT lpcs)
+{
+	if (!CWnd::OnNcCreate(lpcs))
+		return false;
+
+	// remove WS_EX_CLIENTEDGE style from parent window
+	CWnd* pParent = GetParent();
+	ASSERT_VALID(pParent);
+	pParent->ModifyStyleEx(WS_EX_CLIENTEDGE, 0, SWP_DRAWFRAME);
+
+	return true;
+}
+
+void CMySplitterWnd::OnSize(UINT nType, int cx, int cy)
+{
+	if (nType != SIZE_MINIMIZED && cx > 0 && cy > 0)
+		RecalcLayout();
+
+	CWnd::OnSize(nType, cx, cy);
+}
+
+void CMySplitterWnd::RecalcLayout()
+{
+	CRect rcClient;
+	GetClientRect(rcClient);
+	int nWidth = rcClient.Width() - s_nSplitterWidth;
+
+	CWnd* pFrame = GetParent();
+	while (pFrame != NULL && !pFrame->IsKindOf(RUNTIME_CLASS(CMDIChildWnd)))
+		pFrame = pFrame->GetParent();
+	m_bChildMaximized = (pFrame != NULL ? !!pFrame->IsZoomed() : false);
+
+	int nTopOffset = (m_bChildMaximized ? 1 : 0);
+	if (m_bChildMaximized)
+		InvalidateRect(CRect(0, 0, rcClient.right, nTopOffset));
+
+	if (!m_bNavHidden)
+	{
+		m_bNavCollapsed = false;
+		m_nSplitterPos = min(m_nSplitterPos, nWidth);
+		if (m_nSplitterPos < CNavPaneWnd::s_nMinExpandedWidth)
+		{
+			m_nSplitterPos = CNavPaneWnd::s_nTabsWidth;
+			m_bNavCollapsed = true;
+		}
+
+		m_rcNavPane.left = 0;
+		m_rcNavPane.top = nTopOffset;
+		m_rcNavPane.right = m_nSplitterPos;
+		m_rcNavPane.bottom = max(m_rcNavPane.top, rcClient.bottom);
+
+		m_rcSplitter.left = m_nSplitterPos;
+		m_rcSplitter.top = 0;
+		m_rcSplitter.right = m_nSplitterPos + s_nSplitterWidth;
+		m_rcSplitter.bottom = rcClient.bottom;
+
+		m_rcContent.left = m_nSplitterPos + s_nSplitterWidth;
+		m_rcContent.top = nTopOffset;
+		m_rcContent.right = max(m_rcContent.left, rcClient.right);
+		m_rcContent.bottom = max(m_rcContent.top, rcClient.bottom);
+
+		m_navPane.MoveWindow(m_rcNavPane);
+		InvalidateRect(m_rcSplitter);
+	}
+	else
+	{
+		m_rcContent.left = 0;
+		m_rcContent.top = nTopOffset;
+		m_rcContent.right = rcClient.right;
+		m_rcContent.bottom = max(m_rcContent.top, rcClient.bottom);
+	}
+
+	if (m_pContentWnd != NULL)
+		m_pContentWnd->MoveWindow(m_rcContent);
 }
 
 void CMySplitterWnd::HideNavPane(bool bHide)
 {
-	if (bHide)
-	{
-		m_cxSplitter = 0;
-		m_cxSplitterGap = 1;
-		m_cySplitter = 0;
-		m_cySplitterGap = 1;
-	}
-	else
-	{
-		m_cxSplitter = m_cxOrigSplitter;
-		m_cxSplitterGap = m_cxOrigSplitterGap;
-		m_cySplitter = m_cyOrigSplitter;
-		m_cySplitterGap = m_cyOrigSplitterGap;
-	}
-
-	m_bAllowTracking = !bHide;
 	m_bNavHidden = bHide;
+	RecalcLayout();
 
-	if (::IsWindow(m_hWnd))
-		UpdateNavPane();
+	m_navPane.ShowWindow(bHide ? SW_HIDE : SW_SHOW);
+	UpdateWindow();
 }
 
-void CMySplitterWnd::TrackRowSize(int y, int row)
+void CMySplitterWnd::OnPaint()
 {
-	if (GetPane(row, 0)->IsKindOf(RUNTIME_CLASS(CSplitterWnd)))
-		y -= 2;
+	CPaintDC paintDC(this);
 
-	CSplitterWnd::TrackRowSize(y, row);
-}
-
-void CMySplitterWnd::TrackColumnSize(int x, int col)
-{
-	if (GetPane(0, col)->IsKindOf(RUNTIME_CLASS(CSplitterWnd)))
-		x -= 2;
-
-	CSplitterWnd::TrackColumnSize(x, col);
-}
-
-void CMySplitterWnd::DrawAllSplitBars(CDC* pDC, int cxInside, int cyInside)
-{
-	ASSERT_VALID(this);
-
-	// draw column split bar
-	CRect rect;
-	GetClientRect(rect);
-	rect.left += m_cxBorder + m_pColInfo[0].nCurSize;
-	rect.right = rect.left + m_cxSplitter;
-	if (!m_bNavHidden && rect.left <= cxInside)
-		OnDrawSplitter(pDC, splitBar, rect);
-
-	// draw pane borders
-	GetClientRect(rect);
-	int x = rect.left;
-	for (int nCol = 0; nCol < m_nCols; nCol++)
-	{
-		int cx = m_pColInfo[nCol].nCurSize + 2*m_cxBorder;
-		if (nCol == m_nCols - 1 && m_bHasVScroll)
-			cx += afxData.cxVScroll - CX_BORDER;
-		int y = rect.top;
-
-		int cy = m_pRowInfo[0].nCurSize + 2*m_cyBorder;
-		if (m_bHasHScroll)
-			cy += afxData.cyHScroll - CX_BORDER;
-
-		if (nCol == 0)
-		{
-			if (!m_bNavHidden)
-				DrawLeftPaneBorder(pDC, CRect(x, y, x + cx, y + cy));
-			else
-				OnDrawSplitter(pDC, splitBar, CRect(x, y, x + 1, y + cy));
-		}
-		else
-			OnDrawSplitter(pDC, splitBorder, CRect(x, y, x + cx, y + cy));
-
-		x += cx + m_cxSplitterGap - 2*m_cxBorder;
-	}
-}
-
-void CMySplitterWnd::DrawLeftPaneBorder(CDC* pDC, const CRect& rcArg)
-{
-	if (pDC == NULL)
-	{
-		RedrawWindow(rcArg, NULL, RDW_INVALIDATE|RDW_NOCHILDREN);
-		return;
-	}
-	ASSERT_VALID(pDC);
-
-	COLORREF clrBtnface = ::GetSysColor(COLOR_BTNFACE);
-	COLORREF clrTabBg = ChangeBrightness(clrBtnface, 0.85);
-
-	CPoint pointsTop[] = { rcArg.TopLeft(), CPoint(rcArg.right - 1, rcArg.top) };
-	CPoint pointsTop2[] = { CPoint(rcArg.left + 1, rcArg.top + 1), CPoint(rcArg.right - 2, rcArg.top + 1) };
-	CPoint pointsTop3[] = { CPoint(rcArg.left + 1, rcArg.top + 1), CPoint(min(rcArg.left + 3 + CNavPaneWnd::s_nTabsWidth, rcArg.right - 2), rcArg.top + 1) };
-	CPoint pointsBottom[] = { CPoint(rcArg.left, rcArg.bottom - 1), CPoint(rcArg.right - 1, rcArg.bottom - 1) };
-	CPoint pointsBottom2[] = { CPoint(rcArg.left, rcArg.bottom - 2), CPoint(rcArg.right - 2, rcArg.bottom - 2) };
-	CPoint pointsLeft[] = { CPoint(rcArg.left, rcArg.top + 1), CPoint(rcArg.left, rcArg.bottom - 2) };
-	CPoint pointsLeft2[] = { CPoint(rcArg.left + 1, rcArg.top + 1), CPoint(rcArg.left + 1, rcArg.bottom - 2) };
-	CPoint pointsRight[] = { CPoint(rcArg.right - 1, rcArg.top), CPoint(rcArg.right - 1, rcArg.bottom - 1) };
-	CPoint pointsRight2[] = { CPoint(rcArg.right - 2, rcArg.top), CPoint(rcArg.right - 2, rcArg.bottom - 1) };
+	CRect rcClient;
+	GetClientRect(rcClient);
 
 	CPen pen(PS_SOLID, 1, ::GetSysColor(COLOR_BTNSHADOW));
-	CPen* pOldPen = pDC->SelectObject(&pen);
-	pDC->Polyline((LPPOINT)pointsTop, 2);
-	pDC->Polyline((LPPOINT)pointsBottom2, 2);
-	pDC->Polyline((LPPOINT)pointsRight2, 2);
-	pDC->SelectObject(pOldPen);
+	CPen* pOldPen = paintDC.SelectObject(&pen);
 
-	CPen pen3(PS_SOLID, 1, clrBtnface);
-	pOldPen = pDC->SelectObject(&pen3);
-	pDC->Polyline((LPPOINT)pointsRight, 2);
-	pDC->Polyline((LPPOINT)pointsBottom, 2);
-	pDC->Polyline((LPPOINT)pointsTop2, 2);
-	pDC->SelectObject(pOldPen);
-
-	CPen pen2(PS_SOLID, 1, clrTabBg);
-	pOldPen = pDC->SelectObject(&pen2);
-	pDC->Polyline((LPPOINT)pointsLeft, 2);
-	pDC->Polyline((LPPOINT)pointsLeft2, 2);
-	pDC->Polyline((LPPOINT)pointsTop3, 2);
-	pDC->SelectObject(pOldPen);
-}
-
-void CMySplitterWnd::OnMouseMove(UINT /*nFlags*/, CPoint point)
-{
-	// From MFC: CSplitterWnd::OnMouseMove
-
-	if (GetCapture() != this)
-		StopTracking(FALSE);
-
-	if (m_bTracking)
+	if (!m_bNavHidden)
 	{
-		// move tracker to current cursor position
-		if (m_htTrack == 201 /*hSplitterBar1*/)
+		if (m_bChildMaximized)
 		{
-			point.Offset(m_ptTrackOffset); // pt is the upper right of hit detect
-
-			// limit the point to the valid split range
-			if (point.y < m_rectLimit.top)
-				point.y = m_rectLimit.top;
-			else if (point.y > m_rectLimit.bottom)
-				point.y = m_rectLimit.bottom;
-			if (point.x < m_rectLimit.left)
-				point.x = m_rectLimit.left;
-			else if (point.x > m_rectLimit.right)
-				point.x = m_rectLimit.right;
-
-			CPoint ptSize(point);
-			ClientToScreen(&ptSize);
-			GetNavPane()->ScreenToClient(&ptSize);
-
-			if (ptSize.x < CNavPaneWnd::s_nMinExpandedWidth + CX_BORDER)
-			{
-				ptSize.x = CNavPaneWnd::s_nTabsWidth + CX_BORDER;
-				GetNavPane()->ClientToScreen(&ptSize);
-				ScreenToClient(&ptSize);
-
-				point.x = ptSize.x;
-			}
-
-			if (m_rectTracker.left != point.x)
-			{
-				OnInvertTracker(m_rectTracker);
-				m_rectTracker.OffsetRect(point.x - m_rectTracker.left, 0);
-				OnInvertTracker(m_rectTracker);
-			}
+			paintDC.MoveTo(0, 0);
+			paintDC.LineTo(m_rcSplitter.left, 0);
+			paintDC.MoveTo(m_rcSplitter.right, 0);
+			paintDC.LineTo(rcClient.right, 0);
 		}
+
+		paintDC.MoveTo(m_rcSplitter.left, 0);
+		paintDC.LineTo(m_rcSplitter.left, rcClient.bottom);
+		paintDC.MoveTo(m_rcSplitter.right - 1, 0);
+		paintDC.LineTo(m_rcSplitter.right - 1, rcClient.bottom);
+
+		CRect rcSplitterBody = m_rcSplitter;
+		rcSplitterBody.DeflateRect(1, 0, 1, 0);
+		paintDC.FillSolidRect(rcSplitterBody, ::GetSysColor(COLOR_BTNFACE));
 	}
 	else
 	{
-		// simply hit-test and set appropriate cursor
-		int ht = HitTest(point);
-		SetSplitCursor(ht);
+		if (m_bChildMaximized)
+		{
+			paintDC.MoveTo(0, 0);
+			paintDC.LineTo(rcClient.right, 0);
+		}
 	}
+
+	paintDC.SelectObject(pOldPen);
+}
+
+BOOL CMySplitterWnd::OnEraseBkgnd(CDC* pDC)
+{
+	return true;
 }
 
 CNavPaneWnd* CMySplitterWnd::GetNavPane()
 {
-	return static_cast<CNavPaneWnd*>(GetPane(0, 0));
+	return &m_navPane;
 }
 
-void CMySplitterWnd::UpdateNavPane()
+CWnd* CMySplitterWnd::GetContent()
 {
-	UpdateNavPaneWidth(m_bNavCollapsed ? 0 : m_nNavPaneWidth);
-}
-
-void CMySplitterWnd::UpdateNavPaneWidth(int nWidth)
-{
-	if (m_bNavHidden)
-		nWidth = 0;
-	else
-		nWidth = max(nWidth, CNavPaneWnd::s_nTabsWidth);
-
-	SetColumnInfo(0, nWidth, 0);
-	RecalcLayout();
+	return m_pContentWnd;
 }
 
 void CMySplitterWnd::CollapseNavPane(bool bCollapse)
@@ -294,5 +236,71 @@ void CMySplitterWnd::CollapseNavPane(bool bCollapse)
 	m_bNavCollapsed = bCollapse;
 	theApp.GetAppSettings()->bNavPaneCollapsed = m_bNavCollapsed;
 
-	UpdateNavPane();
+	m_nSplitterPos = m_bNavCollapsed ? CNavPaneWnd::s_nTabsWidth : m_nExpandedNavWidth;
+	RecalcLayout();
+}
+
+void CMySplitterWnd::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (m_bDragging)
+	{
+		m_nSplitterPos = m_nOrigSplitterPos + point.x - m_ptDragStart.x;
+		RecalcLayout();
+		::RedrawWindow(m_hWnd, NULL, NULL, RDW_UPDATENOW | RDW_ALLCHILDREN);
+	}
+
+	CWnd::OnMouseMove(nFlags, point);
+}
+
+void CMySplitterWnd::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (m_bDragging)
+		StopDragging();
+
+	if (!m_bNavHidden && m_rcSplitter.PtInRect(point))
+	{
+		m_bDragging = true;
+		m_ptDragStart = point;
+		m_nOrigSplitterPos = m_nSplitterPos;
+		SetCapture();
+	}
+
+	CWnd::OnLButtonDown(nFlags, point);
+}
+
+void CMySplitterWnd::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	if (m_bDragging)
+		StopDragging();
+
+	CWnd::OnLButtonUp(nFlags, point);
+}
+
+void CMySplitterWnd::StopDragging()
+{
+	m_bDragging = false;
+	ReleaseCapture();
+
+	if (!m_bNavCollapsed)
+		m_nExpandedNavWidth = m_nSplitterPos;
+}
+
+BOOL CMySplitterWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	if (nHitTest == HTCLIENT)
+	{
+		CPoint ptCursor;
+		::GetCursorPos(&ptCursor);
+		ScreenToClient(&ptCursor);
+
+		if (!m_bNavHidden && m_rcSplitter.PtInRect(ptCursor))
+		{
+			if (s_hCursorSplitter == NULL)
+				s_hCursorSplitter = theApp.LoadCursor(IDC_CURSOR_SPLIT_HORZ);
+			SetCursor(s_hCursorSplitter);
+			return true;
+		}
+	}
+
+	return CWnd::OnSetCursor(pWnd, nHitTest, message);
 }

@@ -89,6 +89,7 @@ IDC_CURSOR_PAN_U        CURSOR                  "res\\pan_u.cur"
 IDC_CURSOR_PAN_UD       CURSOR                  "res\\pan_ud.cur"
 IDC_CURSOR_PAN_UL       CURSOR                  "res\\pan_ul.cur"
 IDC_CURSOR_ZOOM_RECT    CURSOR                  "res\\zoom_rect.cur"
+IDC_CURSOR_SPLIT_HORZ   CURSOR                  "res\\split_h.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -107,6 +108,7 @@ IDR_DjVuTYPE            ICON                    "res\\DjVuDoc.ico"
 
 IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
 IDB_CLOSE               BITMAP                  "res\\close.bmp"
+IDB_SETTINGS            BITMAP                  "res\\settings.bmp"
 IDB_BOOKMARKS           BITMAP                  "res\\bookmarks.bmp"
 IDB_DONATE              BITMAP                  "res\\donate.bmp"
 IDB_PAN_ANCHOR          BITMAP                  "res\\pan_anchor.bmp"
@@ -344,6 +346,11 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Set Destination",            ID_BOOKMARK_SETDESTINATION
     END
+    POPUP "Thumbnails"
+    BEGIN
+        MENUITEM "&Enlarge Thumbnails",         ID_THUMBNAILS_ENLARGE
+        MENUITEM "&Reduce Thumbnails",          ID_THUMBNAILS_REDUCE
+    END
 END
 
 
@@ -424,7 +431,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2004-2007 Andrew Zhezherun",IDC_STATIC,40,17,149,8
+    LTEXT           "Copyright (C) 2004-2008 Andrew Zhezherun",IDC_STATIC,40,17,149,8
     DEFPUSHBUTTON   "Close",IDOK,194,7,50,14,WS_GROUP
     LTEXT           "Project homepage:",IDC_STATIC,40,35,64,8
     LTEXT           "DjVuLibre homepage:",IDC_STATIC,40,45,72,8
@@ -737,7 +744,7 @@ BEGIN
             VALUE "FileDescription", "WinDjView"
             VALUE "FileVersion", "0.5"
             VALUE "InternalName", "WinDjView.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2007 Andrew Zhezherun. All rights reserved."
+            VALUE "LegalCopyright", "Copyright (C) 2004-2008 Andrew Zhezherun. All rights reserved."
             VALUE "OriginalFilename", "WinDjView.exe"
             VALUE "ProductName", "WinDjView"
             VALUE "ProductVersion", "0.5"
@@ -1255,6 +1262,7 @@ BEGIN
     IDS_INVALID_DIR         "The typed folder name is invalid. Please select an existing folder from the list, or use the ""Make New Folder"" button."
     IDS_COPY_SELECTION      "&Copy Selection"
     IDS_RESTART_NEEDED      "Please restart WinDjView for the new settings to take effect."
+    IDS_TOOLTIP_SETTINGS    "Settings"
 END
 
 STRINGTABLE 
