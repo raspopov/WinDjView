@@ -41,6 +41,7 @@ BEGIN_MESSAGE_MAP(CBookmarksWnd, CMyTreeCtrl)
 	ON_WM_CONTEXTMENU()
 	ON_WM_MENUSELECT()
 	ON_WM_ENTERIDLE()
+	ON_MESSAGE(WM_SHOW_SETTINGS, OnShowSettings)
 END_MESSAGE_MAP()
 
 CBookmarksWnd::CBookmarksWnd(DjVuSource* pSource)
@@ -273,6 +274,34 @@ void CBookmarksWnd::OnContextMenu(CWnd* pWnd, CPoint point)
 		MoveBookmark(pNode, nCommand == ID_BOOKMARK_MOVEUP);
 		break;
 	}
+}
+
+LRESULT CBookmarksWnd::OnShowSettings(WPARAM wParam, LPARAM lParam)
+{
+	CMenu menu;
+	menu.LoadMenu(IDR_POPUP);
+
+	CMenu* pPopup = menu.GetSubMenu(3);
+	ASSERT(pPopup != NULL);
+
+	CRect rcButton = (LPRECT) lParam;
+	TPMPARAMS tpm;
+	tpm.cbSize = sizeof(tpm);
+	tpm.rcExclude = rcButton;
+
+	if (theApp.GetAppSettings()->bWrapLongBookmarks)
+		pPopup->CheckMenuItem(ID_WRAP_BOOKMARKS, MF_BYCOMMAND | MF_CHECKED);
+
+	int nID = pPopup->TrackPopupMenuEx(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
+			rcButton.left, rcButton.bottom, this, &tpm);
+
+	if (nID == ID_WRAP_BOOKMARKS)
+	{
+		theApp.GetAppSettings()->bWrapLongBookmarks = !theApp.GetAppSettings()->bWrapLongBookmarks;
+		theApp.UpdateObservers(APP_SETTINGS_CHANGED);
+	}
+
+	return 0;
 }
 
 void CBookmarksWnd::DeleteBookmark(TreeNode* pNode)

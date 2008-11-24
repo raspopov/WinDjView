@@ -239,6 +239,7 @@ void CChildFrame::CreateNavPanes()
 			| TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP
 			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 1);
 		pNavPane->AddTab(LoadString(IDS_CONTENTS_TAB), m_pContentsWnd);
+		pNavPane->SetTabSettings(m_pContentsWnd, true);
 		m_pContentsWnd->LoadContents();
 		m_pContentsWnd->AddObserver(pDjVuView);
 	}
@@ -465,6 +466,7 @@ CBookmarksWnd* CChildFrame::GetBookmarks(bool bActivate)
 			| TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP
 			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(), pNavPane, 5);
 		pNavPane->AddTab(LoadString(IDS_BOOKMARKS_TAB), m_pBookmarksWnd);
+		pNavPane->SetTabSettings(m_pBookmarksWnd, true);
 		m_pBookmarksWnd->AddObserver(pDjVuView);
 		m_pBookmarksWnd->EnableEditing();
 	}

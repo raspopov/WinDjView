@@ -72,6 +72,7 @@ const TCHAR* s_pszContrast = _T("contrast");
 const TCHAR* s_pszScaleMethod = _T("scale-method");
 const TCHAR* s_pszInvertColors = _T("invert");
 const TCHAR* s_pszUnits = _T("units");
+const TCHAR* s_pszThumbnailSize = _T("thumbnail-size");
 
 const TCHAR* s_pszGlobalSection = _T("Settings");
 const TCHAR* s_pszTopLevelDocs = _T("top-level-docs");
@@ -612,6 +613,10 @@ void CDjViewApp::LoadSettings()
 	if (m_appSettings.nUnits < CAppSettings::Centimeters || m_appSettings.nUnits > CAppSettings::Inches)
 		m_appSettings.nUnits = CAppSettings::Centimeters;
 
+	m_appSettings.nThumbnailSize = GetProfileInt(s_pszDisplaySection, s_pszThumbnailSize, m_appSettings.nThumbnailSize);
+	if (m_appSettings.nThumbnailSize < 0 || m_appSettings.nThumbnailSize >= CAppSettings::ThumbnailSizes)
+		m_appSettings.nThumbnailSize = 2;
+
 	m_printSettings.fMarginLeft = GetProfileDouble(s_pszPrintSection, s_pszMarginLeft, m_printSettings.fMarginLeft);
 	m_printSettings.fMarginTop = GetProfileDouble(s_pszPrintSection, s_pszMarginTop, m_printSettings.fMarginTop);
 	m_printSettings.fMarginRight = GetProfileDouble(s_pszPrintSection, s_pszMarginRight, m_printSettings.fMarginRight);
@@ -712,6 +717,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySection, s_pszBrightness, m_displaySettings.nBrightness);
 	WriteProfileInt(s_pszDisplaySection, s_pszContrast, m_displaySettings.nContrast);
 	WriteProfileInt(s_pszDisplaySection, s_pszUnits, m_appSettings.nUnits);
+	WriteProfileInt(s_pszDisplaySection, s_pszThumbnailSize, m_appSettings.nThumbnailSize);
 
 	WriteProfileDouble(s_pszPrintSection, s_pszMarginLeft, m_printSettings.fMarginLeft);
 	WriteProfileDouble(s_pszPrintSection, s_pszMarginTop, m_printSettings.fMarginTop);

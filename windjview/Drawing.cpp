@@ -481,12 +481,19 @@ void CDIB::Draw(CDC* pDC, const CPoint& ptOffset)
 
 void CDIB::Draw(CDC* pDC, const CPoint& ptOffset, const CSize& szScaled)
 {
-	ASSERT(pDC != NULL && m_pBits != NULL);
-	pDC->SetStretchBltMode(COLORONCOLOR);
-	::StretchDIBits(pDC->m_hDC,
-		ptOffset.x, ptOffset.y, szScaled.cx, szScaled.cy,
-		0, 0, m_pBMI->bmiHeader.biWidth, m_pBMI->bmiHeader.biHeight,
-		m_pBits, m_pBMI, DIB_RGB_COLORS, SRCCOPY);
+	if (szScaled.cx == m_pBMI->bmiHeader.biWidth && szScaled.cy == m_pBMI->bmiHeader.biHeight)
+	{
+		Draw(pDC, ptOffset);
+	}
+	else
+	{
+		ASSERT(pDC != NULL && m_pBits != NULL);
+		pDC->SetStretchBltMode(COLORONCOLOR);
+		::StretchDIBits(pDC->m_hDC,
+			ptOffset.x, ptOffset.y, szScaled.cx, szScaled.cy,
+			0, 0, m_pBMI->bmiHeader.biWidth, m_pBMI->bmiHeader.biHeight,
+			m_pBits, m_pBMI, DIB_RGB_COLORS, SRCCOPY);
+	}
 }
 
 void CDIB::DrawDC(CDC* pDC, const CPoint& ptOffset)

@@ -30,6 +30,9 @@
 
 double CAppSettings::unitsPerInch[] = { 2.54, 25.4, 1.0 };
 
+int CAppSettings::thumbnailWidth[] = { 50, 71, 100, 141, 200 };
+int CAppSettings::thumbnailHeight[] = { 55, 78, 110, 155, 220 };
+
 CAppSettings::CAppSettings()
 {
 	nWindowPosX = 50;
@@ -76,6 +79,8 @@ CAppSettings::CAppSettings()
 	if (::GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IMEASURE | LOCALE_RETURN_NUMBER,
 			(LPTSTR) &dwMeasureSys, sizeof(DWORD)))
 		nUnits = (dwMeasureSys == 1 ? Inches : Centimeters);
+
+	nThumbnailSize = 2;
 
 	nCurLang = -1;
 	nCurDict = -1;

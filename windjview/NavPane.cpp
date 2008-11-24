@@ -348,6 +348,7 @@ void CNavPaneWnd::OnLButtonDown(UINT nFlags, CPoint point)
 		if (m_rcClose.PtInRect(point))
 		{
 			m_bDragging = true;
+			UpdateButtons(true);
 			SetCapture();
 			return;
 		}

@@ -346,10 +346,14 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Set Destination",            ID_BOOKMARK_SETDESTINATION
     END
-    POPUP "Thumbnails"
+    POPUP "Thumbnails Settings"
     BEGIN
         MENUITEM "&Enlarge Thumbnails",         ID_THUMBNAILS_ENLARGE
         MENUITEM "&Reduce Thumbnails",          ID_THUMBNAILS_REDUCE
+    END
+    POPUP "Bookmarks Settings"
+    BEGIN
+        MENUITEM "&Wrap long bookmarks",        33157
     END
 END
 

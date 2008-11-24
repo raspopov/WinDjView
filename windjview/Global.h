@@ -125,6 +125,7 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0
 #define KEY_STATE_CHANGED 20
 #define DICT_LIST_CHANGED 21
 #define SIDEBAR_TAB_CHANGED 22
+#define THUMBNAILS_SIZE_CHANGED 23
 
 class CDIB;
 struct Bookmark;

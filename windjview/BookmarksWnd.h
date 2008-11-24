@@ -74,6 +74,7 @@ protected:
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	afx_msg void OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu);
 	afx_msg void OnEnterIdle(UINT nWhy, CWnd* pWho);
+	afx_msg LRESULT OnShowSettings(WPARAM wParam, LPARAM lParam);
 	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()
 };

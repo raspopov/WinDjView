@@ -127,17 +127,17 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CMDIFrameWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT,
-			WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_FLYBY | CBRS_TOOLTIPS) ||
-		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME))
+	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT | TBSTYLE_TRANSPARENT,
+			WS_CHILD | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_SIZE_DYNAMIC) ||
+		!m_wndToolBar.GetToolBar().LoadToolBar(IDR_MAINFRAME))
 	{
 		TRACE(_T("Failed to create toolbar\n"));
 		return -1;      // fail to create
 	}
 
-	if (!m_wndDictBar.CreateEx(this, TBSTYLE_FLAT,
-			WS_CHILD | CBRS_TOP | CBRS_GRIPPER | CBRS_FLYBY | CBRS_TOOLTIPS) ||
-		!m_wndDictBar.LoadToolBar(IDR_DICTIONARIES_BAR))
+	if (!m_wndDictBar.CreateEx(this, TBSTYLE_FLAT | TBSTYLE_TRANSPARENT,
+			WS_CHILD | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_SIZE_DYNAMIC) ||
+		!m_wndDictBar.GetToolBar().LoadToolBar(IDR_DICTIONARIES_BAR))
 	{
 		TRACE(_T("Failed to create dictionaries bar\n"));
 		return -1;      // fail to create
@@ -176,32 +176,33 @@ void CMainFrame::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 
 void CMainFrame::InitToolBar()
 {
-	m_wndToolBar.SetHeight(30);
+	m_wndToolBar.GetToolBar().SetHeight(30);
+	m_wndToolBar.GetToolBar().SetWindowText(LoadString(IDS_TOOLBAR_TITLE));
 	m_wndToolBar.SetWindowText(LoadString(IDS_TOOLBAR_TITLE));
 
-	int nComboPage = m_wndToolBar.CommandToIndex(ID_VIEW_NEXTPAGE) - 1;
-	m_wndToolBar.SetButtonInfo(nComboPage, IDC_PAGENUM, TBBS_SEPARATOR, 65);
+	int nComboPage = m_wndToolBar.GetToolBar().CommandToIndex(ID_VIEW_NEXTPAGE) - 1;
+	m_wndToolBar.GetToolBar().SetButtonInfo(nComboPage, IDC_PAGENUM, TBBS_SEPARATOR, 65);
 
 	CRect rcItem;
-	m_wndToolBar.GetItemRect(nComboPage, rcItem);
+	m_wndToolBar.GetToolBar().GetItemRect(nComboPage, rcItem);
 	rcItem.DeflateRect(3, 0);
 	rcItem.bottom += 400;
 
 	m_cboPage.Create(WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_VSCROLL
-			| CBS_DROPDOWN | CBS_AUTOHSCROLL, rcItem, &m_wndToolBar, IDC_PAGENUM);
+			| CBS_DROPDOWN | CBS_AUTOHSCROLL, rcItem, &m_wndToolBar.GetToolBar(), IDC_PAGENUM);
 	m_cboPage.SetFont(&m_boldFont);
 	m_cboPage.SetItemHeight(-1, 16);
 	m_cboPage.GetEditCtrl()->SetInteger();
 
-	int nComboZoom = m_wndToolBar.CommandToIndex(ID_ZOOM_IN) - 1;
-	m_wndToolBar.SetButtonInfo(nComboZoom, IDC_ZOOM, TBBS_SEPARATOR, 110);
+	int nComboZoom = m_wndToolBar.GetToolBar().CommandToIndex(ID_ZOOM_IN) - 1;
+	m_wndToolBar.GetToolBar().SetButtonInfo(nComboZoom, IDC_ZOOM, TBBS_SEPARATOR, 110);
 
-	m_wndToolBar.GetItemRect(nComboZoom, rcItem);
+	m_wndToolBar.GetToolBar().GetItemRect(nComboZoom, rcItem);
 	rcItem.DeflateRect(3, 0);
 	rcItem.bottom += 400;
 
 	m_cboZoom.Create(WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_VSCROLL
-		| CBS_DROPDOWN | CBS_AUTOHSCROLL, rcItem, &m_wndToolBar, IDC_ZOOM);
+			| CBS_DROPDOWN | CBS_AUTOHSCROLL, rcItem, &m_wndToolBar.GetToolBar(), IDC_ZOOM);
 	m_cboZoom.SetFont(&m_boldFont);
 	m_cboZoom.SetItemHeight(-1, 16);
 	m_cboZoom.GetEditCtrl()->SetReal();
@@ -210,7 +211,8 @@ void CMainFrame::InitToolBar()
 
 void CMainFrame::InitDictBar()
 {
-	m_wndDictBar.SetHeight(30);
+	m_wndDictBar.GetToolBar().SetHeight(30);
+	m_wndDictBar.GetToolBar().SetWindowText(LoadString(IDS_DICTBAR_TITLE));
 	m_wndDictBar.SetWindowText(LoadString(IDS_DICTBAR_TITLE));
 
 	HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_DICTIONARIES_BAR),
@@ -220,7 +222,7 @@ void CMainFrame::InitDictBar()
 
 	m_imageListDict.Create(16, 15, ILC_COLOR24 | ILC_MASK, 0, 1);
 	m_imageListDict.Add(&bm, RGB(192, 192, 192));
-	m_wndDictBar.GetToolBarCtrl().SetImageList(&m_imageListDict);
+	m_wndDictBar.GetToolBar().GetToolBarCtrl().SetImageList(&m_imageListDict);
 
 	m_wndDictBar.InsertLabel(0, IDC_LOOKUP_LABEL, &m_font);
 
@@ -232,12 +234,12 @@ void CMainFrame::InitDictBar()
 
 	CRect rcItem;
 	m_wndDictBar.GetToolBarCtrl().InsertButton(1, &btn);
-	m_wndDictBar.GetItemRect(1, rcItem);
+	m_wndDictBar.GetToolBar().GetItemRect(1, rcItem);
 	rcItem.DeflateRect(3, 0);
 	rcItem.bottom += 160;
 
 	m_cboLookup.Create(WS_CHILD | WS_VISIBLE | WS_VSCROLL
-			| CBS_DROPDOWN | CBS_AUTOHSCROLL, rcItem, &m_wndDictBar, IDC_LOOKUP);
+			| CBS_DROPDOWN | CBS_AUTOHSCROLL, rcItem, &m_wndDictBar.GetToolBar(), IDC_LOOKUP);
 	m_cboLookup.SetExtendedStyle(CBES_EX_CASESENSITIVE | CBES_EX_NOEDITIMAGE,
 			CBES_EX_CASESENSITIVE | CBES_EX_NOEDITIMAGE);
 	m_cboLookup.GetComboBoxCtrl()->ModifyStyle(CBS_SORT | CBS_NOINTEGRALHEIGHT, CBS_AUTOHSCROLL);
@@ -258,12 +260,12 @@ void CMainFrame::InitDictBar()
 	btn.idCommand = IDC_LANGUAGE_LIST;
 	m_wndDictBar.GetToolBarCtrl().InsertButton(5, &btn);
 
-	m_wndDictBar.GetItemRect(5, rcItem);
+	m_wndDictBar.GetToolBar().GetItemRect(5, rcItem);
 	rcItem.DeflateRect(3, 0);
 	rcItem.bottom += 160;
 
 	m_cboLangs.Create(WS_CHILD | WS_VISIBLE | WS_VSCROLL
-			| CBS_DROPDOWNLIST | CBS_AUTOHSCROLL, rcItem, &m_wndDictBar, IDC_LANGUAGE_LIST);
+			| CBS_DROPDOWNLIST | CBS_AUTOHSCROLL, rcItem, &m_wndDictBar.GetToolBar(), IDC_LANGUAGE_LIST);
 	m_cboLangs.SetFont(&m_boldFont);
 	m_cboLangs.SetItemHeight(-1, 16);
 
@@ -279,12 +281,12 @@ void CMainFrame::InitDictBar()
 	btn.idCommand = IDC_DICTIONARY;
 	m_wndDictBar.GetToolBarCtrl().InsertButton(8, &btn);
 
-	m_wndDictBar.GetItemRect(8, rcItem);
+	m_wndDictBar.GetToolBar().GetItemRect(8, rcItem);
 	rcItem.DeflateRect(3, 0);
 	rcItem.bottom += 160;
 
 	m_cboDict.Create(WS_CHILD | WS_VISIBLE | WS_VSCROLL
-			| CBS_DROPDOWNLIST | CBS_AUTOHSCROLL, rcItem, &m_wndDictBar, IDC_DICTIONARY);
+			| CBS_DROPDOWNLIST | CBS_AUTOHSCROLL, rcItem, &m_wndDictBar.GetToolBar(), IDC_DICTIONARY);
 	m_cboDict.SetFont(&m_boldFont);
 	m_cboDict.SetItemHeight(-1, 16);
 
@@ -709,7 +711,7 @@ void CMainFrame::OnUpdateDictionaryLookup(CCmdUI* pCmdUI)
 void CMainFrame::OnIdleUpdateCmdUI()
 {
 	if (theApp.GetDictLangsCount() == 0)
-		m_wndDictBar.ShowWindow(SW_HIDE);
+		ShowControlBar(&m_wndDictBar, false, false);
 
 	CMDIFrameWnd::OnIdleUpdateCmdUI();
 }
@@ -885,10 +887,7 @@ void CMainFrame::OnUpdateEditFind(CCmdUI* pCmdUI)
 
 void CMainFrame::HilightStatusMessage(LPCTSTR pszMessage)
 {
-	CControlBar* pBar = GetControlBar(ID_VIEW_STATUS_BAR);
-	if (pBar)
-		ShowControlBar(pBar, TRUE, FALSE);
-
+	ShowControlBar(&m_wndStatusBar, true, false);
 	theApp.GetAppSettings()->bStatusBar = true;
 
 	m_wndStatusBar.SetHilightMessage(pszMessage);
@@ -1537,6 +1536,50 @@ void CMainFrame::OnWindowCascade()
 		OnMDIWindowCmd(ID_WINDOW_CASCADE);
 		return;
 	}
+
+	CRect rcMonitor = GetMonitorWorkArea(this);
+	CSize szWindow(rcMonitor.Width() * 2 / 3, rcMonitor.Height() * 2 / 3);
+	if (rcMonitor.Width() > rcMonitor.Height())
+		szWindow.cx = rcMonitor.Width() - rcMonitor.Height() / 3;
+	else
+		szWindow.cy = rcMonitor.Height() - rcMonitor.Width() / 3;
+	CPoint ptTopLeft(0, 0);
+
+	int nDoc = 0;
+	POSITION pos = theApp.GetFirstDocTemplatePosition();
+	while (pos != NULL)
+	{
+		CDocTemplate* pTemplate = theApp.GetNextDocTemplate(pos);
+		ASSERT_KINDOF(CDocTemplate, pTemplate);
+
+		POSITION posDoc = pTemplate->GetFirstDocPosition();
+		while (posDoc != NULL)
+		{
+			CDjVuDoc* pDoc = (CDjVuDoc*) pTemplate->GetNextDoc(posDoc);
+			CMainFrame* pFrame = pDoc->GetDjVuView()->GetMainFrame();
+
+			// In workspace coordinates
+			if (ptTopLeft.x + szWindow.cx > rcMonitor.Width() ||
+					ptTopLeft.y + szWindow.cy > rcMonitor.Height())
+				ptTopLeft = CPoint(0, 0);
+
+			WINDOWPLACEMENT wndpl;
+			wndpl.length = sizeof(wndpl);
+			pFrame->GetWindowPlacement(&wndpl);
+			wndpl.rcNormalPosition.left = ptTopLeft.x;
+			wndpl.rcNormalPosition.top = ptTopLeft.y;
+			wndpl.rcNormalPosition.right = ptTopLeft.x + szWindow.cx;
+			wndpl.rcNormalPosition.bottom = ptTopLeft.y + szWindow.cy;
+			wndpl.showCmd = (pFrame->IsZoomed() || pFrame->IsIconic() ? SW_RESTORE : SW_SHOWNORMAL);
+			pFrame->SetWindowPlacement(&wndpl);
+			if (pFrame != this)
+				pFrame->SetWindowPos(this, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+
+			ptTopLeft += CPoint(20, 20);
+		}
+	}
+
+	BringWindowToTop();
 }
 
 void CMainFrame::OnWindowTileHorz()
@@ -1546,6 +1589,43 @@ void CMainFrame::OnWindowTileHorz()
 		OnMDIWindowCmd(ID_WINDOW_TILE_HORZ);
 		return;
 	}
+
+	CRect rcMonitor = GetMonitorWorkArea(this);
+	int nFrameCount = theApp.m_frames.size();
+
+	int nDoc = 0;
+	POSITION pos = theApp.GetFirstDocTemplatePosition();
+	while (pos != NULL)
+	{
+		CDocTemplate* pTemplate = theApp.GetNextDocTemplate(pos);
+		ASSERT_KINDOF(CDocTemplate, pTemplate);
+
+		POSITION posDoc = pTemplate->GetFirstDocPosition();
+		while (posDoc != NULL)
+		{
+			CDjVuDoc* pDoc = (CDjVuDoc*) pTemplate->GetNextDoc(posDoc);
+			CMainFrame* pFrame = pDoc->GetDjVuView()->GetMainFrame();
+
+			// In workspace coordinates
+			int nTop = rcMonitor.Height() * nDoc / nFrameCount;
+			int nBottom = rcMonitor.Height() * (nDoc + 1) / nFrameCount;
+			++nDoc;
+
+			WINDOWPLACEMENT wndpl;
+			wndpl.length = sizeof(wndpl);
+			pFrame->GetWindowPlacement(&wndpl);
+			wndpl.rcNormalPosition.left = 0;
+			wndpl.rcNormalPosition.top = nTop;
+			wndpl.rcNormalPosition.right = rcMonitor.Width();
+			wndpl.rcNormalPosition.bottom = nBottom;
+			wndpl.showCmd = (pFrame->IsZoomed() || pFrame->IsIconic() ? SW_RESTORE : SW_SHOWNORMAL);
+			pFrame->SetWindowPlacement(&wndpl);
+			if (pFrame != this)
+				pFrame->SetWindowPos(this, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+		}
+	}
+
+	BringWindowToTop();
 }
 
 void CMainFrame::OnWindowTileVert()
@@ -1555,4 +1635,41 @@ void CMainFrame::OnWindowTileVert()
 		OnMDIWindowCmd(ID_WINDOW_TILE_VERT);
 		return;
 	}
+
+	CRect rcMonitor = GetMonitorWorkArea(this);
+	int nFrameCount = theApp.m_frames.size();
+
+	int nDoc = 0;
+	POSITION pos = theApp.GetFirstDocTemplatePosition();
+	while (pos != NULL)
+	{
+		CDocTemplate* pTemplate = theApp.GetNextDocTemplate(pos);
+		ASSERT_KINDOF(CDocTemplate, pTemplate);
+
+		POSITION posDoc = pTemplate->GetFirstDocPosition();
+		while (posDoc != NULL)
+		{
+			CDjVuDoc* pDoc = (CDjVuDoc*) pTemplate->GetNextDoc(posDoc);
+			CMainFrame* pFrame = pDoc->GetDjVuView()->GetMainFrame();
+
+			// In workspace coordinates
+			int nLeft = rcMonitor.Width() * nDoc / nFrameCount;
+			int nRight = rcMonitor.Width() * (nDoc + 1) / nFrameCount;
+			++nDoc;
+
+			WINDOWPLACEMENT wndpl;
+			wndpl.length = sizeof(wndpl);
+			pFrame->GetWindowPlacement(&wndpl);
+			wndpl.rcNormalPosition.left = nLeft;
+			wndpl.rcNormalPosition.top = 0;
+			wndpl.rcNormalPosition.right = nRight;
+			wndpl.rcNormalPosition.bottom = rcMonitor.Height();
+			wndpl.showCmd = (pFrame->IsZoomed() || pFrame->IsIconic() ? SW_RESTORE : SW_SHOWNORMAL);
+			pFrame->SetWindowPlacement(&wndpl);
+			if (pFrame != this)
+				pFrame->SetWindowPos(this, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+		}
+	}
+
+	BringWindowToTop();
 }

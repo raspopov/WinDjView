@@ -40,8 +40,6 @@ const int nPadding = 3;
 const int nNumberSkip = 2;
 const int nNumberHeight = 15;
 const int nNumberWidth = 34;
-const int nPageWidth = 100;
-const int nPageHeight = 110;
 
 
 // CThumbnailsView
@@ -83,6 +81,10 @@ CThumbnailsView::CThumbnailsView(DjVuSource* pSource)
 	_tcscpy(lf.lfFaceName, _T("Arial"));
 	lf.lfHeight = -12;
 	m_font.CreateFontIndirect(&lf);
+
+	int nThumbnailSize = theApp.GetAppSettings()->nThumbnailSize;
+	m_szThumbnail.cx = CAppSettings::thumbnailWidth[nThumbnailSize];
+	m_szThumbnail.cy = CAppSettings::thumbnailHeight[nThumbnailSize];
 }
 
 CThumbnailsView::~CThumbnailsView()
@@ -155,7 +157,7 @@ void CThumbnailsView::DrawPage(CDC* pDC, int nPage)
 
 	if (page.pBitmap != NULL && page.pBitmap->IsValid())
 	{
-		page.pBitmap->Draw(pDC, page.rcBitmap.TopLeft() - ptScrollPos);
+		page.pBitmap->Draw(pDC, page.rcBitmap.TopLeft() - ptScrollPos, page.szDisplay);
 	}
 	else
 	{
@@ -305,30 +307,23 @@ void CThumbnailsView::OnInitialUpdate()
 	m_displaySetting.nScaleMethod = CDisplaySettings::Default;
 
 	m_pThread = new CThumbnailsThread(m_pSource, this);
-	m_pThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
+	m_pThread->SetThumbnailSize(m_szThumbnail);
 
 	m_pIdleThread = new CThumbnailsThread(m_pSource, this, true);
-	m_pIdleThread->SetThumbnailSize(CSize(nPageWidth, nPageHeight));
+	m_pIdleThread->SetThumbnailSize(m_szThumbnail);
 
 	UpdateView(RECALC);
 }
 
-void CThumbnailsView::SetRotate(int nRotate)
+void CThumbnailsView::UpdateAllThumbnails()
 {
-	m_nRotate = nRotate;
-
 	if (m_pThread != NULL && m_pIdleThread != NULL)
 	{
 		m_pThread->RejectCurrentJob();
 		m_pIdleThread->RejectCurrentJob();
 	}
 
-	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
-	{
-		m_pages[nPage].DeleteBitmap();
-		RecalcPageRects(nPage);
-	}
-
+	UpdateView(RECALC);
 	UpdateVisiblePages();
 
 	Invalidate();
@@ -514,8 +509,27 @@ LRESULT CThumbnailsView::OnShowSettings(WPARAM wParam, LPARAM lParam)
 	tpm.cbSize = sizeof(tpm);
 	tpm.rcExclude = rcButton;
 
-	pPopup->TrackPopupMenuEx(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
+	int nThumbnailsSize = theApp.GetAppSettings()->nThumbnailSize;
+
+	if (nThumbnailsSize == 0)
+		pPopup->EnableMenuItem(ID_THUMBNAILS_REDUCE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+	if (nThumbnailsSize == CAppSettings::ThumbnailSizes - 1)
+		pPopup->EnableMenuItem(ID_THUMBNAILS_ENLARGE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+
+	int nID = pPopup->TrackPopupMenuEx(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
 			rcButton.left, rcButton.bottom, this, &tpm);
+
+	if (nID == ID_THUMBNAILS_REDUCE)
+		--nThumbnailsSize;
+	else if (nID == ID_THUMBNAILS_ENLARGE)
+		++nThumbnailsSize;
+	nThumbnailsSize = max(0, min(CAppSettings::ThumbnailSizes - 1, nThumbnailsSize));
+
+	if (theApp.GetAppSettings()->nThumbnailSize != nThumbnailsSize)
+	{
+		theApp.GetAppSettings()->nThumbnailSize = nThumbnailsSize;
+		theApp.UpdateObservers(THUMBNAILS_SIZE_CHANGED);
+	}
 
 	return 0;
 }
@@ -669,8 +683,8 @@ void CThumbnailsView::UpdateView(UpdateType updateType)
 		ptAnchorOffset = ptTop - m_pages[nTopPage].rcPage.TopLeft();
 	}
 
-	int nThumbnailWidth = 2*nHorzMargin + 2*nFrameWidth + nPageWidth;
-	int nThumbnailHeight = 2*nVertMargin + 2*nFrameWidth + nPageHeight
+	int nThumbnailWidth = 2*nHorzMargin + 2*nFrameWidth + m_szThumbnail.cx;
+	int nThumbnailHeight = 2*nVertMargin + 2*nFrameWidth + m_szThumbnail.cy
 			+ nNumberSkip + nNumberHeight;
 
 	for (int i = 0; i < 2; ++i)
@@ -704,7 +718,7 @@ void CThumbnailsView::UpdateView(UpdateType updateType)
 			ptOffset.Offset(static_cast<int>(nOffsetX), 0);
 
 			page.rcPage = CRect(CPoint(ptOffset.x + nHorzMargin + nFrameWidth,
-				ptOffset.y + nVertMargin + nFrameWidth), CSize(nPageWidth, nPageHeight));
+				ptOffset.y + nVertMargin + nFrameWidth), m_szThumbnail);
 
 			if (nCol == 0)
 				page.rcDisplay.left = 0;
@@ -722,7 +736,7 @@ void CThumbnailsView::UpdateView(UpdateType updateType)
 			RecalcPageRects(nPage);
 		}
 
-		CSize szDevPage(rcClient.Width()*3/4, rcClient.Height()*3/4);
+		CSize szDevPage(rcClient.Width()*9/10, rcClient.Height()*9/10);
 		CSize szDevLine(15, 15);
 
 		SetScrollSizesNoRepaint(m_szDisplay, szDevPage, szDevLine);
@@ -806,7 +820,9 @@ void CThumbnailsView::UpdatePage(int nPage, CThumbnailsThread* pThread)
 {
 	Page& page = m_pages[nPage];
 
-	if (!page.bRendered)
+	if (!page.bRendered ||
+		!(page.szBitmap.cx <= m_szThumbnail.cx && page.szBitmap.cy == m_szThumbnail.cy) ||
+		!(page.szBitmap.cx == m_szThumbnail.cx && page.szBitmap.cy <= m_szThumbnail.cy))
 	{
 		pThread->AddJob(nPage, m_nRotate, m_displaySetting);
 		InvalidatePage(nPage);
@@ -828,7 +844,12 @@ LRESULT CThumbnailsView::OnThumbnailRendered(WPARAM wParam, LPARAM lParam)
 	if (pBitmap != NULL)
 	{
 		page.pBitmap = CLightweightDIB::Create(pBitmap);
+		page.szBitmap = pBitmap->GetSize();
 		delete pBitmap;
+	}
+	else
+	{
+		page.szBitmap = m_szThumbnail;
 	}
 
 	RecalcPageRects(nPage);
@@ -869,8 +890,15 @@ void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 	{
 		const RotateChanged* msg = static_cast<const RotateChanged*>(message);
 
-		if (GetRotate() != msg->nRotate)
-			SetRotate(msg->nRotate);
+		if (m_nRotate != msg->nRotate)
+		{
+			m_nRotate = msg->nRotate;
+
+			for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+				m_pages[nPage].DeleteBitmap();
+
+			UpdateAllThumbnails();
+		}
 	}
 	else if (message->code == APP_SETTINGS_CHANGED)
 	{
@@ -884,6 +912,20 @@ void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 		m_bInitialized = true;
 		UpdateView(RECALC);
 	}
+	else if (message->code == THUMBNAILS_SIZE_CHANGED)
+	{
+		int nThumbnailSize = theApp.GetAppSettings()->nThumbnailSize;
+		m_szThumbnail.cx = CAppSettings::thumbnailWidth[nThumbnailSize];
+		m_szThumbnail.cy = CAppSettings::thumbnailHeight[nThumbnailSize];
+
+		if (m_pThread != NULL && m_pIdleThread != NULL)
+		{
+			m_pThread->SetThumbnailSize(m_szThumbnail);
+			m_pIdleThread->SetThumbnailSize(m_szThumbnail);
+		}
+
+		UpdateAllThumbnails();
+	}
 }
 
 void CThumbnailsView::RecalcPageRects(int nPage)
@@ -892,9 +934,17 @@ void CThumbnailsView::RecalcPageRects(int nPage)
 
 	if (page.pBitmap != NULL)
 	{
-		CPoint ptOffset = page.rcPage.Size() - page.pBitmap->GetSize();
+		page.szDisplay.cx = m_szThumbnail.cx;
+		page.szDisplay.cy = page.szBitmap.cy * m_szThumbnail.cx / page.szBitmap.cx;
+		if (page.szDisplay.cy > m_szThumbnail.cy)
+		{
+			page.szDisplay.cy = m_szThumbnail.cy;
+			page.szDisplay.cx = page.szBitmap.cx * m_szThumbnail.cy / page.szBitmap.cy;
+		}
+
+		CPoint ptOffset = page.rcPage.Size() - page.szDisplay;
 		page.rcBitmap = CRect(page.rcPage.TopLeft() + CPoint(ptOffset.x / 2, ptOffset.y / 2),
-			page.pBitmap->GetSize());
+			page.szDisplay);
 	}
 	else
 	{

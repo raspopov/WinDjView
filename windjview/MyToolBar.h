@@ -21,12 +21,16 @@
 #pragma once
 
 #include "Global.h"
-#include "MyTheme.h"
 
 
 // CMyToolBar
 
-class CMyToolBar : public CToolBar, public Observer
+// CMyToolbar wraps a CToolBar with a CControlBar. This causes the
+// toolbar to get a standard COLOR_BTNFACE background in XP, which
+// is consistent with the other elements of the UI. Without wrapping,
+// the toolbar buttons always have themed background.
+
+class CMyToolBar : public CControlBar, public Observer
 {
 	DECLARE_DYNAMIC(CMyToolBar)
 
@@ -34,12 +38,24 @@ public:
 	CMyToolBar();
 	virtual ~CMyToolBar();
 
-	void SetSizes(SIZE sizeButton, SIZE sizeImage);
-	virtual void DrawBorders(CDC* pDC, CRect& rect);
-	void EraseNonClient();
-	virtual void DoPaint(CDC* pDC);
+	virtual BOOL Create(CWnd* pParentWnd,
+		DWORD dwStyle = WS_CHILD | WS_VISIBLE | CBRS_TOP,
+		UINT nID = AFX_IDW_TOOLBAR);
+	virtual BOOL CreateEx(CWnd* pParentWnd, DWORD dwCtrlStyle = TBSTYLE_FLAT,
+		DWORD dwStyle = WS_CHILD | WS_VISIBLE | CBRS_ALIGN_TOP,
+		CRect rcBorders = CRect(0, 0, 0, 0),
+		UINT nID = AFX_IDW_TOOLBAR);
+
+	CToolBar& GetToolBar() { return m_toolBar; }
+	CToolBarCtrl& GetToolBarCtrl() const { return m_toolBar.GetToolBarCtrl(); }
 
 	void InsertLabel(int nPos, UINT nID, CFont* pFont);
+
+// Implementation
+public:
+	virtual CSize CalcFixedLayout(BOOL bStretch, BOOL bHorz);
+	virtual CSize CalcDynamicLayout(int nLength, DWORD nMode);
+	virtual void OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler);
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -52,13 +68,15 @@ protected:
 	};
 	vector<Label> m_labels;
 
-	HTHEME m_hTheme;
-	afx_msg void OnNcPaint();
+	CToolBar m_toolBar;
+
 	afx_msg void OnDestroy();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnThemeChanged();
+	afx_msg void OnNcPaint();
+	afx_msg void OnPaint();
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnWindowPosChanging(LPWINDOWPOS lpWndPos);
 	DECLARE_MESSAGE_MAP()
 };

@@ -49,9 +49,6 @@ public:
 	void SetSelectedPage(int nPage);
 	void EnsureVisible(int nPage);
 
-	void SetRotate(int nRotate);
-	int GetRotate() const { return m_nRotate; }
-
 	void PauseDecoding();
 	void ResumeDecoding();
 
@@ -83,6 +80,7 @@ protected:
 	bool m_bVisible, m_bInitialized;
 	int m_nRotate;
 	int m_nPagesInRow;
+	CSize m_szThumbnail;
 
 	CCriticalSection m_dataLock;
 	set<CDIB*> m_bitmaps;
@@ -102,6 +100,7 @@ protected:
 	bool InvalidatePage(int nPage);
 	void DrawPage(CDC* pDC, int nPage);
 	int GetPageFromPoint(CPoint point);
+	void UpdateAllThumbnails();
 
 	struct Page
 	{
@@ -110,6 +109,7 @@ protected:
 
 		CRect rcDisplay, rcPage, rcBitmap, rcNumber;
 		CLightweightDIB* pBitmap;
+		CSize szBitmap, szDisplay;
 		bool bRendered;
 
 		void DeleteBitmap()

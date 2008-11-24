@@ -163,6 +163,11 @@ struct CAppSettings
 	int nUnits;
 	static double unitsPerInch[];
 
+	int nThumbnailSize;
+	enum { ThumbnailSizes = 5 };
+	static int thumbnailWidth[];
+	static int thumbnailHeight[];
+
 	int nCurLang;
 	int nCurDict;
 	CString strDictLocation;

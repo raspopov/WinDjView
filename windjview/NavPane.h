@@ -43,7 +43,7 @@ public:
 public:
 	enum
 	{
-		s_nTabsWidth = 21,
+		s_nTabsWidth = 22,
 		s_nTabSize = 20,
 		s_nLeftMargin = 5,
 		s_nTopMargin = 22,
