@@ -8,6 +8,7 @@ Changes in version 0.6 (2008-??-??):
 + Added support for dictionaries that look up the word under mouse pointer.
 + DPI value is now set when exporting page or selection as bitmap.
 + Added an option to enable continuous scrolling in fullscreen mode.
++ Thumbnail size can now be enlarged or reduced.
 * Fixed saving "First page alone" setting for every document.
 * Fixed crash in magnify tool after rotating the page.
 * Fixed crash when compiled with Visual Studio 2005.
@@ -21,8 +22,8 @@ Changes in version 0.5 (2007-05-30):
 + Page number can be specified when opening files via command line.
 + Back/Forward keys on multimedia keyboards now work as Alt+arrows.
 + Reorganized Settings dialog.
-+ Added option to invert colors.
-+ Added option to change display units (centimeters, millimeters, inches).
++ Added an option to invert colors.
++ Added an option to change display units (centimeters, millimeters, inches).
 + New printing options: auto-rotate pages, booklet printing.
 * Improved interface responsiveness when opening and closing documents.
 * Improvements for files with large shared dictionaries:
