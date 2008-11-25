@@ -108,5 +108,6 @@ protected:
 	afx_msg void OnDestroy();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnSysColorChange();
 	DECLARE_MESSAGE_MAP()
 };

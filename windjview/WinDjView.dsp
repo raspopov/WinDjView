@@ -226,6 +226,10 @@ SOURCE=.\MyComboBox.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MyDialog.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MyDocManager.cpp
 # End Source File
 # Begin Source File
@@ -251,6 +255,10 @@ SOURCE=.\MySplitterWnd.cpp
 # Begin Source File
 
 SOURCE=.\MyStatusBar.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MyTabBar.cpp
 # End Source File
 # Begin Source File
 
@@ -423,6 +431,10 @@ SOURCE=.\MyComboBox.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\MyDialog.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\MyDocManager.h
 # End Source File
 # Begin Source File
@@ -448,6 +460,14 @@ SOURCE=.\MySplitterWnd.h
 # Begin Source File
 
 SOURCE=.\MyStatusBar.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MyTabBar.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MyTheme.h
 # End Source File
 # Begin Source File
 

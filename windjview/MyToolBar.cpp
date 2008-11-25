@@ -290,3 +290,17 @@ CSize CMyToolBar::CalcDynamicLayout(int nLength, DWORD nMode)
 void CMyToolBar::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
 {
 }
+
+void CMyToolBar::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
+{
+	Invalidate();
+
+	if (m_pDockSite != NULL)
+		m_pDockSite->RecalcLayout();
+}
+
+void CMyToolBar::OnSysColorChange()
+{
+	Invalidate();
+	m_toolBar.Invalidate();
+}

@@ -32,7 +32,7 @@ class CPageIndexWnd;
 
 // CChildFrame
 
-class CChildFrame : public CMDIChildWnd, public Observer
+class CChildFrame : public CMDIChildWnd, public Observer, public Observable
 {
 	DECLARE_DYNCREATE(CChildFrame)
 

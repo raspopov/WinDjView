@@ -22,6 +22,7 @@
 
 #include "Global.h"
 #include "MyToolBar.h"
+#include "MyTabBar.h"
 #include "MyStatusBar.h"
 #include "MyComboBox.h"
 #include "FindDlg.h"
@@ -80,6 +81,7 @@ protected:
 	CMyStatusBar m_wndStatusBar;
 	CMyToolBar m_wndToolBar;
 	CMyToolBar m_wndDictBar;
+	CMyTabBar m_wndTabBar;
 	CImageList m_imageListDict;
 
 	void InitToolBar();
@@ -100,6 +102,7 @@ protected:
 
 	void UpdateSettings();
 	void LanguageChanged();
+	void OnViewActivated(const CDjVuView* pView);
 
 	CFont m_font, m_boldFont;
 
@@ -170,7 +173,6 @@ protected:
 	afx_msg void OnUpdateDictionaryNext(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateDictionaryPrev(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateDictionaryLookup(CCmdUI* pCmdUI);
-	afx_msg void OnIdleUpdateCmdUI();
 	afx_msg void OnWindowCascade();
 	afx_msg void OnWindowTileHorz();
 	afx_msg void OnWindowTileVert();

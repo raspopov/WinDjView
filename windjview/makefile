@@ -82,6 +82,7 @@ LINK_OBJS = \
 	"$(INTDIR)\MyScrollView.obj" \
 	"$(INTDIR)\MySplitterWnd.obj" \
 	"$(INTDIR)\MyStatusBar.obj" \
+	"$(INTDIR)\MyTabBar.obj" \
 	"$(INTDIR)\MyTheme.obj" \
 	"$(INTDIR)\MyToolBar.obj" \
 	"$(INTDIR)\MyTreeCtrl.obj" \
@@ -136,6 +137,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\MyScrollView.obj" : MyScrollView.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MySplitterWnd.obj" : MySplitterWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyStatusBar.obj" : MyStatusBar.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MyTabBar.obj" : MyTabBar.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyTheme.obj" : MyTheme.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyToolBar.obj" : MyToolBar.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyTreeCtrl.obj" : MyTreeCtrl.cpp "$(INTDIR)" $(PCH)

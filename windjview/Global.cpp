@@ -115,9 +115,9 @@ void Observable::RemoveObserver(Observer* observer)
 
 void Observable::UpdateObservers(const Message& message)
 {
-	for (std::set<Observer*>::iterator it = m_observers.begin(); it != m_observers.end(); ++it)
+	for (std::set<Observer*>::iterator it = m_observers.begin(); it != m_observers.end(); )
 	{
-		Observer* observer = *it;
+		Observer* observer = *it++;
 		observer->OnUpdate(this, &message);
 	}
 }
@@ -444,6 +444,9 @@ bool MakeWString(const GUTF8String& text, wstring& result)
 
 void CreateSystemDialogFont(CFont& font)
 {
+	if (font.m_hObject != NULL)
+		font.DeleteObject();
+
 	LOGFONT lf;
 
 	HGDIOBJ hFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
@@ -457,6 +460,9 @@ void CreateSystemDialogFont(CFont& font)
 
 void CreateSystemIconFont(CFont& font)
 {
+	if (font.m_hObject != NULL)
+		font.DeleteObject();
+
 	LOGFONT lf;
 
 	if (IsThemed())
@@ -487,6 +493,9 @@ void CreateSystemIconFont(CFont& font)
 
 void CreateSystemMenuFont(CFont& font)
 {
+	if (font.m_hObject != NULL)
+		font.DeleteObject();
+
 	LOGFONT lf;
 
 	if (IsThemed())

@@ -1425,6 +1425,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\MyTabBar.cpp"
+				>
+			</File>
+			<File
 				RelativePath="MyTheme.cpp"
 				>
 				<FileConfiguration
@@ -2375,6 +2379,10 @@
 			</File>
 			<File
 				RelativePath="MyStatusBar.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MyTabBar.h"
 				>
 			</File>
 			<File

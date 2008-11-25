@@ -66,7 +66,7 @@ BEGIN_MESSAGE_MAP(CNavPaneWnd, CWnd)
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
 	ON_WM_SETFOCUS()
-	ON_WM_MOUSEACTIVATE()
+	ON_WM_SYSCOLORCHANGE()
 END_MESSAGE_MAP()
 
 
@@ -80,7 +80,7 @@ void CNavPaneWnd::OnPaint()
 	GetClientRect(rcClient);
 
 	COLORREF clrBtnface = ::GetSysColor(COLOR_BTNFACE);
-	COLORREF clrTabBg = ChangeBrightness(clrBtnface, 0.85);
+	COLORREF clrTabBg = ChangeBrightness(clrBtnface, 0.87);
 	COLORREF clrHilight = ::GetSysColor(COLOR_BTNHILIGHT);
 	COLORREF clrShadow = ::GetSysColor(COLOR_BTNSHADOW);
 	COLORREF clrFrame = ::GetSysColor(COLOR_WINDOWFRAME);
@@ -708,4 +708,9 @@ CChildFrame* CNavPaneWnd::GetParentFrame() const
 CWnd* CNavPaneWnd::GetActiveTab() const
 {
 	return (m_nActiveTab != -1 ? m_tabs[m_nActiveTab].pWnd : NULL);
+}
+
+void CNavPaneWnd::OnSysColorChange()
+{
+	Invalidate();
 }

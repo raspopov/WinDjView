@@ -1856,11 +1856,11 @@ void CDjVuView::OnSize(UINT nType, int cx, int cy)
 	if (nType != SIZE_MINIMIZED && cx > 0 && cy > 0
 			&& m_nPage != -1 && !m_bInsideUpdateLayout)
 	{
-		if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
-			UpdatePageSizes(GetScrollPos(SB_VERT));
-
 		UpdateLayout();
 		Invalidate();
+
+		if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
+			UpdatePageSizes(GetScrollPos(SB_VERT));
 	}
 
 	CMyScrollView::OnSize(nType, cx, cy);
@@ -5951,10 +5951,7 @@ void CDjVuView::UpdateMagnifyWnd()
 		nPage = m_nPage;
 
 	if (pView->UpdatePageInfoFrom(this))
-	{
 		pView->UpdateLayout();
-		pView->UpdateWindow();
-	}
 
 	if (pView->m_nLayout == SinglePage || pView->m_nLayout == Facing)
 	{
@@ -5981,6 +5978,7 @@ void CDjVuView::UpdateMagnifyWnd()
 	}
 
 	pView->SetRedraw(true);
+	pView->Invalidate();
 
 	pMagnifyWnd->Invalidate();
 	pMagnifyWnd->CenterOnPoint(ptCenter);

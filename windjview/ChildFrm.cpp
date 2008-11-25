@@ -108,11 +108,11 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 		if (!m_bActivating)
 			pView->UpdateVisiblePages();
 
-		GetMainFrame()->OnUpdate(pView, &Message(VIEW_ACTIVATED));
+		UpdateObservers(FrameMsg(FRAME_ACTIVATED, this));
 	}
 	else if (pActivateWnd == NULL)
 	{
-		GetMainFrame()->OnUpdate(NULL, &Message(VIEW_ACTIVATED));
+		UpdateObservers(FrameMsg(FRAME_ACTIVATED, NULL));
 	}
 }
 
@@ -413,6 +413,8 @@ void CChildFrame::OnClose()
 {
 	if (GetMainFrame()->IsFullscreenMode())
 		return;
+
+	UpdateObservers(FrameMsg(FRAME_CLOSED, this));
 
 	// Close the parent frame if it is not the last MDI frame.
 	bool bCloseParent = theApp.m_bTopLevelDocs && theApp.m_frames.size() > 1;

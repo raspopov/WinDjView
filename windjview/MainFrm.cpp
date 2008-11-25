@@ -91,7 +91,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_DICTIONARY_NEXT, OnUpdateDictionaryNext)
 	ON_UPDATE_COMMAND_UI(ID_DICTIONARY_PREV, OnUpdateDictionaryPrev)
 	ON_UPDATE_COMMAND_UI(ID_DICTIONARY_LOOKUP, OnUpdateDictionaryLookup)
-	ON_MESSAGE_VOID(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
 	ON_COMMAND(ID_WINDOW_CASCADE, OnWindowCascade)
 	ON_COMMAND(ID_WINDOW_TILE_HORZ, OnWindowTileHorz)
 	ON_COMMAND(ID_WINDOW_TILE_VERT, OnWindowTileVert)
@@ -143,6 +142,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 
+	if (!m_wndTabBar.Create(this, WS_CHILD | CBRS_TOP, IDR_TAB_BAR))
+	{
+		TRACE(_T("Failed to create tab bar\n"));
+		return -1;      // fail to create
+	}
+
 	if (!m_wndStatusBar.CreateEx(this, SBT_TOOLTIPS) ||
 		!m_wndStatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT)))
 	{
@@ -162,6 +167,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	InitDictBar();
 
 	theApp.AddObserver(this);
+	m_wndTabBar.AddObserver(this);
 
 	return 0;
 }
@@ -415,6 +421,7 @@ void CMainFrame::UpdateToolbars()
 	ShowControlBar(&m_wndToolBar, pSettings->bToolbar, false);
 	ShowControlBar(&m_wndDictBar, pSettings->bDictBar && theApp.GetDictLangsCount() > 0, false);
 	ShowControlBar(&m_wndStatusBar, pSettings->bStatusBar, false);
+	ShowControlBar(&m_wndTabBar, !pSettings->bTopLevelDocs && m_wndTabBar.GetTabCount() > 0, false);
 }
 
 void CMainFrame::UpdateSettings()
@@ -706,14 +713,6 @@ void CMainFrame::OnUpdateDictionaryLookup(CCmdUI* pCmdUI)
 	m_cboLookup.GetWindowText(strLookup);
 
 	pCmdUI->Enable(m_nCurDict != CB_ERR && !strLookup.IsEmpty());
-}
-
-void CMainFrame::OnIdleUpdateCmdUI()
-{
-	if (theApp.GetDictLangsCount() == 0)
-		ShowControlBar(&m_wndDictBar, false, false);
-
-	CMDIFrameWnd::OnIdleUpdateCmdUI();
 }
 
 void CMainFrame::UpdateLangAndDict(const CDjVuView* pView, bool bReset)
@@ -1332,6 +1331,7 @@ void CMainFrame::OnDestroy()
 	theApp.GetAppSettings()->nCurDict = m_nCurDict;
 
 	theApp.RemoveObserver(this);
+	m_wndTabBar.RemoveObserver(this);
 
 	CMDIFrameWnd::OnDestroy();
 }
@@ -1499,25 +1499,7 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 	else if (message->code == VIEW_ACTIVATED)
 	{
 		const CDjVuView* pView = static_cast<const CDjVuView*>(source);
-
-		if (pView != NULL)
-		{
-			m_cboPage.EnableWindow(true);
-			m_cboZoom.EnableWindow(true);
-
-			UpdatePageCombo(pView);
-			UpdateZoomCombo(pView);
-			UpdateLangAndDict(pView);
-		}
-		else
-		{
-			m_cboPage.SetWindowText(_T(""));
-			m_cboPage.ResetContent();
-			m_cboPage.EnableWindow(false);
-
-			m_cboZoom.SetWindowText(_T(""));
-			m_cboZoom.EnableWindow(false);
-		}
+		OnViewActivated(pView);
 	}
 	else if (message->code == APP_LANGUAGE_CHANGED)
 	{
@@ -1525,7 +1507,65 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 	}
 	else if (message->code == DICT_LIST_CHANGED)
 	{
+		UpdateToolbars();
 		UpdateLangAndDict(NULL, true);
+	}
+	else if (message->code == FRAME_CREATED)
+	{
+		CFrameWnd* pFrame = const_cast<CFrameWnd*>(static_cast<const FrameMsg*>(message)->pFrame);
+		CDocument* pDocument = pFrame->GetActiveDocument();
+		CString strName = pDocument != NULL ? pDocument->GetTitle() : _T("");
+		m_wndTabBar.AddTab(pFrame, strName);
+		UpdateToolbars();
+	}
+	else if (message->code == FRAME_ACTIVATED)
+	{
+		CFrameWnd* pFrame = const_cast<CFrameWnd*>(static_cast<const FrameMsg*>(message)->pFrame);
+		if (pFrame != NULL)
+			m_wndTabBar.ActivateTab(pFrame);
+		else
+			m_wndTabBar.ActivateTab((CFrameWnd*) NULL);
+
+		CDjVuView* pView = (pFrame != NULL ? ((CChildFrame*) pFrame)->GetDjVuView() : NULL);
+		OnViewActivated(pView);
+	}
+	else if (message->code == FRAME_CLOSED)
+	{
+		CFrameWnd* pFrame = const_cast<CFrameWnd*>(static_cast<const FrameMsg*>(message)->pFrame);
+		if (pFrame != NULL)
+		{
+			m_wndTabBar.RemoveTab(pFrame);
+			((CChildFrame*) pFrame)->RemoveObserver(this);
+		}
+		UpdateToolbars();
+	}
+	else if (message->code == TAB_SELECTED)
+	{
+		CFrameWnd* pFrame = const_cast<CFrameWnd*>(static_cast<const FrameMsg*>(message)->pFrame);
+		if (pFrame != NULL)
+			pFrame->ActivateFrame();
+	}
+}
+
+void CMainFrame::OnViewActivated(const CDjVuView* pView)
+{
+	if (pView != NULL)
+	{
+		m_cboPage.EnableWindow(true);
+		m_cboZoom.EnableWindow(true);
+
+		UpdatePageCombo(pView);
+		UpdateZoomCombo(pView);
+		UpdateLangAndDict(pView);
+	}
+	else
+	{
+		m_cboPage.SetWindowText(_T(""));
+		m_cboPage.ResetContent();
+		m_cboPage.EnableWindow(false);
+
+		m_cboZoom.SetWindowText(_T(""));
+		m_cboZoom.EnableWindow(false);
 	}
 }
 
