@@ -183,9 +183,9 @@ void LoadThemeAPI()
 		pGetThemePartSize = (pfGetThemePartSize)::GetProcAddress(hThemesDLL, "GetThemePartSize");
 		pGetThemeColor = (pfGetThemeColor)::GetProcAddress(hThemesDLL, "GetThemeColor");
 		pGetThemeSysColor = (pfGetThemeSysColor)::GetProcAddress(hThemesDLL, "GetThemeSysColor");
+		pGetThemeBackgroundRegion = (pfGetThemeBackgroundRegion)::GetProcAddress(hThemesDLL, "GetThemeBackgroundRegion");
 /*
 		pfGetThemeBackgroundExtent pGetThemeBackgroundExtent = NULL;
-		pfGetThemeBackgroundRegion pGetThemeBackgroundRegion = NULL;
 		pfHitTestThemeBackground pHitTestThemeBackground = NULL;
 		pfDrawThemeEdge pDrawThemeEdge = NULL;
 		pfDrawThemeIcon pDrawThemeIcon = NULL;
@@ -234,7 +234,8 @@ void LoadThemeAPI()
 		&& pGetThemeSysFont != NULL
 		&& pGetThemePartSize != NULL
 		&& pGetThemeColor != NULL
-		&& pGetThemeSysColor != NULL)
+		&& pGetThemeSysColor != NULL
+		&& pGetThemeBackgroundRegion != NULL)
 	{
 		bThemeAPILoaded = true;
 	}
@@ -391,6 +392,15 @@ COLORREF XPGetThemeSysColor(HTHEME hTheme, int iColorId)
 		return RGB(0, 0, 0);
 
 	return pGetThemeSysColor(hTheme, iColorId);
+}
+
+HRESULT XPGetThemeBackgroundRegion(HTHEME hTheme, HDC hdc,
+    int iPartId, int iStateId, const RECT* pRect, HRGN* pRegion)
+{
+	if (!bThemeAPILoaded)
+		return E_FAIL;
+
+	return pGetThemeBackgroundRegion(hTheme, hdc, iPartId, iStateId, pRect, pRegion);
 }
 
 bool IsThemed()
