@@ -60,6 +60,7 @@ protected:
 	};
 	vector<Tab> m_tabs;
 	int m_nActiveTab;
+	int m_nHoverTab;
 
 	CFont m_font;
 	CFont m_fontActive;
@@ -76,11 +77,15 @@ protected:
 	void UpdateScrollState();
 	void UpdateToolTips();
 	void DrawTab(CDC* pDC, int nTab);
-	int TabFromPoint(CPoint point);
-	bool PtInTab(int nTab, CPoint point);
+	void DrawActiveTabRect(CDC* pDC, const CRect& rect, bool bHover = false);
+	void DrawInactiveTabRect(CDC* pDC, const CRect& rect,
+			bool bArrow = false, bool bArrowEnabled = false, bool bArrowHover = false);
+	int TabFromPoint(const CPoint& point);
+	bool PtInTab(int nTab, const CPoint& point);
 	void EnsureVisible(int nTab);
 	int TabFromFrame(CFrameWnd* pFrame);
 	void ActivateTab(int nTab);
+	void RemoveTab(int nTab);
 
 	// Generated message map functions
 	afx_msg void OnNcPaint();
@@ -88,6 +93,8 @@ protected:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnContextMenu(CWnd* pWnd, CPoint pos);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);

@@ -2247,6 +2247,10 @@ void CDjVuView::OnViewLayout(UINT nID)
 		theApp.GetAppSettings()->nDefaultLayout = m_nLayout;
 		m_pSource->GetSettings()->nLayout = m_nLayout;
 	}
+	else if (m_nType == Fullscreen && !theApp.GetAppSettings()->bFullscreenContinuousScroll)
+	{
+		m_nLayout = (m_nLayout == Facing || m_nLayout == ContinuousFacing ? Facing : SinglePage);
+	}
 
 	if (m_nLayout != nPrevLayout)
 		SetLayout(m_nLayout, nAnchorPage, nOffset);
@@ -2254,7 +2258,7 @@ void CDjVuView::OnViewLayout(UINT nID)
 
 void CDjVuView::OnUpdateViewLayout(CCmdUI* pCmdUI)
 {
-	if (m_nType != Normal)
+	if (m_nType != Normal && m_nType != Fullscreen)
 	{
 		pCmdUI->Enable(false);
 		return;

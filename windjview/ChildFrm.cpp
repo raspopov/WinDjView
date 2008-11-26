@@ -43,6 +43,7 @@ IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWnd)
 BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 	ON_WM_MDIACTIVATE()
 	ON_WM_WINDOWPOSCHANGED()
+	ON_WM_SIZE()
 	ON_MESSAGE_VOID(WM_EXPAND_PANE, OnExpandPane)
 	ON_MESSAGE_VOID(WM_COLLAPSE_PANE, OnCollapsePane)
 	ON_WM_ERASEBKGND()
@@ -110,10 +111,6 @@ void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeact
 
 		UpdateObservers(FrameMsg(FRAME_ACTIVATED, this));
 	}
-	else if (pActivateWnd == NULL)
-	{
-		UpdateObservers(FrameMsg(FRAME_ACTIVATED, NULL));
-	}
 }
 
 void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
@@ -144,6 +141,21 @@ void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 		theApp.GetAppSettings()->bChildMaximized = !!IsZoomed();
 
 	OnUpdateFrameTitle(true);
+}
+
+void CChildFrame::OnSize(UINT nType, int cx, int cy)
+{
+	BOOL bMaximized = false;
+	CMDIFrameWnd* pFrame = GetMDIFrame();
+	CMDIChildWnd* pActive = pFrame->MDIGetActive(&bMaximized);
+
+	if (pActive != this && theApp.GetAppSettings()->bChildMaximized && nType != SIZE_MAXIMIZED)
+	{
+		CWnd::OnSize(nType, cx, cy);
+		return;
+	}
+
+	CMDIChildWnd::OnSize(nType, cx, cy);
 }
 
 void CChildFrame::ActivateFrame(int nCmdShow)
@@ -209,14 +221,14 @@ BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 
 	theApp.AddObserver(this);
 
-	return TRUE;
+	return true;
 }
 
 void CChildFrame::OnDestroy()
 {
 	theApp.RemoveObserver(this);
 
-	CFrameWnd::OnDestroy();
+	CMDIChildWnd::OnDestroy();
 }
 
 void CChildFrame::SaveStartupPage()

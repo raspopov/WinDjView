@@ -42,7 +42,7 @@ static const int s_nArrowWidth = 10;
 IMPLEMENT_DYNCREATE(CMyTabBar, CControlBar)
 
 CMyTabBar::CMyTabBar()
-	: m_nActiveTab(-1), m_nScrollPos(0), m_bShowArrows(false)
+	: m_nActiveTab(-1), m_nHoverTab(-1), m_nScrollPos(0), m_bShowArrows(false)
 {
 	m_cxLeftBorder = m_cxRightBorder = m_cyBottomBorder = m_cyTopBorder = 0;
 
@@ -60,6 +60,8 @@ BEGIN_MESSAGE_MAP(CMyTabBar, CControlBar)
 	ON_WM_SIZE()
 	ON_WM_ERASEBKGND()
 	ON_WM_LBUTTONDOWN()
+	ON_WM_MOUSEMOVE()
+	ON_WM_CONTEXTMENU()
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
 	ON_WM_SETTINGCHANGE()
@@ -105,12 +107,14 @@ void CMyTabBar::OnPaint()
 
 	if (m_bShowArrows)
 	{
-		CRect rcLeftArrow(0, s_nTopMargin, s_nArrowWidth, rcBottom.top - 1);
-		pDC->FillSolidRect(rcLeftArrow, clrBackground);
-		CRect rcRightArrow(m_size.cx - s_nArrowWidth, s_nTopMargin, m_size.cx, rcBottom.top - 1);
-		pDC->FillSolidRect(rcRightArrow, clrBackground);
-		CRect rcRightLine(m_size.cx - s_nArrowWidth, rcBottom.top - 1, m_size.cx, rcBottom.top);
-		pDC->FillSolidRect(rcRightLine, clrBtnshadow);
+		int nScrollWidth = m_size.cx - 2*s_nArrowWidth;
+		bool bLeftEnabled = (m_nScrollPos > 0);
+		bool bRightEnabled = (m_nScrollPos < m_tabs.back().rcTab.right - nScrollWidth);
+
+		CRect rcLeftArrow(-2, s_nTopMargin, s_nArrowWidth, rcBottom.top);
+		DrawInactiveTabRect(pDC, rcLeftArrow, true, bLeftEnabled);
+		CRect rcRightArrow(m_size.cx - s_nArrowWidth, s_nTopMargin, m_size.cx + 2, rcBottom.top);
+		DrawInactiveTabRect(pDC, rcRightArrow, true, bRightEnabled);
 
 		pDC->IntersectClipRect(s_nArrowWidth, rcTop.bottom, m_size.cx - s_nArrowWidth, rcBottom.top);
 		pDC->SetViewportOrg(s_nArrowWidth - m_nScrollPos, 0);
@@ -148,94 +152,12 @@ void CMyTabBar::DrawTab(CDC* pDC, int nTab)
 {
 	Tab& tab = m_tabs[nTab];
 
-	COLORREF clrBtnface = ::GetSysColor(COLOR_BTNFACE);
-	COLORREF clrTabStripBg = ChangeBrightness(clrBtnface, 0.88);
-	COLORREF clrBtnshadow = ::GetSysColor(COLOR_BTNSHADOW);
-	COLORREF clrShadow1 = ChangeBrightness(clrBtnshadow, 1.12);
-	COLORREF clrShadow2 = ChangeBrightness(clrBtnshadow, 1.1);
-	COLORREF clrHilight1 = ChangeBrightness(clrBtnface, 0.95);
-	COLORREF clrHilight2 = ChangeBrightness(clrBtnface, 0.9);
-	COLORREF clrTabBg1 = ChangeBrightness(clrBtnface, 0.91);
-	COLORREF clrTabBg2 = ChangeBrightness(clrBtnface, 0.93);
-	COLORREF clrActiveTabBg1 = ChangeBrightness(clrBtnface, 1.05);
-
 	if (nTab == m_nActiveTab)
-	{
-		CPen penBtnshadow(PS_SOLID, 1, clrBtnshadow);
-		CPen* pOldPen = pDC->SelectObject(&penBtnshadow);
-		pDC->MoveTo(tab.rcTab.left, tab.rcTab.top + 3);
-		pDC->LineTo(tab.rcTab.left, tab.rcTab.bottom);
-		pDC->MoveTo(tab.rcTab.left + 3, tab.rcTab.top);
-		pDC->LineTo(tab.rcTab.right - 3, tab.rcTab.top);
-		pDC->MoveTo(tab.rcTab.right - 1, tab.rcTab.top + 3);
-		pDC->LineTo(tab.rcTab.right - 1, tab.rcTab.bottom);
-
-		pDC->SelectObject(pOldPen);
-
-		CRect rcTopBg(tab.rcTab.left + 1, tab.rcTab.top + 1,
-				tab.rcTab.right - 1, tab.rcTab.CenterPoint().y);
-		pDC->FillSolidRect(rcTopBg, clrActiveTabBg1);
-		CRect rcBottomBg(rcTopBg.left, rcTopBg.bottom, rcTopBg.right, tab.rcTab.bottom);
-		pDC->FillSolidRect(rcBottomBg, clrBtnface);
-
-		pDC->SetPixel(tab.rcTab.left, tab.rcTab.top, clrTabStripBg);
-		pDC->SetPixel(tab.rcTab.left + 1, tab.rcTab.top, clrTabStripBg);
-		pDC->SetPixel(tab.rcTab.left, tab.rcTab.top + 1, clrTabStripBg);
-		pDC->SetPixel(tab.rcTab.left + 1, tab.rcTab.top + 1, clrBtnshadow);
-		pDC->SetPixel(tab.rcTab.left, tab.rcTab.top + 2, clrShadow1);
-		pDC->SetPixel(tab.rcTab.left + 2, tab.rcTab.top, clrShadow1);
-		pDC->SetPixel(tab.rcTab.left + 1, tab.rcTab.top + 2, clrHilight2);
-		pDC->SetPixel(tab.rcTab.left + 2, tab.rcTab.top + 1, clrHilight2);
-
-		pDC->SetPixel(tab.rcTab.right - 1, tab.rcTab.top, clrTabStripBg);
-		pDC->SetPixel(tab.rcTab.right - 2, tab.rcTab.top, clrTabStripBg);
-		pDC->SetPixel(tab.rcTab.right - 1, tab.rcTab.top + 1, clrTabStripBg);
-		pDC->SetPixel(tab.rcTab.right - 2, tab.rcTab.top + 1, clrBtnshadow);
-		pDC->SetPixel(tab.rcTab.right - 1, tab.rcTab.top + 2, clrShadow1);
-		pDC->SetPixel(tab.rcTab.right - 3, tab.rcTab.top, clrShadow1);
-		pDC->SetPixel(tab.rcTab.right - 2, tab.rcTab.top + 2, clrHilight2);
-		pDC->SetPixel(tab.rcTab.right - 3, tab.rcTab.top + 1, clrHilight2);
-	}
+		DrawActiveTabRect(pDC, tab.rcTab);
+	else if (nTab == m_nHoverTab)
+		DrawActiveTabRect(pDC, tab.rcTab, true);
 	else
-	{
-		CPen penTabStrip(PS_SOLID, 1, clrTabStripBg);
-		CPen* pOldPen = pDC->SelectObject(&penTabStrip);
-		pDC->MoveTo(tab.rcTab.left, tab.rcTab.top);
-		pDC->LineTo(tab.rcTab.right, tab.rcTab.top);
-
-		CPen penBtnshadow(PS_SOLID, 1, clrBtnshadow);
-		pDC->SelectObject(&penBtnshadow);
-		pDC->MoveTo(tab.rcTab.left, tab.rcTab.top + 2);
-		pDC->LineTo(tab.rcTab.left, tab.rcTab.bottom - 1);
-		pDC->MoveTo(tab.rcTab.left + 1, tab.rcTab.top + 1);
-		pDC->LineTo(tab.rcTab.right - 1, tab.rcTab.top + 1);
-		pDC->MoveTo(tab.rcTab.left, tab.rcTab.bottom - 1);
-		pDC->LineTo(tab.rcTab.right, tab.rcTab.bottom - 1);
-
-		CPen penShadow2(PS_SOLID, 1, clrShadow2);
-		pDC->SelectObject(&penShadow2);
-		pDC->MoveTo(tab.rcTab.right - 1, tab.rcTab.top + 2);
-		pDC->LineTo(tab.rcTab.right - 1, tab.rcTab.bottom - 1);
-
-		CPen penHilight1(PS_SOLID, 1, clrHilight1);
-		pDC->SelectObject(&penHilight1);
-		pDC->MoveTo(tab.rcTab.left + 1, tab.rcTab.top + 3);
-		pDC->LineTo(tab.rcTab.left + 1, tab.rcTab.bottom - 1);
-		pDC->MoveTo(tab.rcTab.left + 2, tab.rcTab.top + 2);
-		pDC->LineTo(tab.rcTab.right - 1, tab.rcTab.top + 2);
-
-		pDC->SelectObject(pOldPen);
-
-		CRect rcTopBg(tab.rcTab.left + 2, tab.rcTab.top + 3,
-				tab.rcTab.right - 1, tab.rcTab.CenterPoint().y + 4);
-		pDC->FillSolidRect(rcTopBg, clrTabBg1);
-		CRect rcBottomBg(rcTopBg.left, rcTopBg.bottom, rcTopBg.right, tab.rcTab.bottom - 1);
-		pDC->FillSolidRect(rcBottomBg, clrTabBg2);
-
-		pDC->SetPixel(tab.rcTab.left, tab.rcTab.top + 1, clrTabStripBg);
-		pDC->SetPixel(tab.rcTab.right - 1, tab.rcTab.top + 1, clrTabStripBg);
-		pDC->SetPixel(tab.rcTab.left + 1, tab.rcTab.top + 2, clrTabBg1);
-	}
+		DrawInactiveTabRect(pDC, tab.rcTab);
 
 	COLORREF clrText = ::GetSysColor(COLOR_WINDOWTEXT);
 	CRect rcText(tab.rcTab.left + s_nPadding, tab.rcTab.top + 2,
@@ -246,6 +168,121 @@ void CMyTabBar::DrawTab(CDC* pDC, int nTab)
 	pDC->SetBkMode(TRANSPARENT);
 	pDC->DrawText(tab.strName, rcText, DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX | DT_END_ELLIPSIS);
 	pDC->SelectObject(pOldFont);
+}
+
+void CMyTabBar::DrawActiveTabRect(CDC* pDC, const CRect& rect, bool bHover)
+{
+	COLORREF clrBtnface = ::GetSysColor(COLOR_BTNFACE);
+	COLORREF clrTabStripBg = ChangeBrightness(clrBtnface, 0.88);
+	COLORREF clrBtnshadow = ::GetSysColor(COLOR_BTNSHADOW);
+	COLORREF clrActiveTabTopBg = ChangeBrightness(clrBtnface, 1.05);
+	COLORREF clrHoverTabTopBg = ChangeBrightness(clrBtnface, 0.97);
+	COLORREF clrHoverTabBottomBg = ChangeBrightness(clrBtnface, 0.94);
+	COLORREF clrActiveShadow = ChangeBrightness(clrBtnshadow, 1.12);
+	COLORREF clrActiveHilight = ChangeBrightness(clrBtnface, 0.9);
+
+	CPen penBtnshadow(PS_SOLID, 1, clrBtnshadow);
+	CPen* pOldPen = pDC->SelectObject(&penBtnshadow);
+	pDC->MoveTo(rect.left, rect.top + 3);
+	pDC->LineTo(rect.left, rect.bottom);
+	pDC->MoveTo(rect.left + 3, rect.top);
+	pDC->LineTo(rect.right - 3, rect.top);
+	pDC->MoveTo(rect.right - 1, rect.top + 3);
+	pDC->LineTo(rect.right - 1, rect.bottom);
+
+	CRect rcTopBg(rect.left + 1, rect.top + 1, rect.right - 1, rect.CenterPoint().y);
+	CRect rcBottomBg(rcTopBg.left, rcTopBg.bottom, rcTopBg.right, rect.bottom);
+
+	if (!bHover)
+	{
+		pDC->FillSolidRect(rcTopBg, clrActiveTabTopBg);
+		pDC->FillSolidRect(rcBottomBg, clrBtnface);
+	}
+	else
+	{
+		rcBottomBg.bottom = rect.bottom - 1;
+		pDC->FillSolidRect(rcTopBg, clrHoverTabTopBg);
+		pDC->FillSolidRect(rcBottomBg, clrHoverTabBottomBg);
+
+		pDC->MoveTo(rect.left + 1, rect.bottom - 1);
+		pDC->LineTo(rect.right - 1, rect.bottom - 1);
+	}
+
+	pDC->SelectObject(pOldPen);
+
+	pDC->SetPixel(rect.left, rect.top, clrTabStripBg);
+	pDC->SetPixel(rect.left + 1, rect.top, clrTabStripBg);
+	pDC->SetPixel(rect.left, rect.top + 1, clrTabStripBg);
+	pDC->SetPixel(rect.left + 1, rect.top + 1, clrBtnshadow);
+	pDC->SetPixel(rect.left, rect.top + 2, clrActiveShadow);
+	pDC->SetPixel(rect.left + 2, rect.top, clrActiveShadow);
+	pDC->SetPixel(rect.left + 1, rect.top + 2, clrActiveHilight);
+	pDC->SetPixel(rect.left + 2, rect.top + 1, clrActiveHilight);
+
+	pDC->SetPixel(rect.right - 1, rect.top, clrTabStripBg);
+	pDC->SetPixel(rect.right - 2, rect.top, clrTabStripBg);
+	pDC->SetPixel(rect.right - 1, rect.top + 1, clrTabStripBg);
+	pDC->SetPixel(rect.right - 2, rect.top + 1, clrBtnshadow);
+	pDC->SetPixel(rect.right - 1, rect.top + 2, clrActiveShadow);
+	pDC->SetPixel(rect.right - 3, rect.top, clrActiveShadow);
+	pDC->SetPixel(rect.right - 2, rect.top + 2, clrActiveHilight);
+	pDC->SetPixel(rect.right - 3, rect.top + 1, clrActiveHilight);
+}
+
+void CMyTabBar::DrawInactiveTabRect(CDC* pDC, const CRect& rect,
+		bool bArrow, bool bArrowEnabled, bool bArrowHover)
+{
+	COLORREF clrBtnface = ::GetSysColor(COLOR_BTNFACE);
+	COLORREF clrTabStripBg = ChangeBrightness(clrBtnface, 0.88);
+	COLORREF clrBtnshadow = ::GetSysColor(COLOR_BTNSHADOW);
+	COLORREF clrShadow = ChangeBrightness(clrBtnshadow, 1.1);
+	COLORREF clrHilight = ChangeBrightness(clrBtnface, 0.95);
+	COLORREF clrTabTopBg = ChangeBrightness(clrBtnface, 0.91);
+	COLORREF clrTabBottomBg = ChangeBrightness(clrBtnface, 0.93);
+
+	CPen penTabStrip(PS_SOLID, 1, clrTabStripBg);
+	CPen* pOldPen = pDC->SelectObject(&penTabStrip);
+	pDC->MoveTo(rect.left, rect.top);
+	pDC->LineTo(rect.right, rect.top);
+
+	CPen penBtnshadow(PS_SOLID, 1, clrBtnshadow);
+	CPen penShadow(PS_SOLID, 1, clrShadow);
+
+	if (!bArrow || bArrowEnabled)
+		pDC->SelectObject(&penBtnshadow);
+	else
+		pDC->SelectObject(&penShadow);
+
+	pDC->MoveTo(rect.left, rect.top + 2);
+	pDC->LineTo(rect.left, rect.bottom - 1);
+	pDC->MoveTo(rect.left + 1, rect.top + 1);
+	pDC->LineTo(rect.right - 1, rect.top + 1);
+	pDC->MoveTo(rect.left, rect.bottom - 1);
+	pDC->LineTo(rect.right, rect.bottom - 1);
+
+	if (!bArrow)
+		pDC->SelectObject(&penShadow);
+
+	pDC->MoveTo(rect.right - 1, rect.top + 2);
+	pDC->LineTo(rect.right - 1, rect.bottom - 1);
+
+	CPen penHilight(PS_SOLID, 1, clrHilight);
+	pDC->SelectObject(&penHilight);
+	pDC->MoveTo(rect.left + 1, rect.top + 3);
+	pDC->LineTo(rect.left + 1, rect.bottom - 1);
+	pDC->MoveTo(rect.left + 2, rect.top + 2);
+	pDC->LineTo(rect.right - 1, rect.top + 2);
+
+	pDC->SelectObject(pOldPen);
+
+	CRect rcTopBg(rect.left + 2, rect.top + 3, rect.right - 1, rect.CenterPoint().y + 4);
+	CRect rcBottomBg(rcTopBg.left, rcTopBg.bottom, rcTopBg.right, rect.bottom - 1);
+	pDC->FillSolidRect(rcTopBg, clrTabTopBg);
+	pDC->FillSolidRect(rcBottomBg, clrTabBottomBg);
+
+	pDC->SetPixel(rect.left, rect.top + 1, clrTabStripBg);
+	pDC->SetPixel(rect.right - 1, rect.top + 1, clrTabStripBg);
+	pDC->SetPixel(rect.left + 1, rect.top + 2, clrTabTopBg);
 }
 
 void CMyTabBar::UpdateMetrics()
@@ -326,6 +363,12 @@ void CMyTabBar::RemoveTab(CFrameWnd* pFrame)
 	if (nTab == -1)
 		return;
 
+	RemoveTab(nTab);
+}
+
+void CMyTabBar::RemoveTab(int nTab)
+{
+	bool bActiveTab = (m_nActiveTab == nTab);
 	m_tabs.erase(m_tabs.begin() + nTab);
 
 	UpdateTabRects();
@@ -338,7 +381,7 @@ void CMyTabBar::RemoveTab(CFrameWnd* pFrame)
 			--m_nActiveTab;
 
 		ActivateTab(m_nActiveTab);
-		if (m_nActiveTab != -1)
+		if (bActiveTab && m_nActiveTab != -1)
 			UpdateObservers(FrameMsg(TAB_SELECTED, m_tabs[m_nActiveTab].pFrame));
 	}
 
@@ -388,7 +431,7 @@ void CMyTabBar::UpdateToolTips()
 {
 	m_toolTip.Activate(false);
 
-	for (int i = 0; i < m_toolTip.GetToolCount(); ++i)
+	for (int i = m_toolTip.GetToolCount() - 1; i >= 0; --i)
 		m_toolTip.DelTool(this, i + 1);
 
 	for (int i = 0; i < static_cast<int>(m_tabs.size()); ++i)
@@ -430,6 +473,79 @@ void CMyTabBar::OnLButtonDown(UINT nFlags, CPoint point)
 	CControlBar::OnLButtonDown(nFlags, point);
 }
 
+void CMyTabBar::OnMouseMove(UINT nFlags, CPoint point)
+{
+	int nHoverTab = TabFromPoint(point);
+	if (nHoverTab != m_nHoverTab)
+	{
+		if (m_nHoverTab == -1)
+			SetCapture();
+		else if (nHoverTab == -1)
+			ReleaseCapture();
+
+		m_nHoverTab = nHoverTab;
+		Invalidate();
+	}
+}
+
+void CMyTabBar::OnContextMenu(CWnd* pWnd, CPoint pos)
+{
+	CPoint ptClient = pos;
+	ScreenToClient(&ptClient);
+	int nTab = TabFromPoint(ptClient);
+	if (nTab == -1)
+		return;
+
+	CMenu menu;
+	menu.LoadMenu(IDR_POPUP);
+
+	CMenu* pPopup = menu.GetSubMenu(4);
+	ASSERT(pPopup != NULL);
+
+	if (m_tabs.size() == 1)
+		pPopup->EnableMenuItem(ID_TAB_CLOSE_OTHER, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+
+	UINT nID = pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
+			pos.x, pos.y, this);
+	if (nID == ID_TAB_CLOSE)
+	{
+		CFrameWnd* pFrame = m_tabs[nTab].pFrame;
+		RemoveTab(nTab);
+		UpdateObservers(FrameMsg(TAB_CLOSED, pFrame));
+	}
+	else if (nID == ID_TAB_CLOSE_OTHER && m_tabs.size() > 1)
+	{
+		if (nTab != m_nActiveTab)
+		{
+			ActivateTab(nTab);
+			UpdateObservers(FrameMsg(TAB_SELECTED, m_tabs[m_nActiveTab].pFrame));
+		}
+
+		for (int i = m_tabs.size() - 1; i >= 0; --i)
+		{
+			if (i != nTab)
+			{
+				CFrameWnd* pFrame = m_tabs[i].pFrame;
+				RemoveTab(i);
+				UpdateObservers(FrameMsg(TAB_CLOSED, pFrame));
+			}
+		}
+	}
+
+	if (m_nHoverTab != -1)
+	{
+		ReleaseCapture();
+		m_nHoverTab = -1;
+	}
+
+	// Update hover tab
+	CPoint ptCursor;
+	GetCursorPos(&ptCursor);
+	ScreenToClient(&ptCursor);
+	OnMouseMove(0, ptCursor);
+	Invalidate();
+}
+
 int CMyTabBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if (CControlBar::OnCreate(lpCreateStruct) == -1)
@@ -458,22 +574,20 @@ BOOL CMyTabBar::PreTranslateMessage(MSG* pMsg)
 	return CControlBar::PreTranslateMessage(pMsg);
 }
 
-bool CMyTabBar::PtInTab(int nTab, CPoint point)
+bool CMyTabBar::PtInTab(int nTab, const CPoint& point)
 {
+	CRect rcContents(CPoint(0, 0), m_size);
 	CRect rcTab = m_tabs[nTab].rcTab;
 	if (m_bShowArrows)
 	{
+		rcContents.DeflateRect(s_nArrowWidth, 0);
 		rcTab.OffsetRect(s_nArrowWidth - m_nScrollPos, 0);
-		rcTab.left = max(rcTab.left, s_nArrowWidth);
-		rcTab.right = min(rcTab.right, m_size.cx - s_nArrowWidth);
-		if (rcTab.left >= rcTab.right)
-			return false;
 	}
 
-	return !!rcTab.PtInRect(point);
+	return rcContents.PtInRect(point) && rcTab.PtInRect(point);
 }
 
-int CMyTabBar::TabFromPoint(CPoint point)
+int CMyTabBar::TabFromPoint(const CPoint& point)
 {
 	for (size_t nTab = 0; nTab < m_tabs.size(); ++nTab)
 		if (PtInTab(nTab, point))

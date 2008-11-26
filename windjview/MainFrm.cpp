@@ -1521,29 +1521,29 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 	else if (message->code == FRAME_ACTIVATED)
 	{
 		CFrameWnd* pFrame = const_cast<CFrameWnd*>(static_cast<const FrameMsg*>(message)->pFrame);
-		if (pFrame != NULL)
-			m_wndTabBar.ActivateTab(pFrame);
-		else
-			m_wndTabBar.ActivateTab((CFrameWnd*) NULL);
+		m_wndTabBar.ActivateTab(pFrame);
 
-		CDjVuView* pView = (pFrame != NULL ? ((CChildFrame*) pFrame)->GetDjVuView() : NULL);
+		CDjVuView* pView = ((CChildFrame*) pFrame)->GetDjVuView();
 		OnViewActivated(pView);
 	}
 	else if (message->code == FRAME_CLOSED)
 	{
 		CFrameWnd* pFrame = const_cast<CFrameWnd*>(static_cast<const FrameMsg*>(message)->pFrame);
-		if (pFrame != NULL)
-		{
-			m_wndTabBar.RemoveTab(pFrame);
-			((CChildFrame*) pFrame)->RemoveObserver(this);
-		}
+		m_wndTabBar.RemoveTab(pFrame);
 		UpdateToolbars();
+
+		if (m_wndTabBar.GetTabCount() == 0)
+			OnViewActivated(NULL);
 	}
 	else if (message->code == TAB_SELECTED)
 	{
 		CFrameWnd* pFrame = const_cast<CFrameWnd*>(static_cast<const FrameMsg*>(message)->pFrame);
-		if (pFrame != NULL)
-			pFrame->ActivateFrame();
+		pFrame->ActivateFrame();
+	}
+	else if (message->code == TAB_CLOSED)
+	{
+		CFrameWnd* pFrame = const_cast<CFrameWnd*>(static_cast<const FrameMsg*>(message)->pFrame);
+		pFrame->SendMessage(WM_CLOSE);
 	}
 }
 

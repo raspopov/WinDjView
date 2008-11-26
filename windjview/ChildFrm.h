@@ -93,6 +93,7 @@ protected:
 	// Generated message map functions
 	afx_msg void OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeactivateWnd);
 	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnExpandPane();
 	afx_msg void OnCollapsePane();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);

@@ -3,7 +3,8 @@ Copyright (C) 2004-2008 Andrew Zhezherun
 ----------------------------------------
 
 Changes in version 0.6 (2008-??-??):
-! Implemented multiple top-level documents mode.
+! Added multiple top-level documents mode.
+! Added a tab bar to the single-window mode.
 + Added support for Unicode Supplementary Planes in contents and index.
 + Added support for dictionaries that look up the word under mouse pointer.
 + DPI value is now set when exporting page or selection as bitmap.

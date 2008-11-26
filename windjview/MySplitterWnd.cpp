@@ -105,7 +105,23 @@ BOOL CMySplitterWnd::OnNcCreate(LPCREATESTRUCT lpcs)
 
 void CMySplitterWnd::OnSize(UINT nType, int cx, int cy)
 {
-	if (nType != SIZE_MINIMIZED && cx > 0 && cy > 0)
+	CWnd* pFrame = GetParent();
+	while (pFrame != NULL && !pFrame->IsKindOf(RUNTIME_CLASS(CMDIChildWnd)))
+		pFrame = pFrame->GetParent();
+
+	if (pFrame != NULL)
+	{
+		BOOL bMaximized = false;
+		CMDIFrameWnd* pMDIFrame = ((CMDIChildWnd*) pFrame)->GetMDIFrame();
+		CMDIChildWnd* pActive = pMDIFrame->MDIGetActive(&bMaximized);
+		if (pFrame != pActive && theApp.GetAppSettings()->bChildMaximized && !pFrame->IsZoomed())
+		{
+			CWnd::OnSize(nType, cx, cy);
+			return;
+		}
+	}
+
+	if (cx > 0 && cy > 0)
 		RecalcLayout();
 
 	CWnd::OnSize(nType, cx, cy);
@@ -128,12 +144,17 @@ void CMySplitterWnd::RecalcLayout()
 
 	if (!m_bNavHidden)
 	{
-		m_bNavCollapsed = false;
 		m_nSplitterPos = min(m_nSplitterPos, nWidth);
 		if (m_nSplitterPos < CNavPaneWnd::s_nMinExpandedWidth)
 		{
-			m_nSplitterPos = CNavPaneWnd::s_nTabsWidth;
 			m_bNavCollapsed = true;
+			m_nSplitterPos = CNavPaneWnd::s_nTabsWidth;
+		}
+		else
+		{
+			m_bNavCollapsed = false;
+			m_nExpandedNavWidth = m_nSplitterPos;
+			theApp.GetAppSettings()->nNavPaneWidth = m_nExpandedNavWidth;
 		}
 
 		m_rcNavPane.left = 0;
@@ -280,9 +301,6 @@ void CMySplitterWnd::StopDragging()
 {
 	m_bDragging = false;
 	ReleaseCapture();
-
-	if (!m_bNavCollapsed)
-		m_nExpandedNavWidth = m_nSplitterPos;
 }
 
 BOOL CMySplitterWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)

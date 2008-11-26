@@ -130,6 +130,7 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0
 #define FRAME_ACTIVATED 25
 #define FRAME_CLOSED 26
 #define TAB_SELECTED 27
+#define TAB_CLOSED 28
 
 class CDIB;
 struct Bookmark;

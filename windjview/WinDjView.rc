@@ -355,6 +355,11 @@ BEGIN
     BEGIN
         MENUITEM "&Wrap long bookmarks",        33157
     END
+    POPUP "Tab"
+    BEGIN
+        MENUITEM "&Close Tab",                  33158
+        MENUITEM "Close &Other Tabs",           33159
+    END
 END
 
 
