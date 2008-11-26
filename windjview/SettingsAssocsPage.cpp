@@ -57,9 +57,20 @@ END_MESSAGE_MAP()
 
 // CSettingsAssocsPage message handlers
 
+BOOL CSettingsAssocsPage::OnInitDialog()
+{
+	CPropertyPage::OnInitDialog();
+
+	CWnd* pAssociate = GetDlgItem(IDC_ASSOCIATE);
+	if (pAssociate != NULL)
+		pAssociate->SendMessage(BCM_SETSHIELD, 0, TRUE);
+
+	return true;
+}
+
 void CSettingsAssocsPage::OnAssociate()
 {
-	if (theApp.RegisterShellFileTypes())
+	if (theApp.RegisterShellFileTypesElevate(this))
 		AfxMessageBox(IDS_ASSOCIATE_SUCCESSFUL, MB_ICONINFORMATION | MB_OK);
 	else
 		AfxMessageBox(IDS_ASSOCIATE_FAILED, MB_ICONERROR | MB_OK);

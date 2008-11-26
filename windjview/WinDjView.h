@@ -68,6 +68,7 @@ public:
 
 	void SaveSettings();
 	bool RegisterShellFileTypes();
+	bool RegisterShellFileTypesElevate(CWnd* pWnd = NULL);
 
 	void InitSearchHistory(CComboBoxEx& cboFind);
 	void UpdateSearchHistory(CComboBoxEx& cboFind);
@@ -157,6 +158,9 @@ protected:
 	bool m_bShiftPressed, m_bControlPressed;
 	static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 	static void CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dwTime);
+
+	bool m_bOnlyRegisterTypes;
+	int m_nExitCode;
 
 	// Generated message map functions
 	afx_msg void OnAppAbout();

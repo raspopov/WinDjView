@@ -20,10 +20,10 @@
 
 #include "stdafx.h"
 #include "WinDjView.h"
+#include "MainFrm.h"
+
 #include "DjVuView.h"
 #include "DjVuDoc.h"
-
-#include "MainFrm.h"
 #include "ChildFrm.h"
 #include "AppSettings.h"
 #include "ThumbnailsView.h"
@@ -92,8 +92,11 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_DICTIONARY_PREV, OnUpdateDictionaryPrev)
 	ON_UPDATE_COMMAND_UI(ID_DICTIONARY_LOOKUP, OnUpdateDictionaryLookup)
 	ON_COMMAND(ID_WINDOW_CASCADE, OnWindowCascade)
+	ON_UPDATE_COMMAND_UI(ID_WINDOW_CASCADE, OnUpdateWindowCascade)
 	ON_COMMAND(ID_WINDOW_TILE_HORZ, OnWindowTileHorz)
 	ON_COMMAND(ID_WINDOW_TILE_VERT, OnWindowTileVert)
+	ON_COMMAND(ID_WINDOW_NEXT, OnWindowNext)
+	ON_COMMAND(ID_WINDOW_PREV, OnWindowPrev)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -313,9 +316,6 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 
 void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
-	if ((GetStyle() & FWS_ADDTOTITLE) == 0)
-		return;
-
 	CMDIChildWnd* pActiveChild = MDIGetActive();
 	if (pActiveChild != NULL)
 	{
@@ -942,7 +942,7 @@ void CMainFrame::OnUpdateWindowList(CCmdUI* pCmdUI)
 	// update end menu count
 	pCmdUI->m_nIndex = pCmdUI->m_pMenu->GetMenuItemCount();
 	pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
-	pCmdUI->m_bEnableChanged = TRUE;
+	pCmdUI->m_bEnableChanged = true;
 }
 
 void CMainFrame::OnActivateWindow(UINT nID)
@@ -1572,10 +1572,7 @@ void CMainFrame::OnViewActivated(const CDjVuView* pView)
 void CMainFrame::OnWindowCascade()
 {
 	if (!theApp.m_bTopLevelDocs)
-	{
-		OnMDIWindowCmd(ID_WINDOW_CASCADE);
 		return;
-	}
 
 	CRect rcMonitor = GetMonitorWorkArea(this);
 	CSize szWindow(rcMonitor.Width() * 2 / 3, rcMonitor.Height() * 2 / 3);
@@ -1625,10 +1622,7 @@ void CMainFrame::OnWindowCascade()
 void CMainFrame::OnWindowTileHorz()
 {
 	if (!theApp.m_bTopLevelDocs)
-	{
-		OnMDIWindowCmd(ID_WINDOW_TILE_HORZ);
 		return;
-	}
 
 	CRect rcMonitor = GetMonitorWorkArea(this);
 	int nFrameCount = theApp.m_frames.size();
@@ -1671,10 +1665,7 @@ void CMainFrame::OnWindowTileHorz()
 void CMainFrame::OnWindowTileVert()
 {
 	if (!theApp.m_bTopLevelDocs)
-	{
-		OnMDIWindowCmd(ID_WINDOW_TILE_VERT);
 		return;
-	}
 
 	CRect rcMonitor = GetMonitorWorkArea(this);
 	int nFrameCount = theApp.m_frames.size();
@@ -1712,4 +1703,37 @@ void CMainFrame::OnWindowTileVert()
 	}
 
 	BringWindowToTop();
+}
+
+void CMainFrame::OnUpdateWindowCascade(CCmdUI* pCmdUI)
+{
+	if (pCmdUI->m_pMenu == NULL || theApp.m_bTopLevelDocs)
+		return;
+
+	pCmdUI->m_pMenu->DeleteMenu(ID_WINDOW_CASCADE, MF_BYCOMMAND);
+	pCmdUI->m_pMenu->DeleteMenu(ID_WINDOW_TILE_HORZ, MF_BYCOMMAND);
+	pCmdUI->m_pMenu->DeleteMenu(ID_WINDOW_TILE_VERT, MF_BYCOMMAND);
+
+	MENUITEMINFO info;
+	info.cbSize = sizeof(MENUITEMINFO);
+	info.fMask = MIIM_FTYPE;
+	while (pCmdUI->m_pMenu->GetMenuItemCount() > 0
+			&& pCmdUI->m_pMenu->GetMenuItemInfo(0, &info, TRUE)
+			&& info.fType == MFT_SEPARATOR)
+		pCmdUI->m_pMenu->DeleteMenu(0, MF_BYPOSITION);
+
+	// update end menu count
+	pCmdUI->m_nIndex = -1;
+	pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
+	pCmdUI->m_bEnableChanged = true;
+}
+
+void CMainFrame::OnWindowNext()
+{
+	m_wndTabBar.ActivateNextTab();
+}
+
+void CMainFrame::OnWindowPrev()
+{
+	m_wndTabBar.ActivatePrevTab();
 }

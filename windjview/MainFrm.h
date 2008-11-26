@@ -176,6 +176,9 @@ protected:
 	afx_msg void OnWindowCascade();
 	afx_msg void OnWindowTileHorz();
 	afx_msg void OnWindowTileVert();
+	afx_msg void OnUpdateWindowCascade(CCmdUI* pCmdUI);
+	afx_msg void OnWindowNext();
+	afx_msg void OnWindowPrev();
 	DECLARE_MESSAGE_MAP()
 };
 

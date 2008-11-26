@@ -35,7 +35,7 @@ static HCURSOR s_hCursorSplitter = NULL;
 IMPLEMENT_DYNAMIC(CMySplitterWnd, CWnd)
 
 CMySplitterWnd::CMySplitterWnd()
-	: m_pContentWnd(NULL), m_nSplitterPos(0), m_bChildMaximized(false), m_bDragging(false)
+	: m_pContentWnd(NULL), m_nSplitterPos(0), m_bDragging(false)
 {
 	m_nExpandedNavWidth = max(theApp.GetAppSettings()->nNavPaneWidth, CNavPaneWnd::s_nMinExpandedWidth);
 	m_bNavCollapsed = theApp.GetAppSettings()->bNavPaneCollapsed;
@@ -114,7 +114,7 @@ void CMySplitterWnd::OnSize(UINT nType, int cx, int cy)
 		BOOL bMaximized = false;
 		CMDIFrameWnd* pMDIFrame = ((CMDIChildWnd*) pFrame)->GetMDIFrame();
 		CMDIChildWnd* pActive = pMDIFrame->MDIGetActive(&bMaximized);
-		if (pFrame != pActive && theApp.GetAppSettings()->bChildMaximized && !pFrame->IsZoomed())
+		if (pFrame != pActive && !pFrame->IsZoomed())
 		{
 			CWnd::OnSize(nType, cx, cy);
 			return;
@@ -136,11 +136,8 @@ void CMySplitterWnd::RecalcLayout()
 	CWnd* pFrame = GetParent();
 	while (pFrame != NULL && !pFrame->IsKindOf(RUNTIME_CLASS(CMDIChildWnd)))
 		pFrame = pFrame->GetParent();
-	m_bChildMaximized = (pFrame != NULL ? !!pFrame->IsZoomed() : false);
 
-	int nTopOffset = (m_bChildMaximized ? 1 : 0);
-	if (m_bChildMaximized)
-		InvalidateRect(CRect(0, 0, rcClient.right, nTopOffset));
+	InvalidateRect(CRect(0, 0, rcClient.right, 1));
 
 	if (!m_bNavHidden)
 	{
@@ -158,7 +155,7 @@ void CMySplitterWnd::RecalcLayout()
 		}
 
 		m_rcNavPane.left = 0;
-		m_rcNavPane.top = nTopOffset;
+		m_rcNavPane.top = 1;
 		m_rcNavPane.right = m_nSplitterPos;
 		m_rcNavPane.bottom = max(m_rcNavPane.top, rcClient.bottom);
 
@@ -168,7 +165,7 @@ void CMySplitterWnd::RecalcLayout()
 		m_rcSplitter.bottom = rcClient.bottom;
 
 		m_rcContent.left = m_nSplitterPos + s_nSplitterWidth;
-		m_rcContent.top = nTopOffset;
+		m_rcContent.top = 1;
 		m_rcContent.right = max(m_rcContent.left, rcClient.right);
 		m_rcContent.bottom = max(m_rcContent.top, rcClient.bottom);
 
@@ -178,7 +175,7 @@ void CMySplitterWnd::RecalcLayout()
 	else
 	{
 		m_rcContent.left = 0;
-		m_rcContent.top = nTopOffset;
+		m_rcContent.top = 1;
 		m_rcContent.right = rcClient.right;
 		m_rcContent.bottom = max(m_rcContent.top, rcClient.bottom);
 	}
@@ -208,13 +205,10 @@ void CMySplitterWnd::OnPaint()
 
 	if (!m_bNavHidden)
 	{
-		if (m_bChildMaximized)
-		{
-			paintDC.MoveTo(0, 0);
-			paintDC.LineTo(m_rcSplitter.left, 0);
-			paintDC.MoveTo(m_rcSplitter.right, 0);
-			paintDC.LineTo(rcClient.right, 0);
-		}
+		paintDC.MoveTo(0, 0);
+		paintDC.LineTo(m_rcSplitter.left, 0);
+		paintDC.MoveTo(m_rcSplitter.right, 0);
+		paintDC.LineTo(rcClient.right, 0);
 
 		paintDC.MoveTo(m_rcSplitter.left, 0);
 		paintDC.LineTo(m_rcSplitter.left, rcClient.bottom);
@@ -227,11 +221,8 @@ void CMySplitterWnd::OnPaint()
 	}
 	else
 	{
-		if (m_bChildMaximized)
-		{
-			paintDC.MoveTo(0, 0);
-			paintDC.LineTo(rcClient.right, 0);
-		}
+		paintDC.MoveTo(0, 0);
+		paintDC.LineTo(rcClient.right, 0);
 	}
 
 	paintDC.SelectObject(pOldPen);

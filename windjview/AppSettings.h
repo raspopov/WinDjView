@@ -116,7 +116,6 @@ struct CAppSettings
 	int nWindowHeight;
 
 	bool bWindowMaximized;
-	bool bChildMaximized;
 
 	bool bToolbar;
 	bool bStatusBar;

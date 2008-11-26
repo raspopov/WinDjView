@@ -39,8 +39,10 @@ public:
 public:
 	int AddTab(CFrameWnd* pFrame, const CString& strName);
 	void ActivateTab(CFrameWnd* pFrame);
-	CFrameWnd* GetActiveTab() const;
+	void ActivateNextTab();
+	void ActivatePrevTab();
 	void RemoveTab(CFrameWnd* pFrame);
+	CFrameWnd* GetActiveTab() const;
 	int GetTabCount() const { return static_cast<int>(m_tabs.size()); }
 
 	virtual void OnUpdate(const Observable* source, const Message* message);

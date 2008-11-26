@@ -144,3 +144,10 @@ using namespace std;
 #define GET_APPCOMMAND_LPARAM(lParam) ((short)(HIWORD(lParam) & ~FAPPCOMMAND_MASK))
 #endif
 
+#ifndef BCM_FIRST
+#define BCM_FIRST 0x1600
+#endif
+
+#ifndef BCM_SETSHIELD
+#define BCM_SETSHIELD (BCM_FIRST + 0x000C)
+#endif

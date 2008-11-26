@@ -58,7 +58,6 @@ protected:
 	bool m_bNavHidden;
 	int m_nSplitterPos;
 	int m_nExpandedNavWidth;
-	bool m_bChildMaximized;
 	CPoint m_ptDragStart;
 	int m_nOrigSplitterPos;
 	bool m_bDragging;

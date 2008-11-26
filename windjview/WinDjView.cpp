@@ -152,7 +152,8 @@ END_MESSAGE_MAP()
 CDjViewApp::CDjViewApp()
 	: m_bInitialized(false), m_bTopLevelDocs(false), m_pDjVuTemplate(NULL),
 	  m_nThreadCount(0), m_hHook(NULL), m_pPendingSource(NULL), m_bShiftPressed(false),
-	  m_bControlPressed(false), m_nLangIndex(0), m_nTimerID(0)
+	  m_bControlPressed(false), m_nLangIndex(0), m_nTimerID(0),
+	  m_bOnlyRegisterTypes(false), m_nExitCode(0)
 {
 	DjVuSource::SetApplication(this);
 }
@@ -182,15 +183,6 @@ BOOL CDjViewApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	SetRegistryKey(_T("Andrew Zhezherun"));
 
-	CURRENT_VERSION.LoadString(IDS_CURRENT_VERSION);
-
-	LoadStdProfileSettings(10);  // Load recently open documents
-	LoadSettings();
-	LoadLanguages();
-	LoadDictionaries();
-
-	m_bTopLevelDocs = m_appSettings.bTopLevelDocs;
-
 	m_pDocManager = new CMyDocManager();
 
 	// Register the application's document template
@@ -202,13 +194,38 @@ BOOL CDjViewApp::InitInstance()
 		return FALSE;
 	AddDocTemplate(m_pDjVuTemplate);
 
-	SetStartupLanguage();
+	// Check if we need to register file type associations and exit
+	for (int i = 1; i < __argc; i++)
+	{
+		LPCTSTR pszParam = __targv[i];
+		if (pszParam[0] == '-' || pszParam[0] == '/')
+		{
+			++pszParam;
+			if (_tcsicmp(pszParam, _T("registertypes")) == 0)
+			{
+				m_bOnlyRegisterTypes = true;
+				if (!RegisterShellFileTypes())
+					m_nExitCode = 1;
+				return false;
+			}
+		}
+	}
 
-	// Enable DDE Execute open
-	EnableShellOpen();
+	CURRENT_VERSION.LoadString(IDS_CURRENT_VERSION);
+
+	m_bTopLevelDocs = m_appSettings.bTopLevelDocs;
+
+	LoadStdProfileSettings(10);  // Load recently open documents
+	LoadSettings();
+	LoadDictionaries();
+	LoadLanguages();
+	SetStartupLanguage();
 
 	if (m_appSettings.bRestoreAssocs)
 		RegisterShellFileTypes();
+
+	// Enable DDE Execute open
+	EnableShellOpen();
 
 	// Create main MDI Frame window
 	CMainFrame* pMainFrame = CreateMainFrame(true, m_nCmdShow);
@@ -232,7 +249,7 @@ CMainFrame* CDjViewApp::CreateMainFrame(bool bAppStartup, int nCmdShow)
 
 	// Create main MDI Frame window
 	CMainFrame* pMainFrame = new CMainFrame;
-	if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE))
+	if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME, WS_OVERLAPPEDWINDOW))
 	{
 		m_bInitialized = bInitialized;
 		delete pMainFrame;
@@ -550,7 +567,6 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.nWindowWidth = GetProfileInt(s_pszDisplaySection, s_pszWidth, m_appSettings.nWindowWidth);
 	m_appSettings.nWindowHeight = GetProfileInt(s_pszDisplaySection, s_pszHeight, m_appSettings.nWindowHeight);
 	m_appSettings.bWindowMaximized = !!GetProfileInt(s_pszDisplaySection, s_pszMaximized, m_appSettings.bWindowMaximized);
-	m_appSettings.bChildMaximized = !!GetProfileInt(s_pszDisplaySection, s_pszChildMaximized, m_appSettings.bChildMaximized);
 	m_appSettings.bToolbar = !!GetProfileInt(s_pszDisplaySection, s_pszToolbar, m_appSettings.bToolbar);
 	m_appSettings.bStatusBar = !!GetProfileInt(s_pszDisplaySection, s_pszStatusBar, m_appSettings.bStatusBar);
 	m_appSettings.bDictBar = !!GetProfileInt(s_pszDisplaySection, s_pszDictBar, m_appSettings.bDictBar);
@@ -653,7 +669,6 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySection, s_pszWidth, m_appSettings.nWindowWidth);
 	WriteProfileInt(s_pszDisplaySection, s_pszHeight, m_appSettings.nWindowHeight);
 	WriteProfileInt(s_pszDisplaySection, s_pszMaximized, m_appSettings.bWindowMaximized);
-	WriteProfileInt(s_pszDisplaySection, s_pszChildMaximized, m_appSettings.bChildMaximized);
 	WriteProfileInt(s_pszDisplaySection, s_pszToolbar, m_appSettings.bToolbar);
 	WriteProfileInt(s_pszDisplaySection, s_pszStatusBar, m_appSettings.bStatusBar);
 	WriteProfileInt(s_pszDisplaySection, s_pszDictBar, m_appSettings.bDictBar);
@@ -815,6 +830,13 @@ BOOL CDjViewApp::GetProfileCompressed(LPCTSTR pszSection, LPCTSTR pszEntry, GUTF
 
 int CDjViewApp::ExitInstance()
 {
+	if (m_bOnlyRegisterTypes)
+	{
+		::CoUninitialize();
+		CWinApp::ExitInstance();
+		return m_nExitCode;
+	}
+
 	SaveSettings();
 
 	::KillTimer(NULL, m_nTimerID);
@@ -917,21 +939,27 @@ void CALLBACK CDjViewApp::TimerProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dw
 	}
 }
 
-bool SetRegKey(LPCTSTR lpszKey, LPCTSTR lpszValue)
+bool SetRegHKCRValue(LPCTSTR lpszKey, LPCTSTR lpszValue, bool& bChanged)
 {
-	if (::RegSetValue(HKEY_CLASSES_ROOT, lpszKey, REG_SZ,
-		lpszValue, lstrlen(lpszValue) * sizeof(TCHAR)) != ERROR_SUCCESS)
+	CString strOldValue;
+	LONG cbData;
+	if (::RegQueryValue(HKEY_CLASSES_ROOT, lpszKey, NULL, &cbData) == ERROR_SUCCESS &&
+		::RegQueryValue(HKEY_CLASSES_ROOT, lpszKey, strOldValue.GetBufferSetLength(cbData + 1), &cbData) == ERROR_SUCCESS)
 	{
-		TRACE(_T("Warning: registration database update failed for key '%s'.\n"), lpszKey);
-		return false;
+		strOldValue.ReleaseBuffer();
+		if (strOldValue == lpszValue)
+			return true;
 	}
 
-	return true;
+	bChanged = true;
+	return (::RegSetValue(HKEY_CLASSES_ROOT, lpszKey, REG_SZ,
+			lpszValue, lstrlen(lpszValue) * sizeof(TCHAR)) == ERROR_SUCCESS);
 }
 
 bool CDjViewApp::RegisterShellFileTypes()
 {
 	bool bSuccess = true;
+	bool bChanged = false;
 	CString strPathName, strTemp;
 
 	GetModuleFileName(m_hInstance, strPathName.GetBuffer(MAX_PATH), MAX_PATH);
@@ -953,21 +981,20 @@ bool CDjViewApp::RegisterShellFileTypes()
 			CDocTemplate::regFileTypeId) && !strFileTypeId.IsEmpty())
 		{
 			// enough info to register it
-			if (!pTemplate->GetDocString(strFileTypeName,
-					CDocTemplate::regFileTypeName))
+			if (!pTemplate->GetDocString(strFileTypeName, CDocTemplate::regFileTypeName))
 				strFileTypeName = strFileTypeId;    // use id name
 
 			ASSERT(strFileTypeId.Find(' ') == -1);  // no spaces allowed
 
 			// first register the type ID of our server
-			if (!SetRegKey(strFileTypeId, strFileTypeName))
+			if (!SetRegHKCRValue(strFileTypeId, strFileTypeName, bChanged))
 			{
 				bSuccess = false;
 				continue;
 			}
 
 			strTemp.Format(_T("%s\\DefaultIcon"), (LPCTSTR)strFileTypeId);
-			if (!SetRegKey(strTemp, strDefaultIconCommandLine))
+			if (!SetRegHKCRValue(strTemp, strDefaultIconCommandLine, bChanged))
 			{
 				bSuccess = false;
 				continue;
@@ -975,7 +1002,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 
 			strTemp.Format(_T("%s\\shell\\open\\%s"), (LPCTSTR)strFileTypeId,
 				(LPCTSTR)_T("ddeexec"));
-			if (!SetRegKey(strTemp, _T("[open(\"%1\")]")))
+			if (!SetRegHKCRValue(strTemp, _T("[open(\"%1\")]"), bChanged))
 			{
 				bSuccess = false;
 				continue;
@@ -983,7 +1010,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 
 			strTemp.Format(_T("%s\\shell\\open\\%s\\Application"), (LPCTSTR)strFileTypeId,
 				(LPCTSTR)_T("ddeexec"));
-			if (!SetRegKey(strTemp, _T("WinDjView")))
+			if (!SetRegHKCRValue(strTemp, _T("WinDjView"), bChanged))
 			{
 				bSuccess = false;
 				continue;
@@ -991,7 +1018,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 
 			strTemp.Format(_T("%s\\shell\\open\\%s\\Topic"), (LPCTSTR)strFileTypeId,
 				(LPCTSTR)_T("ddeexec"));
-			if (!SetRegKey(strTemp, _T("System")))
+			if (!SetRegHKCRValue(strTemp, _T("System"), bChanged))
 			{
 				bSuccess = false;
 				continue;
@@ -1002,7 +1029,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 			// path\shell\open\command = path filename
 			strTemp.Format(_T("%s\\shell\\open\\%s"), (LPCTSTR)strFileTypeId,
 				_T("command"));
-			if (!SetRegKey(strTemp, strOpenCommandLine))
+			if (!SetRegHKCRValue(strTemp, strOpenCommandLine, bChanged))
 			{
 				bSuccess = false;
 				continue;
@@ -1016,20 +1043,10 @@ bool CDjViewApp::RegisterShellFileTypes()
 				!strFilterExt.IsEmpty())
 			{
 				ASSERT(strFilterExt[0] == '.');
-
-				LONG lSize = MAX_PATH * 2;
-				LONG lResult = ::RegQueryValue(HKEY_CLASSES_ROOT, strFilterExt,
-					strTemp.GetBuffer(lSize), &lSize);
-				strTemp.ReleaseBuffer();
-
-				if (lResult != ERROR_SUCCESS || strTemp != strFileTypeId)
+				if (!SetRegHKCRValue(strFilterExt, strFileTypeId, bChanged))
 				{
-					// no association for that suffix
-					if (!SetRegKey(strFilterExt, strFileTypeId))
-					{
-						bSuccess = false;
-						continue;
-					}
+					bSuccess = false;
+					continue;
 				}
 
 				// Remove user-level Explorer file mapping
@@ -1037,16 +1054,17 @@ bool CDjViewApp::RegisterShellFileTypes()
 				strExplorerKey.Format(_T("Software\\Microsoft\\Windows\\CurrentVersion\\")
 						_T("Explorer\\FileExts\\%s"), strFilterExt);
 				HKEY hKey = NULL;
-				lResult = ::RegOpenKeyEx(HKEY_CURRENT_USER, strExplorerKey, 0, KEY_READ | KEY_WRITE, &hKey);
-				if (lResult == ERROR_SUCCESS)
+				if (::RegOpenKeyEx(HKEY_CURRENT_USER, strExplorerKey, 0, KEY_READ | KEY_WRITE, &hKey) == ERROR_SUCCESS)
 				{
 					DWORD dwType = REG_NONE;
 					DWORD cbData = 0;
-					lResult = ::RegQueryValueEx(hKey, _T("ProgID"), 0, &dwType, NULL, &cbData);
-					if (lResult == ERROR_SUCCESS)
+					if (::RegQueryValueEx(hKey, _T("ProgID"), 0, &dwType, NULL, &cbData) == ERROR_SUCCESS)
 					{
-						lResult = ::RegDeleteValue(hKey, _T("ProgID"));
-						if (lResult != ERROR_SUCCESS)
+						if (::RegDeleteValue(hKey, _T("ProgID")) == ERROR_SUCCESS)
+						{
+							bChanged = true;
+						}
+						else
 						{
 							bSuccess = false;
 							::RegCloseKey(hKey);
@@ -1060,8 +1078,58 @@ bool CDjViewApp::RegisterShellFileTypes()
 		}
 	}
 
-	::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+	if (bChanged && bSuccess)
+		::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
 
+	return bSuccess;
+}
+
+bool CDjViewApp::RegisterShellFileTypesElevate(CWnd* pWnd)
+{
+	if (RegisterShellFileTypes())
+		return true;
+
+	// Try to run with elevated priveleges
+
+	HINSTANCE hKernel32 = ::LoadLibrary(_T("kernel32.dll"));
+	if (hKernel32 == NULL)
+		return false;
+
+	typedef BOOL (WINAPI* pfnGetExitCodeProcess)(HANDLE hProcess, LPDWORD lpExitCode);
+	pfnGetExitCodeProcess pGetExitCodeProcess =
+			(pfnGetExitCodeProcess) ::GetProcAddress(hKernel32, "GetExitCodeProcess");
+	if (pGetExitCodeProcess == NULL)
+	{
+		::FreeLibrary(hKernel32);
+		return false;
+	}
+
+	CString strPathName;
+	GetModuleFileName(m_hInstance, strPathName.GetBuffer(MAX_PATH + 1), MAX_PATH + 1);
+	strPathName.ReleaseBuffer();
+
+	SHELLEXECUTEINFO execinfo;
+	ZeroMemory(&execinfo, sizeof(execinfo));
+	execinfo.cbSize = sizeof(execinfo);
+	execinfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+	execinfo.hwnd = pWnd->GetSafeHwnd();
+	execinfo.lpVerb = _T("runas");
+	execinfo.lpFile = strPathName;
+	execinfo.lpParameters = _T("/registertypes");
+	execinfo.nShow = SW_HIDE;
+	if (!ShellExecuteEx(&execinfo) || execinfo.hProcess == NULL)
+		return false;
+
+	bool bSuccess = false;
+	if (::WaitForSingleObject(execinfo.hProcess, INFINITE) == WAIT_OBJECT_0)
+	{
+		DWORD dwExitCode = 1;
+		if (pGetExitCodeProcess(execinfo.hProcess, &dwExitCode))
+			bSuccess = (dwExitCode == 0);
+	}
+	::CloseHandle(execinfo.hProcess);
+
+	::FreeLibrary(hKernel32);
 	return bSuccess;
 }
 

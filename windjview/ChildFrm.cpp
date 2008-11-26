@@ -92,8 +92,8 @@ BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 	if (!CMDIChildWnd::PreCreateWindow(cs))
 		return false;
 
-	if (theApp.GetAppSettings()->bChildMaximized || theApp.m_bTopLevelDocs)
-		cs.style |= WS_MAXIMIZE;
+	cs.style |= WS_MAXIMIZE;
+	cs.style &= ~WS_SYSMENU;
 
 	return true;
 }
@@ -125,7 +125,7 @@ void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 	{
 		bLockingUpdate = true;
 		m_bLockingUpdate = true;
-		::SendMessage(pFrame->m_hWndMDIClient, WM_SETREDRAW, 0, 0);
+		::SendMessage(pFrame->m_hWndMDIClient, WM_SETREDRAW, FALSE, 0);
 	}
 
 	CMDIChildWnd::OnWindowPosChanged(lpwndpos);
@@ -133,12 +133,9 @@ void CChildFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 	if (bLockingUpdate)
 	{
 		m_bLockingUpdate = false;
-		::SendMessage(pFrame->m_hWndMDIClient, WM_SETREDRAW, 1, 0);
+		::SendMessage(pFrame->m_hWndMDIClient, WM_SETREDRAW, TRUE, 0);
 		::RedrawWindow(pFrame->m_hWndMDIClient, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME | RDW_ALLCHILDREN);
 	}
-
-	if (pActive == this && IsWindowVisible() && !IsIconic())
-		theApp.GetAppSettings()->bChildMaximized = !!IsZoomed();
 
 	OnUpdateFrameTitle(true);
 }
@@ -149,7 +146,7 @@ void CChildFrame::OnSize(UINT nType, int cx, int cy)
 	CMDIFrameWnd* pFrame = GetMDIFrame();
 	CMDIChildWnd* pActive = pFrame->MDIGetActive(&bMaximized);
 
-	if (pActive != this && theApp.GetAppSettings()->bChildMaximized && nType != SIZE_MAXIMIZED)
+	if (pActive != this && nType != SIZE_MAXIMIZED)
 	{
 		CWnd::OnSize(nType, cx, cy);
 		return;
@@ -166,21 +163,14 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 	CMDIFrameWnd* pFrame = GetMDIFrame();
 	CDjVuView* pView = GetDjVuView();
 
-	if (theApp.GetAppSettings()->bChildMaximized || theApp.m_bTopLevelDocs)
+	if (!m_bLockingUpdate)
 	{
-		nCmdShow = SW_SHOWMAXIMIZED;
-
-		if (!m_bLockingUpdate)
-		{
-			bLockingUpdate = true;
-			m_bLockingUpdate = true;
-
-			pFrame->UpdateWindow();
-			::SendMessage(pFrame->m_hWndMDIClient, WM_SETREDRAW, 0, 0);
-		}
+		bLockingUpdate = true;
+		m_bLockingUpdate = true;
+		::SendMessage(pFrame->m_hWndMDIClient, WM_SETREDRAW, FALSE, 0);
 	}
 
-	CMDIChildWnd::ActivateFrame(nCmdShow);
+	CMDIChildWnd::ActivateFrame(SW_SHOWMAXIMIZED);
 
 	if (m_bFirstShow)
 	{
@@ -202,7 +192,7 @@ void CChildFrame::ActivateFrame(int nCmdShow)
 	if (bLockingUpdate)
 	{
 		m_bLockingUpdate = false;
-		::SendMessage(pFrame->m_hWndMDIClient, WM_SETREDRAW, 1, 0);
+		::SendMessage(pFrame->m_hWndMDIClient, WM_SETREDRAW, TRUE, 0);
 		::RedrawWindow(pFrame->m_hWndMDIClient, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME | RDW_ALLCHILDREN);
 	}
 
@@ -537,12 +527,6 @@ void CChildFrame::OnUpdate(const Observable* source, const Message* message)
 
 void CChildFrame::OnNcPaint()
 {
-	BOOL bMaximized = false;
-	GetMDIFrame()->MDIGetActive(&bMaximized);
-	if (bMaximized)
-		return;
-
-	CMDIChildWnd::OnNcPaint();
 }
 
 CMainFrame* CChildFrame::GetMainFrame()
@@ -552,28 +536,10 @@ CMainFrame* CChildFrame::GetMainFrame()
 
 void CChildFrame::OnSysCommand(UINT nID, LPARAM lParam)
 {
-	if (theApp.m_bTopLevelDocs)
-	{
-		UINT nCommand = nID & 0xFFF0;
-
-		// Pass certain commands to the main frame instead.
-		CMainFrame* pMainFrame = GetMainFrame();
-
-		if (nCommand == SC_MINIMIZE)
-		{
-			GetMainFrame()->SendMessage(WM_SYSCOMMAND, SC_MINIMIZE, 0);
-			return;
-		}
-
-		if (nCommand == SC_MAXIMIZE || nCommand == SC_RESTORE)
-		{
-			if (GetMainFrame()->IsZoomed())
-				GetMainFrame()->SendMessage(WM_SYSCOMMAND, SC_RESTORE, 0);
-			else
-				GetMainFrame()->SendMessage(WM_SYSCOMMAND, SC_MAXIMIZE, 0);
-			return;
-		}
-	}
+	UINT nCommand = nID & 0xFFF0;
+	if (nCommand == SC_MINIMIZE || nCommand == SC_RESTORE ||
+			nCommand == SC_NEXTWINDOW || nCommand == SC_PREVWINDOW)
+		return;
 
 	CMDIChildWnd::OnSysCommand(nID, lParam);
 }

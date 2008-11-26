@@ -80,6 +80,7 @@ protected:
 	bool m_bVisible, m_bInitialized;
 	int m_nRotate;
 	int m_nPagesInRow;
+	int m_nThumbnailSize;
 	CSize m_szThumbnail;
 
 	CCriticalSection m_dataLock;

@@ -82,9 +82,9 @@ CThumbnailsView::CThumbnailsView(DjVuSource* pSource)
 	lf.lfHeight = -12;
 	m_font.CreateFontIndirect(&lf);
 
-	int nThumbnailSize = theApp.GetAppSettings()->nThumbnailSize;
-	m_szThumbnail.cx = CAppSettings::thumbnailWidth[nThumbnailSize];
-	m_szThumbnail.cy = CAppSettings::thumbnailHeight[nThumbnailSize];
+	m_nThumbnailSize = theApp.GetAppSettings()->nThumbnailSize;
+	m_szThumbnail.cx = CAppSettings::thumbnailWidth[m_nThumbnailSize];
+	m_szThumbnail.cy = CAppSettings::thumbnailHeight[m_nThumbnailSize];
 }
 
 CThumbnailsView::~CThumbnailsView()
@@ -509,27 +509,38 @@ LRESULT CThumbnailsView::OnShowSettings(WPARAM wParam, LPARAM lParam)
 	tpm.cbSize = sizeof(tpm);
 	tpm.rcExclude = rcButton;
 
-	int nThumbnailsSize = theApp.GetAppSettings()->nThumbnailSize;
 
-	if (nThumbnailsSize == 0)
+	if (m_nThumbnailSize == 0)
 		pPopup->EnableMenuItem(ID_THUMBNAILS_REDUCE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-	if (nThumbnailsSize == CAppSettings::ThumbnailSizes - 1)
+	if (m_nThumbnailSize == CAppSettings::ThumbnailSizes - 1)
 		pPopup->EnableMenuItem(ID_THUMBNAILS_ENLARGE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
 	int nID = pPopup->TrackPopupMenuEx(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
 			rcButton.left, rcButton.bottom, this, &tpm);
 
+	int nThumbnailSize = m_nThumbnailSize;
 	if (nID == ID_THUMBNAILS_REDUCE)
-		--nThumbnailsSize;
+		--nThumbnailSize;
 	else if (nID == ID_THUMBNAILS_ENLARGE)
-		++nThumbnailsSize;
-	nThumbnailsSize = max(0, min(CAppSettings::ThumbnailSizes - 1, nThumbnailsSize));
+		++nThumbnailSize;
+	nThumbnailSize = max(0, min(CAppSettings::ThumbnailSizes - 1, nThumbnailSize));
 
-	if (theApp.GetAppSettings()->nThumbnailSize != nThumbnailsSize)
+	if (nThumbnailSize != m_nThumbnailSize)
 	{
-		theApp.GetAppSettings()->nThumbnailSize = nThumbnailsSize;
-		theApp.UpdateObservers(THUMBNAILS_SIZE_CHANGED);
+		m_nThumbnailSize = nThumbnailSize;
+		m_szThumbnail.cx = CAppSettings::thumbnailWidth[m_nThumbnailSize];
+		m_szThumbnail.cy = CAppSettings::thumbnailHeight[m_nThumbnailSize];
+
+		if (m_pThread != NULL && m_pIdleThread != NULL)
+		{
+			m_pThread->SetThumbnailSize(m_szThumbnail);
+			m_pIdleThread->SetThumbnailSize(m_szThumbnail);
+		}
+
+		UpdateAllThumbnails();
 	}
+
+	theApp.GetAppSettings()->nThumbnailSize = nThumbnailSize;
 
 	return 0;
 }
@@ -911,20 +922,6 @@ void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 
 		m_bInitialized = true;
 		UpdateView(RECALC);
-	}
-	else if (message->code == THUMBNAILS_SIZE_CHANGED)
-	{
-		int nThumbnailSize = theApp.GetAppSettings()->nThumbnailSize;
-		m_szThumbnail.cx = CAppSettings::thumbnailWidth[nThumbnailSize];
-		m_szThumbnail.cy = CAppSettings::thumbnailHeight[nThumbnailSize];
-
-		if (m_pThread != NULL && m_pIdleThread != NULL)
-		{
-			m_pThread->SetThumbnailSize(m_szThumbnail);
-			m_pIdleThread->SetThumbnailSize(m_szThumbnail);
-		}
-
-		UpdateAllThumbnails();
 	}
 }
 

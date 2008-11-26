@@ -41,7 +41,6 @@ CAppSettings::CAppSettings()
 	nWindowHeight = 500;
 
 	bWindowMaximized = false;
-	bChildMaximized = true;
 
 	bToolbar = true;
 	bStatusBar = true;

@@ -611,6 +611,26 @@ void CMyTabBar::ActivateTab(int nTab)
 		Invalidate();
 }
 
+void CMyTabBar::ActivateNextTab()
+{
+	if (m_tabs.size() < 2)
+		return;
+
+	int nTab = (m_nActiveTab == -1 ? 0 : (m_nActiveTab + 1) % m_tabs.size());
+	ActivateTab(nTab);
+	UpdateObservers(FrameMsg(TAB_SELECTED, m_tabs[nTab].pFrame));
+}
+
+void CMyTabBar::ActivatePrevTab()
+{
+	if (m_tabs.size() < 2)
+		return;
+
+	int nTab = (m_nActiveTab == -1 ? m_tabs.size() - 1 : (m_nActiveTab - 1 + m_tabs.size()) % m_tabs.size());
+	ActivateTab(nTab);
+	UpdateObservers(FrameMsg(TAB_SELECTED, m_tabs[nTab].pFrame));
+}
+
 int CMyTabBar::TabFromFrame(CFrameWnd* pFrame)
 {
 	for (size_t nTab = 0; nTab < m_tabs.size(); ++nTab)
