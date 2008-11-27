@@ -201,7 +201,7 @@ BOOL CDjViewApp::InitInstance()
 		if (pszParam[0] == '-' || pszParam[0] == '/')
 		{
 			++pszParam;
-			if (_tcsicmp(pszParam, _T("registertypes")) == 0)
+			if (_tcsicmp(pszParam, _T("RegisterFileTypes")) == 0)
 			{
 				m_bOnlyRegisterTypes = true;
 				if (!RegisterShellFileTypes())
@@ -944,16 +944,19 @@ bool SetRegHKCRValue(LPCTSTR lpszKey, LPCTSTR lpszValue, bool& bChanged)
 	CString strOldValue;
 	LONG cbData;
 	if (::RegQueryValue(HKEY_CLASSES_ROOT, lpszKey, NULL, &cbData) == ERROR_SUCCESS &&
-		::RegQueryValue(HKEY_CLASSES_ROOT, lpszKey, strOldValue.GetBufferSetLength(cbData + 1), &cbData) == ERROR_SUCCESS)
+		::RegQueryValue(HKEY_CLASSES_ROOT, lpszKey, strOldValue.GetBufferSetLength(cbData / sizeof(TCHAR) + 1), &cbData) == ERROR_SUCCESS)
 	{
 		strOldValue.ReleaseBuffer();
 		if (strOldValue == lpszValue)
 			return true;
 	}
 
+	if (::RegSetValue(HKEY_CLASSES_ROOT, lpszKey, REG_SZ,
+			lpszValue, lstrlen(lpszValue) * sizeof(TCHAR)) != ERROR_SUCCESS)
+		return false;
+
 	bChanged = true;
-	return (::RegSetValue(HKEY_CLASSES_ROOT, lpszKey, REG_SZ,
-			lpszValue, lstrlen(lpszValue) * sizeof(TCHAR)) == ERROR_SUCCESS);
+	return true;
 }
 
 bool CDjViewApp::RegisterShellFileTypes()
@@ -1039,41 +1042,109 @@ bool CDjViewApp::RegisterShellFileTypes()
 			pTemplate->GetDocString(strExtensions, CDocTemplate::filterExt);
 
 			int nExt = 0;
-			while (AfxExtractSubString(strFilterExt, strExtensions, nExt++, ';') &&
-				!strFilterExt.IsEmpty())
+			while (AfxExtractSubString(strFilterExt, strExtensions, nExt++, ';')
+					&& !strFilterExt.IsEmpty())
 			{
 				ASSERT(strFilterExt[0] == '.');
+
+				CString strExplorerKey = FormatString(_T("Software\\Microsoft\\Windows\\")
+						_T("CurrentVersion\\Explorer\\FileExts\\%s"), strFilterExt);
+				CString strUserChoiceKey = strExplorerKey + _T("\\UserChoice");
+				CString strProgId = _T("ProgID");
+				HKEY hKey = NULL;
+				::RegOpenKeyEx(HKEY_CURRENT_USER, strExplorerKey, 0, KEY_READ | KEY_WRITE, &hKey);
+
 				if (!SetRegHKCRValue(strFilterExt, strFileTypeId, bChanged))
 				{
-					bSuccess = false;
-					continue;
-				}
-
-				// Remove user-level Explorer file mapping
-				CString strExplorerKey;
-				strExplorerKey.Format(_T("Software\\Microsoft\\Windows\\CurrentVersion\\")
-						_T("Explorer\\FileExts\\%s"), strFilterExt);
-				HKEY hKey = NULL;
-				if (::RegOpenKeyEx(HKEY_CURRENT_USER, strExplorerKey, 0, KEY_READ | KEY_WRITE, &hKey) == ERROR_SUCCESS)
-				{
-					DWORD dwType = REG_NONE;
-					DWORD cbData = 0;
-					if (::RegQueryValueEx(hKey, _T("ProgID"), 0, &dwType, NULL, &cbData) == ERROR_SUCCESS)
+					// Setting global association failed, set the user-level one instead.
+					if (hKey != NULL)
 					{
-						if (::RegDeleteValue(hKey, _T("ProgID")) == ERROR_SUCCESS)
+						CString strData;
+						DWORD dwType;
+						DWORD cbData = 0;
+						if (::RegQueryValueEx(hKey, strProgId, 0, &dwType, NULL, &cbData) != ERROR_SUCCESS
+								|| dwType != REG_SZ
+								|| ::RegQueryValueEx(hKey, strProgId, 0, &dwType, (LPBYTE)(LPTSTR) strData.GetBufferSetLength(cbData / sizeof(TCHAR) + 1), &cbData) != ERROR_SUCCESS
+								|| (strData.ReleaseBuffer(), strData != strFileTypeId))
 						{
-							bChanged = true;
+							if (::RegSetValueEx(hKey, strProgId, 0, REG_SZ, (LPBYTE)(LPCTSTR) strFileTypeId, strFileTypeId.GetLength() * sizeof(TCHAR)) != ERROR_SUCCESS)
+								bSuccess = false;
+							else
+								bChanged = true;
+						}
+
+						HKEY hChoiceKey = NULL;
+						if (::RegOpenKeyEx(HKEY_CURRENT_USER, strUserChoiceKey, 0, KEY_READ, &hChoiceKey) != ERROR_SUCCESS
+								|| ::RegQueryValueEx(hChoiceKey, _T("Progid"), 0, &dwType, NULL, &cbData) != ERROR_SUCCESS
+								|| dwType != REG_SZ
+								|| ::RegQueryValueEx(hChoiceKey, _T("Progid"), 0, &dwType, (LPBYTE)(LPTSTR) strData.GetBufferSetLength(cbData / sizeof(TCHAR) + 1), &cbData) != ERROR_SUCCESS
+								|| (strData.ReleaseBuffer(), strData != strFileTypeId))
+						{
+							if (hChoiceKey != NULL)
+								::RegCloseKey(hChoiceKey);
+
+							if (::RegDeleteKey(HKEY_CURRENT_USER, strUserChoiceKey) != ERROR_SUCCESS)
+							{
+								bSuccess = false;
+							}
+							else
+							{
+								bChanged = true;
+								if (::RegCreateKey(HKEY_CURRENT_USER, strUserChoiceKey, &hChoiceKey) != ERROR_SUCCESS
+										|| ::RegSetValueEx(hChoiceKey, _T("Progid"), 0, REG_SZ, (LPBYTE)(LPCTSTR) strFileTypeId, strFileTypeId.GetLength() * sizeof(TCHAR)) != ERROR_SUCCESS)
+									bSuccess = false;
+							}
+
+							if (hChoiceKey != NULL)
+								::RegCloseKey(hChoiceKey);
+						}
+					}
+					else
+					{
+						HKEY hChoiceKey = NULL;
+						if (::RegCreateKey(HKEY_CURRENT_USER, strExplorerKey, &hKey) != ERROR_SUCCESS)
+						{
+							bSuccess = false;
 						}
 						else
 						{
-							bSuccess = false;
-							::RegCloseKey(hKey);
-							continue;
+							bChanged = true;
+							if (::RegSetValueEx(hKey, strProgId, 0, REG_SZ, (LPBYTE)(LPCTSTR) strFileTypeId, strFileTypeId.GetLength() * sizeof(TCHAR)) != ERROR_SUCCESS
+									|| ::RegCreateKey(HKEY_CURRENT_USER, strUserChoiceKey, &hChoiceKey) != ERROR_SUCCESS
+									|| ::RegSetValueEx(hChoiceKey, _T("Progid"), 0, REG_SZ, (LPBYTE)(LPCTSTR) strFileTypeId, strFileTypeId.GetLength() * sizeof(TCHAR)) != ERROR_SUCCESS)
+								bSuccess = false;
 						}
+
+						if (hChoiceKey != NULL)
+							::RegCloseKey(hChoiceKey);
+					}
+				}
+				else if (hKey != NULL)
+				{
+					// Setting global association succeeded, remove the user-level one.
+					DWORD dwType;
+					DWORD cbData = 0;
+					if (::RegQueryValueEx(hKey, strProgId, 0, &dwType, NULL, &cbData) == ERROR_SUCCESS)
+					{
+						if (::RegDeleteValue(hKey, strProgId) != ERROR_SUCCESS)
+							bSuccess = false;
+						else
+							bChanged = true;
 					}
 
-					::RegCloseKey(hKey);
+					HKEY hChoiceKey = NULL;
+					if (::RegOpenKeyEx(HKEY_CURRENT_USER, strUserChoiceKey, 0, KEY_READ, &hChoiceKey) == ERROR_SUCCESS)
+					{
+						::RegCloseKey(hChoiceKey);
+						if (::RegDeleteKey(HKEY_CURRENT_USER, strUserChoiceKey) != ERROR_SUCCESS)
+							bSuccess = false;
+						else
+							bChanged = true;
+					}
 				}
+
+				if (hKey != NULL)
+					::RegCloseKey(hKey);
 			}
 		}
 	}
@@ -1115,7 +1186,7 @@ bool CDjViewApp::RegisterShellFileTypesElevate(CWnd* pWnd)
 	execinfo.hwnd = pWnd->GetSafeHwnd();
 	execinfo.lpVerb = _T("runas");
 	execinfo.lpFile = strPathName;
-	execinfo.lpParameters = _T("/registertypes");
+	execinfo.lpParameters = _T("/RegisterFileTypes");
 	execinfo.nShow = SW_HIDE;
 	if (!ShellExecuteEx(&execinfo) || execinfo.hProcess == NULL)
 		return false;
