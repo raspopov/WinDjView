@@ -258,18 +258,12 @@ bool XMLParser::Parse(istream& in_)
 
 		m_bValid = true;
 	}
-#ifdef _DEBUG
 	catch (int e)
 	{
+		UNUSED(e);
 		TRACE("Invalid XML: %d\n", e);
 		m_bValid = false;
 	}
-#else
-	catch (int)
-	{
-		m_bValid = false;
-	}
-#endif
 
 	in = NULL;
 	return m_bValid;
