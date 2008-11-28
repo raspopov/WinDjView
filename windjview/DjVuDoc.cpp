@@ -21,10 +21,10 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 
-#include "ChildFrm.h"
 #include "DjVuDoc.h"
 #include "DjVuView.h"
 #include "MainFrm.h"
+#include "MDIChild.h"
 #include "MyFileDialog.h"
 #include "InstallDicDlg.h"
 
@@ -141,10 +141,10 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 CDjVuView* CDjVuDoc::GetDjVuView()
 {
 	POSITION pos = GetFirstViewPosition();
-	ASSERT(pos != NULL);
+	if (pos == NULL)
+		return NULL;
 
-	CDjVuView* pView = (CDjVuView*) GetNextView(pos);
-	return pView;
+	return (CDjVuView*) GetNextView(pos);
 }
 
 void CDjVuDoc::OnSaveCopyAs()
@@ -313,8 +313,37 @@ void CDjVuDoc::OnUpdateFileInstall(CCmdUI* pCmdUI)
 
 void CDjVuDoc::OnFileClose()
 {
-	if (GetDjVuView()->GetMainFrame()->IsFullscreenMode())
+	CMainFrame* pMainFrame = GetDjVuView()->GetMainFrame();
+	if (pMainFrame->IsFullscreenMode())
 		return;
 
+	if (theApp.m_bTopLevelDocs && theApp.GetDocumentCount() > 1)
+	{
+		pMainFrame->SendMessage(WM_CLOSE);
+		return;
+	}
+
 	CDocument::OnFileClose();
+}
+
+void CDjVuDoc::OnCloseDocument()
+{
+	BOOL bAutoDelete = m_bAutoDelete;
+	m_bAutoDelete = false;  // don't destroy document while closing views
+
+	CDjVuView* pView = GetDjVuView();
+	if (pView != NULL)
+	{
+		CMDIChild* pMDIChild = pView->GetMDIChild();
+		pView->GetMainFrame()->CloseMDIChild(pMDIChild);
+	}
+
+	m_bAutoDelete = bAutoDelete;
+
+	// clean up contents of document before destroying the document itself
+	DeleteContents();
+
+	// delete the document if necessary
+	if (m_bAutoDelete)
+		delete this;
 }

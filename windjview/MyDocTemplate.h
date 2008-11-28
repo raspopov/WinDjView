@@ -29,14 +29,20 @@ class CMyDocTemplate : public CMultiDocTemplate
 
 public:
 	CMyDocTemplate(UINT nIDResource, CRuntimeClass* pDocClass, 
-			CRuntimeClass* pFrameClass, CRuntimeClass* pViewClass);
+			CRuntimeClass* pMDIChildClass, CRuntimeClass* pViewClass);
 	virtual ~CMyDocTemplate();
 
 	void UpdateTemplate();
 
 // Overrides
 public:
-    virtual Confidence MatchDocType(LPCTSTR lpszPathName, CDocument*& rpDocMatch);
-	virtual void InitialUpdateFrame(CFrameWnd* pFrame, CDocument* pDoc, BOOL bMakeVisible = true);
-	virtual CFrameWnd* CreateNewFrame(CDocument* pDoc, CFrameWnd* pOther);
+	virtual Confidence MatchDocType(LPCTSTR lpszPathName, CDocument*& rpDocMatch);
+	virtual CDocument* OpenDocumentFile(LPCTSTR lpszPathName, BOOL bMakeVisible = true);
+
+// Implementation
+protected:
+	CRuntimeClass* m_pMDIChildClass;
+
+	void InitialUpdateMDIChild(CWnd* pMDIChild, CDocument* pDoc, BOOL bMakeVisible = true);
+	CWnd* CreateNewMDIChild(CDocument* pDoc);
 };

@@ -214,6 +214,10 @@ SOURCE=.\MainFrm.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MDIChild.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MyBitmapButton.cpp
 # End Source File
 # Begin Source File
@@ -250,15 +254,7 @@ SOURCE=.\MyScrollView.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\MySplitterWnd.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\MyStatusBar.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\MyTabBar.cpp
 # End Source File
 # Begin Source File
 
@@ -324,6 +320,10 @@ SOURCE=.\SettingsGeneralPage.cpp
 
 SOURCE=.\stdafx.cpp
 # ADD CPP /Yc"stdafx.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\TabbedMDIWnd.cpp
 # End Source File
 # Begin Source File
 
@@ -419,6 +419,10 @@ SOURCE=.\MainFrm.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\MDIChild.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\MyBitmapButton.h
 # End Source File
 # Begin Source File
@@ -452,10 +456,6 @@ SOURCE=.\MyFileDialog.h
 # Begin Source File
 
 SOURCE=.\MyScrollView.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\MySplitterWnd.h
 # End Source File
 # Begin Source File
 
@@ -579,6 +579,10 @@ SOURCE=.\res\DjVuDoc.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\donate.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\drag.cur
 # End Source File
 # Begin Source File
@@ -600,6 +604,10 @@ SOURCE=.\res\magnify.cur
 # Begin Source File
 
 SOURCE=.\res\pan_all.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\pan_anchor.bmp
 # End Source File
 # Begin Source File
 

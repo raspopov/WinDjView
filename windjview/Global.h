@@ -125,11 +125,8 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0
 #define KEY_STATE_CHANGED 20
 #define DICT_LIST_CHANGED 21
 #define SIDEBAR_TAB_CHANGED 22
-#define FRAME_CREATED 23
-#define FRAME_ACTIVATED 24
-#define FRAME_CLOSED 25
-#define TAB_SELECTED 26
-#define TAB_CLOSED 27
+#define TAB_ACTIVATED 24
+#define TAB_CLOSED 25
 
 class CDIB;
 struct Bookmark;
@@ -202,12 +199,12 @@ struct KeyStateChanged : public Message
 	bool bPressed;
 };
 
-struct FrameMsg : public Message
+struct TabMsg : public Message
 {
-	FrameMsg(int msg, const CFrameWnd* pFrame_)
-		: Message(msg), pFrame(pFrame_) {}
+	TabMsg(int msg, CWnd* pWnd_)
+		: Message(msg), pWnd(pWnd_) {}
 
-	const CFrameWnd* pFrame;
+	CWnd* pWnd;
 };
 
 

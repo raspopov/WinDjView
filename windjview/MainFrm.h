@@ -22,28 +22,22 @@
 
 #include "Global.h"
 #include "MyToolBar.h"
-#include "MyTabBar.h"
+#include "TabbedMDIWnd.h"
 #include "MyStatusBar.h"
 #include "MyComboBox.h"
-#include "FindDlg.h"
 #include "DjVuSource.h"
 class CDjVuView;
 class CFullscreenWnd;
 class CMagnifyWnd;
 
 
-class CMainFrame : public CMDIFrameWnd, public Observer
+class CMainFrame : public CFrameWnd, public Observer
 {
 	DECLARE_DYNAMIC(CMainFrame)
 
 public:
 	CMainFrame();
 	virtual ~CMainFrame();
-
-// Attributes
-public:
-	CFindDlg* m_pFindDlg;
-	CMenu m_childMenu;
 
 // Operations
 public:
@@ -57,17 +51,25 @@ public:
 	bool IsFullscreenMode();
 	CMagnifyWnd* GetMagnifyWnd();
 
+	void AddMDIChild(CWnd* pMDIChild, CDocument* pDocument);
+	void CloseMDIChild(CWnd* pMDIChild);
+
+	void ActivateDocument(CDocument* pDocument);
 	void UpdateToolbars();
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
+	bool m_bDontActivate;
+
 // Overrides
 protected:
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
+	virtual void OnUpdateFrameMenu(HMENU hMenuAlt);
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
 
 // Implementation
 public:
@@ -81,8 +83,11 @@ protected:
 	CMyStatusBar m_wndStatusBar;
 	CMyToolBar m_wndToolBar;
 	CMyToolBar m_wndDictBar;
-	CMyTabBar m_wndTabBar;
 	CImageList m_imageListDict;
+
+	CTabbedMDIWnd m_tabbedMDI;
+	CMenu m_appMenu, m_docMenu;
+	bool m_bMaximized;
 
 	void InitToolBar();
 	void InitDictBar();
@@ -179,6 +184,10 @@ protected:
 	afx_msg void OnUpdateWindowCascade(CCmdUI* pCmdUI);
 	afx_msg void OnWindowNext();
 	afx_msg void OnWindowPrev();
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnNextPane(UINT nID);
+	afx_msg void OnUpdateNextPane(CCmdUI* pCmdUI);
+	afx_msg BOOL OnNcActivate(BOOL bActive);
 	DECLARE_MESSAGE_MAP()
 };
 

@@ -27,9 +27,10 @@ class CChildFrame;
 
 // CNavPaneWnd
 
-#define WM_EXPAND_PANE (WM_APP + 5)
-#define WM_COLLAPSE_PANE (WM_APP + 6)
-#define WM_SHOW_SETTINGS (WM_APP + 7)
+#define WM_EXPAND_NAV (WM_APP + 5)
+#define WM_COLLAPSE_NAV (WM_APP + 6)
+#define WM_CLICKED_NAV_TAB (WM_APP + 7)
+#define WM_SHOW_SETTINGS (WM_APP + 8)
 
 class CNavPaneWnd : public CWnd, public Observer, public Observable
 {
@@ -97,6 +98,8 @@ protected:
 	bool m_bSettingsActive, m_bSettingsPressed;
 	bool m_bDragging;
 
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+
 	// Generated message map functions
 	afx_msg void OnPaint();
 	afx_msg void OnWindowPosChanged(WINDOWPOS FAR* lpwndpos);
@@ -105,9 +108,9 @@ protected:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnInitialUpdate();
 	afx_msg void OnDestroy();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnSysColorChange();
 	DECLARE_MESSAGE_MAP()
 };

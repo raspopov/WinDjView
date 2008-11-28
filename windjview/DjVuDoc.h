@@ -39,6 +39,7 @@ public:
 // Overrides
 public:
 	virtual BOOL OnNewDocument();
+	virtual void OnCloseDocument();
 	virtual void Serialize(CArchive& ar);
 
 // Implementation

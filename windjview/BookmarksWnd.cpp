@@ -24,8 +24,8 @@
 #include "DjVuSource.h"
 #include "AppSettings.h"
 #include "BookmarkDlg.h"
-#include "ChildFrm.h"
 #include "DjVuView.h"
+#include "NavPane.h"
 
 
 // CBookmarksWnd
@@ -355,7 +355,8 @@ void CBookmarksWnd::SetBookmarkDestination(TreeNode* pNode)
 
 	if (AfxMessageBox(IDS_PROMPT_BOOKMARK_DESTINATION, MB_ICONEXCLAMATION | MB_YESNO) == IDYES)
 	{
-		CDjVuView* pView = ((CChildFrame*) GetParentFrame())->GetDjVuView();
+		CDjVuView* pView = (CDjVuView*) GetTopLevelFrame()->GetActiveView();
+		ASSERT(pView != NULL);
 		pView->CreateBookmarkFromView(*pInfo->pBookmark);
 	}
 

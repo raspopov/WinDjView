@@ -21,7 +21,6 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "MyDocTemplate.h"
-#include "ChildFrm.h"
 #include "DjVuView.h"
 #include "MainFrm.h"
 
@@ -35,9 +34,12 @@
 IMPLEMENT_DYNAMIC(CMyDocTemplate, CMultiDocTemplate)
 
 CMyDocTemplate::CMyDocTemplate(UINT nIDResource, CRuntimeClass* pDocClass, 
-		CRuntimeClass* pFrameClass, CRuntimeClass* pViewClass)
-	: CMultiDocTemplate(nIDResource, pDocClass, pFrameClass, pViewClass)
+		CRuntimeClass* pMDIChildClass, CRuntimeClass* pViewClass)
+	: CMultiDocTemplate(nIDResource, pDocClass, NULL, pViewClass),
+	  m_pMDIChildClass(pMDIChildClass)
 {
+	ASSERT(pMDIChildClass == NULL ||
+		pMDIChildClass->IsDerivedFrom(RUNTIME_CLASS(CWnd)));
 }
 
 CMyDocTemplate::~CMyDocTemplate()
@@ -96,51 +98,113 @@ void CMyDocTemplate::UpdateTemplate()
 	}
 }
 
-void CMyDocTemplate::InitialUpdateFrame(CFrameWnd* pFrame, CDocument* pDoc, BOOL bMakeVisible)
+void CMyDocTemplate::InitialUpdateMDIChild(CWnd* pMDIChild, CDocument* pDoc, BOOL bMakeVisible)
 {
-	CChildFrame* pChildFrm = (CChildFrame*) pFrame;
-	CMainFrame* pMainFrm = pChildFrm->GetMainFrame();
+	CMainFrame* pMainFrame = (CMainFrame*) theApp.m_pMainWnd;
 
-	if (theApp.m_bInitialized)
-		pMainFrm->SetRedraw(false);
+	// Create a new MDI Frame window
+	if (theApp.m_bTopLevelDocs && pMainFrame->GetActiveView() != NULL)
+		pMainFrame = theApp.CreateMainFrame();
 
-	// Save startup page and offset here, because it will be overwritten later
-	// by CDjVuView::OnInitialUpdate, and we want to preserve it until
-	// the first ActivateFrame call
-	pChildFrm->SaveStartupPage();
+	ASSERT(pMainFrame != NULL);
 
-	pChildFrm->CreateNavPanes();
+	pMainFrame->AddMDIChild(pMDIChild, pDoc);
 
-	pChildFrm->AddObserver(pMainFrm);
-	pChildFrm->UpdateObservers(FrameMsg(FRAME_CREATED, pChildFrm));
+	pMDIChild->SendMessage(WM_INITIALUPDATE, 0, 0);
+	pMDIChild->SendMessageToDescendants(WM_INITIALUPDATE, 0, 0, true, true);
 
-	CMultiDocTemplate::InitialUpdateFrame(pFrame, pDoc, bMakeVisible);
-
-	CDjVuView* pView = pChildFrm->GetDjVuView();
-	pView->AddObserver(pMainFrm);
-	pView->UpdateObservers(VIEW_INITIALIZED);
-
-	if (theApp.m_bInitialized)
-	{
-		pMainFrm->SetRedraw(true);
-		pMainFrm->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-	}
+	pMainFrame->ActivateDocument(pDoc);
+	pMainFrame->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_UPDATENOW | RDW_ALLCHILDREN);
 }
 
-CFrameWnd* CMyDocTemplate::CreateNewFrame(CDocument* pDoc, CFrameWnd* pOther)
+CWnd* CMyDocTemplate::CreateNewMDIChild(CDocument* pDoc)
 {
-	if (theApp.m_bTopLevelDocs)
+	CMainFrame* pMainFrame = (CMainFrame*) theApp.m_pMainWnd;
+	ASSERT(pMainFrame != NULL);
+
+	CCreateContext context;
+	context.m_pCurrentFrame = NULL;
+	context.m_pCurrentDoc = pDoc;
+	context.m_pNewViewClass = m_pViewClass;
+	context.m_pNewDocTemplate = this;
+
+	CWnd* pMDIChild = (CWnd*) m_pMDIChildClass->CreateObject();
+	if (pMDIChild == NULL)
 	{
-		CMainFrame* pMainFrame = (CMainFrame*) theApp.m_pMainWnd;
-		ASSERT(pMainFrame != NULL);
-		if (pMainFrame->MDIGetActive() != NULL)
-		{
-			// Create a new MDI Frame window
-			pMainFrame = theApp.CreateMainFrame();
-			if (pMainFrame == NULL)
-				return NULL;
-		}
+		TRACE(traceAppMsg, 0, "Warning: Dynamic create of MDI child %hs failed.\n",
+			m_pMDIChildClass->m_lpszClassName);
+		return NULL;
 	}
 
-	return CDocTemplate::CreateNewFrame(pDoc, pOther);
+	if (!pMDIChild->Create(NULL, NULL, WS_CHILD, CRect(0, 0, 0, 0), pMainFrame, AFX_IDW_PANE_FIRST, &context))
+	{
+		TRACE(traceAppMsg, 0, "Warning: could not create MDI child.\n");
+		return NULL;
+	}
+
+	return pMDIChild;
+}
+
+CDocument* CMyDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, BOOL bMakeVisible)
+{
+	CWaitCursor wait;
+
+	CDocument* pDocument = CreateNewDocument();
+	if (pDocument == NULL)
+	{
+		TRACE(traceAppMsg, 0, "CDocTemplate::CreateNewDocument returned NULL.\n");
+		AfxMessageBox(AFX_IDP_FAILED_TO_CREATE_DOC);
+		return NULL;
+	}
+	ASSERT_VALID(pDocument);
+
+	BOOL bAutoDelete = pDocument->m_bAutoDelete;
+	pDocument->m_bAutoDelete = false;   // don't destroy if something goes wrong
+
+	CWnd* pMDIChild = CreateNewMDIChild(pDocument);
+
+	pDocument->m_bAutoDelete = bAutoDelete;
+	if (pMDIChild == NULL)
+	{
+		AfxMessageBox(AFX_IDP_FAILED_TO_CREATE_DOC);
+		delete pDocument;       // explicit delete on error
+		return NULL;
+	}
+	ASSERT_VALID(pMDIChild);
+
+	if (lpszPathName == NULL)
+	{
+		// create a new document - with default document name
+		SetDefaultTitle(pDocument);
+
+		// avoid creating temporary compound file when starting up invisible
+		if (!bMakeVisible)
+			pDocument->m_bEmbedded = true;
+
+		if (!pDocument->OnNewDocument())
+		{
+			// user has be alerted to what failed in OnNewDocument
+			TRACE(traceAppMsg, 0, "CDocument::OnNewDocument returned FALSE.\n");
+			pMDIChild->DestroyWindow();
+			return NULL;
+		}
+
+		// it worked, now bump untitled count
+		m_nUntitledCount++;
+	}
+	else
+	{
+		// open an existing document
+		if (!pDocument->OnOpenDocument(lpszPathName))
+		{
+			// user has be alerted to what failed in OnOpenDocument
+			TRACE(traceAppMsg, 0, "CDocument::OnOpenDocument returned FALSE.\n");
+			pMDIChild->DestroyWindow();
+			return NULL;
+		}
+		pDocument->SetPathName(lpszPathName);
+	}
+
+	InitialUpdateMDIChild(pMDIChild, pDocument, bMakeVisible);
+	return pDocument;
 }

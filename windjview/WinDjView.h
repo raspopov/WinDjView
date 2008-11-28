@@ -32,6 +32,7 @@
 class CDjVuDoc;
 class CMyDocTemplate;
 class CMainFrame;
+class CFindDlg;
 struct DocSettings;
 
 
@@ -62,7 +63,7 @@ public:
 
 	CMainFrame* CreateMainFrame(bool bAppStartup = false, int nCmdShow = -1);
 	void RemoveMainFrame(CMainFrame* pMainFrame);
-	void ChangeMainWnd(CMainFrame* pMainFrame);
+	void ChangeMainWnd(CMainFrame* pMainFrame, bool bActivate = false);
 	void DisableTopLevelWindows(set<CWnd*>& disabled);
 	void EnableWindows(set<CWnd*>& disabled);
 
@@ -72,6 +73,9 @@ public:
 
 	void InitSearchHistory(CComboBoxEx& cboFind);
 	void UpdateSearchHistory(CComboBoxEx& cboFind);
+
+	CFindDlg* GetFindDlg(bool bCreate = true);
+	void UpdateFindDlg(CWnd* pNewParent = NULL);
 
 	// Dictionary API
 	int GetDictLangsCount() const
@@ -93,6 +97,53 @@ public:
 	void ThreadStarted();
 	void ThreadTerminated();
 
+	struct DocIterator
+	{
+	public:
+		DocIterator() : posDoc(NULL)
+		{
+			posTemplate = AfxGetApp()->GetFirstDocTemplatePosition();
+			++*this;
+		}
+
+		operator bool() const { return pTemplate != NULL && pDoc != NULL; }
+		CDocument* operator->() { return pDoc; }
+		CDocument* operator*() { return pDoc; }
+
+		DocIterator& operator++()  // preincrement
+		{
+			while (posTemplate && !posDoc)
+			{
+				pTemplate = AfxGetApp()->GetNextDocTemplate(posTemplate);
+				posDoc = pTemplate->GetFirstDocPosition();
+			}
+
+			if (posDoc)
+			{
+				pDoc = pTemplate->GetNextDoc(posDoc);
+			}
+			else
+			{
+				pTemplate = NULL;
+				pDoc = NULL;
+			}
+
+			return *this;
+		}
+
+		DocIterator operator++(int)  // postincrement
+		{
+			DocIterator tmp = *this;
+			++*this;
+			return tmp;
+		}
+
+	protected:
+		POSITION posTemplate, posDoc;
+		CDocTemplate* pTemplate;
+		CDocument* pDoc;
+	};
+
 // Overrides
 public:
 	virtual BOOL InitInstance();
@@ -104,7 +155,6 @@ public:
 
 	bool m_bInitialized;
 	bool m_bTopLevelDocs;
-	list<CMainFrame*> m_frames;
 
 // Implementation
 protected:
@@ -114,6 +164,8 @@ protected:
 	Annotation m_annoTemplate;
 
 	CMyDocTemplate* m_pDjVuTemplate;
+	CFindDlg* m_pFindDlg;
+	list<CMainFrame*> m_frames;
 
 	void LoadSettings();
 	void EnableShellOpen();

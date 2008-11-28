@@ -25,8 +25,9 @@
 #include "ThumbnailsView.h"
 #include "Drawing.h"
 #include "ThumbnailsThread.h"
-#include "ChildFrm.h"
 #include "DjVuView.h"
+#include "NavPane.h"
+#include "TabbedMDIWnd.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -61,6 +62,7 @@ BEGIN_MESSAGE_MAP(CThumbnailsView, CMyScrollView)
 	ON_MESSAGE(WM_THUMBNAIL_RENDERED, OnThumbnailRendered)
 	ON_WM_SHOWWINDOW()
 	ON_MESSAGE(WM_SHOW_SETTINGS, OnShowSettings)
+	ON_MESSAGE(WM_MDI_ACTIVATE, OnMDIActivate)
 END_MESSAGE_MAP()
 
 // CThumbnailsView construction/destruction
@@ -663,11 +665,12 @@ int CThumbnailsView::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT mess
 	if (nResult == MA_NOACTIVATE || nResult == MA_NOACTIVATEANDEAT)
 		return nResult;
 
-	if (message != WM_LBUTTONDOWN)
-		return MA_NOACTIVATE;
+	if (message == WM_LBUTTONDOWN)
+	{
+		// set focus to this view, but don't notify the parent frame
+		OnActivateView(TRUE, this, this);
+	}
 
-	// set focus to this view, but don't notify the parent frame
-	OnActivateView(TRUE, this, this);
 	return nResult;
 }
 
@@ -832,8 +835,8 @@ void CThumbnailsView::UpdatePage(int nPage, CThumbnailsThread* pThread)
 	Page& page = m_pages[nPage];
 
 	if (!page.bRendered ||
-		!(page.szBitmap.cx <= m_szThumbnail.cx && page.szBitmap.cy == m_szThumbnail.cy) ||
-		!(page.szBitmap.cx == m_szThumbnail.cx && page.szBitmap.cy <= m_szThumbnail.cy))
+			!(page.szBitmap.cx <= m_szThumbnail.cx && page.szBitmap.cy == m_szThumbnail.cy ||
+			  page.szBitmap.cx == m_szThumbnail.cx && page.szBitmap.cy <= m_szThumbnail.cy))
 	{
 		pThread->AddJob(nPage, m_nRotate, m_displaySetting);
 		InvalidatePage(nPage);
@@ -919,6 +922,9 @@ void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 	{
 		const CDjVuView* pView = static_cast<const CDjVuView*>(source);
 		m_nRotate = pView->GetRotate();
+
+		SetCurrentPage(pView->GetCurrentPage());
+		EnsureVisible(pView->GetCurrentPage());
 
 		m_bInitialized = true;
 		UpdateView(RECALC);
@@ -1039,4 +1045,12 @@ void CThumbnailsView::OnPan(CSize szScroll)
 
 	if (szScroll.cy != 0)
 		UpdateVisiblePages();
+}
+
+LRESULT CThumbnailsView::OnMDIActivate(WPARAM wParam, LPARAM lParam)
+{
+	bool bActive = !!wParam;
+	m_bVisible = bActive && IsWindowVisible();
+	UpdateVisiblePages();
+	return 0;
 }

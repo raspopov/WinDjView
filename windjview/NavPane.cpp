@@ -22,7 +22,6 @@
 #include "WinDjView.h"
 #include "NavPane.h"
 #include "Drawing.h"
-#include "ChildFrm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -64,6 +63,7 @@ BEGIN_MESSAGE_MAP(CNavPaneWnd, CWnd)
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
 	ON_WM_CREATE()
+	ON_MESSAGE_VOID(WM_INITIALUPDATE, OnInitialUpdate)
 	ON_WM_DESTROY()
 	ON_WM_SETFOCUS()
 	ON_WM_SYSCOLORCHANGE()
@@ -382,14 +382,8 @@ void CNavPaneWnd::OnLButtonDown(UINT nFlags, CPoint point)
 	int nTabClicked = GetTabFromPoint(point);
 	if (nTabClicked != -1)
 	{
-		if (nTabClicked != m_nActiveTab || GetParentFrame()->IsNavPaneCollapsed())
-		{
-			ActivateTab(nTabClicked);
-		}
-		else
-		{
-			GetParentFrame()->SendMessage(WM_COLLAPSE_PANE);
-		}
+		if (GetParent()->SendMessage(WM_CLICKED_NAV_TAB, 0, (LPARAM) m_tabs[nTabClicked].pWnd))
+			ActivateTab(nTabClicked, true);
 	}
 
 	UpdateButtons(true);
@@ -407,7 +401,7 @@ void CNavPaneWnd::OnLButtonUp(UINT nFlags, CPoint point)
 			CRect rcButton(CPoint(rcClient.right - 21, rcClient.top + 2), CSize(19, 18));
 			if (rcButton.PtInRect(point))
 			{
-				GetParentFrame()->SendMessage(WM_COLLAPSE_PANE);
+				GetParent()->SendMessage(WM_COLLAPSE_NAV);
 				m_bCloseActive = false;
 				m_bClosePressed = false;
 			}
@@ -447,15 +441,13 @@ void CNavPaneWnd::UpdateButtons(bool bLButtonDown)
 	GetClientRect(rcClient);
 	if (rcClient.Width() <= 70)
 	{
-		m_toolTip.Activate(false);
+		if (::IsWindow(m_toolTip.m_hWnd))
+			m_toolTip.Activate(false);
 		return;
 	}
 
 	m_rcClose = CRect(CPoint(rcClient.right - 21, rcClient.top + 2), CSize(19, 18));
 	m_rcSettings = CRect(CPoint(rcClient.right - 40, rcClient.top + 2), CSize(19, 18));
-
-	m_toolTip.Activate(true);
-	m_toolTip.SetToolRect(this, 1, m_rcClose);
 
 	bool bInCloseRect = !!m_rcClose.PtInRect(ptCursor);
 
@@ -468,8 +460,6 @@ void CNavPaneWnd::UpdateButtons(bool bLButtonDown)
 
 	if (m_nActiveTab != -1 && m_tabs[m_nActiveTab].bHasSettings)
 	{
-		m_toolTip.SetToolRect(this, 2, m_rcSettings);
-
 		bool bSettingsActive = !m_bDragging && !bLButtonDown && !!m_rcSettings.PtInRect(ptCursor);
 		if (bSettingsActive != m_bSettingsActive)
 		{
@@ -477,9 +467,16 @@ void CNavPaneWnd::UpdateButtons(bool bLButtonDown)
 			InvalidateRect(m_rcSettings);
 		}
 	}
-	else
+
+	if (::IsWindow(m_toolTip.m_hWnd))
 	{
-		m_toolTip.SetToolRect(this, 2, CRect(0, 0, 0, 0));
+		m_toolTip.Activate(true);
+		m_toolTip.SetToolRect(this, 1, m_rcClose);
+
+		if (m_nActiveTab != -1 && m_tabs[m_nActiveTab].bHasSettings)
+			m_toolTip.SetToolRect(this, 2, m_rcSettings);
+		else
+			m_toolTip.SetToolRect(this, 2, CRect(0, 0, 0, 0));
 	}
 }
 
@@ -498,10 +495,6 @@ int CNavPaneWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	m_toolTip.Create(this);
-	m_toolTip.AddTool(this, LoadString(IDS_TOOLTIP_HIDE), CRect(0, 0, 0, 0), 1);
-	m_toolTip.AddTool(this, LoadString(IDS_TOOLTIP_SETTINGS), CRect(0, 0, 0, 0), 2);
-
 	m_imgClose.Create(IDB_CLOSE, 10, 0, RGB(192, 192, 192));
 
 	m_imgSettings.Create(10, 10, ILC_COLOR24 | ILC_MASK, 0, 1);
@@ -512,6 +505,20 @@ int CNavPaneWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	theApp.AddObserver(this);
 
 	return 0;
+}
+
+void CNavPaneWnd::OnInitialUpdate()
+{
+	// CMDIChild, which hosts CNavPaneWnd, may be initially created
+	// with one parent and then switched to another parent. This creates
+	// a problem for tooltips, so instead of creating the tooltip in
+	// OnCreate(), it must be done later here.
+
+	m_toolTip.Create(this);
+	m_toolTip.AddTool(this, LoadString(IDS_TOOLTIP_HIDE), CRect(0, 0, 0, 0), 1);
+	m_toolTip.AddTool(this, LoadString(IDS_TOOLTIP_SETTINGS), CRect(0, 0, 0, 0), 2);
+
+	UpdateButtons(false);
 }
 
 void CNavPaneWnd::OnDestroy()
@@ -598,13 +605,13 @@ void CNavPaneWnd::ActivateTab(int nTab, bool bExpand)
 	for (size_t i = 0; i < m_tabs.size(); ++i)
 		m_tabs[i].pWnd->ShowWindow(i == nTab ? SW_SHOW : SW_HIDE);
 
-	m_tabs[nTab].pWnd->SetFocus();
-
 	UpdateButtons(false);
 	Invalidate();
 
 	if (bExpand)
-		GetParentFrame()->SendMessage(WM_EXPAND_PANE);
+		GetParent()->SendMessage(WM_EXPAND_NAV);
+
+	m_tabs[nTab].pWnd->SetFocus();
 
 	UpdateObservers(SIDEBAR_TAB_CHANGED);
 }
@@ -645,8 +652,10 @@ void CNavPaneWnd::OnUpdate(const Observable* source, const Message* message)
 {
 	if (message->code == APP_LANGUAGE_CHANGED)
 	{
-		m_toolTip.DelTool(this);
-		m_toolTip.AddTool(this, IDS_TOOLTIP_HIDE);
+		m_toolTip.DelTool(this, 1);
+		m_toolTip.DelTool(this, 2);
+		m_toolTip.AddTool(this, LoadString(IDS_TOOLTIP_HIDE), CRect(0, 0, 0, 0), 1);
+		m_toolTip.AddTool(this, LoadString(IDS_TOOLTIP_SETTINGS), CRect(0, 0, 0, 0), 2);
 	}
 }
 

@@ -20,21 +20,25 @@
 
 #pragma once
 
+#include "Global.h"
 #include "NavPane.h"
 
+class CThumbnailsView;
+class CBookmarksWnd;
+class CSearchResultsView;
+class CPageIndexWnd;
+class CDjVuDoc;
 
-// CMySplitterWnd
 
-class CMySplitterWnd : public CWnd
+// CMDIChild
+
+class CMDIChild : public CWnd, public Observer
 {
-	DECLARE_DYNAMIC(CMySplitterWnd)
+	DECLARE_DYNCREATE(CMDIChild)
 
 public:
-	CMySplitterWnd();
-	virtual ~CMySplitterWnd();
-
-	BOOL Create(CWnd* pParent, UINT nID = AFX_IDW_PANE_FIRST);
-	BOOL CreateContent(CRuntimeClass* pContentClass, CCreateContext* pContext = NULL);
+	CMDIChild();
+	virtual ~CMDIChild();
 
 // Operations
 public:
@@ -46,10 +50,26 @@ public:
 	void CollapseNavPane(bool bCollapse = true);
 	bool IsNavPaneCollapsed() const { return m_bNavCollapsed; }
 
+	CThumbnailsView* GetThumbnailsView() { return m_pThumbnailsView; }
+	CBookmarksWnd* GetContentsTree() { return m_pContentsTree; }
+	CPageIndexWnd* GetPageIndex() { return m_pPageIndexWnd; }
+	bool HasBookmarksTree() const { return m_pBookmarksTree != NULL; }
+	CBookmarksWnd* GetBookmarksTree(bool bActivate = true);
+	CSearchResultsView* GetSearchResults(bool bActivate = true);
+
+	virtual void OnUpdate(const Observable* source, const Message* message);
+
 // Implementation
 protected:
 	CNavPaneWnd m_navPane;
 	CWnd* m_pContentWnd;
+	CDjVuDoc* m_pDocument;
+
+	CThumbnailsView* m_pThumbnailsView;
+	CBookmarksWnd* m_pContentsTree;
+	CBookmarksWnd* m_pBookmarksTree;
+	CSearchResultsView* m_pResultsView;
+	CPageIndexWnd* m_pPageIndexWnd;
 
 	CRect m_rcNavPane;
 	CRect m_rcContent;
@@ -65,8 +85,11 @@ protected:
 	void RecalcLayout();
 	void StopDragging();
 
+	virtual void PostNcDestroy();
+
 	// Generated message map functions
-	afx_msg BOOL OnNcCreate(LPCREATESTRUCT lpcs);
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnInitialUpdate();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnPaint();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
@@ -74,5 +97,8 @@ protected:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+	afx_msg void OnExpandNav();
+	afx_msg void OnCollapseNav();
+	afx_msg LRESULT OnClickedNavTab(WPARAM wparam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };

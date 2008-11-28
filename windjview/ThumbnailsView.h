@@ -137,5 +137,6 @@ protected:
 	afx_msg LRESULT OnThumbnailRendered(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg LRESULT OnShowSettings(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnMDIActivate(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };

@@ -22,14 +22,15 @@
 #include "WinDjView.h"
 #include "MainFrm.h"
 
+#include "MDIChild.h"
 #include "DjVuView.h"
 #include "DjVuDoc.h"
-#include "ChildFrm.h"
 #include "AppSettings.h"
 #include "ThumbnailsView.h"
 #include "FullscreenWnd.h"
 #include "MagnifyWnd.h"
 #include "MyDocTemplate.h"
+#include "FindDlg.h"
 
 #include <dde.h>
 
@@ -40,9 +41,9 @@
 
 // CMainFrame
 
-IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWnd)
+IMPLEMENT_DYNAMIC(CMainFrame, CFrameWnd)
 
-BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
+BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_CREATE()
 	ON_WM_ACTIVATE()
 	ON_COMMAND(ID_VIEW_TOOLBAR, OnViewToolbar)
@@ -97,6 +98,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_COMMAND(ID_WINDOW_TILE_VERT, OnWindowTileVert)
 	ON_COMMAND(ID_WINDOW_NEXT, OnWindowNext)
 	ON_COMMAND(ID_WINDOW_PREV, OnWindowPrev)
+	ON_WM_ERASEBKGND()
+	ON_WM_NCACTIVATE()
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -114,10 +117,12 @@ const int s_nIndicatorPage = 3;
 // CMainFrame construction/destruction
 
 CMainFrame::CMainFrame()
-	: m_pFindDlg(NULL), m_historyPos(m_history.end()), m_pFullscreenWnd(NULL),
+	: m_bDontActivate(false), m_historyPos(m_history.end()), m_pFullscreenWnd(NULL),
 	  m_pMagnifyWnd(NULL), m_nCurLang(CB_ERR), m_nCurDict(CB_ERR)
 {
-	m_childMenu.LoadMenu(IDR_DjVuTYPE);
+	m_appMenu.LoadMenu(IDR_MAINFRAME);
+	m_docMenu.LoadMenu(IDR_DjVuTYPE);
+	m_bMaximized = theApp.GetAppSettings()->bWindowMaximized;
 }
 
 CMainFrame::~CMainFrame()
@@ -126,7 +131,7 @@ CMainFrame::~CMainFrame()
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	if (CMDIFrameWnd::OnCreate(lpCreateStruct) == -1)
+	if (CFrameWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
 	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT | TBSTYLE_TRANSPARENT,
@@ -142,12 +147,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		!m_wndDictBar.GetToolBar().LoadToolBar(IDR_DICTIONARIES_BAR))
 	{
 		TRACE(_T("Failed to create dictionaries bar\n"));
-		return -1;      // fail to create
-	}
-
-	if (!m_wndTabBar.Create(this, WS_CHILD | CBRS_TOP, IDR_TAB_BAR))
-	{
-		TRACE(_T("Failed to create tab bar\n"));
 		return -1;      // fail to create
 	}
 
@@ -170,17 +169,35 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	InitDictBar();
 
 	theApp.AddObserver(this);
-	m_wndTabBar.AddObserver(this);
+	m_tabbedMDI.AddObserver(this);
 
 	return 0;
 }
 
+BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
+{
+	if (!CFrameWnd::PreCreateWindow(cs))
+		return false;
+
+	cs.dwExStyle &= ~WS_EX_CLIENTEDGE;
+
+	return true;
+}
+
+BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
+{
+	m_tabbedMDI.Create(NULL, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+		CRect(0, 0, 0, 0), this, AFX_IDW_PANE_FIRST);
+	m_tabbedMDI.BringWindowToTop();
+	return true;
+}
+
 void CMainFrame::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 {
-	if (nState == WA_ACTIVE)
+	if (nState == WA_ACTIVE || nState == WA_CLICKACTIVE)
 		theApp.ChangeMainWnd(this);
 
-	CMDIFrameWnd::OnActivate(nState, pWndOther, bMinimized);
+	CFrameWnd::OnActivate(nState, pWndOther, bMinimized);
 }
 
 void CMainFrame::InitToolBar()
@@ -304,30 +321,15 @@ void CMainFrame::InitDictBar()
 	UpdateLangAndDict(NULL, true);
 }
 
-BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
-{
-	if (!CMDIFrameWnd::PreCreateWindow(cs))
-		return false;
-
-	cs.style |= FWS_PREFIXTITLE | FWS_ADDTOTITLE;
-
-	return true;
-}
-
 void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
-	CMDIChildWnd* pActiveChild = MDIGetActive();
-	if (pActiveChild != NULL)
-	{
-		CDocument* pDocument = pActiveChild->GetActiveDocument();
-		if (pDocument != NULL)
-		{
-			UpdateFrameTitleForDocument(pDocument->GetTitle());
-			return;
-		}
-	}
+	CString strTitle = m_strTitle;
 
-	UpdateFrameTitleForDocument(NULL);
+	CDocument* pDoc = GetActiveDocument();
+	if (pDoc != NULL)
+		strTitle = pDoc->GetTitle() + _T(" - ") + strTitle;
+
+	AfxSetWindowText(m_hWnd, strTitle);
 }
 
 
@@ -336,12 +338,12 @@ void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 #ifdef _DEBUG
 void CMainFrame::AssertValid() const
 {
-	CMDIFrameWnd::AssertValid();
+	CFrameWnd::AssertValid();
 }
 
 void CMainFrame::Dump(CDumpContext& dc) const
 {
-	CMDIFrameWnd::Dump(dc);
+	CFrameWnd::Dump(dc);
 }
 
 #endif //_DEBUG
@@ -349,16 +351,15 @@ void CMainFrame::Dump(CDumpContext& dc) const
 
 // CMainFrame message handlers
 
-
 void CMainFrame::OnViewToolbar()
 {
-	CMDIFrameWnd::OnBarCheck(ID_VIEW_TOOLBAR);
+	CFrameWnd::OnBarCheck(ID_VIEW_TOOLBAR);
 	theApp.GetAppSettings()->bToolbar = !!m_wndToolBar.IsWindowVisible();
 }
 
 void CMainFrame::OnViewStatusBar()
 {
-	CMDIFrameWnd::OnBarCheck(ID_VIEW_STATUS_BAR);
+	CFrameWnd::OnBarCheck(ID_VIEW_STATUS_BAR);
 	theApp.GetAppSettings()->bStatusBar = !!m_wndStatusBar.IsWindowVisible();
 }
 
@@ -367,11 +368,9 @@ void CMainFrame::OnViewSidebar()
 	bool bHide = !theApp.GetAppSettings()->bNavPaneHidden;
 	theApp.GetAppSettings()->bNavPaneHidden = bHide;
 
-	CChildFrame* pFrame = (CChildFrame*) MDIGetActive();
-	if (pFrame == NULL)
-		return;
-
-	pFrame->HideNavPane(bHide);
+	CMDIChild* pMDIChild = (CMDIChild*) m_tabbedMDI.GetActiveTab();
+	if (pMDIChild != NULL)
+		pMDIChild->HideNavPane(bHide);
 }
 
 void CMainFrame::OnViewDictBar()
@@ -382,10 +381,10 @@ void CMainFrame::OnViewDictBar()
 
 void CMainFrame::OnUpdateViewSidebar(CCmdUI* pCmdUI)
 {
-	CChildFrame* pFrame = (CChildFrame*) MDIGetActive();
+	CMDIChild* pMDIChild = (CMDIChild*) m_tabbedMDI.GetActiveTab();
 
-	pCmdUI->Enable(pFrame != NULL);
-	pCmdUI->SetCheck(pFrame != NULL && !pFrame->IsNavPaneHidden());
+	pCmdUI->Enable(pMDIChild != NULL);
+	pCmdUI->SetCheck(pMDIChild != NULL && !pMDIChild->IsNavPaneHidden());
 }
 
 void CMainFrame::OnUpdateViewDictBar(CCmdUI* pCmdUI)
@@ -421,7 +420,6 @@ void CMainFrame::UpdateToolbars()
 	ShowControlBar(&m_wndToolBar, pSettings->bToolbar, false);
 	ShowControlBar(&m_wndDictBar, pSettings->bDictBar && theApp.GetDictLangsCount() > 0, false);
 	ShowControlBar(&m_wndStatusBar, pSettings->bStatusBar, false);
-	ShowControlBar(&m_wndTabBar, !pSettings->bTopLevelDocs && m_wndTabBar.GetTabCount() > 0, false);
 }
 
 void CMainFrame::UpdateSettings()
@@ -430,13 +428,10 @@ void CMainFrame::UpdateSettings()
 	GetWindowRect(rect);
 
 	CAppSettings* pSettings = theApp.GetAppSettings();
-	if (IsZoomed())
+	m_bMaximized = !!IsZoomed();
+	pSettings->bWindowMaximized = m_bMaximized;
+	if (!m_bMaximized)
 	{
-		pSettings->bWindowMaximized = true;
-	}
-	else
-	{
-		pSettings->bWindowMaximized = false;
 		pSettings->nWindowPosX = rect.left;
 		pSettings->nWindowPosY = rect.top;
 		pSettings->nWindowWidth = rect.right - rect.left;
@@ -446,7 +441,7 @@ void CMainFrame::UpdateSettings()
 
 void CMainFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 {
-	CMDIFrameWnd::OnWindowPosChanged(lpwndpos);
+	CFrameWnd::OnWindowPosChanged(lpwndpos);
 
 	if (IsWindowVisible() && !IsIconic() && theApp.m_bInitialized)
 		UpdateSettings();
@@ -454,11 +449,9 @@ void CMainFrame::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 
 void CMainFrame::OnChangePage()
 {
-	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
-	if (pFrame == NULL)
+	CDjVuView* pView = (CDjVuView*) GetActiveView();
+	if (pView == NULL)
 		return;
-
-	CDjVuView* pView = pFrame->GetDjVuView();
 
 	int nPage = m_cboPage.GetCurSel();
 	if (nPage >= 0 && nPage < pView->GetPageCount())
@@ -469,11 +462,9 @@ void CMainFrame::OnChangePage()
 
 void CMainFrame::OnChangePageEdit()
 {
-	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
-	if (pFrame == NULL)
+	CDjVuView* pView = (CDjVuView*) GetActiveView();
+	if (pView == NULL)
 		return;
-
-	CDjVuView* pView = pFrame->GetDjVuView();
 
 	CString strPage;
 	m_cboPage.GetWindowText(strPage);
@@ -490,14 +481,13 @@ void CMainFrame::OnChangePageEdit()
 
 void CMainFrame::OnCancelChange()
 {
-	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
-	if (pFrame == NULL)
+	CDjVuView* pView = (CDjVuView*) GetActiveView();
+	if (pView == NULL)
 	{
-		::SetFocus(m_hWndMDIClient);
+		m_tabbedMDI.SetFocus();
 		return;
 	}
 
-	CDjVuView* pView = pFrame->GetDjVuView();
 	pView->SetFocus();
 }
 
@@ -556,11 +546,9 @@ void CMainFrame::UpdatePageCombo(const CDjVuView* pView)
 
 void CMainFrame::OnChangeZoom()
 {
-	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
-	if (pFrame == NULL)
+	CDjVuView* pView = (CDjVuView*) GetActiveView();
+	if (pView == NULL)
 		return;
-
-	CDjVuView* pView = pFrame->GetDjVuView();
 
 	int nSel = m_cboZoom.GetCurSel();
 	CString strZoom;
@@ -588,11 +576,9 @@ void CMainFrame::OnChangeZoom()
 
 void CMainFrame::OnChangeZoomEdit()
 {
-	CChildFrame* pFrame = (CChildFrame*)MDIGetActive();
-	if (pFrame == NULL)
+	CDjVuView* pView = (CDjVuView*) GetActiveView();
+	if (pView == NULL)
 		return;
-
-	CDjVuView* pView = pFrame->GetDjVuView();
 
 	CString strZoom;
 	m_cboZoom.GetWindowText(strZoom);
@@ -718,10 +704,7 @@ void CMainFrame::OnUpdateDictionaryLookup(CCmdUI* pCmdUI)
 void CMainFrame::UpdateLangAndDict(const CDjVuView* pView, bool bReset)
 {
 	if (pView == NULL)
-	{
-		CMDIChildWnd* pActive = MDIGetActive();
-		pView = (pActive != NULL ? (CDjVuView*) pActive->GetActiveView() : NULL);
-	}
+		pView = (CDjVuView*) GetActiveView();
 
 	if (bReset)
 	{
@@ -859,28 +842,23 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 
 void CMainFrame::OnEditFind()
 {
-	if (m_pFindDlg == NULL)
-	{
-		m_pFindDlg = new CFindDlg();
-		m_pFindDlg->Create(IDD_FIND, this);
-		m_pFindDlg->CenterWindow();
-	}
-
-	m_pFindDlg->ShowWindow(SW_SHOW);
-	m_pFindDlg->SetFocus();
-	m_pFindDlg->GotoDlgCtrl(m_pFindDlg->GetDlgItem(IDC_FIND));
+	CFindDlg* pFindDlg = theApp.GetFindDlg();
+	pFindDlg->SetOwner(this);
+	pFindDlg->ShowWindow(SW_SHOW);
+	pFindDlg->SetFocus();
+	pFindDlg->GotoDlgCtrl(pFindDlg->GetDlgItem(IDC_FIND));
 }
 
 void CMainFrame::OnUpdateEditFind(CCmdUI* pCmdUI)
 {
-	CMDIChildWnd* pFrame = MDIGetActive();
-	if (IsFullscreenMode() || pFrame == NULL)
+	CDjVuView* pView = (CDjVuView*) GetActiveView();
+	if (IsFullscreenMode() || pView == NULL)
 	{
 		pCmdUI->Enable(false);
 		return;
 	}
 
-	CDjVuDoc* pDoc = (CDjVuDoc*)pFrame->GetActiveDocument();
+	CDjVuDoc* pDoc = pView->GetDocument();
 	pCmdUI->Enable(pDoc->GetSource()->HasText());
 }
 
@@ -898,45 +876,34 @@ void CMainFrame::OnUpdateWindowList(CCmdUI* pCmdUI)
 		return;
 
 	// Remove all window menu items
-	CDocument* pActiveDoc = NULL;
-	if (MDIGetActive() != NULL)
-		pActiveDoc = MDIGetActive()->GetActiveDocument();
+	CDocument* pActiveDoc = GetActiveDocument();
 
 	const int nMaxWindows = 16;
 	for (int i = 0; i < nMaxWindows; ++i)
 		pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + i, MF_BYCOMMAND);
 
 	int nDoc = 0;
-	POSITION pos = theApp.GetFirstDocTemplatePosition();
-	while (pos != NULL)
+	for (CDjViewApp::DocIterator it; it; ++it, ++nDoc)
 	{
-		CDocTemplate* pTemplate = theApp.GetNextDocTemplate(pos);
-		ASSERT_KINDOF(CDocTemplate, pTemplate);
+		CDocument* pDoc = *it;
 
-		POSITION posDoc = pTemplate->GetFirstDocPosition();
-		while (posDoc != NULL)
-		{
-			CDocument* pDoc = pTemplate->GetNextDoc(posDoc);
+		CString strText;
+		if (nDoc >= 10)
+			strText.Format(_T("%d "), nDoc + 1);
+		else if (nDoc == 9)
+			strText = _T("1&0 ");
+		else
+			strText.Format(_T("&%d "), nDoc + 1);
 
-			CString strText;
-			if (nDoc >= 10)
-				strText.Format(_T("%d "), nDoc + 1);
-			else if (nDoc == 9)
-				strText = _T("1&0 ");
-			else
-				strText.Format(_T("&%d "), nDoc + 1);
+		CString strDocTitle = pDoc->GetTitle();
+		strDocTitle.Replace(_T("&"), _T("&&"));
+		strText += strDocTitle;
 
-			CString strDocTitle = pDoc->GetTitle();
-			strDocTitle.Replace(_T("&"), _T("&&"));
-			strText += strDocTitle;
+		int nFlags = MF_STRING;
+		if (pDoc == pActiveDoc)
+			nFlags |= MF_CHECKED;
 
-			int nFlags = MF_STRING;
-			if (pDoc == pActiveDoc)
-				nFlags |= MF_CHECKED;
-
-			pCmdUI->m_pMenu->AppendMenu(nFlags, pCmdUI->m_nID + nDoc, strText);
-			++nDoc;
-		}
+		pCmdUI->m_pMenu->AppendMenu(nFlags, pCmdUI->m_nID + nDoc, strText);
 	}
 
 	// update end menu count
@@ -950,28 +917,52 @@ void CMainFrame::OnActivateWindow(UINT nID)
 	int nActivateDoc = nID - ID_WINDOW_ACTIVATE_FIRST;
 
 	int nDoc = 0;
-	POSITION pos = theApp.GetFirstDocTemplatePosition();
-	while (pos != NULL)
+	for (CDjViewApp::DocIterator it; it; ++it, ++nDoc)
 	{
-		CDocTemplate* pTemplate = theApp.GetNextDocTemplate(pos);
-		ASSERT_KINDOF(CDocTemplate, pTemplate);
-
-		POSITION posDoc = pTemplate->GetFirstDocPosition();
-		while (posDoc != NULL)
+		CDocument* pDoc = *it;
+		if (nDoc == nActivateDoc)
 		{
-			CDocument* pDoc = pTemplate->GetNextDoc(posDoc);
-			if (nDoc == nActivateDoc)
-			{
-				CDjVuView* pView = ((CDjVuDoc*)pDoc)->GetDjVuView();
-				CMainFrame* pMainFrame = pView->GetMainFrame();
-				pMainFrame->ActivateFrame();
-				CFrameWnd* pFrame = pView->GetParentFrame();
-				pFrame->ActivateFrame();
-				return;
-			}
-
-			++nDoc;
+			ActivateDocument(pDoc);
+			return;
 		}
+	}
+}
+
+void CMainFrame::AddMDIChild(CWnd* pMDIChild, CDocument* pDocument)
+{
+	m_tabbedMDI.AddTab(pMDIChild, pDocument->GetTitle());
+}
+
+void CMainFrame::CloseMDIChild(CWnd* pMDIChild)
+{
+	m_tabbedMDI.CloseTab(pMDIChild);
+}
+
+void CMainFrame::ActivateDocument(CDocument* pDocument)
+{
+	if (pDocument == NULL)
+	{
+		ActivateFrame(m_bMaximized ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
+		return;
+	}
+
+	CDjVuView* pView = ((CDjVuDoc*) pDocument)->GetDjVuView();
+	CMainFrame* pMainFrame = pView->GetMainFrame();
+
+	if (pMainFrame->IsFullscreenMode() &&
+		pMainFrame->GetFullscreenWnd()->GetOwner()->GetDocument() == pDocument)
+	{
+		pMainFrame->ShowWindow(SW_HIDE);
+		pMainFrame->GetFullscreenWnd()->SetForegroundWindow();
+		pMainFrame->GetFullscreenWnd()->SetFocus();
+	}
+	else
+	{
+		if (pMainFrame->IsFullscreenMode())
+			pMainFrame->GetFullscreenWnd()->Hide();
+
+		pMainFrame->m_tabbedMDI.ActivateTab(pView->GetMDIChild());
+		pMainFrame->ActivateFrame(m_bMaximized ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
 	}
 }
 
@@ -984,25 +975,24 @@ void CMainFrame::GoToHistoryPos(const HistoryPos& pos, const HistoryPos* pCurPos
 		return;
 
 	CDjVuView* pView = pDoc->GetDjVuView();
-	if (IsFullscreenMode())
+	CMainFrame* pMainFrame = pView->GetMainFrame();
+	if (pMainFrame->IsFullscreenMode())
 	{
-		if (pView == m_pFullscreenWnd->GetOwner())
+		if (pView == pMainFrame->m_pFullscreenWnd->GetOwner())
 		{
-			m_pFullscreenWnd->GetView()->GoToBookmark(pos.bookmark, CDjVuView::DoNotAdd);
+			pMainFrame->m_pFullscreenWnd->GetView()->GoToBookmark(pos.bookmark, CDjVuView::DoNotAdd);
 			return;
 		}
 		else
 		{
-			m_pFullscreenWnd->Hide();
+			pMainFrame->m_pFullscreenWnd->Hide();
 		}
 	}
 
-	pView->GetParentFrame()->ActivateFrame();
+	ActivateDocument(pDoc);
 
 	if (pCurPos != NULL && pCurPos->bookmark.bZoom)
-	{
 		pView->ZoomTo(pCurPos->bookmark.nPrevZoomType, pCurPos->bookmark.fPrevZoom);
-	}
 
 	pView->GoToBookmark(pos.bookmark, CDjVuView::DoNotAdd);
 }
@@ -1116,7 +1106,7 @@ void CMainFrame::OnUpdateStatusAdjust(CCmdUI* pCmdUI)
 {
 	CDisplaySettings* pDisplaySettings = theApp.GetDisplaySettings();
 
-	if (!pDisplaySettings->IsAdjusted() || MDIGetActive() == NULL)
+	if (!pDisplaySettings->IsAdjusted() || GetActiveView() == NULL)
 	{
 		m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_ADJUST, SBPS_DISABLED | SBPS_NOBORDERS, 0);
 		pCmdUI->Enable(false);
@@ -1168,12 +1158,9 @@ void CMainFrame::OnUpdateStatusAdjust(CCmdUI* pCmdUI)
 void CMainFrame::OnUpdateStatusMode(CCmdUI* pCmdUI)
 {
 	CString strNewMessage;
-	CMDIChildWnd* pActive = MDIGetActive();
-	if (pActive != NULL)
+	CDjVuView* pView = (CDjVuView*) GetActiveView();
+	if (pView != NULL)
 	{
-		CDjVuView* pView = (CDjVuView*)pActive->GetActiveView();
-		ASSERT(pView);
-
 		int nMode = pView->GetDisplayMode();
 		switch (nMode)
 		{
@@ -1211,16 +1198,13 @@ void CMainFrame::OnUpdateStatusMode(CCmdUI* pCmdUI)
 
 void CMainFrame::OnUpdateStatusPage(CCmdUI* pCmdUI)
 {
-	CMDIChildWnd* pActive = MDIGetActive();
-	if (pActive == NULL)
+	CDjVuView* pView = (CDjVuView*) GetActiveView();
+	if (pView == NULL)
 	{
 		m_wndStatusBar.SetPaneInfo(s_nIndicatorPage, ID_INDICATOR_PAGE, SBPS_DISABLED | SBPS_NOBORDERS, 0);
 		pCmdUI->Enable(false);
 		return;
 	}
-
-	CDjVuView* pView = (CDjVuView*)pActive->GetActiveView();
-	ASSERT(pView);
 
 	CString strNewMessage;
 	strNewMessage.Format(ID_INDICATOR_PAGE, pView->GetCurrentPage() + 1, pView->GetPageCount());
@@ -1240,16 +1224,14 @@ void CMainFrame::OnUpdateStatusPage(CCmdUI* pCmdUI)
 
 void CMainFrame::OnUpdateStatusSize(CCmdUI* pCmdUI)
 {
-	CMDIChildWnd* pActive = MDIGetActive();
-	if (pActive == NULL)
+	CDjVuView* pView = (CDjVuView*) GetActiveView();
+	if (pView == NULL)
 	{
 		m_wndStatusBar.SetPaneInfo(4, ID_INDICATOR_SIZE, SBPS_DISABLED | SBPS_NOBORDERS, 0);
 		pCmdUI->Enable(false);
 		return;
 	}
 
-	CDjVuView* pView = (CDjVuView*)pActive->GetActiveView();
-	ASSERT(pView);
 	int nCurrentPage = pView->GetCurrentPage();
 
 	int nUnits = theApp.GetAppSettings()->nUnits;
@@ -1290,7 +1272,7 @@ BOOL CMainFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 		return CWnd::OnCommand(wParam, lParam);
 	}
 
-	return CMDIFrameWnd::OnCommand(wParam, lParam);
+	return CFrameWnd::OnCommand(wParam, lParam);
 }
 
 BOOL CMainFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
@@ -1303,7 +1285,7 @@ BOOL CMainFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO*
 		return CWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 	}
 
-	return CMDIFrameWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+	return CFrameWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }
 
 void CMainFrame::OnDestroy()
@@ -1320,93 +1302,89 @@ void CMainFrame::OnDestroy()
 		m_pMagnifyWnd = NULL;
 	}
 
-	if (m_pFindDlg != NULL)
-	{
-		m_pFindDlg->DestroyWindow();
-		delete m_pFindDlg;
-		m_pFindDlg = NULL;
-	}
-
 	theApp.GetAppSettings()->nCurLang = m_nCurLang;
 	theApp.GetAppSettings()->nCurDict = m_nCurDict;
 
 	theApp.RemoveObserver(this);
-	m_wndTabBar.RemoveObserver(this);
+	m_tabbedMDI.RemoveObserver(this);
 
-	CMDIFrameWnd::OnDestroy();
+	CFrameWnd::OnDestroy();
 }
 
 void CMainFrame::LanguageChanged()
 {
-	HMENU hOldMenuDefault = m_hMenuDefault;
-	m_hMenuDefault = ::LoadMenu(AfxFindResourceHandle(MAKEINTRESOURCE(IDR_MAINFRAME), RT_MENU),
-			MAKEINTRESOURCE(IDR_MAINFRAME));
-	HMENU hOldChildMenu = m_childMenu.Detach();
-	m_childMenu.LoadMenu(IDR_DjVuTYPE);
+	HMENU hOldAppMenu = m_appMenu.Detach();
+	m_appMenu.LoadMenu(IDR_MAINFRAME);
+	HMENU hOldDocMenu = m_docMenu.Detach();
+	m_docMenu.LoadMenu(IDR_DjVuTYPE);
 
 	OnUpdateFrameMenu(NULL);
 	DrawMenuBar();
 
-	::DestroyMenu(hOldMenuDefault);
-	::DestroyMenu(hOldChildMenu);
+	::DestroyMenu(hOldAppMenu);
+	::DestroyMenu(hOldDocMenu);
 
 	UpdateLangAndDict(NULL, true);
 
 	m_cboZoom.ResetContent();
 
-	CMDIChildWnd* pActive = MDIGetActive();
-	if (pActive != NULL)
-	{
-		CDjVuView* pView = (CDjVuView*)pActive->GetActiveView();
+	CDjVuView* pView = (CDjVuView*) GetActiveView();
+	if (pView != NULL)
 		UpdateZoomCombo(pView);
-	}
-
-	if (m_pFindDlg != NULL)
-	{
-		m_pFindDlg->UpdateData();
-		theApp.GetAppSettings()->strFind = m_pFindDlg->m_strFind;
-		theApp.GetAppSettings()->bMatchCase = !!m_pFindDlg->m_bMatchCase;
-
-		bool bVisible = !!m_pFindDlg->IsWindowVisible();
-
-		CRect rcFindDlg;
-		m_pFindDlg->GetWindowRect(rcFindDlg);
-		m_pFindDlg->DestroyWindow();
-		delete m_pFindDlg;
-
-		m_pFindDlg = new CFindDlg();
-		m_pFindDlg->Create(IDD_FIND, this);
-
-		CRect rcNewFindDlg;
-		m_pFindDlg->GetWindowRect(rcNewFindDlg);
-
-		m_pFindDlg->MoveWindow(rcFindDlg.left, rcFindDlg.top,
-			rcNewFindDlg.Width(), rcNewFindDlg.Height());
-		m_pFindDlg->ShowWindow(bVisible ? SW_SHOWNOACTIVATE : SW_HIDE);
-		SetFocus();
-	}
 }
 
 void CMainFrame::OnClose()
 {
-	if (theApp.m_bTopLevelDocs)
+	if (theApp.m_bTopLevelDocs && theApp.GetDocumentCount() > 1)
 	{
-		if (theApp.m_frames.size() > 1)
+		// This is not the last top-level window.
+		// Remove it from the application list before closing.
+		theApp.RemoveMainFrame(this);
+	}
+
+	CFindDlg* pFindDlg = theApp.GetFindDlg(false);
+	if (pFindDlg != NULL)
+	{
+		pFindDlg->UpdateData();
+		theApp.GetAppSettings()->strFind = pFindDlg->m_strFind;
+		theApp.GetAppSettings()->bMatchCase = !!pFindDlg->m_bMatchCase;
+	}
+
+	if (theApp.m_pMainWnd == this)
+	{
+		// attempt to save all documents
+		if (!theApp.SaveAllModified())
+			return;
+
+		// hide the application's windows before closing all the documents
+		theApp.HideApplication();
+
+		// close all documents first
+		theApp.CloseAllDocuments(false);
+
+		// don't exit if there are outstanding component objects
+		if (!AfxOleCanExitApp())
 		{
-			// This is not the last top-level window.
-			// Remove it from the application list before closing.
-			theApp.RemoveMainFrame(this);
+			// take user out of control of the app
+			AfxOleSetUserCtrl(false);
+
+			// don't destroy the main window and close down just yet
+			//  (there are outstanding component (OLE) objects)
+			return;
 		}
 	}
 
-	if (m_pFindDlg != NULL)
+	ShowWindow(SW_HIDE);
+
+	// close all documents that belong to this window
+	CDocument* pDocument = GetActiveDocument();
+	while (pDocument != NULL)
 	{
-		m_pFindDlg->UpdateData();
-		theApp.GetAppSettings()->strFind = m_pFindDlg->m_strFind;
-		theApp.GetAppSettings()->bMatchCase = !!m_pFindDlg->m_bMatchCase;
+		pDocument->OnCloseDocument();
+		pDocument = GetActiveDocument();
 	}
 
-	CMDIFrameWnd::OnClose();
+	DestroyWindow();
 }
 
 CFullscreenWnd* CMainFrame::GetFullscreenWnd()
@@ -1447,7 +1425,7 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 		return true;
 	}
 
-	return CMDIFrameWnd::PreTranslateMessage(pMsg);
+	return CFrameWnd::PreTranslateMessage(pMsg);
 }
 
 LRESULT CMainFrame::OnAppCommand(WPARAM wParam, LPARAM lParam)
@@ -1473,30 +1451,20 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 	if (message->code == CURRENT_PAGE_CHANGED)
 	{
 		const CDjVuView* pView = static_cast<const CDjVuView*>(source);
-
-		CMDIChildWnd* pActive = MDIGetActive();
-		if (pActive == NULL)
-			return;
-
-		CDjVuView* pActiveView = (CDjVuView*)pActive->GetActiveView();
-		if (pActiveView == pView)
+		if (pView == GetActiveView())
 			UpdatePageCombo(pView);
 
-		SendMessageToDescendants(WM_IDLEUPDATECMDUI, TRUE, 0, TRUE, TRUE);
+		SendMessageToDescendants(WM_IDLEUPDATECMDUI, true, 0, true, true);
 	}
 	else if (message->code == ZOOM_CHANGED)
 	{
 		const CDjVuView* pView = static_cast<const CDjVuView*>(source);
-
-		CMDIChildWnd* pActive = MDIGetActive();
-		if (pActive == NULL)
-			return;
-
-		CDjVuView* pActiveView = (CDjVuView*)pActive->GetActiveView();
-		if (pActiveView == pView)
+		if (pView == GetActiveView())
 			UpdateZoomCombo(pView);
+
+		SendMessageToDescendants(WM_IDLEUPDATECMDUI, true, 0, true, true);
 	}
-	else if (message->code == VIEW_ACTIVATED)
+	else if (message->code == VIEW_ACTIVATED || message->code == VIEW_INITIALIZED)
 	{
 		const CDjVuView* pView = static_cast<const CDjVuView*>(source);
 		OnViewActivated(pView);
@@ -1510,40 +1478,43 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 		UpdateToolbars();
 		UpdateLangAndDict(NULL, true);
 	}
-	else if (message->code == FRAME_CREATED)
+	else if (message->code == TAB_ACTIVATED)
 	{
-		CFrameWnd* pFrame = const_cast<CFrameWnd*>(static_cast<const FrameMsg*>(message)->pFrame);
-		CDocument* pDocument = pFrame->GetActiveDocument();
-		CString strName = pDocument != NULL ? pDocument->GetTitle() : _T("");
-		m_wndTabBar.AddTab(pFrame, strName);
-		UpdateToolbars();
-	}
-	else if (message->code == FRAME_ACTIVATED)
-	{
-		CFrameWnd* pFrame = const_cast<CFrameWnd*>(static_cast<const FrameMsg*>(message)->pFrame);
-		m_wndTabBar.ActivateTab(pFrame);
+		CMDIChild* pWnd = (CMDIChild*) static_cast<const TabMsg*>(message)->pWnd;
+		if (pWnd != NULL)
+		{
+			CDjVuView* pView = (CDjVuView*) pWnd->GetContent();
+			SetActiveView(pView);
+			OnViewActivated(pView);
+			pView->SetFocus();
 
-		CDjVuView* pView = ((CChildFrame*) pFrame)->GetDjVuView();
-		OnViewActivated(pView);
-	}
-	else if (message->code == FRAME_CLOSED)
-	{
-		CFrameWnd* pFrame = const_cast<CFrameWnd*>(static_cast<const FrameMsg*>(message)->pFrame);
-		m_wndTabBar.RemoveTab(pFrame);
-		UpdateToolbars();
-
-		if (m_wndTabBar.GetTabCount() == 0)
+			OnUpdateFrameMenu(NULL);
+			OnUpdateFrameTitle(true);
+			DrawMenuBar();
+		}
+		else
+		{
+			SetActiveView(NULL);
 			OnViewActivated(NULL);
-	}
-	else if (message->code == TAB_SELECTED)
-	{
-		CFrameWnd* pFrame = const_cast<CFrameWnd*>(static_cast<const FrameMsg*>(message)->pFrame);
-		pFrame->ActivateFrame();
+
+			OnUpdateFrameMenu(NULL);
+			OnUpdateFrameTitle(true);
+			DrawMenuBar();
+		}
 	}
 	else if (message->code == TAB_CLOSED)
 	{
-		CFrameWnd* pFrame = const_cast<CFrameWnd*>(static_cast<const FrameMsg*>(message)->pFrame);
-		pFrame->SendMessage(WM_CLOSE);
+		CMDIChild* pWnd = (CMDIChild*) static_cast<const TabMsg*>(message)->pWnd;
+		CDjVuView* pView = (CDjVuView*) pWnd->GetContent();
+		if (pView == GetActiveView())
+		{
+			SetActiveView(NULL);
+			OnViewActivated(NULL);
+
+			OnUpdateFrameMenu(NULL);
+			OnUpdateFrameTitle(true);
+			DrawMenuBar();
+		}
 	}
 }
 
@@ -1583,37 +1554,29 @@ void CMainFrame::OnWindowCascade()
 	CPoint ptTopLeft(0, 0);
 
 	int nDoc = 0;
-	POSITION pos = theApp.GetFirstDocTemplatePosition();
-	while (pos != NULL)
+	for (CDjViewApp::DocIterator it; it; ++it, ++nDoc)
 	{
-		CDocTemplate* pTemplate = theApp.GetNextDocTemplate(pos);
-		ASSERT_KINDOF(CDocTemplate, pTemplate);
+		CDjVuDoc* pDoc = (CDjVuDoc*) *it;
+		CMainFrame* pFrame = pDoc->GetDjVuView()->GetMainFrame();
 
-		POSITION posDoc = pTemplate->GetFirstDocPosition();
-		while (posDoc != NULL)
-		{
-			CDjVuDoc* pDoc = (CDjVuDoc*) pTemplate->GetNextDoc(posDoc);
-			CMainFrame* pFrame = pDoc->GetDjVuView()->GetMainFrame();
+		// In workspace coordinates
+		if (ptTopLeft.x + szWindow.cx > rcMonitor.Width() ||
+				ptTopLeft.y + szWindow.cy > rcMonitor.Height())
+			ptTopLeft = CPoint(0, 0);
 
-			// In workspace coordinates
-			if (ptTopLeft.x + szWindow.cx > rcMonitor.Width() ||
-					ptTopLeft.y + szWindow.cy > rcMonitor.Height())
-				ptTopLeft = CPoint(0, 0);
+		WINDOWPLACEMENT wndpl;
+		wndpl.length = sizeof(wndpl);
+		pFrame->GetWindowPlacement(&wndpl);
+		wndpl.rcNormalPosition.left = ptTopLeft.x;
+		wndpl.rcNormalPosition.top = ptTopLeft.y;
+		wndpl.rcNormalPosition.right = ptTopLeft.x + szWindow.cx;
+		wndpl.rcNormalPosition.bottom = ptTopLeft.y + szWindow.cy;
+		wndpl.showCmd = (pFrame->IsZoomed() || pFrame->IsIconic() ? SW_RESTORE : SW_SHOWNORMAL);
+		pFrame->SetWindowPlacement(&wndpl);
+		if (pFrame != this)
+			pFrame->SetWindowPos(this, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
 
-			WINDOWPLACEMENT wndpl;
-			wndpl.length = sizeof(wndpl);
-			pFrame->GetWindowPlacement(&wndpl);
-			wndpl.rcNormalPosition.left = ptTopLeft.x;
-			wndpl.rcNormalPosition.top = ptTopLeft.y;
-			wndpl.rcNormalPosition.right = ptTopLeft.x + szWindow.cx;
-			wndpl.rcNormalPosition.bottom = ptTopLeft.y + szWindow.cy;
-			wndpl.showCmd = (pFrame->IsZoomed() || pFrame->IsIconic() ? SW_RESTORE : SW_SHOWNORMAL);
-			pFrame->SetWindowPlacement(&wndpl);
-			if (pFrame != this)
-				pFrame->SetWindowPos(this, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
-
-			ptTopLeft += CPoint(20, 20);
-		}
+		ptTopLeft += CPoint(20, 20);
 	}
 
 	BringWindowToTop();
@@ -1625,38 +1588,30 @@ void CMainFrame::OnWindowTileHorz()
 		return;
 
 	CRect rcMonitor = GetMonitorWorkArea(this);
-	int nFrameCount = theApp.m_frames.size();
+	int nFrameCount = theApp.GetDocumentCount();
 
 	int nDoc = 0;
-	POSITION pos = theApp.GetFirstDocTemplatePosition();
-	while (pos != NULL)
+	for (CDjViewApp::DocIterator it; it; ++it, ++nDoc)
 	{
-		CDocTemplate* pTemplate = theApp.GetNextDocTemplate(pos);
-		ASSERT_KINDOF(CDocTemplate, pTemplate);
+		CDjVuDoc* pDoc = (CDjVuDoc*) *it;
+		CMainFrame* pFrame = pDoc->GetDjVuView()->GetMainFrame();
 
-		POSITION posDoc = pTemplate->GetFirstDocPosition();
-		while (posDoc != NULL)
-		{
-			CDjVuDoc* pDoc = (CDjVuDoc*) pTemplate->GetNextDoc(posDoc);
-			CMainFrame* pFrame = pDoc->GetDjVuView()->GetMainFrame();
+		// In workspace coordinates
+		int nTop = rcMonitor.Height() * nDoc / nFrameCount;
+		int nBottom = rcMonitor.Height() * (nDoc + 1) / nFrameCount;
+		++nDoc;
 
-			// In workspace coordinates
-			int nTop = rcMonitor.Height() * nDoc / nFrameCount;
-			int nBottom = rcMonitor.Height() * (nDoc + 1) / nFrameCount;
-			++nDoc;
-
-			WINDOWPLACEMENT wndpl;
-			wndpl.length = sizeof(wndpl);
-			pFrame->GetWindowPlacement(&wndpl);
-			wndpl.rcNormalPosition.left = 0;
-			wndpl.rcNormalPosition.top = nTop;
-			wndpl.rcNormalPosition.right = rcMonitor.Width();
-			wndpl.rcNormalPosition.bottom = nBottom;
-			wndpl.showCmd = (pFrame->IsZoomed() || pFrame->IsIconic() ? SW_RESTORE : SW_SHOWNORMAL);
-			pFrame->SetWindowPlacement(&wndpl);
-			if (pFrame != this)
-				pFrame->SetWindowPos(this, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
-		}
+		WINDOWPLACEMENT wndpl;
+		wndpl.length = sizeof(wndpl);
+		pFrame->GetWindowPlacement(&wndpl);
+		wndpl.rcNormalPosition.left = 0;
+		wndpl.rcNormalPosition.top = nTop;
+		wndpl.rcNormalPosition.right = rcMonitor.Width();
+		wndpl.rcNormalPosition.bottom = nBottom;
+		wndpl.showCmd = (pFrame->IsZoomed() || pFrame->IsIconic() ? SW_RESTORE : SW_SHOWNORMAL);
+		pFrame->SetWindowPlacement(&wndpl);
+		if (pFrame != this)
+			pFrame->SetWindowPos(this, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
 	}
 
 	BringWindowToTop();
@@ -1668,38 +1623,30 @@ void CMainFrame::OnWindowTileVert()
 		return;
 
 	CRect rcMonitor = GetMonitorWorkArea(this);
-	int nFrameCount = theApp.m_frames.size();
+	int nFrameCount = theApp.GetDocumentCount();
 
 	int nDoc = 0;
-	POSITION pos = theApp.GetFirstDocTemplatePosition();
-	while (pos != NULL)
+	for (CDjViewApp::DocIterator it; it; ++it, ++nDoc)
 	{
-		CDocTemplate* pTemplate = theApp.GetNextDocTemplate(pos);
-		ASSERT_KINDOF(CDocTemplate, pTemplate);
+		CDjVuDoc* pDoc = (CDjVuDoc*) *it;
+		CMainFrame* pFrame = pDoc->GetDjVuView()->GetMainFrame();
 
-		POSITION posDoc = pTemplate->GetFirstDocPosition();
-		while (posDoc != NULL)
-		{
-			CDjVuDoc* pDoc = (CDjVuDoc*) pTemplate->GetNextDoc(posDoc);
-			CMainFrame* pFrame = pDoc->GetDjVuView()->GetMainFrame();
+		// In workspace coordinates
+		int nLeft = rcMonitor.Width() * nDoc / nFrameCount;
+		int nRight = rcMonitor.Width() * (nDoc + 1) / nFrameCount;
+		++nDoc;
 
-			// In workspace coordinates
-			int nLeft = rcMonitor.Width() * nDoc / nFrameCount;
-			int nRight = rcMonitor.Width() * (nDoc + 1) / nFrameCount;
-			++nDoc;
-
-			WINDOWPLACEMENT wndpl;
-			wndpl.length = sizeof(wndpl);
-			pFrame->GetWindowPlacement(&wndpl);
-			wndpl.rcNormalPosition.left = nLeft;
-			wndpl.rcNormalPosition.top = 0;
-			wndpl.rcNormalPosition.right = nRight;
-			wndpl.rcNormalPosition.bottom = rcMonitor.Height();
-			wndpl.showCmd = (pFrame->IsZoomed() || pFrame->IsIconic() ? SW_RESTORE : SW_SHOWNORMAL);
-			pFrame->SetWindowPlacement(&wndpl);
-			if (pFrame != this)
-				pFrame->SetWindowPos(this, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
-		}
+		WINDOWPLACEMENT wndpl;
+		wndpl.length = sizeof(wndpl);
+		pFrame->GetWindowPlacement(&wndpl);
+		wndpl.rcNormalPosition.left = nLeft;
+		wndpl.rcNormalPosition.top = 0;
+		wndpl.rcNormalPosition.right = nRight;
+		wndpl.rcNormalPosition.bottom = rcMonitor.Height();
+		wndpl.showCmd = (pFrame->IsZoomed() || pFrame->IsIconic() ? SW_RESTORE : SW_SHOWNORMAL);
+		pFrame->SetWindowPlacement(&wndpl);
+		if (pFrame != this)
+			pFrame->SetWindowPos(this, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
 	}
 
 	BringWindowToTop();
@@ -1730,10 +1677,85 @@ void CMainFrame::OnUpdateWindowCascade(CCmdUI* pCmdUI)
 
 void CMainFrame::OnWindowNext()
 {
-	m_wndTabBar.ActivateNextTab();
+	if (theApp.m_bTopLevelDocs)
+	{
+		CDocument* pActiveDoc = GetActiveDocument();
+		if (pActiveDoc == NULL)
+			return;
+
+		CDocument* pPrev = NULL;
+		for (CDjViewApp::DocIterator it; it; ++it)
+		{
+			CDocument* pDoc = *it;
+			if (pDoc == pActiveDoc && pPrev != NULL)
+			{
+				ActivateDocument(pPrev);
+				return;
+			}
+
+			pPrev = pDoc;
+		}
+
+		ActivateDocument(pPrev);
+	}
+	else
+	{
+		m_tabbedMDI.ActivateNextTab();
+	}
 }
 
 void CMainFrame::OnWindowPrev()
 {
-	m_wndTabBar.ActivatePrevTab();
+	if (theApp.m_bTopLevelDocs)
+	{
+		CDocument* pActiveDoc = GetActiveDocument();
+		if (pActiveDoc == NULL)
+			return;
+
+		CDocument* pFirst = NULL;
+		for (CDjViewApp::DocIterator it; it; ++it)
+		{
+			CDocument* pDoc = *it;
+			if (pFirst == NULL)
+				pFirst = pDoc;
+
+			if (pDoc == pActiveDoc)
+			{
+				ActivateDocument(++it ? *it : pFirst);
+				return;
+			}
+		}
+	}
+	else
+	{
+		m_tabbedMDI.ActivatePrevTab();
+	}
+}
+
+void CMainFrame::OnUpdateFrameMenu(HMENU hMenuAlt)
+{
+	if (hMenuAlt == NULL)
+	{
+		CDocument* pDoc = GetActiveDocument();
+		if (pDoc != NULL)
+			hMenuAlt = m_docMenu.m_hMenu;
+
+		if (hMenuAlt == NULL)
+			hMenuAlt = m_appMenu.m_hMenu;
+	}
+
+	::SetMenu(m_hWnd, hMenuAlt);
+}
+
+BOOL CMainFrame::OnEraseBkgnd(CDC* pDC)
+{
+	return true;
+}
+
+BOOL CMainFrame::OnNcActivate(BOOL bActive)
+{
+	if (m_bDontActivate)
+		return false;
+
+	return CFrameWnd::OnNcActivate(bActive);
 }

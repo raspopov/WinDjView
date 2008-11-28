@@ -26,17 +26,18 @@
 #include "DjVuView.h"
 
 #include "MainFrm.h"
+#include "MDIChild.h"
 #include "PrintDlg.h"
 #include "Drawing.h"
 #include "ProgressDlg.h"
 #include "ZoomDlg.h"
 #include "GotoPageDlg.h"
 #include "FindDlg.h"
-#include "ChildFrm.h"
 #include "BookmarksWnd.h"
 #include "SearchResultsView.h"
 #include "FullscreenWnd.h"
 #include "ThumbnailsView.h"
+#include "PageIndexWnd.h"
 #include "MagnifyWnd.h"
 #include "AnnotationDlg.h"
 #include "BookmarkDlg.h"
@@ -171,8 +172,8 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND(ID_ANNOTATION_EDIT, OnEditAnnotation)
 	ON_COMMAND(ID_BOOKMARK_ADD, OnAddBookmark)
 	ON_COMMAND(ID_ZOOM_TO_SELECTION, OnZoomToSelection)
-	ON_COMMAND(ID_NEXT_PANE, OnSwitchFocus)
-	ON_COMMAND(ID_PREV_PANE, OnSwitchFocus)
+	ON_COMMAND_RANGE(ID_NEXT_PANE, ID_PREV_PANE, OnSwitchFocus)
+	ON_UPDATE_COMMAND_UI_RANGE(ID_NEXT_PANE, ID_PREV_PANE, OnUpdateSwitchFocus)
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -184,7 +185,7 @@ CDjVuView::CDjVuView()
 	  m_pageRendered(false, true), m_nPendingPage(-1), m_nClickedPage(-1),
 	  m_nMode(Drag), m_bHasSelection(false), m_nDisplayMode(Color), m_bShiftDown(false),
 	  m_bNeedUpdate(false), m_bCursorHidden(false), m_bDraggingPage(false),
-	  m_bDraggingText(false), m_bFirstPageAlone(false), m_bInitialized(false),
+	  m_bDraggingText(false), m_bFirstPageAlone(false),
 	  m_bDraggingMagnify(false), m_pHScrollBar(NULL), m_pVScrollBar(NULL),
 	  m_bControlDown(false), m_nType(Normal), m_bPanning(false), m_bHoverIsCustom(false),
 	  m_bDraggingRect(false), m_nSelectionPage(-1), m_pHoverAnno(NULL),
@@ -605,9 +606,6 @@ void CDjVuView::OnInitialUpdate()
 	CAppSettings* pAppSettings = theApp.GetAppSettings();
 	DocSettings* pDocSettings = m_pSource->GetSettings();
 
-	theApp.AddObserver(this);
-	pDocSettings->AddObserver(this);
-
 	CBitmap bitmap;
 	bitmap.LoadBitmap(IDB_HOURGLASS);
 	m_hourglass.Create(c_nHourglassWidth, c_nHourglassHeight, ILC_COLOR24 | ILC_MASK, 0, 1);
@@ -630,7 +628,16 @@ void CDjVuView::OnInitialUpdate()
 	m_nPageCount = m_pSource->GetPageCount();
 	m_pages.resize(m_nPageCount);
 
-	int nStartupPage = (m_nPage >= 0 && m_nPage < GetPageCount() ? m_nPage : 0);
+	int nStartupPage = m_nPage;
+	CPoint ptStartupOffset(0, 0);
+	if (m_nType == Normal && theApp.GetAppSettings()->bRestoreView)
+	{
+		nStartupPage = pDocSettings->nPage;
+		ptStartupOffset = pDocSettings->ptOffset;
+	}
+
+	if (nStartupPage < 0 || nStartupPage >= GetPageCount())
+		nStartupPage = 0;
 
 	if (m_nType == Normal)
 	{
@@ -691,16 +698,39 @@ void CDjVuView::OnInitialUpdate()
 		pDocSettings->bFirstPageAlone = m_bFirstPageAlone;
 		pDocSettings->nRotate = m_nRotate;
 
-		Bookmark bmView;
-		CreateBookmarkFromView(bmView);
-		pDocSettings->nPage = bmView.nPage;
-		pDocSettings->ptOffset = bmView.ptOffset;
+		if (theApp.GetAppSettings()->bRestoreView && pDocSettings->nPage == nStartupPage)
+		{
+			ScrollToPage(nStartupPage, ptStartupOffset);
+		}
+		else
+		{
+			Bookmark bmView;
+			CreateBookmarkFromView(bmView);
+			pDocSettings->nPage = bmView.nPage;
+			pDocSettings->ptOffset = bmView.ptOffset;
+		}
 	}
 
 	m_nTimerID = SetTimer(1, 100, NULL);
 	ShowCursor();
 
-	m_bInitialized = true;
+	theApp.AddObserver(this);
+	pDocSettings->AddObserver(this);
+	AddObserver(GetMainFrame());
+
+	if (m_nType == Normal)
+	{
+		GetMDIChild()->GetThumbnailsView()->AddObserver(this);
+		AddObserver(GetMDIChild()->GetThumbnailsView());
+		if (GetMDIChild()->GetContentsTree() != NULL)
+			GetMDIChild()->GetContentsTree()->AddObserver(this);
+		if (GetMDIChild()->GetPageIndex() != NULL)
+			GetMDIChild()->GetPageIndex()->AddObserver(this);
+		if (GetMDIChild()->HasBookmarksTree())
+			GetMDIChild()->GetBookmarksTree(false)->AddObserver(this);
+
+		UpdateObservers(VIEW_INITIALIZED);
+	}
 }
 
 void CDjVuView::ReadZoomSettings(GP<DjVuANT> pAnt)
@@ -762,24 +792,19 @@ CMainFrame* CDjVuView::GetMainFrame() const
 	return GetMainWnd();
 }
 
-CBookmarksWnd* CDjVuView::GetBookmarks() const
+CMDIChild* CDjVuView::GetMDIChild() const
 {
-	CFrameWnd* pFrame;
+	const CDjVuView* pView = this;
 	if (m_nType == Fullscreen)
-	{
-		pFrame = ((CFullscreenWnd*) GetTopLevelParent())->GetOwner()->GetParentFrame();
-	}
+		pView = ((CFullscreenWnd*) GetTopLevelParent())->GetOwner();
 	else if (m_nType == Magnify)
-	{
-		pFrame = ((CMagnifyWnd*) GetTopLevelParent())->GetOwner()->GetParentFrame();
-	}
-	else
-	{
-		ASSERT(m_nType == Normal);
-		pFrame = GetParentFrame();
-	}
+		pView = ((CMagnifyWnd*) GetTopLevelParent())->GetOwner();
 
-	return ((CChildFrame*) pFrame)->GetBookmarks();
+	ASSERT(pView != NULL);
+	CWnd* pMDIChild = pView->GetParent();
+	while (pMDIChild != NULL && !pMDIChild->IsKindOf(RUNTIME_CLASS(CMDIChild)))
+		pMDIChild = pMDIChild->GetParent();
+	return (CMDIChild*) pMDIChild;
 }
 
 BOOL CDjVuView::OnEraseBkgnd(CDC* pDC)
@@ -841,7 +866,7 @@ void CDjVuView::ScrollToPage(int nPage, const CPoint& ptOffset, bool bMargin)
 {
 	RenderPage(nPage, -1, false);
 
-	GRect rect(ptOffset.x, ptOffset.y);
+	GRect rect(ptOffset.x, ptOffset.y, 1, 1);
 	CPoint ptPos = TranslatePageRect(nPage, rect, true, false).TopLeft() - m_pages[nPage].ptOffset;
 
 	CPoint ptPageOffset = m_pages[nPage].ptOffset;
@@ -1061,7 +1086,7 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 
 		if (nAnchorPage != -1)
 		{
-			GRect rect(ptDjVuOffset.x, ptDjVuOffset.y);
+			GRect rect(ptDjVuOffset.x, ptDjVuOffset.y, 1, 1);
 			CPoint ptNewOffset = TranslatePageRect(nAnchorPage, rect, true, false).TopLeft()
 					- m_pages[nAnchorPage].ptOffset;
 			if (m_pages[nAnchorPage].szBitmap != szPrevBitmap)
@@ -1246,7 +1271,7 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 
 		if (nAnchorPage != -1)
 		{
-			GRect rect(ptDjVuOffset.x, ptDjVuOffset.y);
+			GRect rect(ptDjVuOffset.x, ptDjVuOffset.y, 1, 1);
 			CPoint ptNewOffset = TranslatePageRect(nAnchorPage, rect, true, false).TopLeft()
 					- m_pages[nAnchorPage].ptOffset;
 			if (m_pages[nAnchorPage].szBitmap != szPrevBitmap)
@@ -1474,18 +1499,12 @@ void CDjVuView::UpdatePagesCacheContinuous(bool bUpdateImages)
 
 void CDjVuView::UpdateVisiblePages()
 {
-	if (!m_bInitialized || m_pRenderThread->IsPaused())
+	if (m_nPage == -1 || m_pRenderThread->IsPaused())
 		return;
 
 	bool bUpdateImages = true;
 	if (m_nType == Normal)
-	{
-		CMDIChildWnd* pActive = GetMainFrame()->MDIGetActive();
-		if (pActive == NULL)
-			return;
-
-		bUpdateImages = (pActive->GetActiveView() == this);
-	}
+		bUpdateImages = (GetMainFrame()->GetActiveView() == this);
 
 	m_pRenderThread->PauseJobs();
 	m_pRenderThread->RemoveAllJobs();
@@ -1853,14 +1872,15 @@ bool CDjVuView::IsViewPreviouspageEnabled() const
 
 void CDjVuView::OnSize(UINT nType, int cx, int cy)
 {
-	if (nType != SIZE_MINIMIZED && cx > 0 && cy > 0
-			&& m_nPage != -1 && !m_bInsideUpdateLayout)
+	if (cx > 0 && cy > 0 && m_nPage != -1 && !m_bInsideUpdateLayout)
 	{
 		UpdateLayout();
 		Invalidate();
 
 		if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 			UpdatePageSizes(GetScrollPos(SB_VERT));
+
+		UpdateWindow();
 	}
 
 	CMyScrollView::OnSize(nType, cx, cy);
@@ -2657,7 +2677,7 @@ CPoint CDjVuView::ScreenToDjVu(int nPage, const CPoint& point, bool bClip)
 	int nRotate = (m_nRotate + page.info.nInitialRotate) % 4;
 	if (nRotate != 0)
 	{
-		GRect rect(ptResult.x, ptResult.y);
+		GRect rect(ptResult.x, ptResult.y, 1, 1);
 
 		GRect input(0, 0, szPage.cx, szPage.cy);
 
@@ -4132,9 +4152,7 @@ void CDjVuView::OnUpdateExportSelection(CCmdUI* pCmdUI)
 void CDjVuView::OnFindString()
 {
 	CWaitCursor wait;
-
-	CFindDlg* pDlg = GetMainFrame()->m_pFindDlg;
-	ASSERT(pDlg != NULL);
+	CFindDlg* pDlg = theApp.GetFindDlg();
 
 	GUTF8String strFindUTF8 = MakeUTF8String(pDlg->m_strFind);
 	GUTF8String strFindUp;
@@ -4268,9 +4286,7 @@ void CDjVuView::OnFindString()
 void CDjVuView::OnFindAll()
 {
 	CWaitCursor wait;
-
-	CFindDlg* pDlg = GetMainFrame()->m_pFindDlg;
-	ASSERT(pDlg != NULL);
+	CFindDlg* pDlg = theApp.GetFindDlg();
 
 	GUTF8String strFindUTF8 = MakeUTF8String(pDlg->m_strFind);
 	GUTF8String strFindUp;
@@ -4322,7 +4338,8 @@ void CDjVuView::OnFindAll()
 
 			if (pResults == NULL)
 			{
-				pResults = ((CChildFrame*)GetParentFrame())->GetSearchResults();
+				pResults = GetMDIChild()->GetSearchResults();
+				pResults->AddObserver(this);
 				pResults->Reset();
 			}
 
@@ -4452,7 +4469,7 @@ bool CDjVuView::IsSelectionVisible(int nPage, const DjVuSelection& selection) co
 	if (rcClient != rcSel)
 		return false;
 
-	CFindDlg* pDlg = GetMainFrame()->m_pFindDlg;
+	CFindDlg* pDlg = theApp.GetFindDlg(false);
 	if (pDlg != NULL && pDlg->IsWindowVisible())
 	{
 		CRect rcFindDlg;
@@ -4518,26 +4535,28 @@ void CDjVuView::EnsureSelectionVisible(int nPage, const DjVuSelection& selection
 	rcClient.OffsetRect(0, nTopPos - ptScroll.y);
 
 	// Further scroll the document if selection is obscured by the Find dialog
-	CFindDlg* pDlg = GetMainFrame()->m_pFindDlg;
-	ASSERT(pDlg != NULL);
-	CRect rcFindDlg;
-	pDlg->GetWindowRect(rcFindDlg);
-	ScreenToClient(rcFindDlg);
-	rcFindDlg.OffsetRect(0, nTopPos);
-
-	if (rcSel.bottom > rcFindDlg.top && rcSel.top < rcFindDlg.bottom)
+	CFindDlg* pDlg = theApp.GetFindDlg(false);
+	if (pDlg != NULL && pDlg->IsWindowVisible())
 	{
-		int nTopSpace = rcFindDlg.top - rcClient.top;
-		int nBottomSpace = rcClient.bottom - rcFindDlg.bottom;
-		if (nTopSpace >= rcSel.Height() || nTopSpace >= nBottomSpace && nTopSpace > 0)
+		CRect rcFindDlg;
+		pDlg->GetWindowRect(rcFindDlg);
+		ScreenToClient(rcFindDlg);
+		rcFindDlg.OffsetRect(0, nTopPos);
+
+		if (rcSel.bottom > rcFindDlg.top && rcSel.top < rcFindDlg.bottom)
 		{
-			nTopPos = max(0, rcSel.top - (nTopSpace - rcSel.Height())/2);
-			nTopPos = min(rcSel.top, nTopPos);
-		}
-		else if (nBottomSpace > 0)
-		{
-			int nBottom = rcSel.bottom + (nBottomSpace - rcSel.Height())/2;
-			nTopPos = min(rcSel.top - (rcFindDlg.bottom - rcClient.top), nBottom - rcClient.Height());
+			int nTopSpace = rcFindDlg.top - rcClient.top;
+			int nBottomSpace = rcClient.bottom - rcFindDlg.bottom;
+			if (nTopSpace >= rcSel.Height() || nTopSpace >= nBottomSpace && nTopSpace > 0)
+			{
+				nTopPos = max(0, rcSel.top - (nTopSpace - rcSel.Height())/2);
+				nTopPos = min(rcSel.top, nTopPos);
+			}
+			else if (nBottomSpace > 0)
+			{
+				int nBottom = rcSel.bottom + (nBottomSpace - rcSel.Height())/2;
+				nTopPos = min(rcSel.top - (rcFindDlg.bottom - rcClient.top), nBottom - rcClient.Height());
+			}
 		}
 	}
 
@@ -5459,7 +5478,7 @@ void CDjVuView::OnViewFullscreen()
 	}
 
 	m_pRenderThread->PauseJobs();
-	CThumbnailsView* pThumbnails = ((CChildFrame*)GetParentFrame())->GetThumbnailsView();
+	CThumbnailsView* pThumbnails = GetMDIChild()->GetThumbnailsView();
 	if (pThumbnails != NULL)
 		pThumbnails->PauseDecoding();
 
@@ -6175,7 +6194,10 @@ void CDjVuView::OnHighlight(UINT nID)
 
 		m_pSource->GetSettings()->bookmarks.push_back(bookmark);
 		Bookmark& bmNew = m_pSource->GetSettings()->bookmarks.back();
-		GetBookmarks()->AddBookmark(bmNew);
+
+		CBookmarksWnd* pBookmarks = GetMDIChild()->GetBookmarksTree();
+		pBookmarks->AddObserver(this);
+		pBookmarks->AddBookmark(bmNew);
 	}
 }
 
@@ -6262,7 +6284,10 @@ void CDjVuView::OnAddBookmark()
 
 		m_pSource->GetSettings()->bookmarks.push_back(bookmark);
 		Bookmark& bmNew = m_pSource->GetSettings()->bookmarks.back();
-		GetBookmarks()->AddBookmark(bmNew);
+
+		CBookmarksWnd* pBookmarks = GetMDIChild()->GetBookmarksTree();
+		pBookmarks->AddObserver(this);
+		pBookmarks->AddBookmark(bmNew);
 	}
 }
 
@@ -6425,7 +6450,7 @@ void CDjVuView::OnZoomToSelection()
 	GetMainFrame()->AddToHistory(this, bookmark, true);
 }
 
-void CDjVuView::OnSwitchFocus()
+void CDjVuView::OnSwitchFocus(UINT nID)
 {
 	if (m_nType != Normal)
 		return;
@@ -6436,7 +6461,12 @@ void CDjVuView::OnSwitchFocus()
 		return;
 	}
 
-	CChildFrame* pFrame = ((CChildFrame*) GetParentFrame());
-	if (!pFrame->IsNavPaneHidden() && !pFrame->IsNavPaneCollapsed())
-		pFrame->GetNavPane()->SetFocus();
+	CMDIChild* pMDIChild = GetMDIChild();
+	if (!pMDIChild->IsNavPaneHidden() && !pMDIChild->IsNavPaneCollapsed())
+		pMDIChild->GetNavPane()->SetFocus();
+}
+
+void CDjVuView::OnUpdateSwitchFocus(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable();
 }

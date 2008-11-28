@@ -22,8 +22,8 @@
 #include "WinDjView.h"
 #include "FullscreenWnd.h"
 #include "DjVuView.h"
+#include "MDIChild.h"
 #include "ThumbnailsView.h"
-#include "ChildFrm.h"
 
 
 // CFullscreenWnd
@@ -81,6 +81,7 @@ void CFullscreenWnd::Show(CDjVuView* pOwner, CDjVuView* pContents)
 	SetWindowText(strText);
 
 	ShowWindow(SW_SHOW);
+	SetForegroundWindow();
 	pOwner->GetTopLevelParent()->ShowWindow(SW_HIDE);
 }
 
@@ -100,11 +101,12 @@ void CFullscreenWnd::Hide()
 
 		m_pOwner->ResumeDecoding();
 
-		CThumbnailsView* pThumbnails = ((CChildFrame*) m_pOwner->GetParentFrame())->GetThumbnailsView();
+		CThumbnailsView* pThumbnails = m_pOwner->GetMDIChild()->GetThumbnailsView();
 		if (pThumbnails != NULL)
 			pThumbnails->ResumeDecoding();
 
 		m_pOwner->GetTopLevelParent()->ShowWindow(SW_SHOW);
+		m_pOwner->GetTopLevelParent()->SetForegroundWindow();
 	}
 
 	ShowWindow(SW_HIDE);

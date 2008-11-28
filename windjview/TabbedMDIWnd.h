@@ -22,41 +22,36 @@
 
 #include "Drawing.h"
 
+#define WM_MDI_ACTIVATE (WM_APP + 9)
 
-// CMyTabBar
 
-class CMyTabBar : public CControlBar, public Observer, public Observable
+// CTabbedMDIWnd
+
+class CTabbedMDIWnd : public CWnd, public Observer, public Observable
 {
-	DECLARE_DYNCREATE(CMyTabBar)
+	DECLARE_DYNCREATE(CTabbedMDIWnd)
 
 public:
-	CMyTabBar();
-	virtual ~CMyTabBar();
-
-	virtual BOOL Create(CWnd* pParentWnd, DWORD dwStyle, UINT nID);
+	CTabbedMDIWnd();
+	virtual ~CTabbedMDIWnd();
 
 // Operations
 public:
-	int AddTab(CFrameWnd* pFrame, const CString& strName);
-	void ActivateTab(CFrameWnd* pFrame);
+	int AddTab(CWnd* pWnd, const CString& strName);
+	void ActivateTab(CWnd* pWnd);
 	void ActivateNextTab();
 	void ActivatePrevTab();
-	void RemoveTab(CFrameWnd* pFrame);
-	CFrameWnd* GetActiveTab() const;
+	void CloseTab(CWnd* pWnd);
+	CWnd* GetActiveTab() const;
 	int GetTabCount() const { return static_cast<int>(m_tabs.size()); }
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
-
-// Overrides
-public:
-	virtual CSize CalcFixedLayout(BOOL bStretch, BOOL bHorz);
-	virtual void OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler);
 
 // Implementation
 protected:
 	struct Tab
 	{
-		CFrameWnd* pFrame;
+		CWnd* pWnd;
 		CString strName;
 		CRect rcTab;
 	};
@@ -67,9 +62,11 @@ protected:
 	CFont m_font;
 	CFont m_fontActive;
 	int m_nTabHeight;
-	CSize m_size;
+	CSize m_szTabBar;
+	CRect m_rcContent;
 	int m_nScrollPos;
 	bool m_bShowArrows;
+	bool m_bTabBarHidden;
 
 	CToolTipCtrl m_toolTip;
 	COffscreenDC m_offscreenDC;
@@ -85,12 +82,12 @@ protected:
 	int TabFromPoint(const CPoint& point);
 	bool PtInTab(int nTab, const CPoint& point);
 	void EnsureVisible(int nTab);
-	int TabFromFrame(CFrameWnd* pFrame);
-	void ActivateTab(int nTab);
-	void RemoveTab(int nTab);
+	int TabFromFrame(CWnd* pWnd);
+	void ActivateTab(int nTab, bool bRedraw = true);
+	void CloseTab(int nTab, bool bRedraw = true);
+	void InvalidateTabs();
 
 	// Generated message map functions
-	afx_msg void OnNcPaint();
 	afx_msg void OnPaint();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);

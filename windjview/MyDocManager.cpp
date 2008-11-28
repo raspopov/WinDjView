@@ -206,7 +206,6 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 	CDocTemplate::Confidence bestMatch = CDocTemplate::noAttempt;
 	CDocTemplate* pBestTemplate = NULL;
 	CDocument* pOpenDocument = NULL;
-	bool bFullscreenDoc = false;
 	CMainFrame* pOldMainFrm = (CMainFrame*) theApp.m_pMainWnd;
 
 	POSITION pos = m_templateList.GetHeadPosition();
@@ -236,14 +235,7 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 			ASSERT_VALID(pView);
 
 			CMainFrame* pMainFrm = (CMainFrame*) pView->GetTopLevelFrame();
-			bFullscreenDoc = (pMainFrm->IsFullscreenMode()
-					&& pMainFrm->GetFullscreenWnd()->GetOwner()->GetDocument() == pOpenDocument);
-
-			if (!bFullscreenDoc)
-			{
-				pView->GetParentFrame()->ActivateFrame();
-				pMainFrm->ActivateFrame();
-			}
+			pMainFrm->ActivateDocument(pOpenDocument);
 		}
 		else
 			TRACE(_T("Error: Can not find a view for document to activate.\n"));
@@ -282,32 +274,6 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 			pView->GoToURL(MakeUTF8String(_T("#") + strPage), nAddToHistory);
 		if (bAddToHistory)
 			pMainFrm->AddToHistory(pView);
-
-		if (bFullscreenDoc)
-		{
-			pView = pMainFrm->GetFullscreenWnd()->GetOwner();
-			pMainFrm->ShowWindow(SW_HIDE);
-			pMainFrm->GetFullscreenWnd()->SetFocus();
-		}
-		else if (pMainFrm->IsFullscreenMode())
-		{
-			pMainFrm->GetFullscreenWnd()->Hide();
-		}
-		else if (pOldMainFrm != NULL && pOldMainFrm != pMainFrm && !pMainFrm->IsWindowVisible())
-		{
-			// In multiple top-level documents mode, a new main frame
-			// will be created hidden. Show it now.
-
-			bool bMaximize = !!pOldMainFrm->IsZoomed();
-
-			pMainFrm->SetRedraw(false);
-			pMainFrm->ShowWindow(bMaximize ? SW_SHOWMAXIMIZED : SW_SHOW);
-			pMainFrm->SetRedraw(true);
-			pMainFrm->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-
-			pMainFrm->ActivateFrame();
-			pView->GetParentFrame()->ActivateFrame();
-		}
 	}
 
 	return pOpenDocument;

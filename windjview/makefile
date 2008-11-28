@@ -69,8 +69,9 @@ LINK_OBJS = \
 	"$(INTDIR)\Global.obj" \
 	"$(INTDIR)\GotoPageDlg.obj" \
 	"$(INTDIR)\InstallDicDlg.obj" \
-	"$(INTDIR)\MainFrm.obj" \
 	"$(INTDIR)\MagnifyWnd.obj" \
+	"$(INTDIR)\MainFrm.obj" \
+	"$(INTDIR)\MDIChild.obj" \
 	"$(INTDIR)\MyBitmapButton.obj" \
 	"$(INTDIR)\MyColorPicker.obj" \
 	"$(INTDIR)\MyComboBox.obj" \
@@ -80,9 +81,7 @@ LINK_OBJS = \
 	"$(INTDIR)\MyEdit.obj" \
 	"$(INTDIR)\MyFileDialog.obj" \
 	"$(INTDIR)\MyScrollView.obj" \
-	"$(INTDIR)\MySplitterWnd.obj" \
 	"$(INTDIR)\MyStatusBar.obj" \
-	"$(INTDIR)\MyTabBar.obj" \
 	"$(INTDIR)\MyTheme.obj" \
 	"$(INTDIR)\MyToolBar.obj" \
 	"$(INTDIR)\MyTreeCtrl.obj" \
@@ -99,6 +98,7 @@ LINK_OBJS = \
 	"$(INTDIR)\SettingsDlg.obj" \
 	"$(INTDIR)\SettingsGeneralPage.obj" \
 	"$(INTDIR)\stdafx.obj" \
+	"$(INTDIR)\TabbedMDIWnd.obj" \
 	"$(INTDIR)\ThumbnailsThread.obj" \
 	"$(INTDIR)\ThumbnailsView.obj" \
 	"$(INTDIR)\UpdateDlg.obj" \
@@ -124,8 +124,9 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\Global.obj" : Global.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\GotoPageDlg.obj" : GotoPageDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\InstallDicDlg.obj" : InstallDicDlg.cpp "$(INTDIR)" $(PCH)
-"$(INTDIR)\MainFrm.obj" : MainFrm.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MagnifyWnd.obj" : MagnifyWnd.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MainFrm.obj" : MainFrm.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MDIChild.obj" : MDIChild.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyBitmapButton.obj" : MyBitmapButton.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyColorPicker.obj" : MyColorPicker.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyComboBox.obj" : MyComboBox.cpp "$(INTDIR)" $(PCH)
@@ -135,9 +136,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\MyEdit.obj" : MyEdit.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyFileDialog.obj" : MyFileDialog.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyScrollView.obj" : MyScrollView.cpp "$(INTDIR)" $(PCH)
-"$(INTDIR)\MySplitterWnd.obj" : MySplitterWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyStatusBar.obj" : MyStatusBar.cpp "$(INTDIR)" $(PCH)
-"$(INTDIR)\MyTabBar.obj" : MyTabBar.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyTheme.obj" : MyTheme.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyToolBar.obj" : MyToolBar.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyTreeCtrl.obj" : MyTreeCtrl.cpp "$(INTDIR)" $(PCH)
@@ -153,6 +152,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\SettingsDisplayPage.obj" : SettingsDisplayPage.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\SettingsDlg.obj" : SettingsDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\SettingsGeneralPage.obj" : SettingsGeneralPage.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\TabbedMDIWnd.obj" : TabbedMDIWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\ThumbnailsThread.obj" : ThumbnailsThread.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\ThumbnailsView.obj" : ThumbnailsView.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\UpdateDlg.obj" : UpdateDlg.cpp "$(INTDIR)" $(PCH)

@@ -22,10 +22,10 @@
 #include "WinDjView.h"
 #include "MainFrm.h"
 
-#include "ChildFrm.h"
 #include "MyBitmapButton.h"
 #include "DjVuDoc.h"
 #include "DjVuView.h"
+#include "MDIChild.h"
 #include "MyDocManager.h"
 #include "MyDocTemplate.h"
 #include "AppSettings.h"
@@ -38,6 +38,7 @@
 #include "FullscreenWnd.h"
 #include "XMLParser.h"
 #include "MyDialog.h"
+#include "FindDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -150,7 +151,7 @@ END_MESSAGE_MAP()
 // CDjViewApp construction
 
 CDjViewApp::CDjViewApp()
-	: m_bInitialized(false), m_bTopLevelDocs(false), m_pDjVuTemplate(NULL),
+	: m_bInitialized(false), m_bTopLevelDocs(false), m_pDjVuTemplate(NULL), m_pFindDlg(NULL),
 	  m_nThreadCount(0), m_hHook(NULL), m_pPendingSource(NULL), m_bShiftPressed(false),
 	  m_bControlPressed(false), m_nLangIndex(0), m_nTimerID(0),
 	  m_bOnlyRegisterTypes(false), m_nExitCode(0)
@@ -188,7 +189,7 @@ BOOL CDjViewApp::InitInstance()
 	// Register the application's document template
 	m_pDjVuTemplate = new CMyDocTemplate(IDR_DjVuTYPE,
 		RUNTIME_CLASS(CDjVuDoc),
-		RUNTIME_CLASS(CChildFrame),
+		RUNTIME_CLASS(CMDIChild),
 		RUNTIME_CLASS(CDjVuView));
 	if (!m_pDjVuTemplate)
 		return FALSE;
@@ -213,13 +214,13 @@ BOOL CDjViewApp::InitInstance()
 
 	CURRENT_VERSION.LoadString(IDS_CURRENT_VERSION);
 
-	m_bTopLevelDocs = m_appSettings.bTopLevelDocs;
-
 	LoadStdProfileSettings(10);  // Load recently open documents
 	LoadSettings();
 	LoadDictionaries();
 	LoadLanguages();
 	SetStartupLanguage();
+
+	m_bTopLevelDocs = m_appSettings.bTopLevelDocs;
 
 	if (m_appSettings.bRestoreAssocs)
 		RegisterShellFileTypes();
@@ -305,15 +306,11 @@ CMainFrame* CDjViewApp::CreateMainFrame(bool bAppStartup, int nCmdShow)
 	// The main window has been initialized, so show and update it
 	if (bAppStartup)
 	{
-		pMainFrame->SetRedraw(false);
-
 		if (m_appSettings.bWindowMaximized && (nCmdShow == -1 || nCmdShow == SW_SHOWNORMAL || nCmdShow == SW_SHOW))
 			nCmdShow = SW_SHOWMAXIMIZED;
 
 		pMainFrame->ShowWindow(nCmdShow);
-
-		pMainFrame->SetRedraw(true);
-		pMainFrame->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+		pMainFrame->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
 
 	m_bInitialized = true;
@@ -328,15 +325,14 @@ void CDjViewApp::RemoveMainFrame(CMainFrame* pMainFrame)
 		m_frames.erase(it);
 
 	if (m_pMainWnd == pMainFrame)
-	{
-		m_pMainWnd = m_frames.front();
-		AfxGetThread()->m_pMainWnd = m_pMainWnd;
-		((CMainFrame*) m_pMainWnd)->ActivateFrame();
-	}
+		ChangeMainWnd(m_frames.front(), true);
 }
 
-void CDjViewApp::ChangeMainWnd(CMainFrame* pMainFrame)
+void CDjViewApp::ChangeMainWnd(CMainFrame* pMainFrame, bool bActivate)
 {
+	if (m_pMainWnd == pMainFrame)
+		return;
+
 	list<CMainFrame*>::iterator it = find(m_frames.begin(), m_frames.end(), pMainFrame);
 	if (it != m_frames.end())
 	{
@@ -347,7 +343,12 @@ void CDjViewApp::ChangeMainWnd(CMainFrame* pMainFrame)
 		}
 
 		m_pMainWnd = pMainFrame;
-		AfxGetThread()->m_pMainWnd = m_pMainWnd;
+		AfxGetThread()->m_pMainWnd = pMainFrame;
+
+		if (bActivate)
+			pMainFrame->ActivateDocument(pMainFrame->GetActiveDocument());
+
+		UpdateFindDlg();
 	}
 }
 
@@ -837,6 +838,12 @@ int CDjViewApp::ExitInstance()
 		return m_nExitCode;
 	}
 
+	if (m_pFindDlg != NULL)
+	{
+		m_pFindDlg->DestroyWindow();
+		delete m_pFindDlg;
+	}
+
 	SaveSettings();
 
 	::KillTimer(NULL, m_nTimerID);
@@ -1251,8 +1258,6 @@ CDjVuDoc* CDjViewApp::OpenDocument(LPCTSTR lpszPathName, const GUTF8String& strP
 		return NULL;
 
 	CDjVuView* pView = pDoc->GetDjVuView();
-	CFrameWnd* pFrame = pView->GetParentFrame();
-	pFrame->ActivateFrame();
 
 	int nAddToHistory = (bAddToHistory ? CDjVuView::AddTarget : 0);
 	if (bAddToHistory && bAlreadyOpen)
@@ -1410,6 +1415,7 @@ void CDjViewApp::SetLanguage(UINT nLangIndex)
 
 	m_pDjVuTemplate->UpdateTemplate();
 	UpdateDictProperties();
+	UpdateFindDlg();
 
 	UpdateObservers(APP_LANGUAGE_CHANGED);
 }
@@ -2111,12 +2117,12 @@ void CDjViewApp::Lookup(const CString& strLookup, DictionaryInfo* pInfo)
 		return;
 
 	CDjVuView* pView = pDoc->GetDjVuView();
-	CChildFrame* pFrame = (CChildFrame*) pView->GetParentFrame();
-	CPageIndexWnd* pIndex = pFrame->GetPageIndex();
+	CMDIChild* pMDIChild = pView->GetMDIChild();
+	CPageIndexWnd* pIndex = pMDIChild->GetPageIndex();
 	if (pIndex == NULL)
 		return;
 
-	pFrame->GetNavPane()->ActivateTab(pIndex, false);
+	pMDIChild->GetNavPane()->ActivateTab(pIndex, false);
 	pIndex->Lookup(strLookup);
 }
 
@@ -2134,19 +2140,8 @@ void CDjViewApp::OnAppExit()
 int CDjViewApp::GetDocumentCount()
 {
 	int nCount = 0;
-	POSITION pos = GetFirstDocTemplatePosition();
-	while (pos != NULL)
-	{
-		CDocTemplate* pTemplate = GetNextDocTemplate(pos);
-		ASSERT_KINDOF(CDocTemplate, pTemplate);
-
-		POSITION posDoc = pTemplate->GetFirstDocPosition();
-		while (posDoc != NULL)
-		{
-			pTemplate->GetNextDoc(posDoc);
-			++nCount;
-		}
-	}
+	for (CDjViewApp::DocIterator it; it; ++it)
+		++nCount;
 
 	return nCount;
 }
@@ -2207,4 +2202,58 @@ int CDjViewApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDPrompt)
 
 	EnableWindows(disabled);
 	return nResult;
+}
+
+CFindDlg* CDjViewApp::GetFindDlg(bool bCreate)
+{
+	if (m_pFindDlg == NULL && bCreate)
+	{
+		m_pFindDlg = new CFindDlg();
+		m_pFindDlg->Create(IDD_FIND, m_pMainWnd);
+		m_pFindDlg->CenterWindow();
+	}
+
+	return m_pFindDlg;
+}
+
+void CDjViewApp::UpdateFindDlg(CWnd* pNewParent)
+{
+	if (m_pFindDlg == NULL)
+		return;
+
+	m_pFindDlg->UpdateData();
+	m_appSettings.strFind = m_pFindDlg->m_strFind;
+	m_appSettings.bMatchCase = !!m_pFindDlg->m_bMatchCase;
+
+	bool bVisible = !!m_pFindDlg->IsWindowVisible();
+
+	CRect rcFindDlg;
+	m_pFindDlg->GetWindowRect(rcFindDlg);
+
+	CMainFrame* pOldFrame = (CMainFrame*) m_pFindDlg->GetParent();
+	ASSERT(pOldFrame != NULL);
+	CMainFrame* pMainFrame = (CMainFrame*) m_pMainWnd;
+
+	pOldFrame->m_bDontActivate = true;
+	pMainFrame->m_bDontActivate = true;
+
+	CFindDlg* pOldFindDlg = m_pFindDlg;
+
+	m_pFindDlg = new CFindDlg;
+	m_pFindDlg->Create(IDD_FIND, pNewParent ? pNewParent : m_pMainWnd);
+
+	CRect rcNewFindDlg;
+	m_pFindDlg->GetWindowRect(rcNewFindDlg);
+
+	m_pFindDlg->MoveWindow(rcFindDlg.left, rcFindDlg.top,
+		rcNewFindDlg.Width(), rcNewFindDlg.Height());
+	if (bVisible)
+		m_pFindDlg->ShowWindow(SW_SHOWNOACTIVATE);
+
+	pOldFindDlg->DestroyWindow();
+
+	pOldFrame->m_bDontActivate = false;
+	pMainFrame->m_bDontActivate = false;
+	pMainFrame->SetFocus();
+	pMainFrame->SetForegroundWindow();
 }

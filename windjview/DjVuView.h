@@ -28,9 +28,9 @@
 #include "DjVuSource.h"
 
 class CMainFrame;
+class CMDIChild;
 class CPrintDlg;
 class CRenderThread;
-class CBookmarksWnd;
 
 inline bool IsStandardZoom(int nZoomType, double fZoom)
 {
@@ -55,7 +55,7 @@ public:
 	CDjVuDoc* GetDocument() const;
 	void SetDocument(CDjVuDoc* pDocument) { m_pDocument = pDocument; }
 	CMainFrame* GetMainFrame() const;
-	CBookmarksWnd* GetBookmarks() const;
+	CMDIChild* GetMDIChild() const;
 
 // Operations
 public:
@@ -181,7 +181,6 @@ protected:
 	bool m_bShiftDown, m_bControlDown;
 	bool m_bNeedUpdate;
 	UINT m_nTimerID;
-	bool m_bInitialized;
 
 	COffscreenDC m_offscreenDC;
 
@@ -433,7 +432,8 @@ protected:
 	afx_msg void OnDeleteAnnotation();
 	afx_msg void OnAddBookmark();
 	afx_msg void OnZoomToSelection();
-	afx_msg void OnSwitchFocus();
+	afx_msg void OnSwitchFocus(UINT nID);
+	afx_msg void OnUpdateSwitchFocus(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 };
 
