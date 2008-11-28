@@ -166,10 +166,6 @@ SOURCE=.\BookmarksWnd.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ChildFrm.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\DjVuDoc.cpp
 # End Source File
 # Begin Source File
@@ -368,10 +364,6 @@ SOURCE=.\BookmarkDlg.h
 # Begin Source File
 
 SOURCE=.\BookmarksWnd.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\ChildFrm.h
 # End Source File
 # Begin Source File
 

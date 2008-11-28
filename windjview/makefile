@@ -59,7 +59,6 @@ LINK_OBJS = \
 	"$(INTDIR)\AppSettings.obj" \
 	"$(INTDIR)\BookmarkDlg.obj" \
 	"$(INTDIR)\BookmarksWnd.obj" \
-	"$(INTDIR)\ChildFrm.obj" \
 	"$(INTDIR)\DjVuDoc.obj" \
 	"$(INTDIR)\DjVuSource.obj" \
 	"$(INTDIR)\DjVuView.obj" \
@@ -114,7 +113,6 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\AppSettings.obj" : AppSettings.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\BookmarkDlg.obj" : BookmarkDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\BookmarksWnd.obj" : BookmarksWnd.cpp "$(INTDIR)" $(PCH)
-"$(INTDIR)\ChildFrm.obj" : ChildFrm.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DjVuDoc.obj" : DjVuDoc.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DjVuSource.obj" : DjVuSource.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DjVuView.obj" : DjVuView.cpp "$(INTDIR)" $(PCH)
