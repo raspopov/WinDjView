@@ -32,21 +32,30 @@ static const int s_nSideMargin = 3;
 static const int s_nBottomMargin = 2;
 static const int s_nTopMargin = 3;
 static const int s_nPadding = 9;
+static const int s_nBtnPadding = 7;
+static const int s_nCloseBtnSize = 14;
+static const int s_nTextBtnPadding = 2;
 static const int s_nMaxTabWidth = 250;
 static const int s_nMinTabWidth = 100;
+static const int s_nMinTabCloseWidth = 140;
 static const int s_nArrowWidth = 10;
+static const int s_nArrowSizeX = 2;
+static const int s_nArrowSizeY = 4;
 
 // CTabbedMDIWnd
 
 IMPLEMENT_DYNCREATE(CTabbedMDIWnd, CWnd)
 
 CTabbedMDIWnd::CTabbedMDIWnd()
-	: m_nActiveTab(-1), m_nHoverTab(-1), m_nScrollPos(0), m_bShowArrows(false)
+	: m_nActiveTab(-1), m_nHoverTab(-1), m_nScrollPos(0), m_bShowArrows(false),
+	  m_bHoverLeft(false), m_bHoverRight(false), m_bHoverClose(false),
+	  m_nClosePressedTab(-1), m_bIgnoreMouseLeave(false)
 {
 	UpdateMetrics();
 	m_rcContent.SetRectEmpty();
 
 	m_bTabBarHidden = theApp.m_bTopLevelDocs;
+	m_strCloseTab = LoadString(IDS_CLOSE_TAB);
 }
 
 CTabbedMDIWnd::~CTabbedMDIWnd()
@@ -59,7 +68,10 @@ BEGIN_MESSAGE_MAP(CTabbedMDIWnd, CWnd)
 	ON_WM_SIZE()
 	ON_WM_ERASEBKGND()
 	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_LBUTTONDBLCLK()
 	ON_WM_MOUSEMOVE()
+	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
 	ON_WM_CONTEXTMENU()
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
@@ -107,10 +119,20 @@ void CTabbedMDIWnd::OnPaint()
 		bool bLeftEnabled = (m_nScrollPos > 0);
 		bool bRightEnabled = (m_nScrollPos < m_tabs.back().rcTab.right - nScrollWidth);
 
-		CRect rcLeftArrow(-2, s_nTopMargin, s_nArrowWidth, rcBottom.top);
-		DrawInactiveTabRect(pDC, rcLeftArrow, true, bLeftEnabled);
-		CRect rcRightArrow(m_szTabBar.cx - s_nArrowWidth, s_nTopMargin, m_szTabBar.cx + 2, rcBottom.top);
-		DrawInactiveTabRect(pDC, rcRightArrow, true, bRightEnabled);
+		CRect rcLeftArrow = m_rcLeftArrow;
+		rcLeftArrow.left = -2;
+		DrawInactiveTabRect(pDC, rcLeftArrow, true, bLeftEnabled, m_bHoverLeft);
+		CRect rcRightArrow = m_rcRightArrow;
+		rcRightArrow.right = m_szTabBar.cx + 2;
+		DrawInactiveTabRect(pDC, rcRightArrow, true, bRightEnabled, m_bHoverRight);
+
+		CPoint ptLeft = rcLeftArrow.CenterPoint() - CPoint(s_nArrowSizeX / 2, s_nArrowSizeY / 2);
+		CRect rcLeft(ptLeft, CSize(s_nArrowSizeX, s_nArrowSizeY));
+		DrawArrow(pDC, ARR_LEFT, rcLeft, ::GetSysColor(bLeftEnabled ? COLOR_WINDOWTEXT : COLOR_BTNSHADOW));
+
+		CPoint ptRight = rcRightArrow.CenterPoint() - CPoint(s_nArrowSizeX / 2, s_nArrowSizeY / 2);
+		CRect rcRight(ptRight, CSize(s_nArrowSizeX, s_nArrowSizeY));
+		DrawArrow(pDC, ARR_RIGHT, rcRight, ::GetSysColor(bRightEnabled ? COLOR_WINDOWTEXT : COLOR_BTNSHADOW));
 
 		pDC->IntersectClipRect(s_nArrowWidth, rcTop.bottom, m_szTabBar.cx - s_nArrowWidth, rcBottom.top);
 		pDC->SetViewportOrg(s_nArrowWidth - m_nScrollPos, 0);
@@ -161,6 +183,26 @@ void CTabbedMDIWnd::DrawTab(CDC* pDC, int nTab)
 	COLORREF clrText = ::GetSysColor(COLOR_WINDOWTEXT);
 	CRect rcText(tab.rcTab.left + s_nPadding, tab.rcTab.top + 2,
 			tab.rcTab.right - s_nPadding, tab.rcTab.bottom);
+
+	// Draw close button
+	if (HasCloseButton(nTab))
+	{
+		if (nTab == m_nClosePressedTab)
+		{
+			if (m_bHoverClose && nTab == m_nHoverTab)
+				m_imgClose.Draw(pDC, 3, tab.rcClose.TopLeft(), ILD_NORMAL);
+			else
+				m_imgClose.Draw(pDC, 0, tab.rcClose.TopLeft(), ILD_NORMAL);
+		}
+		else if (m_bHoverClose && nTab == m_nHoverTab)
+			m_imgClose.Draw(pDC, 2, tab.rcClose.TopLeft(), ILD_NORMAL);
+		else if (nTab == m_nActiveTab)
+			m_imgClose.Draw(pDC, 0, tab.rcClose.TopLeft(), ILD_NORMAL);
+		else
+			m_imgClose.Draw(pDC, 1, tab.rcClose.TopLeft(), ILD_NORMAL);
+
+		rcText.right = tab.rcTab.right - s_nBtnPadding - s_nCloseBtnSize - s_nTextBtnPadding;
+	}
 
 	CFont* pOldFont = pDC->SelectObject(nTab == m_nActiveTab ? &m_fontActive : &m_font);
 	pDC->SetTextColor(clrText);
@@ -238,6 +280,8 @@ void CTabbedMDIWnd::DrawInactiveTabRect(CDC* pDC, const CRect& rect,
 	COLORREF clrHilight = ChangeBrightness(clrBtnface, 0.95);
 	COLORREF clrTabTopBg = ChangeBrightness(clrBtnface, 0.91);
 	COLORREF clrTabBottomBg = ChangeBrightness(clrBtnface, 0.93);
+	COLORREF clrHoverTabTopBg = ChangeBrightness(clrBtnface, 0.97);
+	COLORREF clrHoverTabBottomBg = ChangeBrightness(clrBtnface, 0.94);
 
 	CPen penTabStrip(PS_SOLID, 1, clrTabStripBg);
 	CPen* pOldPen = pDC->SelectObject(&penTabStrip);
@@ -274,10 +318,20 @@ void CTabbedMDIWnd::DrawInactiveTabRect(CDC* pDC, const CRect& rect,
 
 	pDC->SelectObject(pOldPen);
 
-	CRect rcTopBg(rect.left + 2, rect.top + 3, rect.right - 1, rect.CenterPoint().y + 4);
-	CRect rcBottomBg(rcTopBg.left, rcTopBg.bottom, rcTopBg.right, rect.bottom - 1);
-	pDC->FillSolidRect(rcTopBg, clrTabTopBg);
-	pDC->FillSolidRect(rcBottomBg, clrTabBottomBg);
+	if (!bArrow || !bArrowEnabled || !bArrowHover)
+	{
+		CRect rcTopBg(rect.left + 2, rect.top + 3, rect.right - 1, rect.CenterPoint().y + 4);
+		CRect rcBottomBg(rcTopBg.left, rcTopBg.bottom, rcTopBg.right, rect.bottom - 1);
+		pDC->FillSolidRect(rcTopBg, clrTabTopBg);
+		pDC->FillSolidRect(rcBottomBg, clrTabBottomBg);
+	}
+	else
+	{
+		CRect rcTopBg(rect.left + 2, rect.top + 3, rect.right - 1, rect.CenterPoint().y);
+		CRect rcBottomBg(rcTopBg.left, rcTopBg.bottom, rcTopBg.right, rect.bottom - 1);
+		pDC->FillSolidRect(rcTopBg, clrHoverTabTopBg);
+		pDC->FillSolidRect(rcBottomBg, clrHoverTabBottomBg);
+	}
 
 	pDC->SetPixel(rect.left, rect.top + 1, clrTabStripBg);
 	pDC->SetPixel(rect.right - 1, rect.top + 1, clrTabStripBg);
@@ -319,18 +373,22 @@ void CTabbedMDIWnd::OnSize(UINT nType, int cx, int cy)
 	UpdateTabRects();
 	UpdateScrollState();
 	UpdateToolTips();
+	UpdateHoverTab();
 
-	if (m_rcContent.Height() > 0)
+	if (m_nActiveTab != -1)
 	{
-		HDWP hDWP = ::BeginDeferWindowPos(m_tabs.size());
-		for (size_t nTab = 0; nTab < m_tabs.size(); ++nTab)
-		{
-			hDWP = ::DeferWindowPos(hDWP, m_tabs[nTab].pWnd->GetSafeHwnd(),
-				NULL, m_rcContent.left, m_rcContent.top, m_rcContent.Width(), m_rcContent.Height(),
-				SWP_NOACTIVATE | SWP_NOZORDER);
-		}
-		::EndDeferWindowPos(hDWP);
+		m_tabs[m_nActiveTab].pWnd->SetWindowPos(NULL, m_rcContent.left, m_rcContent.top,
+				m_rcContent.Width(), m_rcContent.Height(), SWP_NOACTIVATE | SWP_NOZORDER);
 	}
+//		HDWP hDWP = ::BeginDeferWindowPos(m_tabs.size());
+//		for (size_t nTab = 0; nTab < m_tabs.size(); ++nTab)
+//		{
+//			hDWP = ::DeferWindowPos(hDWP, m_tabs[nTab].pWnd->GetSafeHwnd(),
+//				NULL, m_rcContent.left, m_rcContent.top, m_rcContent.Width(), m_rcContent.Height(),
+//				SWP_NOACTIVATE | SWP_NOZORDER);
+//		}
+//		::EndDeferWindowPos(hDWP);
+//	}
 
 	InvalidateTabs();
 }
@@ -364,10 +422,10 @@ int CTabbedMDIWnd::AddTab(CWnd* pWnd, const CString& strName)
 	UpdateTabRects();
 	UpdateScrollState();
 	UpdateToolTips();
+	UpdateHoverTab();
 
 	pWnd->ShowWindow(SW_HIDE);
 	pWnd->SetParent(this);
-	pWnd->MoveWindow(m_rcContent);
 
 	InvalidateTabs();
 
@@ -402,6 +460,7 @@ void CTabbedMDIWnd::CloseTab(int nTab, bool bRedraw)
 	UpdateTabRects();
 	UpdateScrollState();
 	UpdateToolTips();
+	UpdateHoverTab();
 
 	if (m_nActiveTab > nTab)
 		--m_nActiveTab;
@@ -436,6 +495,10 @@ void CTabbedMDIWnd::UpdateTabRects()
 	{
 		m_bShowArrows = true;
 		nLeft = 0;
+
+		m_rcLeftArrow = CRect(0, s_nTopMargin, s_nArrowWidth, s_nTopMargin + m_nTabHeight);
+		m_rcRightArrow = CRect(m_szTabBar.cx - s_nArrowWidth, s_nTopMargin,
+				m_szTabBar.cx, s_nTopMargin + m_nTabHeight);
 	}
 	else
 	{
@@ -451,6 +514,11 @@ void CTabbedMDIWnd::UpdateTabRects()
 		tab.rcTab.top = nTop;
 		tab.rcTab.bottom = nBottom;
 
+		tab.rcClose.left = tab.rcTab.right - s_nCloseBtnSize - s_nBtnPadding;
+		tab.rcClose.right = tab.rcClose.left + s_nCloseBtnSize;
+		tab.rcClose.top = tab.rcTab.CenterPoint().y - s_nCloseBtnSize / 2 + 1;
+		tab.rcClose.bottom = tab.rcClose.top + s_nCloseBtnSize;
+
 		nLeft += nTabWidth;
 	}
 }
@@ -465,19 +533,25 @@ void CTabbedMDIWnd::UpdateToolTips()
 	for (int i = m_toolTip.GetToolCount() - 1; i >= 0; --i)
 		m_toolTip.DelTool(this, i + 1);
 
+	CRect rcContents(CPoint(0, 0), m_szTabBar);
+	if (m_bShowArrows)
+		rcContents.DeflateRect(s_nArrowWidth, 0);
+
 	for (int i = 0; i < static_cast<int>(m_tabs.size()); ++i)
 	{
 		CRect rcTab = m_tabs[i].rcTab;
+		CRect rcClose = m_tabs[i].rcClose;
 		if (m_bShowArrows)
 		{
 			rcTab.OffsetRect(s_nArrowWidth - m_nScrollPos, 0);
-			rcTab.left = max(rcTab.left, s_nArrowWidth);
-			rcTab.right = min(rcTab.right, m_szTabBar.cx - s_nArrowWidth);
-			if (rcTab.left >= rcTab.right)
-				continue;
+			rcClose.OffsetRect(s_nArrowWidth - m_nScrollPos, 0);
 		}
 
-		m_toolTip.AddTool(this, m_tabs[i].strName, rcTab, i + 1);
+		CRect rcTabIntersect, rcCloseIntersect;
+		if (rcTabIntersect.IntersectRect(rcTab, rcContents))
+			m_toolTip.AddTool(this, m_tabs[i].strName, rcTabIntersect, 2*i + 1);
+		if (HasCloseButton(i) && rcCloseIntersect.IntersectRect(rcClose, rcContents))
+			m_toolTip.AddTool(this, m_strCloseTab, rcCloseIntersect, 2*i + 2);
 	}
 
 	m_toolTip.Activate(true);
@@ -488,13 +562,78 @@ BOOL CTabbedMDIWnd::OnEraseBkgnd(CDC* pDC)
 	return true;
 }
 
+bool CTabbedMDIWnd::HasCloseButton(int nTab, CRect* prcClose)
+{
+	if (nTab == -1 || nTab != m_nActiveTab && m_tabs[nTab].rcTab.Width() <= s_nMinTabCloseWidth)
+		return false;
+
+	if (prcClose != NULL)
+	{
+		*prcClose = m_tabs[nTab].rcClose;
+		if (m_bShowArrows)
+			prcClose->OffsetRect(s_nArrowWidth - m_nScrollPos, 0);
+	}
+	return true;
+}
+
 void CTabbedMDIWnd::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	int nTabClicked = TabFromPoint(point);
+	CRect rcClose;
+	if (HasCloseButton(nTabClicked, &rcClose) && rcClose.PtInRect(point))
+	{
+		m_nClosePressedTab = nTabClicked;
+		InvalidateRect(rcClose);
+		SetCapture();
+		return;
+	}
+
 	if (nTabClicked != -1)
 		ActivateTab(nTabClicked);
 
+	if (m_bShowArrows)
+	{
+		int nScrollWidth = m_szTabBar.cx - 2*s_nArrowWidth;
+		if (m_rcLeftArrow.PtInRect(point) && (m_nScrollPos > 0))
+		{
+			int nTab = 0;
+			while (nTab < static_cast<int>(m_tabs.size()) - 1 && m_tabs[nTab].rcTab.right < m_nScrollPos)
+				++nTab;
+			EnsureVisible(nTab);
+		}
+		else if (m_rcRightArrow.PtInRect(point) && m_nScrollPos < m_tabs.back().rcTab.right - nScrollWidth)
+		{
+			int nTab = static_cast<int>(m_tabs.size()) - 1;
+			while (nTab > 0 && m_tabs[nTab].rcTab.left > m_nScrollPos + nScrollWidth)
+				--nTab;
+			EnsureVisible(nTab);
+		}
+	}
+
 	CWnd::OnLButtonDown(nFlags, point);
+}
+
+void CTabbedMDIWnd::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	if (m_nClosePressedTab != -1)
+	{
+		int nTab = TabFromPoint(point);
+		CRect rcClose;
+		if (nTab == m_nClosePressedTab && HasCloseButton(nTab, &rcClose) && rcClose.PtInRect(point))
+			CloseTab(nTab);
+
+		ReleaseCapture();
+		m_nClosePressedTab = -1;
+
+		UpdateHoverTab();
+	}
+
+	CWnd::OnLButtonUp(nFlags, point);
+}
+
+void CTabbedMDIWnd::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	OnLButtonDown(nFlags, point);
 }
 
 void CTabbedMDIWnd::OnMouseMove(UINT nFlags, CPoint point)
@@ -508,12 +647,68 @@ void CTabbedMDIWnd::OnMouseMove(UINT nFlags, CPoint point)
 		m_toolTip.Activate(false);
 		m_toolTip.Activate(true);
 
-		if (m_nHoverTab == -1)
-			SetCapture();
-		else if (nHoverTab == -1)
-			ReleaseCapture();
-
 		m_nHoverTab = nHoverTab;
+		m_bHoverClose = false;
+
+		InvalidateTabs();
+	}
+
+	CRect rcClose;
+	if (HasCloseButton(m_nHoverTab, &rcClose))
+	{
+		bool bHoverClose = !!rcClose.PtInRect(point);
+		if (bHoverClose != m_bHoverClose)
+		{
+			m_toolTip.Activate(false);
+			m_toolTip.Activate(true);
+
+			m_bHoverClose = bHoverClose;
+			InvalidateRect(rcClose);
+		}
+	}
+
+	if (m_bShowArrows)
+	{
+		bool bHoverLeft = !!m_rcLeftArrow.PtInRect(point);
+		bool bHoverRight = !!m_rcRightArrow.PtInRect(point);
+		if (bHoverLeft != m_bHoverLeft || bHoverRight != m_bHoverRight)
+		{
+			m_bHoverLeft = bHoverLeft;
+			m_bHoverRight = bHoverRight;
+			InvalidateTabs();
+		}
+	}
+
+	if (m_nHoverTab != -1 || m_bHoverLeft || m_bHoverRight)
+	{
+		TRACKMOUSEEVENT tme;
+
+		ZeroMemory(&tme, sizeof(tme));
+		tme.cbSize = sizeof(tme);
+		tme.dwFlags = TME_LEAVE;
+		tme.hwndTrack = m_hWnd;
+		tme.dwHoverTime = HOVER_DEFAULT;
+
+		TrackMouseEvent(&tme);
+	}
+}
+
+void CTabbedMDIWnd::OnMouseLeave()
+{
+	if (m_bIgnoreMouseLeave)
+		return;
+
+	if (m_nHoverTab != -1)
+	{
+		m_nHoverTab = -1;
+		m_bHoverClose = false;
+		InvalidateTabs();
+	}
+
+	if (m_bHoverLeft || m_bHoverRight)
+	{
+		m_bHoverLeft = false;
+		m_bHoverRight = false;
 		InvalidateTabs();
 	}
 }
@@ -535,6 +730,7 @@ void CTabbedMDIWnd::OnContextMenu(CWnd* pWnd, CPoint pos)
 	if (m_tabs.size() == 1)
 		pPopup->EnableMenuItem(ID_TAB_CLOSE_OTHER, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
+	m_bIgnoreMouseLeave = true;
 	UINT nID = pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
 			pos.x, pos.y, this);
 	if (nID == ID_TAB_CLOSE)
@@ -563,9 +759,14 @@ void CTabbedMDIWnd::OnContextMenu(CWnd* pWnd, CPoint pos)
 	{
 		ReleaseCapture();
 		m_nHoverTab = -1;
+		m_bHoverClose = false;
 	}
 
-	// Update hover tab
+	UpdateHoverTab();
+}
+
+void CTabbedMDIWnd::UpdateHoverTab()
+{
 	CPoint ptCursor;
 	GetCursorPos(&ptCursor);
 	ScreenToClient(&ptCursor);
@@ -582,6 +783,11 @@ int CTabbedMDIWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	if (!m_bTabBarHidden)
 		m_toolTip.Activate(true);
+
+	m_imgClose.Create(14, 14, ILC_COLOR24 | ILC_MASK, 0, 1);
+	CBitmap bitmap;
+	bitmap.LoadBitmap(IDB_CLOSE_TAB);
+	m_imgClose.Add(&bitmap, RGB(0, 0, 255));
 
 	theApp.AddObserver(this);
 
@@ -641,7 +847,8 @@ void CTabbedMDIWnd::ActivateTab(int nTab, bool bRedraw)
 
 	if (nTab != -1)
 	{
-		m_tabs[nTab].pWnd->SetWindowPos(&wndTop, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_SHOWWINDOW);
+		m_tabs[nTab].pWnd->SetWindowPos(&wndTop, m_rcContent.left, m_rcContent.top,
+				m_rcContent.Width(), m_rcContent.Height(), SWP_SHOWWINDOW);
 		m_tabs[nTab].pWnd->SendMessage(WM_MDI_ACTIVATE, true);
 		m_tabs[nTab].pWnd->SendMessageToDescendants(WM_MDI_ACTIVATE, true, 0, true, true);
 	}
@@ -660,6 +867,8 @@ void CTabbedMDIWnd::ActivateTab(int nTab, bool bRedraw)
 		Invalidate();
 	else
 		InvalidateTabs();
+
+	UpdateToolTips();
 
 	if (bRedraw)
 		UpdateWindow();
@@ -696,6 +905,11 @@ int CTabbedMDIWnd::TabFromFrame(CWnd* pWnd)
 
 void CTabbedMDIWnd::OnUpdate(const Observable* source, const Message* message)
 {
+	if (message->code == APP_LANGUAGE_CHANGED)
+	{
+		m_strCloseTab = LoadString(IDS_CLOSE_TAB);
+		UpdateToolTips();
+	}
 }
 
 void CTabbedMDIWnd::EnsureVisible(int nTab)
@@ -719,6 +933,7 @@ void CTabbedMDIWnd::EnsureVisible(int nTab)
 	{
 		m_nScrollPos = nScrollPos;
 		UpdateToolTips();
+		UpdateHoverTab();
 		InvalidateTabs();
 	}
 }

@@ -21,6 +21,7 @@
 #pragma once
 
 #include "Drawing.h"
+#include "MyTheme.h"
 
 class CChildFrame;
 
@@ -91,6 +92,7 @@ protected:
 	CToolTipCtrl m_toolTip;
 	CImageList m_imgClose, m_imgSettings;
 	CRect m_rcClose, m_rcSettings;
+	HTHEME m_hTheme;
 
 	COffscreenDC m_offscreenDC;
 
@@ -111,6 +113,7 @@ protected:
 	afx_msg void OnInitialUpdate();
 	afx_msg void OnDestroy();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	afx_msg void OnThemeChanged();
 	afx_msg void OnSysColorChange();
 	DECLARE_MESSAGE_MAP()
 };

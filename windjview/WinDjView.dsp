@@ -563,6 +563,10 @@ SOURCE=.\res\close.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\close_tab.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\dictbar.bmp
 # End Source File
 # Begin Source File

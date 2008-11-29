@@ -44,6 +44,7 @@
 #define IDC_CURSOR_ZOOM_RECT            154
 #define IDC_CURSOR_SPLIT_HORZ           155
 #define IDB_SETTINGS                    156
+#define IDB_CLOSE_TAB                   157
 #define IDS_CONTENTS_TAB                200
 #define IDS_ASSOCIATE_SUCCESSFUL        201
 #define IDS_ASSOCIATE_FAILED            202
@@ -145,7 +146,7 @@
 #define IDS_COPY_SELECTION              299
 #define IDS_RESTART_NEEDED              300
 #define IDS_TOOLTIP_SETTINGS            301
-#define IDR_TAB_BAR                     302
+#define IDS_CLOSE_TAB                   302
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -348,13 +349,14 @@
 #define ID_TAB_CLOSE_OTHER              33159
 #define ID_WINDOW_NEXT                  33160
 #define ID_WINDOW_PREV                  33161
+#define ID_LAYOUT_RTL_ORDER             33162
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        303
-#define _APS_NEXT_COMMAND_VALUE         33162
+#define _APS_NEXT_COMMAND_VALUE         33163
 #define _APS_NEXT_CONTROL_VALUE         1095
 #define _APS_NEXT_SYMED_VALUE           116
 #endif

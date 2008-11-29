@@ -206,6 +206,7 @@ protected:
 	int m_nDisplayMode;
 	int m_nRotate;
 	bool m_bFirstPageAlone;
+	bool m_bRightToLeft;
 
 	CDisplaySettings m_displaySettings;
 
@@ -336,10 +337,12 @@ protected:
 	map<int, HFONT> m_fonts;
 
 	int m_nClickedPage;
-	bool m_bDragging, m_bDraggingPage, m_bDraggingText, m_bDraggingRect, m_bDraggingLink;
+	bool m_bDragging, m_bDraggingRight;
+	bool m_bDraggingPage, m_bDraggingText, m_bDraggingRect, m_bDraggingLink;
 	bool m_bPanning;
 	bool m_bPopupMenu;
 	void StopDragging();
+	void OnContextMenu();
 	CPoint m_ptStart, m_ptStartPos, m_ptPrevCursor;
 	int m_nStartPage, m_nPrevPage;
 	bool m_bClick;
@@ -372,7 +375,6 @@ protected:
 
 protected:
 	// Generated message map functions
-	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	afx_msg void OnPageInformation();
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnViewZoom(UINT nID);
@@ -396,6 +398,7 @@ protected:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnFilePrint();
 	afx_msg void OnViewLayout(UINT nID);
 	afx_msg void OnUpdateViewLayout(CCmdUI* pCmdUI);
@@ -424,7 +427,9 @@ protected:
 	afx_msg void OnViewGotoPage();
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnFirstPageAlone();
+	afx_msg void OnRightToLeftOrder();
 	afx_msg void OnUpdateFirstPageAlone(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateRightToLeftOrder(CCmdUI* pCmdUI);
 	afx_msg void OnMouseLeave();
 	afx_msg void OnHighlight(UINT nID);
 	afx_msg void OnUpdateHighlight(CCmdUI* pCmdUI);
@@ -434,6 +439,7 @@ protected:
 	afx_msg void OnZoomToSelection();
 	afx_msg void OnSwitchFocus(UINT nID);
 	afx_msg void OnUpdateSwitchFocus(CCmdUI* pCmdUI);
+	afx_msg LRESULT OnMDIActivate(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };
 

@@ -503,6 +503,7 @@ static const TCHAR pszAttrZoomType[] = _T("zoom-type");
 static const TCHAR pszAttrZoom[] = _T("zoom");
 static const TCHAR pszAttrLayout[] = _T("layout");
 static const TCHAR pszAttrFirstPage[] = _T("first-page");
+static const TCHAR pszAttrRightToLeft[] = _T("right-to-left");
 static const TCHAR pszAttrDisplayMode[] = _T("display-mode");
 static const TCHAR pszAttrRotate[] = _T("rotate");
 static const TCHAR pszAttrOpenSidebarTab[] = _T("sidebar-tab");
@@ -510,7 +511,8 @@ static const TCHAR pszTagBookmarks[] = _T("bookmarks");
 
 DocSettings::DocSettings()
 	: nPage(-1), ptOffset(0, 0), nZoomType(-10), fZoom(100.0), nLayout(-1),
-	  bFirstPageAlone(false), nDisplayMode(-1), nRotate(0), nOpenSidebarTab(-1)
+	  bFirstPageAlone(false), bRightToLeft(false), nDisplayMode(-1), nRotate(0),
+	  nOpenSidebarTab(-1)
 {
 }
 
@@ -520,10 +522,11 @@ GUTF8String DocSettings::GetXML() const
 
 	CString strHead;
 	strHead.Format(_T("<%s %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%.2lf%%\"")
-		_T(" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\">\n"),
+		_T(" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\">\n"),
 		pszTagSettings, pszAttrStartPage, nPage, pszAttrOffsetX, ptOffset.x,
 		pszAttrOffsetY, ptOffset.y, pszAttrZoomType, nZoomType, pszAttrZoom, fZoom,
 		pszAttrLayout, nLayout, pszAttrFirstPage, static_cast<int>(bFirstPageAlone),
+		pszAttrRightToLeft, static_cast<int>(bRightToLeft),
 		pszAttrDisplayMode, nDisplayMode, pszAttrRotate, nRotate,
 		pszAttrOpenSidebarTab, nOpenSidebarTab);
 
@@ -576,6 +579,10 @@ void DocSettings::Load(const XMLNode& node)
 	int nFirstPage;
 	if (node.GetIntAttribute(pszAttrFirstPage, nFirstPage))
 		bFirstPageAlone = (nFirstPage != 0);
+
+	int nRightToLeft;
+	if (node.GetIntAttribute(pszAttrRightToLeft, nRightToLeft))
+		bRightToLeft = (nRightToLeft != 0);
 
 	pageSettings.clear();
 	bookmarks.clear();

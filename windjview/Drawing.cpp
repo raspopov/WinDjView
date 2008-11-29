@@ -724,16 +724,49 @@ void HighlightRect(CDC* pDC, const CRect& rect, COLORREF color, double fTranspar
 	offscreenDC.Release();
 }
 
-void DrawDownArrow(CDC* pDC, const CRect& rect, COLORREF color)
+void DrawArrow(CDC* pDC, int nArrowType, const CRect& rect, COLORREF color)
 {
 	POINT points[3];
 
-	points[0].x = rect.left;
-	points[0].y = rect.top;
-	points[1].x = rect.right;
-	points[1].y = rect.top;
-	points[2].x = rect.CenterPoint().x;
-	points[2].y = rect.bottom;
+	switch (nArrowType)
+	{
+	case ARR_LEFT:
+		points[0].x = rect.left;
+		points[0].y = rect.CenterPoint().y;
+		points[1].x = rect.right;
+		points[1].y = rect.top;
+		points[2].x = rect.right;
+		points[2].y = rect.bottom;
+		break;
+
+	case ARR_RIGHT:
+		points[0].x = rect.left;
+		points[0].y = rect.top;
+		points[1].x = rect.right;
+		points[1].y = rect.CenterPoint().y;
+		points[2].x = rect.left;
+		points[2].y = rect.bottom;
+		break;
+
+	case ARR_UP:
+		points[0].x = rect.CenterPoint().x;
+		points[0].y = rect.top;
+		points[1].x = rect.right;
+		points[1].y = rect.bottom;
+		points[2].x = rect.left;
+		points[2].y = rect.bottom;
+		break;
+
+	case ARR_DOWN:
+	default:
+		points[0].x = rect.left;
+		points[0].y = rect.top;
+		points[1].x = rect.right;
+		points[1].y = rect.top;
+		points[2].x = rect.CenterPoint().x;
+		points[2].y = rect.bottom;
+		break;
+	}
 	
 	CBrush brush(color);
 	CPen pen(PS_SOLID, 1, color);

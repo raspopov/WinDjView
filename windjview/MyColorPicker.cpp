@@ -657,7 +657,7 @@ void CMyColorPicker::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 		rcArrow.top = rcDraw.CenterPoint().y - c_nArrowSizeY / 2;
 		rcArrow.bottom = rcDraw.CenterPoint().y + c_nArrowSizeY / 2;
 
-		DrawDownArrow(&m_offscreenDC, rcArrow, ::GetSysColor(bDisabled ? COLOR_GRAYTEXT : COLOR_WINDOWTEXT));
+		DrawArrow(&m_offscreenDC, ARR_DOWN, rcArrow, ::GetSysColor(bDisabled ? COLOR_GRAYTEXT : COLOR_WINDOWTEXT));
 
 		rcDraw.right = rcArrow.left - ::GetSystemMetrics(SM_CXEDGE) / 2 - 2;
 

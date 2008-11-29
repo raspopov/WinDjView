@@ -138,6 +138,7 @@ struct DocSettings : public Observable
 	double fZoom;
 	int nLayout;
 	bool bFirstPageAlone;
+	bool bRightToLeft;
 	int nDisplayMode;
 	int nRotate;
 	int nOpenSidebarTab;

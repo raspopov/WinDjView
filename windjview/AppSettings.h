@@ -124,7 +124,6 @@ struct CAppSettings
 	int nDefaultZoomType;
 	double fDefaultZoom;
 	int nDefaultLayout;
-	bool bFirstPageAlone;
 	int nDefaultMode;
 
 	bool bNavPaneHidden;

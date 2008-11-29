@@ -881,6 +881,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\close_tab.bmp"
+				>
+			</File>
+			<File
 				RelativePath="res\dictbar.bmp"
 				>
 			</File>

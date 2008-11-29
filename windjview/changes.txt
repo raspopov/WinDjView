@@ -10,6 +10,8 @@ Changes in version 0.6 (2008-??-??):
 + DPI value is now set when exporting page or selection as bitmap.
 + Added an option to enable continuous scrolling in fullscreen mode.
 + Thumbnail size can now be enlarged or reduced.
++ Drag mode is activated when right mouse button is pressed.
++ Added an option to order pages from right to left in facing mode.
 * Fixed saving "First page alone" setting for every document.
 * Fixed crash in magnify tool after rotating the page.
 * Fixed crash when compiled with Visual Studio 2005.

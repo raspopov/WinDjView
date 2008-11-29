@@ -128,7 +128,16 @@ void InvertFrame(CDC* pDC, const CRect& rect);
 void DrawDottedLine(CDC* pDC, const CPoint& ptStart, const CPoint& ptEnd, COLORREF color);
 void DrawDottedRect(CDC* pDC, const CRect& rect, COLORREF color);
 void HighlightRect(CDC* pDC, const CRect& rect, COLORREF color, double fTransparency);
-void DrawDownArrow(CDC* pDC, const CRect& rect, COLORREF color);
+
+enum ArrowType
+{
+	ARR_LEFT = 1,
+	ARR_RIGHT = 2,
+	ARR_UP = 3,
+	ARR_DOWN = 4
+};
+
+void DrawArrow(CDC* pDC, int nArrowType, const CRect& rect, COLORREF color);
 
 COLORREF ChangeBrightness(COLORREF color, double fFactor);
 COLORREF AlphaCombine(COLORREF crFirst, COLORREF crSecond, BYTE nAlpha);

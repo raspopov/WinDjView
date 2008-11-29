@@ -53,7 +53,7 @@ protected:
 	{
 		CWnd* pWnd;
 		CString strName;
-		CRect rcTab;
+		CRect rcTab, rcClose;
 	};
 	vector<Tab> m_tabs;
 	int m_nActiveTab;
@@ -66,15 +66,23 @@ protected:
 	CRect m_rcContent;
 	int m_nScrollPos;
 	bool m_bShowArrows;
+	CRect m_rcLeftArrow, m_rcRightArrow;
+	bool m_bHoverLeft, m_bHoverRight, m_bHoverClose;
+	int m_nClosePressedTab;
 	bool m_bTabBarHidden;
+	CImageList m_imgClose;
+	bool m_bIgnoreMouseLeave;
 
 	CToolTipCtrl m_toolTip;
+	CString m_strCloseTab;
 	COffscreenDC m_offscreenDC;
 
+	bool HasCloseButton(int nTab, CRect* prcClose = NULL);
 	void UpdateMetrics();
 	void UpdateTabRects();
 	void UpdateScrollState();
 	void UpdateToolTips();
+	void UpdateHoverTab();
 	void DrawTab(CDC* pDC, int nTab);
 	void DrawActiveTabRect(CDC* pDC, const CRect& rect, bool bHover = false);
 	void DrawInactiveTabRect(CDC* pDC, const CRect& rect,
@@ -92,7 +100,10 @@ protected:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnMouseLeave();
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint pos);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();

@@ -32,7 +32,7 @@
 
 IMPLEMENT_DYNCREATE(CNavPaneWnd, CWnd)
 CNavPaneWnd::CNavPaneWnd()
-	: m_nActiveTab(-1), m_bCloseActive(false), m_bClosePressed(false),
+	: m_nActiveTab(-1), m_hTheme(NULL), m_bCloseActive(false), m_bClosePressed(false),
 	  m_bSettingsActive(false), m_bSettingsPressed(false), m_bDragging(false)
 {
 	CFont systemFont;
@@ -66,6 +66,7 @@ BEGIN_MESSAGE_MAP(CNavPaneWnd, CWnd)
 	ON_MESSAGE_VOID(WM_INITIALUPDATE, OnInitialUpdate)
 	ON_WM_DESTROY()
 	ON_WM_SETFOCUS()
+	ON_MESSAGE_VOID(WM_THEMECHANGED, OnThemeChanged)
 	ON_WM_SYSCOLORCHANGE()
 END_MESSAGE_MAP()
 
@@ -146,27 +147,51 @@ void CNavPaneWnd::OnPaint()
 	if (rcClient.Width() > 70)
 	{
 		// Close button
-		if (m_bClosePressed)
-			dc.Draw3dRect(m_rcClose, clrShadow, clrHilight);
-		else if (m_bCloseActive)
-			dc.Draw3dRect(m_rcClose, clrHilight, clrShadow);
+		if (m_hTheme != NULL)
+		{
+			if (m_bClosePressed)
+				XPDrawThemeBackground(m_hTheme, dc.m_hDC, TP_BUTTON, TS_PRESSED, m_rcClose, NULL);
+			else if (m_bCloseActive)
+				XPDrawThemeBackground(m_hTheme, dc.m_hDC, TP_BUTTON, TS_HOT, m_rcClose, NULL);
+		}
+		else
+		{
+			if (m_bClosePressed)
+				dc.Draw3dRect(m_rcClose, clrShadow, clrHilight);
+			else if (m_bCloseActive)
+				dc.Draw3dRect(m_rcClose, clrHilight, clrShadow);
+		}
 
-		CPoint ptOffset = m_rcClose.TopLeft() + CPoint(4, 3);
+		CPoint ptOffset(m_rcClose.left + (m_rcClose.Width() - 10) / 2,
+				m_rcClose.top + (m_rcClose.Height() - 10) / 2);
 		if (m_bClosePressed)
-			ptOffset.Offset(1, 1);
+			ptOffset.Offset(1, m_hTheme != NULL ? 0 : 1);
+
 		m_imgClose.Draw(&dc, 0, ptOffset, ILD_NORMAL);
 
 		// Settings button
 		if (m_nActiveTab != -1 && m_tabs[m_nActiveTab].bHasSettings)
 		{
-			if (m_bSettingsPressed)
-				dc.Draw3dRect(m_rcSettings, clrShadow, clrHilight);
-			else if (m_bSettingsActive)
-				dc.Draw3dRect(m_rcSettings, clrHilight, clrShadow);
+			if (m_hTheme != NULL)
+			{
+				if (m_bSettingsPressed)
+					XPDrawThemeBackground(m_hTheme, dc.m_hDC, TP_BUTTON, TS_PRESSED, m_rcSettings, NULL);
+				else if (m_bSettingsActive)
+					XPDrawThemeBackground(m_hTheme, dc.m_hDC, TP_BUTTON, TS_HOT, m_rcSettings, NULL);
+			}
+			else
+			{
+				if (m_bSettingsPressed)
+					dc.Draw3dRect(m_rcSettings, clrShadow, clrHilight);
+				else if (m_bSettingsActive)
+					dc.Draw3dRect(m_rcSettings, clrHilight, clrShadow);
+			}
 
-			CPoint ptOffset2 = m_rcSettings.TopLeft() + CPoint(4, 4);
+			CPoint ptOffset2(m_rcSettings.left + (m_rcSettings.Width() - 10) / 2,
+					m_rcSettings.top + (m_rcSettings.Height() - 10) / 2);
 			if (m_bSettingsPressed)
-				ptOffset2.Offset(1, 1);
+				ptOffset2.Offset(1, m_hTheme != NULL ? 0 : 1);
+
 			m_imgSettings.Draw(&dc, 0, ptOffset2, ILD_NORMAL);
 		}
 	}
@@ -502,6 +527,9 @@ int CNavPaneWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	bitmap.LoadBitmap(IDB_SETTINGS);
 	m_imgSettings.Add(&bitmap, RGB(255, 255, 255));
 
+	if (IsThemed())
+		m_hTheme = XPOpenThemeData(m_hWnd, L"TOOLBAR");
+
 	theApp.AddObserver(this);
 
 	return 0;
@@ -524,6 +552,12 @@ void CNavPaneWnd::OnInitialUpdate()
 void CNavPaneWnd::OnDestroy()
 {
 	theApp.RemoveObserver(this);
+
+	if (m_hTheme != NULL)
+	{
+		XPCloseThemeData(m_hTheme);
+		m_hTheme = NULL;
+	}
 
 	CWnd::OnDestroy();
 }
@@ -717,6 +751,19 @@ CChildFrame* CNavPaneWnd::GetParentFrame() const
 CWnd* CNavPaneWnd::GetActiveTab() const
 {
 	return (m_nActiveTab != -1 ? m_tabs[m_nActiveTab].pWnd : NULL);
+}
+
+void CNavPaneWnd::OnThemeChanged()
+{
+	if (m_hTheme != NULL)
+		XPCloseThemeData(m_hTheme);
+
+	m_hTheme = NULL;
+
+	if (IsThemed())
+		m_hTheme = XPOpenThemeData(m_hWnd, L"TOOLBAR");
+
+	Invalidate();
 }
 
 void CNavPaneWnd::OnSysColorChange()
