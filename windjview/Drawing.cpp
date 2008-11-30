@@ -334,15 +334,23 @@ void CDIB::Create(const BITMAPINFO* pBMI)
 			// Try to create a mapped file section
 			m_hFile = ::CreateFile(strTempFile, GENERIC_READ | GENERIC_WRITE,
 				0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE, NULL);
-			m_hSection = ::CreateFileMapping(m_hFile, NULL,
-				PAGE_READWRITE, 0, nBitsSize, NULL);
+			if (m_hFile != NULL && m_hFile != INVALID_HANDLE_VALUE)
+			{
+				m_hSection = ::CreateFileMapping(m_hFile, NULL,
+					PAGE_READWRITE, 0, nBitsSize, NULL);
+				if (m_hSection != NULL)
+				{
+					hBitmap = ::CreateDIBSection(NULL, m_pBMI, DIB_RGB_COLORS,
+							(VOID**)&m_pBits, m_hSection, 0);
+				}
+			}
 
-			hBitmap = ::CreateDIBSection(NULL, m_pBMI, DIB_RGB_COLORS,
-				(VOID**)&m_pBits, m_hSection, 0);
 			if (hBitmap == NULL)
 			{
-				::CloseHandle(m_hSection);
-				::CloseHandle(m_hFile);
+				if (m_hSection != NULL)
+					::CloseHandle(m_hSection);
+				if (m_hFile != NULL && m_hFile != INVALID_HANDLE_VALUE)
+					::CloseHandle(m_hFile);
 				m_hSection = NULL;
 				m_hFile = NULL;
 			}

@@ -461,6 +461,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DocPropertiesDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="Drawing.cpp"
 				>
 			</File>
@@ -697,6 +701,10 @@
 			</File>
 			<File
 				RelativePath="DjVuView.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DocPropertiesDlg.h"
 				>
 			</File>
 			<File

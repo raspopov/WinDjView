@@ -144,8 +144,8 @@ protected:
 	void UpdateHoverNode();
 	void UpdateHoverNode(const CPoint& point);
 	void SelectNode(TreeNode* pNode, UINT nAction = TVC_UNKNOWN);
-	void ToggleNode(TreeNode* pNode);
-	void ExpandNode(TreeNode* pNode, bool bExpand = true);
+	void ToggleNode(TreeNode* pNode, bool bAllChildren = false);
+	void ExpandNode(TreeNode* pNode, bool bExpand = true, bool bAllChildren = false);
 	TreeNode* FindNextNode(TreeNode* pNode);
 	TreeNode* FindPrevNode(TreeNode* pNode);
 	TreeNode* FindNextPageNode(TreeNode* pNode);

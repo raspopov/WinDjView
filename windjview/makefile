@@ -62,6 +62,7 @@ LINK_OBJS = \
 	"$(INTDIR)\DjVuDoc.obj" \
 	"$(INTDIR)\DjVuSource.obj" \
 	"$(INTDIR)\DjVuView.obj" \
+	"$(INTDIR)\DocPropertiesDlg.obj" \
 	"$(INTDIR)\Drawing.obj" \
 	"$(INTDIR)\FindDlg.obj" \
 	"$(INTDIR)\FullscreenWnd.obj" \
@@ -116,6 +117,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\DjVuDoc.obj" : DjVuDoc.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DjVuSource.obj" : DjVuSource.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DjVuView.obj" : DjVuView.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\DocPropertiesDlg.obj" : DocPropertiesDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\Drawing.obj" : Drawing.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\FindDlg.obj" : FindDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\FullscreenWnd.obj" : FullscreenWnd.cpp "$(INTDIR)" $(PCH)

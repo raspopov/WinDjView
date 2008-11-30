@@ -178,6 +178,10 @@ SOURCE=.\DjVuView.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\DocPropertiesDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Drawing.cpp
 # End Source File
 # Begin Source File
@@ -376,6 +380,10 @@ SOURCE=.\DjVuSource.h
 # Begin Source File
 
 SOURCE=.\DjVuView.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\DocPropertiesDlg.h
 # End Source File
 # Begin Source File
 

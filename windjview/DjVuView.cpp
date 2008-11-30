@@ -4214,7 +4214,14 @@ void CDjVuView::OnUpdateExportSelection(CCmdUI* pCmdUI)
 void CDjVuView::OnFindString()
 {
 	CWaitCursor wait;
-	CFindDlg* pDlg = theApp.GetFindDlg();
+	CFindDlg* pDlg = theApp.GetFindDlg(false);
+	if (pDlg == NULL)
+	{
+		GetMainFrame()->SendMessage(WM_COMMAND, ID_EDIT_FIND);
+		return;
+	}
+
+	GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
 
 	GUTF8String strFindUTF8 = MakeUTF8String(pDlg->m_strFind);
 	GUTF8String strFindUp;

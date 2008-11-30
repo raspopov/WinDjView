@@ -721,7 +721,8 @@ void CMyTreeCtrl::OnLButtonDown(UINT nFlags, CPoint point)
 		{
 			if (pNode->HasChildren())
 			{
-				ToggleNode(pNode);
+				bool bAllChildren = (nFlags & (MK_CONTROL | MK_SHIFT)) != 0;
+				ToggleNode(pNode, bAllChildren);
 			}
 		}
 	}
@@ -1266,8 +1267,16 @@ void CMyTreeCtrl::SelectNode(TreeNode* pNode, UINT nAction)
 	UpdateWindow();
 }
 
-void CMyTreeCtrl::ExpandNode(TreeNode* pNode, bool bExpand)
+void CMyTreeCtrl::ExpandNode(TreeNode* pNode, bool bExpand, bool bAllChildren)
 {
+	bool bBatchUpdate = m_bBatchUpdate;
+	if (bAllChildren)
+	{
+		m_bBatchUpdate = true;
+		for (TreeNode* pChild = pNode->pChild; pChild != NULL; pChild = pChild->pNext)
+			ExpandNode(pChild, bExpand, true);
+	}
+
 	if (pNode->bCollapsed == !bExpand)
 		return;
 
@@ -1296,6 +1305,7 @@ void CMyTreeCtrl::ExpandNode(TreeNode* pNode, bool bExpand)
 
 	GetParent()->SendMessage(WM_NOTIFY, GetDlgCtrlID(), (LPARAM) &nmtv);
 
+	m_bBatchUpdate = bBatchUpdate;
 	if (!m_bBatchUpdate)
 	{
 		RecalcLayout();
@@ -1305,9 +1315,9 @@ void CMyTreeCtrl::ExpandNode(TreeNode* pNode, bool bExpand)
 	}
 }
 
-void CMyTreeCtrl::ToggleNode(TreeNode* pNode)
+void CMyTreeCtrl::ToggleNode(TreeNode* pNode, bool bAllChildren)
 {
-	ExpandNode(pNode, pNode->bCollapsed);
+	ExpandNode(pNode, pNode->bCollapsed, bAllChildren);
 }
 
 bool CMyTreeCtrl::Expand(HTREEITEM hItem, UINT nCode)

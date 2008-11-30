@@ -12,8 +12,11 @@ Changes in version 0.6 (2008-??-??):
 + Thumbnail size can now be enlarged or reduced.
 + Drag mode is activated when right mouse button is pressed.
 + Added an option to order pages from right to left in facing mode.
++ Document properties can be accessed from the File menu.
++ Added F3 hotkey for Find Next.
 * Fixed saving "First page alone" setting for every document.
 * Fixed crash in magnify tool after rotating the page.
+* Fixed crash when exiting fullscreen mode.
 * Fixed crash when compiled with Visual Studio 2005.
 
 Changes in version 0.5 (2007-05-30):

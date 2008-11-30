@@ -151,3 +151,16 @@ using namespace std;
 #ifndef BCM_SETSHIELD
 #define BCM_SETSHIELD (BCM_FIRST + 0x000C)
 #endif
+
+#ifndef LVS_EX_DOUBLEBUFFER
+#define LVS_EX_DOUBLEBUFFER 0x00010000
+#endif
+
+#ifndef LVS_EX_LABELTIP
+#define LVS_EX_LABELTIP 0x00004000
+#endif
+
+#ifndef HDF_SORTUP
+#define HDF_SORTUP 0x0400
+#define HDF_SORTDOWN 0x0200
+#endif

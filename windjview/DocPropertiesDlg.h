@@ -21,45 +21,49 @@
 #pragma once
 
 #include "MyDialog.h"
-class CMainFrame;
+class DjVuSource;
 
+// CDocPropertiesDlg dialog
 
-// CFindDlg dialog
-
-class CFindDlg : public CMyDialog
+class CDocPropertiesDlg : public CMyDialog
 {
-	DECLARE_DYNAMIC(CFindDlg)
+	DECLARE_DYNAMIC(CDocPropertiesDlg)
 
 public:
-	CFindDlg(CWnd* pParent = NULL);
-	virtual ~CFindDlg();
-
-	void SetStatusText(const CString& strStatus);
-	CMainFrame* GetMainFrame();
+	CDocPropertiesDlg(DjVuSource* pSource, CWnd* pParent = NULL);
+	virtual ~CDocPropertiesDlg();
 
 // Dialog Data
-	enum { IDD = IDD_FIND };
-	CString m_strFind;
-	CComboBoxEx m_cboFind;
-	BOOL m_bMatchCase;
-
-// Overrides
-public:
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	enum { IDD = IDD_DOC_PROPERTIES };
+	CString m_strDocName;
+	CString m_strDocType;
+	int m_nDocSize;
+	int m_nPages;
+	int m_nFiles;
+	CListCtrl m_listFiles;
+	BOOL m_bShowAllFiles;
 
 protected:
-	void UpdateButtons();
-	void UpdateSearchHistory();
-	void InitSearchHistory();
+	struct FileInfo
+	{
+		int nIndex;
+		int nPageIndex;
+		CString strName;
+		CString strType;
+		int nSize;
+	};
+	vector<FileInfo> m_files;
+	bool m_bHideShowAll;
+	int m_nSortBy;
+	bool m_bSortAsc;
+
+	void PopulateFiles();
+	void SortFiles();
+	static int CALLBACK CompareFiles(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
 
 	virtual BOOL OnInitDialog();
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	virtual void OnOK();
-	virtual void OnCancel();
-	afx_msg void OnClose();
-	afx_msg void OnFindAll();
-	afx_msg void OnEnChangeFind();
-	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
-	afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
+	virtual void DoDataExchange(CDataExchange* pDX);
+	afx_msg void OnShowAllFiles();
+	afx_msg void OnSortFiles(NMHDR* pNMHDR, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
 };

@@ -1695,7 +1695,7 @@ bool CDjViewApp::LoadDictionaryInfoFromDisk(DictionaryInfo& info)
 {
 	HANDLE hFile = ::CreateFile(info.strPathName, GENERIC_READ,
 			FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
-	if (hFile == NULL)
+	if (hFile == NULL || hFile == INVALID_HANDLE_VALUE)
 		return false;
 
 	FILETIME ftModified;

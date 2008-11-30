@@ -90,8 +90,7 @@ void CFindDlg::OnOK()
 
 	UpdateSearchHistory();
 
-	GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
-	GetParent()->SendMessage(WM_COMMAND, ID_FIND_STRING);
+	GetMainFrame()->SendMessage(WM_COMMAND, ID_FIND_STRING);
 }
 
 void CFindDlg::OnCancel()
@@ -171,4 +170,21 @@ void CFindDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 		InitSearchHistory();
 
 	CMyDialog::OnActivate(nState, pWndOther, bMinimized);
+}
+
+BOOL CFindDlg::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE && pMsg->wParam == VK_F3)
+	{
+		bool bShiftPressed = (::GetKeyState(VK_SHIFT) & 0x8000) != 0;
+		bool bControlPressed = (::GetKeyState(VK_CONTROL) & 0x8000) != 0;
+		bool bAltPressed = (::GetKeyState(VK_MENU) & 0x8000) != 0;
+		if (!bControlPressed && !bShiftPressed && !bAltPressed)
+		{
+			OnOK();
+			return true;
+		}
+	}
+
+	return CDialog::PreTranslateMessage(pMsg);
 }

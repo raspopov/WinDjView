@@ -486,7 +486,10 @@ GURL::protocol(const GUTF8String& url)
    const char * const url_ptr=url;
    const char * ptr=url_ptr;
    for(char c=*ptr;
-     c && (isalnum(c) || c == '+' || c == '-' || c == '.');
+//< Changed for WinDjView project
+//     c && (isalnum(c) || c == '+' || c == '-' || c == '.');
+     c && (isalnum(static_cast<unsigned char>(c)) || c == '+' || c == '-' || c == '.');
+//>
      c=*(++ptr)) EMPTY_LOOP;
    return(*ptr==colon)?GUTF8String(url_ptr, ptr-url_ptr):GUTF8String();
 }

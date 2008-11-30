@@ -27,6 +27,7 @@
 #include "MDIChild.h"
 #include "MyFileDialog.h"
 #include "InstallDicDlg.h"
+#include "DocPropertiesDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -44,6 +45,7 @@ BEGIN_MESSAGE_MAP(CDjVuDoc, CDocument)
 	ON_COMMAND(ID_FILE_INSTALL, OnFileInstall)
 	ON_UPDATE_COMMAND_UI(ID_FILE_INSTALL, OnUpdateFileInstall)
 	ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
+	ON_COMMAND(ID_FILE_DOC_PROPERTIES, OnFileDocProperties)
 END_MESSAGE_MAP()
 
 
@@ -331,11 +333,14 @@ void CDjVuDoc::OnCloseDocument()
 	BOOL bAutoDelete = m_bAutoDelete;
 	m_bAutoDelete = false;  // don't destroy document while closing views
 
-	CDjVuView* pView = GetDjVuView();
-	if (pView != NULL)
+	POSITION pos = GetFirstViewPosition();
+	while (pos != NULL)
 	{
+		CDjVuView* pView = (CDjVuView*) GetNextView(pos);
 		CMDIChild* pMDIChild = pView->GetMDIChild();
 		pView->GetMainFrame()->CloseMDIChild(pMDIChild);
+
+		pos = GetFirstViewPosition();
 	}
 
 	m_bAutoDelete = bAutoDelete;
@@ -346,4 +351,10 @@ void CDjVuDoc::OnCloseDocument()
 	// delete the document if necessary
 	if (m_bAutoDelete)
 		delete this;
+}
+
+void CDjVuDoc::OnFileDocProperties()
+{
+	CDocPropertiesDlg dlg(m_pSource);
+	dlg.DoModal();
 }

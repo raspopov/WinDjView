@@ -73,7 +73,7 @@ BOOL CSettingsDictPage::OnInitDialog()
 	m_imgList.Create(1, 16, ILC_COLOR24 | ILC_MASK, 0, 1);
 	m_list.SetImageList(&m_imgList, LVSIL_SMALL);
 
-	m_list.SetExtendedStyle(LVS_EX_FULLROWSELECT);
+	m_list.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
 
 	CRect rcClient;
 	m_list.GetClientRect(rcClient);
