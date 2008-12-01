@@ -98,6 +98,17 @@ const char GMapArea::BORDER_AVIS_TAG[] = 	"border_avis";
 const char GMapArea::HILITE_TAG[] = 		"hilite";
 const char GMapArea::URL_TAG[] = 		"url";
 const char GMapArea::TARGET_SELF[] = 		"_self";
+//< Changed for WinDjView project
+const char GMapArea::TEXT_TAG[] = 		"text";
+const char GMapArea::LINE_TAG[] = 		"line";
+const char GMapArea::OPACITY_TAG[] = 		"opacity";
+const char GMapArea::ARROW_TAG[] = 		"arrow";
+const char GMapArea::WIDTH_TAG[] = 		"width";
+const char GMapArea::LINECLR_TAG[] = 		"lineclr";
+const char GMapArea::BACKCLR_TAG[] = 		"backclr";
+const char GMapArea::TEXTCLR_TAG[] = 		"textclr";
+const char GMapArea::PUSHPIN_TAG[] = 		"pushpin";
+//>
 static const char zero_width[] = ERR_MSG("GMapAreas.zero_width");
 static const char zero_height[] = ERR_MSG("GMapAreas.zero_height");
 static const char width_1[] = ERR_MSG("GMapAreas.width_1");
@@ -341,8 +352,47 @@ GMapArea::print(void)
    GUTF8String total=left+MAPAREA_TAG+space+URL+space+quote+comment1+quote+space+gma_print()+border_type_str;
    if (border_always_visible)
      total+=space+left+BORDER_AVIS_TAG+right;
-   if ( hilite_str.length() > 0 )
-     total+=space+hilite_str;
+
+//< Changed for WinDjView project
+//   if ( hilite_str.length() > 0 )
+//     total+=space+hilite_str;
+
+   GUTF8String foreground_color_str;
+   foreground_color_str.format("#%02X%02X%02X",
+       (foreground_color & 0xff0000) >> 16,
+       (foreground_color & 0xff00) >> 8,
+       (foreground_color & 0xff));
+
+   if (is_text)
+   {
+     GUTF8String background_color_str;
+     if (hilite_color!=0xffffffff)
+     {
+       background_color_str.format("#%02X%02X%02X",
+           (hilite_color & 0xff0000) >> 16,
+           (hilite_color & 0xff00) >> 8,
+           (hilite_color & 0xff));
+     }
+
+     total += space+left+TEXTCLR_TAG+space+foreground_color_str+right;
+     if (background_color_str.length() > 0)
+       total+=space+left+BACKCLR_TAG+space+background_color_str+right;
+     if (has_pushpin)
+       total+=space+left+PUSHPIN_TAG+right;
+   } else if (is_line)
+   {
+     total += space+left+LINECLR_TAG+space+foreground_color_str+right;
+     total += space+left+WIDTH_TAG+space+GUTF8String(line_width)+right;
+     if (has_arrow)
+       total+=space+left+ARROW_TAG+right;
+   } else
+   {
+     if (get_shape_type() == RECT)
+       total+=space+left+OPACITY_TAG+space+GUTF8String(opacity)+right;
+     if (hilite_str.length() > 0)
+       total+=space+hilite_str;
+   }
+//>
    total+=right;
    return total;
 }
@@ -463,15 +513,16 @@ GMapPoly::does_side_cross_rect(const GRect & grect, int side)
    int ymax=y1+y2-ymin;
 
    if (xmax<grect.xmin || xmin>grect.xmax ||
-       ymax<grect.ymin || ymin>grect.ymax) return false;
+       ymax<grect.ymin || ymin>grect.ymax)
+     return false;
 
    return
-      x1>=grect.xmin && x1<=grect.xmax && y1>=grect.ymin && y1<=grect.ymax ||
-      x2>=grect.xmin && x2<=grect.xmax && y2>=grect.ymin && y2<=grect.ymax ||
-      do_segments_intersect(grect.xmin, grect.ymin, grect.xmax, grect.ymax,
-			    x1, y1, x2, y2) ||
-      do_segments_intersect(grect.xmax, grect.ymin, grect.xmin, grect.ymax,
-			    x1, y1, x2, y2);
+     (x1>=grect.xmin && x1<=grect.xmax && y1>=grect.ymin && y1<=grect.ymax) ||
+     (x2>=grect.xmin && x2<=grect.xmax && y2>=grect.ymin && y2<=grect.ymax) ||
+     do_segments_intersect(grect.xmin, grect.ymin, grect.xmax, grect.ymax,
+			   x1, y1, x2, y2) ||
+     do_segments_intersect(grect.xmax, grect.ymin, grect.xmin, grect.ymax,
+			   x1, y1, x2, y2);
 }
 
 bool
@@ -514,59 +565,55 @@ GMapPoly::are_segments_parallel(int x11, int y11, int x12, int y12,
 char const * const
 GMapPoly::check_data(void)
 {
-  if (open && points<2 || !open && points<3) 
+  if ((open && points<2) || (!open && points<3))
     return error_too_few_points;
   for(int i=0;i<sides;i++)
-  {
-    for(int j=i+2;j<sides;j++)
     {
-      if (i != (j+1)%points )
-      {
-        if (do_segments_intersect(xx[i], yy[i], xx[i+1], yy[i+1],
+      for(int j=i+2;j<sides;j++)
+	{
+	  if (i != (j+1)%points )
+	    if (do_segments_intersect(xx[i], yy[i], xx[i+1], yy[i+1],
 				      xx[j], yy[j], xx[(j+1)%points], yy[(j+1)%points]))
-        {
-          return error_intersect;
-        }
-      }
+	      return error_intersect;
+	}
     }
-  }
   return "";
 }
 
 void
 GMapPoly::optimize_data(void)
 {
-   // Removing segments of length zero
-   int i;
-   for(i=0;i<sides;i++)
-   {
+  // Removing segments of length zero
+  int i;
+  for(i=0;i<sides;i++)
+    {
       while(xx[i]==xx[(i+1)%points] && yy[i]==yy[(i+1)%points])
-      {
-	 for(int k=(i+1)%points;k<points-1;k++)
-	 {
-	    xx[k]=xx[k+1]; yy[k]=yy[k+1];
-	 }
-	 points--; sides--;
-	 if (!points) return;
-      }
-   }
-   // Concatenating consequitive parallel segments
-   for(i=0;i<sides;i++)
-   {
-      while((open && i+1<sides || !open) &&
+	{
+	  for(int k=(i+1)%points;k<points-1;k++)
+	    {
+	      xx[k]=xx[k+1]; yy[k]=yy[k+1];
+	    }
+	  points--; sides--;
+	  if (!points) return;
+	}
+    }
+  // Concatenating consequitive parallel segments
+  for(i=0;i<sides;i++)
+    {
+      while(((open && i+1<sides) || !open) &&
 	    are_segments_parallel(xx[i], yy[i],
 				  xx[(i+1)%points], yy[(i+1)%points],
 				  xx[(i+1)%points], yy[(i+1)%points],
 				  xx[(i+2)%points], yy[(i+2)%points]))
-      {
-	 for(int k=(i+1)%points;k<points-1;k++)
-	 {
-	    xx[k]=xx[k+1]; yy[k]=yy[k+1];
-	 }
-	 points--; sides--;
-	 if (!points) return;
-      }
-   }
+	{
+	  for(int k=(i+1)%points;k<points-1;k++)
+	    {
+	      xx[k]=xx[k+1]; yy[k]=yy[k+1];
+	    }
+	  points--; sides--;
+	  if (!points) return;
+	}
+    }
 }
 
 bool
@@ -574,9 +621,9 @@ GMapPoly::gma_is_point_inside(const int xin, const int yin) const
 {
    if (open)
      return false;
-   
+
    int xfar=get_xmax()+(get_xmax()-get_xmin());
-   
+
    int intersections=0;
    for(int i=0;i<points;i++)
    {
@@ -594,7 +641,7 @@ GMapPoly::gma_is_point_inside(const int xin, const int yin) const
 	    return true;
 	 }
       }
-      if (res1<0 && res2>0 || res1>0 && res2<0)
+      if ((res1<0 && res2>0) || (res1>0 && res2<0))
       {
 	 int x1=xx[i%points], y1=yy[i%points];
 	 int x2=xx[(i+1)%points], y2=yy[(i+1)%points];
@@ -889,7 +936,12 @@ GMapOval::unmap(GRectMapper &mapper)
 
 GMapArea::GMapArea(void) : target("_self"), border_type(NO_BORDER),
    border_always_visible(false), border_color(0xff), border_width(1),
-   hilite_color(0xffffffff), bounds_initialized(0) {}
+//< Changed for WinDjView project
+//   hilite_color(0xffffffff), bounds_initialized(0) {}
+   hilite_color(0xffffffff), bounds_initialized(0), opacity(50),
+   is_text(false), has_pushpin(false), foreground_color(0),
+   is_line(false), line_width(1) {}
+//>
 
 GMapRect::GMapRect(void) : xmin(0), ymin(0), xmax(0), ymax(0) {}
 

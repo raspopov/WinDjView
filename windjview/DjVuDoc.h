@@ -64,5 +64,8 @@ protected:
 	afx_msg void OnUpdateFileInstall(CCmdUI* pCmdUI);
 	afx_msg void OnFileClose();
 	afx_msg void OnFileDocProperties();
+	afx_msg void OnFileExportBookmarks();
+	afx_msg void OnUpdateFileExportBookmarks(CCmdUI* pCmdUI);
+	afx_msg void OnFileImportBookmarks();
 	DECLARE_MESSAGE_MAP()
 };

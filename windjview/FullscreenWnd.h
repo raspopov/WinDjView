@@ -51,7 +51,6 @@ protected:
 
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-	afx_msg BOOL OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnClose();
 	afx_msg void OnDestroy();
 	afx_msg LRESULT OnAppCommand(WPARAM wParam, LPARAM lParam);

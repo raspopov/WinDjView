@@ -46,6 +46,7 @@
 #define IDC_CURSOR_SPLIT_HORZ           152
 #define IDB_SETTINGS                    153
 #define IDB_CLOSE_TAB                   154
+#define IDR_DICTIONARIES_BAR            155
 #define IDS_CONTENTS_TAB                200
 #define IDS_ASSOCIATE_SUCCESSFUL        201
 #define IDS_ASSOCIATE_FAILED            202
@@ -136,21 +137,28 @@
 #define IDS_INSTALLATION_SUCCEEDED      287
 #define IDS_ERROR_PARSING_RANGE         288
 #define IDS_PATH_TOO_LONG               289
-#define IDR_DICTIONARIES_BAR            290
-#define IDS_DICTBAR_TITLE               291
-#define IDS_LANG_NOT_SPECIFIED          292
-#define IDS_UNINSTALL_DICT              293
-#define IDS_UNINSTALL_FAILED            294
-#define IDS_PRINT_BOOKLET               295
-#define IDS_DICT_LOCATION_PROMPT        296
-#define IDS_INVALID_DIR                 297
-#define IDS_COPY_SELECTION              298
-#define IDS_RESTART_NEEDED              299
-#define IDS_TOOLTIP_SETTINGS            300
-#define IDS_CLOSE_TAB                   301
-#define IDS_DOC_TYPES                   302
-#define IDS_FILE_TYPES                  303
-#define IDS_DOC_FILES_COLUMNS           304
+#define IDS_DICTBAR_TITLE               290
+#define IDS_LANG_NOT_SPECIFIED          291
+#define IDS_UNINSTALL_DICT              292
+#define IDS_UNINSTALL_FAILED            293
+#define IDS_PRINT_BOOKLET               294
+#define IDS_DICT_LOCATION_PROMPT        295
+#define IDS_INVALID_DIR                 296
+#define IDS_COPY_SELECTION              297
+#define IDS_RESTART_NEEDED              298
+#define IDS_TOOLTIP_SETTINGS            299
+#define IDS_CLOSE_TAB                   300
+#define IDS_DOC_TYPES                   301
+#define IDS_FILE_TYPES                  302
+#define IDS_DOC_FILES_COLUMNS           303
+#define IDS_BOOKMARKS_FILTER            304
+#define IDS_EXPORT_BOOKMARKS			305
+#define IDS_IMPORT_BOOKMARKS            306
+#define IDS_CANNOT_OPEN_BOOKMARKS       307
+#define IDS_CANNOT_READ_BOOKMARKS       308
+#define IDS_BOOKMARKS_EMPTY             309
+#define IDS_BOOKMARKS_PROMPT            310
+#define IDS_BOOKMARKS_PROMPT_CAPTIONS   311
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -361,14 +369,16 @@
 #define ID_WINDOW_PREV                  33126
 #define ID_LAYOUT_RTL_ORDER             33127
 #define ID_FILE_DOC_PROPERTIES          33128
+#define ID_FILE_IMPORT_BOOKMARKS        33129
+#define ID_FILE_EXPORT_BOOKMARKS        33130
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        305
-#define _APS_NEXT_COMMAND_VALUE         33129
-#define _APS_NEXT_CONTROL_VALUE         1106
+#define _APS_NEXT_RESOURCE_VALUE        312
+#define _APS_NEXT_COMMAND_VALUE         33131
+#define _APS_NEXT_CONTROL_VALUE         1107
 #define _APS_NEXT_SYMED_VALUE           117
 #endif
 #endif

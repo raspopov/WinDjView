@@ -100,6 +100,7 @@
 #endif
 
 #include "DjVuGlobal.h"
+#include "atomic.h"
 
 #ifdef HAVE_NAMESPACES
 namespace DJVU {
@@ -115,8 +116,12 @@ namespace DJVU {
     Any instance of a subclass of #GPEnabled# can be used with 
     smart-pointers (see \Ref{GP}).  
  */
-class GPEnabled
+class DJVUAPI GPEnabled
 {
+  friend class GPBase;
+  void destroy();
+  void unref();
+  void ref();
 public:
   /// Null constructor.
   GPEnabled();
@@ -132,11 +137,6 @@ public:
 protected:
   /// The reference counter
   volatile int count;
-private:
-  friend class GPBase;
-  void unref();
-  void ref();
-  void destroy();
 };
 
 
@@ -148,7 +148,7 @@ private:
     in reducing the template expansion overhead.
 */
 
-class GPBase
+class DJVUAPI GPBase
 {
 public:
   /** Null Constructor. */
@@ -205,8 +205,10 @@ protected:
     The first time you use a smart-pointer to access #GPEnabled# object, the
     reference counter is incremented to one. Object destruction will then
     happen automatically when the reference counter is decremented back to
-    zero (i.e. when the last smart-pointer referencing this object stops doing so).
-    This will happen regardless of how many regular pointers reference this object.
+    zero (i.e. when the last smart-pointer referencing 
+    this object stops doing so).
+    This will happen regardless of how many regular pointers 
+    reference this object.
     In other words, if you start using smart-pointers with a #GPEnabled#
     object, you engage automatic mode for this object.  You should only do
     this with objects dynamically allocated with operator #new#.  You should
@@ -332,6 +334,25 @@ GPEnabled::operator=(const GPEnabled & obj)
   return *this; 
 }
 
+inline void 
+GPEnabled::ref()
+{
+#if PARANOID_DEBUG
+  assert (count >= 0);
+#endif
+  atomicIncrement(&count);
+}
+
+inline void 
+GPEnabled::unref()
+{
+#if PARANOID_DEBUG
+  assert (count > 0);
+#endif
+  if (! atomicDecrement(&count))
+    destroy();
+}
+
 // INLINE FOR GPBASE
 
 inline
@@ -367,6 +388,10 @@ GPBase::~GPBase()
 inline GPEnabled* 
 GPBase::get() const
 {
+#if PARANOID_DEBUG
+  if (ptr && ptr->get_count() <= 0)
+    *(int*)0=0;
+#endif
   return ptr;
 }
 
@@ -413,12 +438,20 @@ GP<TYPE>::operator TYPE* () const
 template <class TYPE> inline TYPE*
 GP<TYPE>::operator->() const
 {
+#if PARANOID_DEBUG
+  if (ptr && ptr->get_count() <= 0)
+    *(int*)0=0;
+#endif
   return (TYPE*) ptr;
 }
 
 template <class TYPE> inline TYPE&
 GP<TYPE>::operator*() const
 {
+#if PARANOID_DEBUG
+  if (ptr && ptr->get_count() <= 0)
+    *(int*)0=0;
+#endif
   return *(TYPE*) ptr;
 }
 
@@ -458,7 +491,7 @@ GP<TYPE>::operator! () const
    What does it do that a GArray does not do ? 
    What about the objects construction and destruction ? */
 
-class GPBufferBase
+class DJVUAPI GPBufferBase
 {
 public:
   GPBufferBase(void *&,const size_t n,const size_t t);

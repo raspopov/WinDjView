@@ -28,6 +28,7 @@
 #include "MyFileDialog.h"
 #include "InstallDicDlg.h"
 #include "DocPropertiesDlg.h"
+#include "XMLParser.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -46,6 +47,9 @@ BEGIN_MESSAGE_MAP(CDjVuDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_FILE_INSTALL, OnUpdateFileInstall)
 	ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
 	ON_COMMAND(ID_FILE_DOC_PROPERTIES, OnFileDocProperties)
+	ON_COMMAND(ID_FILE_EXPORT_BOOKMARKS, OnFileExportBookmarks)
+	ON_UPDATE_COMMAND_UI(ID_FILE_EXPORT_BOOKMARKS, OnUpdateFileExportBookmarks)
+	ON_COMMAND(ID_FILE_IMPORT_BOOKMARKS, OnFileImportBookmarks)
 END_MESSAGE_MAP()
 
 
@@ -357,4 +361,133 @@ void CDjVuDoc::OnFileDocProperties()
 {
 	CDocPropertiesDlg dlg(m_pSource);
 	dlg.DoModal();
+}
+
+void CDjVuDoc::OnFileExportBookmarks()
+{
+	CString strPathName = m_pSource->GetFileName();
+	if (!PathRenameExtension(strPathName.GetBuffer(MAX_PATH), _T(".bookmarks")))
+		PathRemoveExtension(strPathName.GetBuffer(MAX_PATH));
+
+	strPathName.ReleaseBuffer();
+	CMyFileDialog dlg(false, _T("bookmarks"), strPathName, OFN_OVERWRITEPROMPT |
+		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
+		LoadString(IDS_BOOKMARKS_FILTER));
+
+	CString strTitle;
+	strTitle.LoadString(IDS_EXPORT_BOOKMARKS);
+	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
+
+	if (dlg.DoModal() != IDOK)
+		return;
+
+	CWaitCursor wait;
+
+	strPathName = dlg.GetPathName();
+	GUTF8String strXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			+ m_pSource->GetSettings()->GetXML(true);
+
+	// Convert line endings.
+	stringstream out;
+	out << (const char*)strXML;
+
+	CFile file;
+	if (file.Open(strPathName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive))
+	{
+		file.Write(out.str().c_str(), strXML.length());
+		file.Close();
+	}
+}
+
+void CDjVuDoc::OnUpdateFileExportBookmarks(CCmdUI* pCmdUI)
+{
+	bool bHasBookmarks = !m_pSource->GetSettings()->bookmarks.empty();
+	bool bHasAnnotations = !m_pSource->GetSettings()->pageSettings.empty();
+	pCmdUI->Enable(bHasBookmarks || bHasAnnotations);
+}
+
+void CDjVuDoc::OnFileImportBookmarks()
+{
+	CMyFileDialog dlg(true, _T("bookmarks"), NULL, OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST,
+		LoadString(IDS_BOOKMARKS_FILTER));
+
+	CString strTitle;
+	strTitle.LoadString(IDS_IMPORT_BOOKMARKS);
+	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
+
+	if (dlg.DoModal() != IDOK)
+		return;
+
+	CWaitCursor wait;
+
+	CFile file;
+	CString strContent;
+	if (!file.Open(dlg.GetPathName(), CFile::modeRead | CFile::shareDenyWrite))
+	{
+		AfxMessageBox(IDS_CANNOT_OPEN_BOOKMARKS, MB_OK | MB_ICONEXCLAMATION);
+		return;
+	}
+	int nLength = static_cast<int>(file.GetLength());
+	vector<char> data(nLength);
+	file.Read(&data[0], nLength);
+	file.Close();
+
+	string str(data.begin(), data.end());
+	stringstream in(str);
+	XMLParser parser;
+	if (!parser.Parse(in))
+	{
+		AfxMessageBox(IDS_CANNOT_READ_BOOKMARKS, MB_OK | MB_ICONEXCLAMATION);
+		return;
+	}
+
+	DocSettings settings;
+	settings.Load(*parser.GetRoot());
+	// Remove annotations for non-existing pages.
+	map<int, PageSettings>::iterator it;
+	for (it = settings.pageSettings.begin(); it != settings.pageSettings.end();)
+	{
+		int nPage = it->first;
+		if (nPage < 0 || nPage >= m_pSource->GetPageCount())
+			settings.pageSettings.erase(it++);
+		else
+			++it;
+	}
+
+	if (settings.bookmarks.empty() || settings.pageSettings.empty())
+	{
+		AfxMessageBox(IDS_BOOKMARKS_EMPTY, MB_OK | MB_ICONINFORMATION);
+		return;
+	}
+
+	list<Bookmark> tmpBookmarks;
+	map<int, PageSettings> tmpPageSettings;
+
+	if (!m_pSource->GetSettings()->bookmarks.empty() ||
+			!m_pSource->GetSettings()->pageSettings.empty())
+	{
+		int nResult = theApp.DoMessageBox(IDS_BOOKMARKS_PROMPT,
+				MB_YESNOCANCEL | MB_ICONQUESTION, 0, IDS_BOOKMARKS_PROMPT_CAPTIONS);
+		if (nResult == IDCANCEL)
+			return;
+
+		if (nResult == IDNO)
+		{
+			tmpBookmarks.swap(m_pSource->GetSettings()->bookmarks);
+			tmpPageSettings.swap(m_pSource->GetSettings()->pageSettings);
+		}
+	}
+
+	m_pSource->GetSettings()->bookmarks.insert(m_pSource->GetSettings()->bookmarks.end(),
+			settings.bookmarks.begin(), settings.bookmarks.end());
+	for (it = settings.pageSettings.begin(); it != settings.pageSettings.end(); ++it)
+	{
+		int nPage = it->first;
+		PageSettings& page = m_pSource->GetSettings()->pageSettings[nPage];
+		PageSettings& rhsPage = it->second;
+		page.anno.insert(page.anno.end(), rhsPage.anno.begin(), rhsPage.anno.end());
+	}
+
+	m_pSource->GetSettings()->UpdateObservers(BOOKMARKS_CHANGED);
+	m_pSource->GetSettings()->UpdateObservers(ANNOTATIONS_CHANGED);
 }

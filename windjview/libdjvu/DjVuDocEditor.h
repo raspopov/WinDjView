@@ -103,7 +103,7 @@ namespace DJVU {
     \end{enumerate}
 */
 
-class DjVuDocEditor : public DjVuDocument
+class DJVUAPI DjVuDocEditor : public DjVuDocument
 {
 public:
    static int	thumbnails_per_file;
@@ -406,7 +406,6 @@ private:
    bool		initialized;
    GURL		doc_url;
    GP<DataPool>	doc_pool;
-   GURL		tmp_doc_url;
    int		orig_doc_type;
    int		orig_doc_pages;
 

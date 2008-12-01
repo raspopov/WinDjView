@@ -246,8 +246,8 @@ GLObject::print(ByteStream & str, int compact, int indent, int * cur_pos) const
            else 
              {
                char buf[8];
-               static char *tr1 = "\"\\tnrbf";
-               static char *tr2 = "\"\\\t\n\r\b\f";
+               static const char *tr1 = "\"\\tnrbf";
+               static const char *tr2 = "\"\\\t\n\r\b\f";
                sprintf(buf,"\\%03o", (int)(((unsigned char*)data)[span]));
                for (int i=0; tr2[i]; i++)
                  if (data[span] == tr2[i])
@@ -477,8 +477,8 @@ GLParser::get_token(const char * & start)
                  }
                else
                  {
-                   static char *tr1 = "tnrbfva";
-                   static char *tr2 = "\t\n\r\b\f\013\007";
+                   static const char *tr1 = "tnrbfva";
+                   static const char *tr2 = "\t\n\r\b\f\013\007";
                    for (int i=0; tr1[i]; i++)
                      if (c == tr1[i])
                        c = tr2[i];
@@ -1178,15 +1178,24 @@ DjVuANT::get_map_areas(GLParser & parser)
             if (shape->get_name()==GMapArea::RECT_TAG)
             {
               DEBUG_MSG("it's a rectangle.\n");
+//<Changed for WinDjView project
+              if (shape->get_list().size() == 4) {
+//>
               GRect grect((*shape)[0]->get_number(),
                           (*shape)[1]->get_number(),
                           (*shape)[2]->get_number(),
                           (*shape)[3]->get_number());
               GP<GMapRect> map_rect=GMapRect::create(grect);
               map_area=(GMapRect *)map_rect;
+//<Changed for WinDjView project
+              }
+//>
             } else if (shape->get_name()==GMapArea::POLY_TAG)
             {
               DEBUG_MSG("it's a polygon.\n");
+//<Changed for WinDjView project
+              if (shape->get_list().size() % 2 == 0) {
+//>
               int points=shape->get_list().size()/2;
               GTArray<int> xx(points-1), yy(points-1);
               for(int i=0;i<points;i++)
@@ -1196,8 +1205,14 @@ DjVuANT::get_map_areas(GLParser & parser)
               }
               GP<GMapPoly> map_poly=GMapPoly::create(xx,yy,points);
               map_area=(GMapPoly *)map_poly;
+//<Changed for WinDjView project
+              }
+//>
             } else if (shape->get_name()==GMapArea::OVAL_TAG)
             {
+//<Changed for WinDjView project
+              if (shape->get_list().size() == 4) {
+//>
               DEBUG_MSG("it's an ellipse.\n");
               GRect grect((*shape)[0]->get_number(),
                           (*shape)[1]->get_number(),
@@ -1205,7 +1220,41 @@ DjVuANT::get_map_areas(GLParser & parser)
                           (*shape)[3]->get_number());
               GP<GMapOval> map_oval=GMapOval::create(grect);
               map_area=(GMapOval *)map_oval;
+//<Changed for WinDjView project
+              }
+//>
             }
+//< Changed for WinDjView project
+            else if (shape->get_name()==GMapArea::TEXT_TAG)
+            {
+              DEBUG_MSG("it's a text.\n");
+              if (shape->get_list().size() == 4) {
+                GRect grect((*shape)[0]->get_number(),
+                            (*shape)[1]->get_number(),
+                            (*shape)[2]->get_number(),
+                            (*shape)[3]->get_number());
+                GP<GMapRect> map_text=GMapRect::create(grect);
+                map_text->is_text=true;
+                map_text->opacity=100;
+                map_area=(GMapRect *)map_text;
+              }
+            }
+            else if (shape->get_name()==GMapArea::LINE_TAG)
+            {
+              DEBUG_MSG("it's a line.\n");
+              if (shape->get_list().size() == 4) {
+                GTArray<int> xx(1), yy(1);
+                for(int i=0;i<2;i++)
+                {
+                  xx[i]=(*shape)[2*i]->get_number();
+                  yy[i]=(*shape)[2*i+1]->get_number();
+                }
+                GP<GMapPoly> map_line=GMapPoly::create(xx,yy,2,true);
+                map_line->is_line=true;
+                map_area=(GMapPoly *)map_line;
+              }
+            }
+//>
           }
         
           if (map_area)
@@ -1226,6 +1275,39 @@ DjVuANT::get_map_areas(GLParser & parser)
                   GLObject * obj=el->get_list()[el->get_list().firstpos()];
                   if (obj->get_type()==GLObject::SYMBOL)
                     map_area->hilite_color=cvt_color(obj->get_symbol(), 0xff);
+//< Changed for WinDjView project
+                } else if (name==GMapArea::OPACITY_TAG)
+                {
+                  GLObject * obj=el->get_list()[el->get_list().firstpos()];
+                  if (obj->get_type()==GLObject::NUMBER)
+                    map_area->opacity=obj->get_number();
+                } else if (name==GMapArea::ARROW_TAG)
+                {
+                  map_area->has_arrow=true;
+                } else if (name==GMapArea::WIDTH_TAG)
+                {
+                  GLObject * obj=el->get_list()[el->get_list().firstpos()];
+                  if (obj->get_type()==GLObject::NUMBER)
+                    map_area->line_width=obj->get_number();
+                } else if (name==GMapArea::LINECLR_TAG)
+                {
+                  GLObject * obj=el->get_list()[el->get_list().firstpos()];
+                  if (obj->get_type()==GLObject::SYMBOL)
+                    map_area->foreground_color=cvt_color(obj->get_symbol(), 0xff);
+                } else if (name==GMapArea::BACKCLR_TAG)
+                {
+                  GLObject * obj=el->get_list()[el->get_list().firstpos()];
+                  if (obj->get_type()==GLObject::SYMBOL)
+                    map_area->hilite_color=cvt_color(obj->get_symbol(), 0xff);
+                } else if (name==GMapArea::TEXTCLR_TAG)
+                {
+                  GLObject * obj=el->get_list()[el->get_list().firstpos()];
+                  if (obj->get_type()==GLObject::SYMBOL)
+                    map_area->foreground_color=cvt_color(obj->get_symbol(), 0xff);
+                } else if (name==GMapArea::PUSHPIN_TAG)
+                {
+                  map_area->has_pushpin=true;
+//>
                 } else
                 {
                   int border_type=

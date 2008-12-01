@@ -85,6 +85,10 @@ COMPOPT = /nologo /c /W3 /Fo"$(INTDIR)\\" /D"WIN32" /D"_WINDOWS" /D"_CONSOLE" /D
 COMPOPT = $(COMPOPT) /D"_UNICODE" /D"UNICODE"
 !ENDIF
 
+!IFNDEF MAKEDLL
+COMPOPT = $(COMPOPT) /D"LIBDJVU_STATIC"
+!ENDIF
+
 all: $(OUT)
 
 rebuild: clean all
@@ -94,6 +98,7 @@ clean:
 	@if exist "$(OUT)" del /q "$(OUT)"
 
 OBJS = "$(INTDIR)\Arrays.obj" \
+       "$(INTDIR)\atomic.obj" \
        "$(INTDIR)\BSByteStream.obj" \
        "$(INTDIR)\BSEncodeByteStream.obj" \
        "$(INTDIR)\ByteStream.obj" \
@@ -158,6 +163,7 @@ $(OUT): "$(INTDIR)" $(OBJS)
 	@if not exist "$(INTDIR)" mkdir "$(INTDIR)"
 
 "$(INTDIR)\Arrays.obj" : "$(INTDIR)" Arrays.cpp
+"$(INTDIR)\atomic.obj" : "$(INTDIR)" atomic.cpp
 "$(INTDIR)\BSByteStream.obj" : "$(INTDIR)" BSByteStream.cpp
 "$(INTDIR)\BSEncodeByteStream.obj" : "$(INTDIR)" BSEncodeByteStream.cpp
 "$(INTDIR)\ByteStream.obj" : "$(INTDIR)" ByteStream.cpp

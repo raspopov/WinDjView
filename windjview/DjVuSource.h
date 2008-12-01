@@ -146,7 +146,7 @@ struct DocSettings : public Observable
 	map<int, PageSettings> pageSettings;
 	list<Bookmark> bookmarks;
 
-	GUTF8String GetXML() const;
+	GUTF8String GetXML(bool skip_view_settings = false) const;
 	void Load(const XMLNode& node);
 
 	Annotation* AddAnnotation(const Annotation& anno, int nPage);

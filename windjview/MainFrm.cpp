@@ -38,6 +38,8 @@
 #define new DEBUG_NEW
 #endif
 
+#define IDW_DICTIONARIES_BAR (AFX_IDW_CONTROLBAR_FIRST + 10)
+
 
 // CMainFrame
 
@@ -56,6 +58,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_WINDOWPOSCHANGED()
 	ON_CBN_SELCHANGE(IDC_PAGENUM, OnChangePage)
 	ON_CONTROL(CBN_FINISHEDIT, IDC_PAGENUM, OnChangePageEdit)
+	ON_CONTROL(CBN_DROPDOWN, IDC_PAGENUM, OnDropDownPage)
 	ON_CONTROL(CBN_CANCELEDIT, IDC_PAGENUM, OnCancelChange)
 	ON_CBN_SELCHANGE(IDC_ZOOM, OnChangeZoom)
 	ON_CONTROL(CBN_FINISHEDIT, IDC_ZOOM, OnChangeZoomEdit)
@@ -143,7 +146,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	if (!m_wndDictBar.CreateEx(this, TBSTYLE_FLAT | TBSTYLE_TRANSPARENT,
-			WS_CHILD | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_SIZE_DYNAMIC) ||
+			WS_CHILD | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_SIZE_DYNAMIC,
+			CRect(0, 0, 0, 0), IDW_DICTIONARIES_BAR) ||
 		!m_wndDictBar.GetToolBar().LoadToolBar(IDR_DICTIONARIES_BAR))
 	{
 		TRACE(_T("Failed to create dictionaries bar\n"));
@@ -479,6 +483,28 @@ void CMainFrame::OnChangePageEdit()
 	pView->SetFocus();
 }
 
+void CMainFrame::OnDropDownPage()
+{
+	CDjVuView* pView = (CDjVuView*) GetActiveView();
+	if (pView == NULL)
+		return;
+
+	int nPage = pView->GetCurrentPage();
+	if (pView->GetPageCount() > m_cboPage.GetCount())
+	{
+		m_cboPage.InitStorage(pView->GetPageCount() - m_cboPage.GetCount(), 10);
+		for (int i = m_cboPage.GetCount(); i < pView->GetPageCount(); ++i)
+			m_cboPage.AddString(FormatString(_T("%d"), i + 1));
+	}
+	else if (pView->GetPageCount() < m_cboPage.GetCount())
+	{
+		for (int i = m_cboPage.GetCount() - 1; i >= pView->GetPageCount(); --i)
+			m_cboPage.DeleteString(i);
+	}
+
+	m_cboPage.SetCurSel(nPage);
+}
+
 void CMainFrame::OnCancelChange()
 {
 	CDjVuView* pView = (CDjVuView*) GetActiveView();
@@ -531,17 +557,25 @@ void CMainFrame::UpdatePageCombo(const CDjVuView* pView)
 {
 	if (pView == NULL)
 		return;
-
+/*
 	if (pView->GetPageCount() != m_cboPage.GetCount())
 	{
+		m_cboPage.SetCurSel(-1);
 		m_cboPage.ResetContent();
+		m_cboPage.InitStorage(pView->GetPageCount(), pView->GetPageCount()*5);
+		m_cboPage.SetRedraw(false);
 		for (int i = 1; i <= pView->GetPageCount(); ++i)
 			m_cboPage.AddString(FormatString(_T("%d"), i));
+		m_cboPage.SetRedraw(true);
+		m_cboPage.Invalidate();
 	}
-
+*/
 	int nPage = pView->GetCurrentPage();
-	if (m_cboPage.GetCurSel() != nPage)
-		m_cboPage.SetCurSel(nPage);
+	CString strPage = FormatString(_T("%d"), nPage + 1);
+	CString strCurPage;
+	m_cboPage.GetWindowText(strCurPage);
+	if (strPage != strCurPage)
+		m_cboPage.SetWindowText(strPage);
 }
 
 void CMainFrame::OnChangeZoom()

@@ -5,15 +5,16 @@ Copyright (C) 2004-2008 Andrew Zhezherun
 Changes in version 0.6 (2008-??-??):
 ! Added multiple top-level documents mode.
 ! Added a tab bar to the single-window mode.
-+ Added support for Unicode Supplementary Planes in contents and index.
++ Added an option to enable continuous scrolling in fullscreen mode.
++ Added an option to order pages from right to left in facing mode.
++ User-created bookmarks and annotations can be imported and exported.
++ Drag mode is activated when right mouse button is pressed.
 + Added support for dictionaries that look up the word under mouse pointer.
 + DPI value is now set when exporting page or selection as bitmap.
-+ Added an option to enable continuous scrolling in fullscreen mode.
 + Thumbnail size can now be enlarged or reduced.
-+ Drag mode is activated when right mouse button is pressed.
-+ Added an option to order pages from right to left in facing mode.
 + Document properties can be accessed from the File menu.
 + Added F3 hotkey for Find Next.
++ Added support for Unicode Supplementary Planes in contents and index.
 * Fixed saving "First page alone" setting for every document.
 * Fixed crash in magnify tool after rotating the page.
 * Fixed crash when exiting fullscreen mode.

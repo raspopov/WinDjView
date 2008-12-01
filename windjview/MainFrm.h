@@ -147,6 +147,7 @@ protected:
 	afx_msg void OnUpdateViewStatusBar(CCmdUI* pCmdUI);
 	afx_msg void OnChangePage();
 	afx_msg void OnChangePageEdit();
+	afx_msg void OnDropDownPage();
 	afx_msg void OnChangeZoom();
 	afx_msg void OnChangeZoomEdit();
 	afx_msg void OnCancelChange();

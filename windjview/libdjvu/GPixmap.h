@@ -108,7 +108,7 @@ class ByteStream;
     be confused with the convention adopted for class \Ref{GBitmap} where the
     pixel values represent an ink level.  */
 
-struct GPixel
+struct DJVUAPI GPixel
 {
 //< Changed for MacDjView project
 // Fix for Mac OS X and Quartz
@@ -159,7 +159,7 @@ struct GPixel
     the bottom line of the image.
  */
 
-class GPixmap : public GPEnabled
+class DJVUAPI GPixmap : public GPEnabled
 {
 protected:
   GPixmap(void);

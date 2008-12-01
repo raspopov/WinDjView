@@ -82,7 +82,7 @@
 #include <string.h>
 
 #ifdef WIN32
-# include <atlbase.h>
+# include <tchar.h>
 # include <windows.h>
 # include <direct.h>
 #endif /* WIN32 */
@@ -483,15 +483,17 @@ GURL::operator=(const GURL & url_in)
 GUTF8String
 GURL::protocol(const GUTF8String& url)
 {
-   const char * const url_ptr=url;
-   const char * ptr=url_ptr;
-   for(char c=*ptr;
+  const char * const url_ptr=url;
+  const char * ptr=url_ptr;
+  for(char c=*ptr;
 //< Changed for WinDjView project
-//     c && (isalnum(c) || c == '+' || c == '-' || c == '.');
-     c && (isalnum(static_cast<unsigned char>(c)) || c == '+' || c == '-' || c == '.');
+//      c && (isalnum(c) || c == '+' || c == '-' || c == '.');
+      c && (isalnum(static_cast<unsigned char>(c)) || c == '+' || c == '-' || c == '.');
 //>
-     c=*(++ptr)) EMPTY_LOOP;
-   return(*ptr==colon)?GUTF8String(url_ptr, ptr-url_ptr):GUTF8String();
+      c=*(++ptr)) EMPTY_LOOP;
+  if (ptr[0]==colon && ptr[1]=='/' && ptr[2]=='/')
+    return GUTF8String(url_ptr, ptr-url_ptr);
+  return GUTF8String();
 }
 
 GUTF8String
@@ -1102,7 +1104,7 @@ GURL::encode_reserved(const GUTF8String &gs)
     if ( (ss>='a' && ss<='z') ||
          (ss>='A' && ss<='Z') ||
          (ss>='0' && ss<='9') ||
-         (strchr("$-_.+!*'(),:~=", ss)) ) 
+         (strchr("$-_.+!*'(),~:=", ss)) ) 
     {
       *d = ss;
       continue;
@@ -1416,10 +1418,7 @@ GURL::is_file(void) const
     DWORD dwAttrib;
     dwAttrib = GetFileAttributesW(wfilename);
     if((dwAttrib|1) == 0xFFFFFFFF)
-      {
-        USES_CONVERSION ;
-        dwAttrib = GetFileAttributes(A2CT(NativeFilename())) ;//MBCS cvt
-      }
+        dwAttrib = GetFileAttributesA(NativeFilename());
     retval=!( dwAttrib & FILE_ATTRIBUTE_DIRECTORY );
 #else
 # error "Define something here for your operating system"
@@ -1453,10 +1452,7 @@ GURL::is_local_path(void) const
     DWORD dwAttrib;
     dwAttrib = GetFileAttributesW(wfilename);
     if((dwAttrib|1) == 0xFFFFFFFF)
-      {
-        USES_CONVERSION ;
-        dwAttrib = GetFileAttributes(A2CT(NativeFilename())) ;//MBCS cvt
-      }
+        dwAttrib = GetFileAttributesA(NativeFilename());
     retval=( (dwAttrib|1) != 0xFFFFFFFF);
 #endif
   }
@@ -1494,10 +1490,7 @@ GURL::is_dir(void) const
     DWORD dwAttrib;
     dwAttrib = GetFileAttributesW(wfilename);
     if((dwAttrib|1) == 0xFFFFFFFF)
-      {
-        USES_CONVERSION ;
-        dwAttrib = GetFileAttributes(A2CT(NativeFilename())) ;//MBCS cvt
-      }
+        dwAttrib = GetFileAttributesA(NativeFilename());
     retval=((dwAttrib != 0xFFFFFFFF)&&( dwAttrib & FILE_ATTRIBUTE_DIRECTORY ));
 #else
 # error "Define something here for your operating system"
@@ -1546,11 +1539,10 @@ GURL::mkdir() const
       else 
         retval = ::mkdir(NativeFilename(), 0755);
 #elif defined(WIN32)
-      USES_CONVERSION;
       if (is_dir())
         retval = 0;
       else 
-        retval = CreateDirectory(A2CT(NativeFilename()), NULL);
+        retval = CreateDirectoryA(NativeFilename(), NULL);
 #else
 # error "Define something here for your operating system"
 #endif
@@ -1573,11 +1565,13 @@ GURL::deletefile(void) const
       else
         retval = ::unlink(NativeFilename());
 #elif defined(WIN32)
-      USES_CONVERSION;
       if (is_dir())
-        retval = ::RemoveDirectory(A2CT(NativeFilename()));
+        retval = ::RemoveDirectoryA(NativeFilename());
       else
-        retval = ::DeleteFile(A2CT(NativeFilename()));
+//< Changed for WinDjView project
+//        retval = ::DeleteFile(NativeFilename());
+        retval = ::DeleteFileA(NativeFilename());
+//>
 #else
 # error "Define something here for your operating system"
 #endif
@@ -1839,18 +1833,19 @@ GURL::expand_name(const GUTF8String &xfname, const char *from)
       }
     }
     // Process path components
-    for(;*fname== slash || *fname==backslash;fname++)
-      EMPTY_LOOP;
     while(*fname)
     {
+      for(;*fname== slash || *fname==backslash;fname++)
+        EMPTY_LOOP;
       if (fname[0]== dot )
       {
         if (fname[1]== slash || fname[1]==backslash || !fname[1])
         {
           fname++;
           continue;
-        }else if ((fname[1] == dot)
-          && (fname[2]== slash || fname[2]==backslash || !fname[2]))
+        }
+		else if ((fname[1] == dot)
+                 && (fname[2]== slash || fname[2]==backslash || !fname[2]))
         {
           fname += 2;
 //< Changed for WinDjView project
@@ -1869,105 +1864,21 @@ GURL::expand_name(const GUTF8String &xfname, const char *from)
           s = string_buffer;
           continue;
         }
-        char* s2=s;//MBCS DBCS
-        for(;*s;s++) 
-          EMPTY_LOOP;
-//< Changed for WinDjView project
-//        char* back = _tcsrchr(s2,backslash);//MBCS DBCS
-        char* back = strrchr(s2,backslash);
-//>
-        if ((s>string_buffer)&&(*(s-1)!= slash)&&
-            (back == NULL || (back!=NULL && s-1 != back) ))//MBCS DBCS
-        {
-          *s = backslash;
-          s++;
-        }
-        while (*fname && *fname!= slash && *fname!=backslash)
-        {
-          *s = *fname++;
-          if ((size_t)((++s)-string_buffer) > maxlen)
-            G_THROW( ERR_MSG("GURL.big_name") );
-        }
-        *s = 0;
       }
       char* s2=s;//MBCS DBCS
       for(;*s;s++) 
         EMPTY_LOOP;
-//< Changed for WinDjView project
-//      char* back = _tcsrchr(s2,backslash);//MBCS DBCS
-      char* back = strrchr(s2,backslash);
-//>
-      if ((s>string_buffer)&&(*(s-1)!= slash)
-          &&(back == NULL || (back!=NULL && s-1 != back) ))//MBCS DBCS
-      {
-        *s = backslash;
-        s++;
-      }
+	  if (s > string_buffer && s[-1] != slash && s[-1] != backslash)
+        *s++ = backslash;
       while (*fname && (*fname!= slash) && (*fname!=backslash))
       {
-        *s = *fname++;
-        if ((size_t)((++s)-string_buffer) > maxlen)
+        if (s > string_buffer + maxlen)
           G_THROW( ERR_MSG("GURL.big_name") );
+        *s++ = *fname++;
       }
       *s = 0;
-      for(;(*fname== slash)||(*fname==backslash);fname++)
-        EMPTY_LOOP;
     }
   }
-#elif defined(macintosh) // MACINTOSH implementation
-  strcpy(string_buffer, (const char *)(from?from:GOS::cwd()));
-  
-  if (!GStringRep::cmp(fname, string_buffer,strlen(string_buffer)) || is_file(fname))
-  {
-    strcpy(string_buffer, "");//please don't expand, the logic of filename is chaos.
-  }
-  
-  // Process path components
-  char *s = string_buffer + strlen(string_buffer);
-  if(fname)
-  {
-    for(;fname[0]==colon;fname++)
-      EMPTY_LOOP;
-    while(fname[0])
-    {
-      if (fname[0]== dot )
-      {
-        if (fname[1]==colon || !fname[1])
-        {
-          fname++;
-          continue;
-        }
-        if ((fname[1]== dot )
-          &&(fname[2]==colon || fname[2]==0))
-        {
-          fname +=2;
-          for(;(s>string_buffer+1)&&(*(s-1)==colon);s--)
-            EMPTY_LOOP;
-          for(;(s>string_buffer+1)&&(*(s-1)!=colon);s--)
-            EMPTY_LOOP;
-          continue;
-        }
-      }
-      if ((s==string_buffer)||(*(s-1)!=colon))
-      {
-        *s = colon;
-        s++;
-      }
-      while (*fname!=0 && *fname!=colon)
-      {
-        *s = *fname++;
-        if ((++s)-string_buffer > maxlen)
-          G_THROW( ERR_MSG("GURL.big_name") );
-      }
-      *s = 0;
-      for(;fname[0]==colon;fname++)
-        EMPTY_LOOP;
-    }
-  }
-  for(;(s>string_buffer+1) && (*(s-1)==colon);s--)
-    EMPTY_LOOP;
-  *s = 0;
-  return ((string_buffer[0]==colon)?(string_buffer+1):string_buffer);
 #else
 # error "Define something here for your operating system"
 #endif  

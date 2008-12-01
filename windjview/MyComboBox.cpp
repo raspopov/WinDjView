@@ -25,6 +25,20 @@
 #define new DEBUG_NEW
 #endif
 
+#if (_MFC_VER <= 0x0600)
+struct COMBOBOXINFO
+{
+    DWORD cbSize;
+    RECT rcItem;
+    RECT rcButton;
+    DWORD stateButton;
+    HWND hwndCombo;
+    HWND hwndItem;
+    HWND hwndList;
+};
+
+WINUSERAPI BOOL WINAPI GetComboBoxInfo(HWND hwndCombo, COMBOBOXINFO* pcbi);
+#endif
 
 // CMyComboBox
 
@@ -39,21 +53,26 @@ CMyComboBox::~CMyComboBox()
 }
 
 BEGIN_MESSAGE_MAP(CMyComboBox, CComboBox)
-	ON_WM_CTLCOLOR()
+	ON_WM_CREATE()
 END_MESSAGE_MAP()
 
 
 // CMyComboBox message handlers
 
-HBRUSH CMyComboBox::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+int CMyComboBox::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	if (nCtlColor == CTLCOLOR_EDIT)
+	if (CComboBox::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	if ((GetStyle() & 0x000F) == CBS_DROPDOWN)
 	{
-		if (m_edit.GetSafeHwnd() == NULL)
-			m_edit.SubclassWindow(pWnd->GetSafeHwnd());
+		COMBOBOXINFO cbi;
+		cbi.cbSize = sizeof(cbi);
+		::GetComboBoxInfo(m_hWnd, &cbi);
+		m_edit.SubclassWindow(cbi.hwndItem);
 	}
 
-	return CComboBox::OnCtlColor(pDC, pWnd, nCtlColor);
+	return 0;
 }
 
 BOOL CMyComboBox::CNotifyingEdit::PreTranslateMessage(MSG* pMsg)
@@ -91,16 +110,18 @@ CMyComboBoxEx::~CMyComboBoxEx()
 }
 
 BEGIN_MESSAGE_MAP(CMyComboBoxEx, CComboBoxEx)
-	ON_WM_CTLCOLOR()
+	ON_WM_CREATE()
 END_MESSAGE_MAP()
 
 
 // CMyComboBox message handlers
 
-HBRUSH CMyComboBoxEx::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+int CMyComboBoxEx::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	if (m_edit.GetSafeHwnd() == NULL)
-		m_edit.SubclassWindow(CComboBoxEx::GetEditCtrl()->GetSafeHwnd());
+	if (CComboBoxEx::OnCreate(lpCreateStruct) == -1)
+		return -1;
 
-	return CComboBoxEx::OnCtlColor(pDC, pWnd, nCtlColor);
+	m_edit.SubclassWindow(CComboBoxEx::GetEditCtrl()->GetSafeHwnd());
+
+	return 0;
 }

@@ -229,7 +229,14 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 	GRect rect(0, 0, szRotated.cx, szRotated.cy);
 
 	int nScaleMethod = displaySettings.nScaleMethod;
-	if (szRotated.cx >= szImage.cx / 2 || szRotated.cy >= szImage.cy / 2)
+	// Results from PnmScaleFixed are comparable to libdjvu scaling,
+	// when zoom factor is greater than 0.5, so use default faster scaling
+	// in this case. Additionally, use the default scaling when requested
+	// image size is very small, since quality does not matter at this
+	// scale. NOTE: this also deals with the special case of size (1, 1),
+	// which can force PnmScaleFixed into an infinite loop.
+	if ((szRotated.cx < szImage.cx / 10 || szRotated.cy < szImage.cy / 10)
+			|| (szRotated.cx >= szImage.cx / 2 || szRotated.cy >= szImage.cy / 2))
 		nScaleMethod = CDisplaySettings::Default;
 
 	if (nScaleMethod == CDisplaySettings::PnmScaleFixed)

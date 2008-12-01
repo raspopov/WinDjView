@@ -48,12 +48,11 @@ CDocPropertiesDlg::CDocPropertiesDlg(DjVuSource* pSource, CWnd* pParent)
 		m_strDocName = pSource->GetFileName();
 
 	m_nDocSize = -1;
-	HANDLE hFile = ::CreateFile(pSource->GetFileName(), GENERIC_READ,
-			FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
-	if (hFile != NULL && hFile != INVALID_HANDLE_VALUE)
+	CFile file;
+	if (file.Open(pSource->GetFileName(), CFile::modeRead | CFile::shareDenyWrite))
 	{
-		m_nDocSize = ::GetFileSize(hFile, NULL);
-		::CloseHandle(hFile);
+		m_nDocSize = static_cast<int>(file.GetLength());
+		file.Close();
 	}
 
 	CString strDocTypes = LoadString(IDS_DOC_TYPES);

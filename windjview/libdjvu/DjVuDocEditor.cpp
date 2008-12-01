@@ -78,7 +78,6 @@
 
 #include <ctype.h>
 
-
 #ifdef HAVE_NAMESPACES
 namespace DJVU {
 # ifdef NOT_DEFINED // Just to fool emacs c++ mode
@@ -134,11 +133,6 @@ DjVuDocEditor::DjVuDocEditor(void)
 
 DjVuDocEditor::~DjVuDocEditor(void)
 {
-   if (!tmp_doc_url.is_empty())
-   {
-     tmp_doc_url.deletefile();
-   }
-
    GCriticalSectionLock lock(&thumb_lock);
    thumb_map.empty();
    DataPool::close_all();
@@ -192,18 +186,15 @@ DjVuDocEditor::init(const GURL &url)
        orig_doc_type==OLD_INDEXED ||
        orig_doc_type==SINGLE_PAGE)
    {
-         // Suxx. I need to convert it NOW.
-         // We will unlink this file in the destructor
-      tmp_doc_url=GURL::Filename::Native(tmpnam(0));
-      const GP<ByteStream> gstr(ByteStream::create(tmp_doc_url, "wb"));
-      tmp_doc->write(gstr, true);        // Force DJVM format
-      gstr->flush();
-      doc_pool=DataPool::create(tmp_doc_url);
+     // Suxx. I need to convert it now.
+     GP<ByteStream> gstr = ByteStream::create();  // Convert in memory.
+     tmp_doc->write(gstr, true);  // Force DJVM format
+     gstr->seek(0);                     
+     doc_pool=DataPool::create(gstr);
    }
 
       // OK. Now doc_pool contains data of the document in one of the
       // new formats. It will be a lot easier to insert/delete pages now.
-
       // 'doc_url' below of course doesn't refer to the file with the converted
       // data, but we will take care of it by redirecting the request_data().
    initialized=true;
@@ -1162,29 +1153,33 @@ DjVuDocEditor::move_file(const GUTF8String &id, int & file_pos,
 void
 DjVuDocEditor::move_page(int page_num, int new_page_num)
 {
-   DEBUG_MSG("DjVuDocEditor::move_page(): page_num=" << page_num <<
-             ", new_page_num=" << new_page_num << "\n");
-   DEBUG_MAKE_INDENT(3);
+  DEBUG_MSG("DjVuDocEditor::move_page(): page_num=" << page_num <<
+	    ", new_page_num=" << new_page_num << "\n");
+  DEBUG_MAKE_INDENT(3);
 
-   if (page_num==new_page_num) return;
+  if (page_num==new_page_num) return;
 
-   int pages_num=get_pages_num();
-   if (page_num<0 || page_num>=pages_num)
-      G_THROW( ERR_MSG("DjVuDocEditor.bad_page") "\t"+GUTF8String(page_num));
+  int pages_num=get_pages_num();
+  if (page_num<0 || page_num>=pages_num)
+    G_THROW( ERR_MSG("DjVuDocEditor.bad_page") "\t"+GUTF8String(page_num));
 
-   const GUTF8String id(page_to_id(page_num));
-   int file_pos=-1;
-   if (new_page_num>=0 && new_page_num<pages_num)
+  const GUTF8String id(page_to_id(page_num));
+  int file_pos=-1;
+  if (new_page_num>=0 && new_page_num<pages_num)
+    {
       if (new_page_num>page_num)        // Moving toward the end
-      {
-         if (new_page_num<pages_num-1)
-            file_pos=djvm_dir->get_page_pos(new_page_num+1)-1;
-      } else
-         file_pos=djvm_dir->get_page_pos(new_page_num);
+	{
+	  if (new_page_num<pages_num-1)
+	    file_pos=djvm_dir->get_page_pos(new_page_num+1)-1;
+	}
+      else
+	file_pos=djvm_dir->get_page_pos(new_page_num);
+    }
 
-   GMap<GUTF8String, void *> map;
-   move_file(id, file_pos, map);
+  GMap<GUTF8String, void *> map;
+  move_file(id, file_pos, map);
 }
+
 #ifdef _WIN32_WCE_EMULATION         // Work around odd behavior under WCE Emulation
 #define CALLINGCONVENTION __cdecl
 #else
@@ -1930,10 +1925,11 @@ DjVuDocEditor::save_as(const GURL &where, bool bundled)
    {
          // Assume, that we just want to 'save'. Check, that it's possible
          // and proceed.
-      bool can_be_saved_bundled=orig_doc_type==BUNDLED ||
-                                orig_doc_type==OLD_BUNDLED ||
-                                orig_doc_type==SINGLE_PAGE ||
-                                orig_doc_type==OLD_INDEXED && orig_doc_pages==1;
+      bool can_be_saved_bundled =
+	orig_doc_type==BUNDLED ||
+	orig_doc_type==OLD_BUNDLED ||
+	orig_doc_type==SINGLE_PAGE ||
+	(orig_doc_type==OLD_INDEXED && orig_doc_pages==1);
       if ((bundled ^ can_be_saved_bundled)!=0)
          G_THROW( ERR_MSG("DjVuDocEditor.cant_save2") );
       save_doc_url=doc_url;
@@ -1969,7 +1965,7 @@ DjVuDocEditor::save_as(const GURL &where, bool bundled)
      doc_url=GURL();
    }else
    {
-     if (djvm_dir->get_files_num()==1)
+     if (djvm_dir->get_files_num()==1 && !djvm_nav)
      {
        // Here 'bundled' has no effect: we will save it as one page.
        DEBUG_MSG("saving one file...\n");
@@ -2050,6 +2046,12 @@ DjVuDocEditor::save_as(const GURL &where, bool bundled)
        iff.put_chunk("DIRM");
        djvm_dir->encode(giff->get_bytestream());
        iff.close_chunk();
+       if (djvm_nav)
+         {
+           iff.put_chunk("NAVM");
+           djvm_nav->encode(iff.get_bytestream());
+           iff.close_chunk();
+         }
        iff.close_chunk();
        iff.flush();
 
@@ -2094,26 +2096,28 @@ DjVuDocEditor::save_as(const GURL &where, bool bundled)
         // saved the document in a different format, which changes the rules
         // of file url composition.
      for(GPosition pos=files_map;pos;)
-     {
-        const GP<File> file_rec(files_map[pos]);
-        file_rec->pool=0;
-        if (file_rec->file==0)
-        {
-         GPosition this_pos=pos;
-         ++pos;
-         files_map.del(this_pos);
-        } else
-        {
-            // Change the file's url;
-         if (doc_url!=save_doc_url ||
-             orig_doc_type!=save_doc_type)
-            if (save_doc_type==BUNDLED)
-               file_rec->file->move(save_doc_url);
-            else file_rec->file->move(save_doc_url.base());
-         ++pos;
-        }
-     }
-
+       {
+	 const GP<File> file_rec(files_map[pos]);
+	 file_rec->pool=0;
+	 if (file_rec->file==0)
+	   {
+	     GPosition this_pos=pos;
+	     ++pos;
+	     files_map.del(this_pos);
+	   } else
+	   {
+	     // Change the file's url;
+	     if (doc_url!=save_doc_url ||
+		 orig_doc_type!=save_doc_type)
+	       {
+		 if (save_doc_type==BUNDLED)
+		   file_rec->file->move(save_doc_url);
+		 else
+		   file_rec->file->move(save_doc_url.base());
+	       }
+	     ++pos;
+	   }
+       }
    }
    orig_doc_type=save_doc_type;
    doc_type=save_doc_type;

@@ -53,12 +53,12 @@ CMDIChild::CMDIChild()
 
 CMDIChild::~CMDIChild()
 {
-	theApp.RemoveObserver(this);
 }
 
 
 BEGIN_MESSAGE_MAP(CMDIChild, CWnd)
 	ON_WM_CREATE()
+	ON_WM_DESTROY()
 	ON_MESSAGE_VOID(WM_INITIALUPDATE, OnInitialUpdate)
 	ON_WM_SIZE()
 	ON_WM_PAINT()
@@ -115,9 +115,21 @@ int CMDIChild::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
+void CMDIChild::OnDestroy()
+{
+	if (m_pDocument != NULL && m_pDocument->GetSource() != NULL)
+		m_pDocument->GetSource()->GetSettings()->RemoveObserver(this);
+
+	theApp.RemoveObserver(this);
+
+	CWnd::OnDestroy();
+}
+
 void CMDIChild::OnInitialUpdate()
 {
 	DjVuSource* pSource = m_pDocument->GetSource();
+	pSource->GetSettings()->AddObserver(this);
+
 	if (pSource->GetContents() != NULL)
 	{
 		m_pContentsTree = new CBookmarksWnd(pSource);
@@ -482,5 +494,13 @@ void CMDIChild::OnUpdate(const Observable* source, const Message* message)
 		}
 		else
 			pSettings->nOpenSidebarTab = -1;
+	}
+	else if (message->code == BOOKMARKS_CHANGED)
+	{
+		if (!m_pDocument->GetSource()->GetSettings()->bookmarks.empty())
+		{
+			CBookmarksWnd* pBookmarks = GetBookmarksTree(true);
+			pBookmarks->LoadUserBookmarks();
+		}
 	}
 }

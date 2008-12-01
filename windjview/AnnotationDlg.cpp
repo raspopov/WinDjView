@@ -85,7 +85,7 @@ END_MESSAGE_MAP()
 BOOL CAnnotationDlg::OnInitDialog()
 {
 	CMyDialog::OnInitDialog();
-	
+
 	SetWindowText(LoadString(m_nTitle));
 
 	m_sliderTransparency.SetRange(0, 100);

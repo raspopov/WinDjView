@@ -127,6 +127,8 @@ void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0
 #define SIDEBAR_TAB_CHANGED 22
 #define TAB_ACTIVATED 24
 #define TAB_CLOSED 25
+#define ANNOTATIONS_CHANGED 26
+#define BOOKMARKS_CHANGED 27
 
 class CDIB;
 struct Bookmark;

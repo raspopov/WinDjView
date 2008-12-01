@@ -45,7 +45,6 @@ BEGIN_MESSAGE_MAP(CFullscreenWnd, CWnd)
 	ON_WM_DESTROY()
 	ON_WM_SETFOCUS()
 	ON_WM_ERASEBKGND()
-	ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNeedText)
 	ON_MESSAGE(WM_APPCOMMAND, OnAppCommand)
 END_MESSAGE_MAP()
 
@@ -141,14 +140,6 @@ void CFullscreenWnd::PostNcDestroy()
 {
 	// Should be created on heap
 	delete this;
-}
-
-BOOL CFullscreenWnd::OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult)
-{
-	if (m_pView == NULL)
-		return false;
-
-	return m_pView->SendMessage(WM_NOTIFY, nID, reinterpret_cast<LPARAM>(pNMHDR));
 }
 
 BOOL CFullscreenWnd::OnEraseBkgnd(CDC* pDC)

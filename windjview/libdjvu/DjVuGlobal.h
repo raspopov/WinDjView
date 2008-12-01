@@ -79,9 +79,13 @@ inline void * operator new(size_t, void * ptr) { return ptr; }
 # ifdef DLL_EXPORT
 #  define DJVUAPI __declspec(dllexport)
 # else
-#  ifdef LIBDJVU_DLL_IMPORT 
-#   define DJVUAPI __declspec(dllimport)
+//< Changed for WinDjView project
+#  ifndef LIBDJVU_STATIC
+//>
+#  define DJVUAPI __declspec(dllimport)
+//< Changed for WinDjView project
 #  endif
+//>
 # endif
 #endif
 #ifndef DJVUAPI

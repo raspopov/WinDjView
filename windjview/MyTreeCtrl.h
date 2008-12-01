@@ -45,6 +45,7 @@ public:
 	HTREEITEM InsertItem(LPCTSTR pszItem, HTREEITEM hParent = TVI_ROOT, HTREEITEM hInsertAfter = TVI_LAST);
 	HTREEITEM InsertItem(LPCTSTR pszItem, int nImage, int nSelectedImage, HTREEITEM hParent = TVI_ROOT, HTREEITEM hInsertAfter = TVI_LAST);
 	bool DeleteItem(HTREEITEM hItem);
+	void DeleteAllItems();
 
 	void SetItemData(HTREEITEM hItem, DWORD_PTR dwData);
 	DWORD_PTR GetItemData(HTREEITEM hItem);

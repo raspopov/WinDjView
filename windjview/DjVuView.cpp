@@ -144,7 +144,6 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_WM_MOUSEWHEEL()
 	ON_COMMAND(ID_FIND_STRING, OnFindString)
 	ON_COMMAND(ID_FIND_ALL, OnFindAll)
-	ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNeedText)
 	ON_COMMAND(ID_ZOOM_IN, OnViewZoomIn)
 	ON_COMMAND(ID_ZOOM_OUT, OnViewZoomOut)
 	ON_UPDATE_COMMAND_UI(ID_ZOOM_IN, OnUpdateViewZoomIn)
@@ -614,19 +613,9 @@ void CDjVuView::OnInitialUpdate()
 	m_hourglass.Create(c_nHourglassWidth, c_nHourglassHeight, ILC_COLOR24 | ILC_MASK, 0, 1);
 	m_hourglass.Add(&bitmap, RGB(192, 0, 32));
 
-	if (m_toolTip.Create(this, TTS_ALWAYSTIP | TTS_NOPREFIX) && m_toolTip.AddTool(this))
-	{
-		TOOLINFO info;
-		info.cbSize = sizeof(TOOLINFO);
-		info.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-		info.hwnd = m_hWnd;
-		info.uId = (UINT)m_hWnd;
-		info.lpszText = LPSTR_TEXTCALLBACK;
-		m_toolTip.SetToolInfo(&info);
-
-		m_toolTip.SendMessage(TTM_SETMAXTIPWIDTH, 0, SHRT_MAX);
-		m_toolTip.Activate(false);
-	}
+	m_toolTip.Create(this, TTS_ALWAYSTIP | TTS_NOPREFIX);
+	m_toolTip.SendMessage(TTM_SETMAXTIPWIDTH, 0, SHRT_MAX);
+	m_toolTip.Activate(false);
 
 	m_nPageCount = m_pSource->GetPageCount();
 	m_pages.resize(m_nPageCount);
@@ -2536,11 +2525,11 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		if (hCursor == NULL && m_bDraggingLink)
 			hCursor = hCursorLink;
 
-		if (hCursor == NULL && (m_bControlDown || (m_nMode == MagnifyingGlass && !m_bShiftDown)))
+		if (hCursor == NULL && m_nMode == MagnifyingGlass)
 			hCursor = hCursorMagnify;
 		if (hCursor == NULL && m_pHoverAnno != NULL && m_pHoverAnno->strURL.length() != 0)
 			hCursor = hCursorLink;
-		if (hCursor == NULL && (m_bShiftDown || m_nMode == Drag)
+		if (hCursor == NULL && m_nMode == Drag
 				&& (m_totalDev.cx > rcClient.Width() || m_totalDev.cy > rcClient.Height()))
 			hCursor = m_bDragging ? hCursorDrag : hCursorHand;
 		if (hCursor == NULL && m_nMode == SelectRect)
@@ -2902,6 +2891,7 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 				&& (m_totalDev.cx > rcClient.Width() || m_totalDev.cy > rcClient.Height()))
 		{
 			m_bDraggingPage = true;
+			UpdateHoverAnnotation(CPoint(-1, -1));
 			UpdateCursor();
 		}
 	}
@@ -3236,8 +3226,6 @@ void CDjVuView::OnRButtonDown(UINT nFlags, CPoint point)
 		OnViewPreviouspage();
 		return;
 	}
-
-	UpdateHoverAnnotation(CPoint(-1, -1));
 
 	m_bDraggingRight = true;
 	m_nStartPage = GetPageNearPoint(point);
@@ -4773,6 +4761,7 @@ void CDjVuView::UpdateHoverAnnotation(const CPoint& point)
 		if (m_pHoverAnno != NULL)
 		{
 			m_toolTip.Activate(false);
+			m_toolTip.DelTool(this);
 			InvalidateAnno(m_pHoverAnno, m_nHoverPage);
 			GetMainFrame()->SetMessageText(AFX_IDS_IDLEMESSAGE);
 		}
@@ -4783,6 +4772,10 @@ void CDjVuView::UpdateHoverAnnotation(const CPoint& point)
 
 		if (m_pHoverAnno != NULL)
 		{
+			CString strToolTip = MakeCString(m_pHoverAnno->strComment);
+			if (strToolTip.IsEmpty())
+				strToolTip = MakeCString(m_pHoverAnno->strURL);
+			m_toolTip.AddTool(this, strToolTip);
 			m_toolTip.Activate(true);
 			InvalidateAnno(m_pHoverAnno, m_nHoverPage);
 
@@ -4886,43 +4879,6 @@ bool CDjVuView::PtInAnnotation(const Annotation& anno, int nPage, const CPoint& 
 	return false;
 }
 
-BOOL CDjVuView::OnToolTipNeedText(UINT nID, NMHDR* pNMHDR, LRESULT* pResult)
-{
-	TOOLTIPTEXT* pTTT = (TOOLTIPTEXT*)pNMHDR;
-
-	CPoint ptCursor;
-	::GetCursorPos(&ptCursor);
-	ScreenToClient(&ptCursor);
-
-	CRect rcClient;
-	GetClientRect(rcClient);
-
-	// Ensure that the cursor is in the client rect, because main frame
-	// also wants these messages to provide tooltips for the toolbar
-	if (!rcClient.PtInRect(ptCursor))
-		return false;
-
-	if (m_pHoverAnno != NULL)
-	{
-		m_strToolTip = MakeCString(m_pHoverAnno->strComment);
-		if (m_strToolTip.IsEmpty())
-			m_strToolTip = MakeCString(m_pHoverAnno->strURL);
-	}
-	else
-	{
-		m_strToolTip.Empty();
-	}
-
-	pTTT->lpszText = m_strToolTip.GetBuffer(0);
-	if (!m_strToolTip.IsEmpty())
-	{
-		m_toolTip.SetWindowPos(&wndTopMost, 0, 0, 0, 0,
-				SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER);
-	}
-
-	return true;
-}
-
 BOOL CDjVuView::PreTranslateMessage(MSG* pMsg)
 {
 	if (::IsWindow(m_toolTip.m_hWnd))
@@ -4977,6 +4933,8 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nAddToHistory)
 			const char *q = s;
 			if (*q == '+' || *q == '-')
 				base = *q++;
+			if (*q == '\0')
+				return;
 
 			GUTF8String str = q;
 			if (str.is_int())
@@ -4984,7 +4942,7 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nAddToHistory)
 				nPage = str.toInt();
 				if (base == '+')
 					nPage = m_nPage + nPage;
-				else if (base=='-')
+				else if (base == '-')
 					nPage = m_nPage - nPage;
 				else
 					--nPage;
@@ -6030,6 +5988,7 @@ void CDjVuView::StartMagnify()
 
 	pView->ShowWindow(SW_SHOW);
 	pView->UpdateLayout();
+	pView->UpdateCursor();
 }
 
 void CDjVuView::UpdateMagnifyWnd()
@@ -6180,6 +6139,11 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 	{
 		const KeyStateChanged* msg = (const KeyStateChanged*) message;
 		UpdateKeyboard(msg->nKey, msg->bPressed);
+	}
+	else if (message->code == ANNOTATIONS_CHANGED)
+	{
+		Invalidate();
+		UpdateHoverAnnotation();
 	}
 }
 

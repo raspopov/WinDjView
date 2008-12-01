@@ -78,6 +78,11 @@
 #include <stdio.h>
 #include <errno.h>
 
+#ifdef WIN32
+# include <windows.h>  // OutputDebugString
+#endif 
+
+
 #ifdef HAVE_NAMESPACES
 namespace DJVU {
 # ifdef NOT_DEFINED // Just to fool emacs c++ mode
@@ -155,8 +160,7 @@ DjVuDebug::format(const char *fmt, ... )
 #ifdef WIN32
       else
         {
-          USES_CONVERSION;
-          OutputDebugString(A2CT((const char *)buffer));
+          OutputDebugStringA((const char *)buffer);
         }
 #endif
     }

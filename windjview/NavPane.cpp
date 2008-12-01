@@ -28,7 +28,7 @@
 #endif
 
 
-// CnavPaneWnd
+// CNavPaneWnd
 
 IMPLEMENT_DYNCREATE(CNavPaneWnd, CWnd)
 CNavPaneWnd::CNavPaneWnd()

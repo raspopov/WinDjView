@@ -269,7 +269,7 @@ DjVuToPS::DjVuToPS(void)
   DEBUG_MAKE_INDENT(3);
   DEBUG_MSG("Initializing dig2hex[]\n");
   // Creating tables for bin=>text translation
-  static char * dig2hex="0123456789ABCDEF";
+  static const char * dig2hex="0123456789ABCDEF";
   int i;
   for(i=0;i<256;i++)
     {
@@ -1278,9 +1278,9 @@ print_bg(ByteStream &str,
   int ps_chunk_height = 30960/prn_rect.width()+1;
   buffer_size = buffer_size*23/10;
   bool do_color = options.get_color();
-  if (!dimg->is_legal_photo() && 
-      !dimg->is_legal_compound() ||
-      options.get_mode()==Options::BW) 
+  if ((!dimg->is_legal_photo() &&
+       !dimg->is_legal_compound())
+      || options.get_mode()==Options::BW)
     do_color = false;
   if (do_color) 
     buffer_size *= 3;
@@ -1915,7 +1915,7 @@ print_ps_string(const char *data, int length, ByteStream &out)
       else
         {
           char buffer[5];
-          sprintf(buffer,"\\%03o", *data);
+          sprintf(buffer,"\\%03o", *(unsigned char*)data);
           out.write(buffer,4);
           data += 1;
           length -= 1;

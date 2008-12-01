@@ -85,6 +85,7 @@ void CBookmarksWnd::OnDestroy()
 void CBookmarksWnd::LoadContents()
 {
 	BeginBatchUpdate();
+	DeleteAllItems();
 
 	const GPList<DjVmNav::DjVuBookMark>& bookmarks = m_pSource->GetContents()->getBookMarkList();
 	GPosition pos = bookmarks;
@@ -96,6 +97,7 @@ void CBookmarksWnd::LoadContents()
 void CBookmarksWnd::LoadUserBookmarks()
 {
 	BeginBatchUpdate();
+	DeleteAllItems();
 
 	DocSettings* pSettings = m_pSource->GetSettings();
 

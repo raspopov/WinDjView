@@ -2190,15 +2190,143 @@ void CDjViewApp::EnableWindows(set<CWnd*>& disabled)
 	}
 }
 
-int CDjViewApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDPrompt)
+int CDjViewApp::DoMessageBox(LPCTSTR lpszText, UINT nType, UINT nIDHelp)
 {
+	return DoMessageBox(lpszText, nType, nIDHelp, (LPCTSTR) NULL);
+}
+
+int CDjViewApp::DoMessageBox(UINT nIDPrompt, UINT nType, UINT nIDHelp, UINT nIDCaptions)
+{
+	return DoMessageBox(LoadString(nIDPrompt), nType, nIDHelp, LoadString(nIDCaptions));
+}
+
+int CDjViewApp::DoMessageBox(LPCTSTR lpszText, UINT nType, UINT nIDHelp, UINT nIDCaptions)
+{
+	return DoMessageBox(lpszText, nType, nIDHelp, LoadString(nIDCaptions));
+}
+
+int CDjViewApp::DoMessageBox(UINT nIDPrompt, UINT nType, UINT nIDHelp, LPCTSTR lpszCaptions)
+{
+	return DoMessageBox(LoadString(nIDPrompt), nType, nIDHelp, lpszCaptions);
+}
+
+int CDjViewApp::DoMessageBox(LPCTSTR lpszText, UINT nType, UINT nIDHelp, LPCTSTR lpszCaptions)
+{
+	ASSERT(m_hMBHook == NULL);
+	m_hMBHook = SetWindowsHookEx(WH_CBT, &MBHookProc, NULL, GetCurrentThreadId());
+	m_strMBCaptions = lpszCaptions;
+	m_nMBType = nType;
+
 	set<CWnd*> disabled;
 	DisableTopLevelWindows(disabled);
 
-	int nResult = CWinApp::DoMessageBox(lpszPrompt, nType, nIDPrompt);
+	int nResult = CWinApp::DoMessageBox(lpszText, nType, nIDHelp);
 
 	EnableWindows(disabled);
+
+	if (m_hMBHook != NULL)
+	{
+		::UnhookWindowsHookEx(m_hMBHook);
+		m_hMBHook = NULL;
+	}
+
 	return nResult;
+}
+
+LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	LRESULT lResult = 0;
+	if (nCode == HCBT_ACTIVATE)
+	{
+		HWND hwndMessageBox = (HWND) wParam;
+		HWND hwndMessage = GetDlgItem(hwndMessageBox, 0xFFFF);
+		if (hwndMessage != NULL)
+		{
+			CString strMessage;
+			int nLen = ::GetWindowTextLength(hwndMessage);
+			::GetWindowText(hwndMessage, strMessage.GetBufferSetLength(nLen), nLen + 1);
+			strMessage.ReleaseBuffer();
+			strMessage.Replace(_T("\n"), _T("\r\n"));
+
+			RECT rc;
+			::GetWindowRect(hwndMessage, &rc);
+			POINT pt;
+			pt.x = rc.left - 2;
+			pt.y = rc.top;
+			::ScreenToClient(hwndMessageBox, &pt);
+
+			// Create the alternate EDIT window
+			HWND hwndEdit = ::CreateWindowEx(0, _T("edit"), strMessage,
+					ES_READONLY | ES_MULTILINE | WS_CHILD,
+					pt.x, pt.y, rc.right - rc.left + 4, rc.bottom - rc.top,
+					hwndMessageBox, (HMENU) 0xFFFE, NULL, NULL);
+
+			HFONT hFont = (HFONT) ::SendMessage(hwndMessage, WM_GETFONT, 0, 0);
+			::SendMessage(hwndEdit, WM_SETFONT, (WPARAM) hFont, 1);
+			::SendMessage(hwndEdit, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, 0);
+
+			::ShowWindow(hwndEdit, SW_SHOW);
+			::ShowWindow(hwndMessage, SW_HIDE);
+		}
+
+		int nType = (theApp.m_nMBType & MB_TYPEMASK);
+		CString strCaptions = theApp.m_strMBCaptions;
+
+		CString strOk, strCancel, strAbort, strRetry, strIgnore, strYes, strNo;
+		switch (nType)
+		{
+		case MB_OK:
+			AfxExtractSubString(strOk, strCaptions, 0);
+			break;
+
+		case MB_OKCANCEL:
+			AfxExtractSubString(strOk, strCaptions, 0);
+			AfxExtractSubString(strCancel, strCaptions, 1);
+			break;
+
+		case MB_ABORTRETRYIGNORE:
+			AfxExtractSubString(strAbort, strCaptions, 0);
+			AfxExtractSubString(strRetry, strCaptions, 1);
+			AfxExtractSubString(strIgnore, strCaptions, 2);
+			break;
+
+		case MB_YESNO:
+			AfxExtractSubString(strYes, strCaptions, 0);
+			AfxExtractSubString(strNo, strCaptions, 1);
+			break;
+
+		case MB_YESNOCANCEL:
+			AfxExtractSubString(strYes, strCaptions, 0);
+			AfxExtractSubString(strNo, strCaptions, 1);
+			AfxExtractSubString(strCancel, strCaptions, 2);
+			break;
+
+		case MB_RETRYCANCEL:
+			AfxExtractSubString(strRetry, strCaptions, 0);
+			AfxExtractSubString(strCancel, strCaptions, 1);
+			break;
+		}
+
+		if (!strOk.IsEmpty() && GetDlgItem(hwndMessageBox, IDOK) != NULL)
+			SetDlgItemText(hwndMessageBox, IDOK, strOk);
+		if (!strCancel.IsEmpty() && GetDlgItem(hwndMessageBox, IDCANCEL) != NULL)
+			SetDlgItemText(hwndMessageBox, IDCANCEL, strCancel);
+		if (!strAbort.IsEmpty() && GetDlgItem(hwndMessageBox, IDABORT) != NULL)
+			SetDlgItemText(hwndMessageBox, IDABORT, strAbort);
+		if (!strRetry.IsEmpty() && GetDlgItem(hwndMessageBox, IDRETRY) != NULL)
+			SetDlgItemText(hwndMessageBox, IDRETRY, strRetry);
+		if (!strIgnore.IsEmpty() && GetDlgItem(hwndMessageBox, IDIGNORE) != NULL)
+			SetDlgItemText(hwndMessageBox, IDIGNORE, strIgnore);
+		if (!strYes.IsEmpty() && GetDlgItem(hwndMessageBox, IDYES) != NULL)
+			SetDlgItemText(hwndMessageBox, IDYES, strYes);
+		if (!strNo.IsEmpty() && GetDlgItem(hwndMessageBox, IDNO) != NULL)
+			SetDlgItemText(hwndMessageBox, IDNO, strNo);
+
+		::UnhookWindowsHookEx(theApp.m_hMBHook);
+		theApp.m_hMBHook = NULL;
+	}
+
+	return ::CallNextHookEx(theApp.m_hMBHook, nCode, wParam, lParam);
 }
 
 CFindDlg* CDjViewApp::GetFindDlg(bool bCreate)

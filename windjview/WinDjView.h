@@ -149,7 +149,12 @@ public:
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
 	virtual BOOL SaveAllModified();
-	virtual int DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDPrompt);
+	virtual int DoMessageBox(LPCTSTR lpszText, UINT nType, UINT nIDHelp);
+
+	virtual int DoMessageBox(UINT nIDPrompt, UINT nType, UINT nIDHelp, UINT nIDCaptions);
+	virtual int DoMessageBox(LPCTSTR lpszText, UINT nType, UINT nIDHelp, UINT nIDCaptions);
+	virtual int DoMessageBox(UINT nIDPrompt, UINT nType, UINT nIDHelp, LPCTSTR lpszCaptions);
+	virtual int DoMessageBox(LPCTSTR lpszText, UINT nType, UINT nIDHelp, LPCTSTR lpszCaptions);
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -174,6 +179,11 @@ protected:
 	long m_nThreadCount;
 	CEvent m_docClosed;
 	DjVuSource* m_pPendingSource;
+
+	HHOOK m_hMBHook;
+	UINT m_nMBType;
+	CString m_strMBCaptions;
+	static LRESULT CALLBACK MBHookProc(int nCode, WPARAM wParam, LPARAM lParam);
 
 	struct LanguageInfo
 	{

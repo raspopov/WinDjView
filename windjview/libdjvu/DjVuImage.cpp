@@ -411,23 +411,26 @@ DjVuImage::get_mimetype() const
 
 //// DJVUIMAGE: UTILITIES
 
-GUTF8String 
+GUTF8String
 DjVuImage::get_short_description() const
 {
   GUTF8String msg = "Empty";
   int width = get_width();
   int height = get_height();
   if (width && height)
-    if (file && file->file_size>100)
-      //msg.format("%dx%d in %0.1f Kb", width, height, file->file_size/1024.0);
-      msg.format( ERR_MSG("DjVuImage.short1") "\t%d\t%d\t%0.1f", width, height, file->file_size/1024.0 );
-    else
-      //msg.format("%dx%d", width, height);
-      msg.format( ERR_MSG("DjVuImage.short2") "\t%d\t%d", width, height );
+    {
+      if (file && file->file_size>100)
+	//msg.format("%dx%d in %0.1f Kb", width, height, file->file_size/1024.0);
+	msg.format( ERR_MSG("DjVuImage.short1") "\t%d\t%d\t%0.1f",
+		    width, height, file->file_size/1024.0 );
+      else
+	//msg.format("%dx%d", width, height);
+	msg.format( ERR_MSG("DjVuImage.short2") "\t%d\t%d", width, height );
+    }
   return msg;
 }
 
-GUTF8String 
+GUTF8String
 DjVuImage::get_long_description() const
 {
   return file?(file->description):GUTF8String();
@@ -1086,16 +1089,17 @@ static GP<GBitmap>
 do_bitmap(const DjVuImage &dimg, BImager get,
           const GRect &inrect, const GRect &inall, int align )
 {
-    GRect rect=inrect;
-    GRect all=inall;
-    if( dimg.get_rotate() )
-      {
-        GRectMapper mapper;
-        mapper.rotate(-dimg.get_rotate());
-        mapper.map(rect);
-        mapper.map(all);
+  GRect rect=inrect;
+  GRect all=inall;
+  if (! dimg.get_info())
+    return 0;
+  if( dimg.get_rotate() )
+    {
+      GRectMapper mapper;
+      mapper.rotate(-dimg.get_rotate());
+      mapper.map(rect);
+      mapper.map(all);
     }
-    
   // Sanity
   if (! ( all.contains(rect.xmin, rect.ymin) &&
           all.contains(rect.xmax-1, rect.ymax-1) ))
@@ -1151,6 +1155,8 @@ do_pixmap(const DjVuImage &dimg, PImager get,
 {
   GRect rect=inrect;
   GRect all=inall;
+  if (! dimg.get_info())
+    return 0;
   if( dimg.get_rotate()%4 )
     {
       GRectMapper mapper;
@@ -1167,7 +1173,6 @@ do_pixmap(const DjVuImage &dimg, PImager get,
   int red, w=0, h=0, rw=0, rh=0;
   w = dimg.get_real_width();
   h = dimg.get_real_height();
-
   rw = all.width();
   rh = all.height();
   GRect zrect = rect; 

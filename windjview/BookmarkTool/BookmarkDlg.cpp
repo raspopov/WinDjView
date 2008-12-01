@@ -288,7 +288,7 @@ GUTF8String HTMLEscape(const GUTF8String& str)
 	return retval;
 }
 
-void FixWhitespace(wstring& text)
+void Trim(wstring& text)
 {
 	if (text.length() == 0)
 		return;
@@ -296,15 +296,33 @@ void FixWhitespace(wstring& text)
 	wstring result;
 	result.reserve(text.length());
 
+	int nLength = static_cast<int>(text.length());
 	int nStart = 0;
-	while (nStart < static_cast<int>(text.length()) && text[nStart] <= 0x20)
+	while (nStart < nLength && text[nStart] <= 0x20)
 		++nStart;
-	if (nStart == static_cast<int>(text.length()))
-		return;
 
-	int nEnd = static_cast<int>(text.length()) - 1;
+	int nEnd = nLength - 1;
 	while (nEnd >= nStart && text[nEnd] <= 0x20)
 		--nEnd;
+
+	if (nStart <= nEnd)
+		result = text.substr(nStart, nEnd + 1 - nStart);
+
+	text.swap(result);
+}
+
+void FixWhitespace(wstring& text)
+{
+	Trim(text);
+
+	if (text.length() == 0)
+		return;
+
+	wstring result;
+	result.reserve(text.length());
+
+	int nStart = 0;
+	int nEnd = static_cast<int>(text.length()) - 1;
 
 	bool bHadSpace = false;
 	for (int nCur = nStart; nCur <= nEnd; ++nCur)
@@ -370,6 +388,8 @@ bool ReadBookmarks(const string& data, vector<DjVuBookmark>& bookmarks)
 
 				wstring str;
 				MakeWString(bookmark.url, str);
+				Trim(str);
+
 				bookmark.url = MakeUTF8String(str);
 			}
 

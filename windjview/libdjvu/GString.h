@@ -145,7 +145,7 @@ class GUTF8String;
 class GNativeString;
 
 // Internal string representation.
-class GStringRep : public GPEnabled
+class DJVUAPI GStringRep : public GPEnabled
 {
 public:
   enum EncodeType { XUCS4, XUCS4BE, XUCS4LE, XUCS4_2143, XUCS4_3412,
@@ -166,7 +166,7 @@ public:
   friend class GBaseString;
   friend class GUTF8String;
   friend class GNativeString;
-  friend unsigned int hash(const GBaseString &ref);
+  friend DJVUAPI unsigned int hash(const GBaseString &ref);
 
 public:
   // default constructor
@@ -366,7 +366,7 @@ protected:
   char *data;
 };
 
-class GStringRep::UTF8 : public GStringRep
+class DJVUAPI GStringRep::UTF8 : public GStringRep
 {
 public:
   // default constructor
@@ -463,7 +463,7 @@ protected:
     position #-1# accesses the last character of the string,
     position #-2# represents the second last character, etc.)  */
 
-class GBaseString : protected GP<GStringRep>
+class DJVUAPI GBaseString : protected GP<GStringRep>
 {
 public:
   enum EscapeMode {
@@ -475,10 +475,10 @@ public:
   friend class GNativeString;
 protected:
   // Sets the gstr pointer;
-  void init(void);
+  inline void init(void);
 
   ~GBaseString();
-  GBaseString &init(const GP<GStringRep> &rep);
+  inline GBaseString &init(const GP<GStringRep> &rep);
 
   // -- CONSTRUCTORS
   /** Null constructor. Constructs an empty string. */
@@ -679,7 +679,7 @@ public:
       \Ref{GMap}).  This hash code may be reduced to an arbitrary
       range by computing its remainder modulo the upper bound of
       the range. */
-  friend unsigned int hash(const GBaseString &ref);
+  friend DJVUAPI unsigned int hash(const GBaseString &ref);
   // -- HELPERS
   friend class GStringRep;
 
@@ -711,7 +711,7 @@ public:
     const EscapeMode escape=UNKNOWN_ESCAPED) const;
   GUTF8String NativeToUTF8(void) const;
 protected:
-  int CheckSubscript(int n) const;
+  inline int CheckSubscript(int n) const;
 };
 
 /** General purpose character string.
@@ -735,13 +735,13 @@ protected:
     position #-1# accesses the last character of the string,
     position #-2# represents the second last character, etc.)  */
 
-class GUTF8String : public GBaseString
+class DJVUAPI GUTF8String : public GBaseString
 {
 public:
   ~GUTF8String();
-  void init(void);
+  inline void init(void);
 
-  GUTF8String &init(const GP<GStringRep> &rep);
+  inline GUTF8String &init(const GP<GStringRep> &rep);
 
   // -- CONSTRUCTORS
   /** Null constructor. Constructs an empty string. */
@@ -778,10 +778,10 @@ public:
       character array #str#. */
   GUTF8String& operator= (const char str);
   GUTF8String& operator= (const char *str);
-  GUTF8String& operator= (const GP<GStringRep> &str);
-  GUTF8String& operator= (const GBaseString &str);
-  GUTF8String& operator= (const GUTF8String &str);
-  GUTF8String& operator= (const GNativeString &str);
+  inline GUTF8String& operator= (const GP<GStringRep> &str);
+  inline GUTF8String& operator= (const GBaseString &str);
+  inline GUTF8String& operator= (const GUTF8String &str);
+  inline GUTF8String& operator= (const GNativeString &str);
 
   /** Constructs a string with a formatted string (as in #vprintf#).
       The string is re-initialized with the characters generated
@@ -873,8 +873,8 @@ public:
   GUTF8String operator+(const GBaseString &s2) const;
   GUTF8String operator+(const GUTF8String &s2) const;
   GUTF8String operator+(const GNativeString &s2) const;
-  GUTF8String operator+(const char    *s2) const;
-  friend GUTF8String operator+(const char    *s1, const GUTF8String &s2);
+  GUTF8String operator+(const char *s2) const;
+  friend DJVUAPI GUTF8String operator+(const char *s1, const GUTF8String &s2);
 
   /** Provides a direct access to the string buffer.  Returns a
       pointer for directly accessing the string buffer.  This pointer
@@ -937,7 +937,7 @@ public:
     position #-1# accesses the last character of the string,
     position #-2# represents the second last character, etc.)  */
 
-class GNativeString : public GBaseString
+class DJVUAPI GNativeString : public GBaseString
 {
 public:
   ~GNativeString();
@@ -1005,10 +1005,10 @@ public:
       array #str#. */
   GNativeString& operator= (const char str);
   GNativeString& operator= (const char *str);
-  GNativeString& operator= (const GP<GStringRep> &str);
-  GNativeString& operator= (const GBaseString &str);
-  GNativeString& operator= (const GUTF8String &str);
-  GNativeString& operator= (const GNativeString &str);
+  inline GNativeString& operator= (const GP<GStringRep> &str);
+  inline GNativeString& operator= (const GBaseString &str);
+  inline GNativeString& operator= (const GUTF8String &str);
+  inline GNativeString& operator= (const GNativeString &str);
   // -- CONCATENATION
   /// Appends character #ch# to the string.
   GNativeString& operator+= (char ch);
@@ -1037,7 +1037,7 @@ public:
   GNativeString operator+(const GNativeString &s2) const;
   GUTF8String operator+(const GUTF8String &s2) const;
   GNativeString operator+(const char *s2) const;
-  friend GNativeString operator+(const char *s1, const GNativeString &s2);
+  friend DJVUAPI GNativeString operator+(const char *s1, const GNativeString &s2);
 
   /** Initializes a string with a formatted string (as in #printf#).
       The string is re-initialized with the characters generated

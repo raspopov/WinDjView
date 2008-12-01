@@ -184,7 +184,7 @@ GUTF8String Annotation::GetXML() const
 			pszAttrFillTransparency, static_cast<int>(fTransparency*100 + 0.5));
 
 	CString strBegin;
-	strBegin.Format(_T("<%s %s\n%s\n%s=\""), pszTagAnnotation,
+	strBegin.Format(_T("<%s %s %s %s=\""), pszTagAnnotation,
 			strBorder, strFill, pszAttrComment);
 
 	CString strEnd;
@@ -292,7 +292,8 @@ void Annotation::Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate)
 		crFill = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
 	}
 
-	fTransparency = 0.75;
+	fTransparency = 1.0 - max(0, min(100, pArea->opacity)) / 100.0;
+
 	strComment = pArea->comment;
 	strURL = pArea->url;
 
@@ -508,6 +509,7 @@ static const TCHAR pszAttrDisplayMode[] = _T("display-mode");
 static const TCHAR pszAttrRotate[] = _T("rotate");
 static const TCHAR pszAttrOpenSidebarTab[] = _T("sidebar-tab");
 static const TCHAR pszTagBookmarks[] = _T("bookmarks");
+static const TCHAR pszTagContent[] = _T("content");
 
 DocSettings::DocSettings()
 	: nPage(-1), ptOffset(0, 0), nZoomType(-10), fZoom(100.0), nLayout(-1),
@@ -516,19 +518,26 @@ DocSettings::DocSettings()
 {
 }
 
-GUTF8String DocSettings::GetXML() const
+GUTF8String DocSettings::GetXML(bool skip_view_settings) const
 {
 	GUTF8String result;
 
 	CString strHead;
-	strHead.Format(_T("<%s %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%.2lf%%\"")
-		_T(" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\">\n"),
-		pszTagSettings, pszAttrStartPage, nPage, pszAttrOffsetX, ptOffset.x,
-		pszAttrOffsetY, ptOffset.y, pszAttrZoomType, nZoomType, pszAttrZoom, fZoom,
-		pszAttrLayout, nLayout, pszAttrFirstPage, static_cast<int>(bFirstPageAlone),
-		pszAttrRightToLeft, static_cast<int>(bRightToLeft),
-		pszAttrDisplayMode, nDisplayMode, pszAttrRotate, nRotate,
-		pszAttrOpenSidebarTab, nOpenSidebarTab);
+	if (skip_view_settings)
+	{
+		strHead.Format(_T("<%s>\n"), pszTagContent);
+	}
+	else
+	{
+		strHead.Format(_T("<%s %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%.2lf%%\"")
+				_T(" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\">\n"),
+				pszTagSettings, pszAttrStartPage, nPage, pszAttrOffsetX, ptOffset.x,
+				pszAttrOffsetY, ptOffset.y, pszAttrZoomType, nZoomType, pszAttrZoom, fZoom,
+				pszAttrLayout, nLayout, pszAttrFirstPage, static_cast<int>(bFirstPageAlone),
+				pszAttrRightToLeft, static_cast<int>(bRightToLeft),
+				pszAttrDisplayMode, nDisplayMode, pszAttrRotate, nRotate,
+				pszAttrOpenSidebarTab, nOpenSidebarTab);
+	}
 
 	result += MakeUTF8String(strHead);
 
@@ -556,33 +565,40 @@ GUTF8String DocSettings::GetXML() const
 		}
 	}
 
-	result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagSettings));
+	if (skip_view_settings)
+		result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagContent));
+	else
+		result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagSettings));
 
 	return result;
 }
 
 void DocSettings::Load(const XMLNode& node)
 {
-	if (MakeCString(node.tagName) != pszTagSettings)
+	CString strTagName = MakeCString(node.tagName);
+	if (strTagName != pszTagSettings && strTagName != pszTagContent)
 		return;
 
-	node.GetIntAttribute(pszAttrStartPage, nPage);
-	node.GetLongAttribute(pszAttrOffsetX, ptOffset.x);
-	node.GetLongAttribute(pszAttrOffsetY, ptOffset.y);
-	node.GetIntAttribute(pszAttrZoomType, nZoomType);
-	node.GetDoubleAttribute(pszAttrZoom, fZoom);
-	node.GetIntAttribute(pszAttrLayout, nLayout);
-	node.GetIntAttribute(pszAttrDisplayMode, nDisplayMode);
-	node.GetIntAttribute(pszAttrRotate, nRotate);
-	node.GetIntAttribute(pszAttrOpenSidebarTab, nOpenSidebarTab);
+	if (strTagName == pszTagSettings)
+	{
+		node.GetIntAttribute(pszAttrStartPage, nPage);
+		node.GetLongAttribute(pszAttrOffsetX, ptOffset.x);
+		node.GetLongAttribute(pszAttrOffsetY, ptOffset.y);
+		node.GetIntAttribute(pszAttrZoomType, nZoomType);
+		node.GetDoubleAttribute(pszAttrZoom, fZoom);
+		node.GetIntAttribute(pszAttrLayout, nLayout);
+		node.GetIntAttribute(pszAttrDisplayMode, nDisplayMode);
+		node.GetIntAttribute(pszAttrRotate, nRotate);
+		node.GetIntAttribute(pszAttrOpenSidebarTab, nOpenSidebarTab);
 
-	int nFirstPage;
-	if (node.GetIntAttribute(pszAttrFirstPage, nFirstPage))
-		bFirstPageAlone = (nFirstPage != 0);
+		int nFirstPage;
+		if (node.GetIntAttribute(pszAttrFirstPage, nFirstPage))
+			bFirstPageAlone = (nFirstPage != 0);
 
-	int nRightToLeft;
-	if (node.GetIntAttribute(pszAttrRightToLeft, nRightToLeft))
-		bRightToLeft = (nRightToLeft != 0);
+		int nRightToLeft;
+		if (node.GetIntAttribute(pszAttrRightToLeft, nRightToLeft))
+			bRightToLeft = (nRightToLeft != 0);
+	}
 
 	pageSettings.clear();
 	bookmarks.clear();
@@ -664,10 +680,15 @@ bool DocSettings::DeleteAnnotation(const Annotation* pAnno, int nPage)
 			ASSERT(&(temp.front()) == pCurAnno);
 
 			UpdateObservers(AnnotationMsg(ANNOTATION_DELETED, pCurAnno, nPage));
+
+			if (settings.anno.empty())
+				pageSettings.erase(nPage);
 			return true;
 		}
 	}
 
+	if (settings.anno.empty())
+		pageSettings.erase(nPage);
 	return false;
 }
 
@@ -912,6 +933,17 @@ DjVuSource* DjVuSource::FromFile(const CString& strFileName)
 	if (!bExisting && pApplication != NULL)
 	{
 		pApplication->LoadDocSettings(digest.ToString(), pSettings);
+
+		// Remove annotations for non-existing pages.
+		map<int, PageSettings>::iterator it;
+		for (it = pSettings->pageSettings.begin(); it != pSettings->pageSettings.end();)
+		{
+			int nPage = it->first;
+			if (nPage < 0 || nPage >= pDoc->get_pages_num())
+				pSettings->pageSettings.erase(it++);
+			else
+				++it;
+		}
 	}
 
 	DjVuSource* pSource = new DjVuSource(pszName, pDoc, pSettings);

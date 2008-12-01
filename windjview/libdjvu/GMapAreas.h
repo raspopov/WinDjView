@@ -160,6 +160,18 @@ public:
    static const char HILITE_TAG [];
    static const char URL_TAG [];
    static const char TARGET_SELF [];
+//< Changed for WinDjView project
+   static const char TEXT_TAG [];
+   static const char LINE_TAG [];
+   static const char OPACITY_TAG [];
+   static const char ARROW_TAG [];
+   static const char WIDTH_TAG [];
+   static const char LINECLR_TAG [];
+   static const char BACKCLR_TAG [];
+   static const char TEXTCLR_TAG [];
+   static const char PUSHPIN_TAG [];
+//>
+
 
    enum BorderType { NO_BORDER=0, XOR_BORDER=1, SOLID_BORDER=2,
 		     SHADOW_IN_BORDER=3, SHADOW_OUT_BORDER=4,
@@ -169,7 +181,10 @@ public:
 
    // Enumeration for reporting the type of map area. "MapUnknown" is reported
    // for objects of type GMapArea (there shouldn't be any).
-   enum MapAreaType { UNKNOWN, RECT, OVAL, POLY };
+//< Changed for WinDjView project
+//   enum MapAreaType { UNKNOWN, RECT, OVAL, POLY };
+   enum MapAreaType { UNKNOWN, RECT, OVAL, POLY, TEXT, LINE };
+//>
 
       /** Optional URL which this map area can be associated with.
 	  If it's not empty then clicking this map area with the mouse
@@ -214,6 +229,15 @@ public:
           highlighting and \#FF000000 is for XOR highlighting. */
    unsigned long int	hilite_color;
 
+//< Changed for WinDjView project
+   int opacity;
+   bool is_text;
+   bool has_pushpin;
+   unsigned long int foreground_color;
+   bool is_line;
+   bool has_arrow;
+   int line_width;
+//>
       /// Returns 1 if the given point is inside the hyperlink area
    bool		is_point_inside(int x, int y) const;
 
@@ -315,7 +339,11 @@ public:
    
    virtual GUTF8String get_xmltag(const int height) const;
       /// Returns MapRect
-   virtual MapAreaType const get_shape_type( void ) const { return RECT; };
+//< Changed for WinDjView project
+//   virtual MapAreaType const get_shape_type( void ) const { return RECT; };
+   virtual MapAreaType const get_shape_type( void ) const
+      { return is_text ? TEXT : RECT; };
+//>
       /// Returns #"rect"#
    virtual char const * const	get_shape_name(void) const;
       /// Returns a copy of the rectangle
@@ -394,7 +422,11 @@ public:
 
    virtual GUTF8String get_xmltag(const int height) const;
       /// Returns MapPoly
-   virtual MapAreaType const get_shape_type( void ) const { return POLY; };
+//< Changed for WinDjView project
+//   virtual MapAreaType const get_shape_type( void ) const { return POLY; };
+   virtual MapAreaType const get_shape_type( void ) const
+      { return is_line ? LINE : POLY; };
+//>
       /// Returns #"poly"# all the time
    virtual char const * const 	get_shape_name(void) const;
       /// Returns a copy of the polygon
@@ -511,7 +543,11 @@ inline char const * const
 GMapRect::gma_check_object(void)  const{ return ""; }
 
 inline char const * const 
-GMapRect::get_shape_name(void) const { return RECT_TAG; }
+//< Changed for WinDjView project
+//GMapRect::get_shape_name(void) const { return RECT_TAG; }
+GMapRect::get_shape_name(void) const
+   { return is_text ? TEXT_TAG : RECT_TAG; }
+//>
 
 inline int
 GMapPoly::get_points_num(void) const { return points; }
@@ -526,7 +562,11 @@ inline int
 GMapPoly::get_y(int i) const { return yy[i]; }
 
 inline char const * const
-GMapPoly::get_shape_name(void) const { return POLY_TAG; }
+//< Changed for WinDjView project
+//GMapPoly::get_shape_name(void) const { return POLY_TAG; }
+GMapPoly::get_shape_name(void) const
+   { return is_line ? LINE_TAG : POLY_TAG; }
+//>
 
 inline int
 GMapOval::get_a(void) const { return a; }

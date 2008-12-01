@@ -210,6 +210,8 @@ BEGIN
         MENUITEM "Save Copy &As...\tCtrl+S",    ID_FILE_SAVE_COPY_AS
         MENUITEM "&Close\tCtrl+W",              ID_FILE_CLOSE
         MENUITEM SEPARATOR
+        MENUITEM "&Import Bookmarks...",        ID_FILE_IMPORT_BOOKMARKS
+        MENUITEM "Export &Bookmarks...",        ID_FILE_EXPORT_BOOKMARKS
         MENUITEM "&Export Text...",             ID_FILE_EXPORT_TEXT
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
         MENUITEM SEPARATOR
@@ -974,7 +976,6 @@ STRINGTABLE
 BEGIN
     IDS_ERROR_PARSING_RANGE "Printing range is invalid."
     IDS_PATH_TOO_LONG       "Failed to open document: the path is too long.\n%s"
-    IDR_DICTIONARIES_BAR    "Di&ctionary Bar"
     IDS_DICTBAR_TITLE       "Dictionaries"
     IDS_LANG_NOT_SPECIFIED  "Not Specified"
     IDS_UNINSTALL_DICT      "Are you sure you want to uninstall the dictionary ""%s""?\n\nThe dictionary file will be moved to the recycle bin. To permanently delete the dictionary, empty the recycle bin."
@@ -988,6 +989,12 @@ BEGIN
     IDS_CLOSE_TAB           "Close Tab"
     IDS_DOC_TYPES           "Bundled (Old)\nIndexed (Old)\nBundled\nIndirect\nSingle Page\nUnknown"
     IDS_FILE_TYPES          "Shared Data\nPage\nThumbnails\nShared Annotations\nUnknown"
+    IDS_DOC_FILES_COLUMNS   "Page\nFile\nName\nType\nSize"
+END
+
+STRINGTABLE 
+BEGIN
+    IDR_DICTIONARIES_BAR    "Di&ctionary Bar"
 END
 
 STRINGTABLE 
@@ -1321,11 +1328,22 @@ STRINGTABLE
 BEGIN
     ID_LAYOUT_RTL_ORDER     "Order the pages from right to left in facing and continuous-facing layouts"
     ID_FILE_DOC_PROPERTIES  "Display properties of the active document\nDocument Properties"
+    ID_FILE_IMPORT_BOOKMARKS 
+                            "Import bookmarks and annotations from a file\nImport Bookmarks"
+    ID_FILE_EXPORT_BOOKMARKS 
+                            "Export bookmarks and annotations to a file\nExport Bookmarks"
 END
 
 STRINGTABLE 
 BEGIN
-    IDS_DOC_FILES_COLUMNS   "Page\nFile\nName\nType\nSize"
+    IDS_BOOKMARKS_FILTER    "WinDjView Bookmarks (*.bookmarks)|*.bookmarks|All Files (*.*)|*.*||"
+    IDS_EXPORT_BOOKMARKS    "Export Bookmarks"
+    IDS_IMPORT_BOOKMARKS    "Import Bookmarks"
+    IDS_CANNOT_OPEN_BOOKMARKS "Could not open bookmarks file for reading."
+    IDS_CANNOT_READ_BOOKMARKS "Invalid bookmarks file format."
+    IDS_BOOKMARKS_EMPTY     "Bookmarks file does not contain any bookmarks or annotations."
+    IDS_BOOKMARKS_PROMPT    "There are existing bookmarks and annotations for this document. Would you like to append the new bookmarks and annotations, or to replace the existing ones?"
+    IDS_BOOKMARKS_PROMPT_CAPTIONS "Append\nReplace"
 END
 
 #endif    // English (U.S.) resources

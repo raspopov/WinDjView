@@ -685,13 +685,15 @@ DjVuDocument::check_unnamed_files(void)
 int
 DjVuDocument::get_pages_num(void) const
 {
-   check();
-   if (flags & DOC_TYPE_KNOWN)
+  check();
+  if (flags & DOC_TYPE_KNOWN)
+    {
       if (doc_type==BUNDLED || doc_type==INDIRECT)
-	 return djvm_dir->get_pages_num();
+	return djvm_dir->get_pages_num();
       else if (flags & DOC_NDIR_KNOWN)
-	 return ndir->get_pages_num();
-   return 1;
+	return ndir->get_pages_num();
+    }
+  return 1;
 }
 
 GURL
@@ -706,19 +708,29 @@ DjVuDocument::page_to_url(int page_num) const
       switch(doc_type)
       {
 	 case SINGLE_PAGE:
+         {
+           if (page_num<1) 
+             url=init_url;
+           else
+             G_THROW( ERR_MSG("DjVuDocument.big_num") );
+           break;
+         }
 	 case OLD_INDEXED:
 	 {
-	    if (page_num<0) url=init_url;
-	    else if (flags & DOC_NDIR_KNOWN) url=ndir->page_to_url(page_num);
+	    if (page_num<0) 
+              url=init_url;
+	    else if (flags & DOC_NDIR_KNOWN) 
+              url=ndir->page_to_url(page_num);
 	    break;
 	 }
 	 case OLD_BUNDLED:
 	 {
-	    if (page_num<0) page_num=0;
+	    if (page_num<0) 
+              page_num=0;
 	    if (page_num==0 && (flags & DOC_DIR_KNOWN))
-	       url=GURL::UTF8(first_page_name,init_url);
+              url=GURL::UTF8(first_page_name,init_url);
 	    else if (flags & DOC_NDIR_KNOWN)
-	       url=ndir->page_to_url(page_num);
+              url=ndir->page_to_url(page_num);
 	    break;
 	 }
 	 case BUNDLED:
@@ -728,7 +740,8 @@ DjVuDocument::page_to_url(int page_num) const
 	    if (flags & DOC_DIR_KNOWN)
 	    {
 	      GP<DjVmDir::File> file=djvm_dir->page_to_file(page_num);
-	      if (!file) G_THROW( ERR_MSG("DjVuDocument.big_num") );
+	      if (!file) 
+                G_THROW( ERR_MSG("DjVuDocument.big_num") );
 	      url=GURL::UTF8(file->get_load_name(),init_url);
 	    }
 	    break;

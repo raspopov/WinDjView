@@ -47,7 +47,7 @@ protected:
 	CNotifyingEdit m_edit;
 
 	// Message map functions
-	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	DECLARE_MESSAGE_MAP()
 
 	friend class CMyComboBoxEx;
@@ -67,6 +67,6 @@ protected:
 	CMyComboBox::CNotifyingEdit m_edit;
 
 	// Message map functions
-	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	DECLARE_MESSAGE_MAP()
 };

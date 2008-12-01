@@ -71,10 +71,13 @@
 // <http://prdownloads.sourceforge.net/djvu/DjVu2_2b-src.tgz>.
 
 #include <string.h>
+#if PARANOID_DEBUG
+# include <assert.h>
+#endif
+
 #include "GThreads.h"
 #include "GSmartPointer.h"
 #include "GException.h"
-
 
 #ifdef HAVE_NAMESPACES
 namespace DJVU {
@@ -84,13 +87,7 @@ namespace DJVU {
 #endif
 
 
-// ------ STATIC CRITICAL SECTION
-
-static GCriticalSection gcsCounter;
-
-
 // ------ GPENABLED
-
 
 GPEnabled::~GPEnabled()
 {
@@ -101,88 +98,59 @@ GPEnabled::~GPEnabled()
 void
 GPEnabled::destroy()
 {
-  if (count >= 0)
-    G_THROW( ERR_MSG("GSmartPointer.suspicious") );
-  delete this;
-}
-
-void 
-GPEnabled::ref()
-{
-  gcsCounter.lock();
-  count++;
-  gcsCounter.unlock();
-}
-
-void 
-GPEnabled::unref()
-{
-  gcsCounter.lock();
-  if (! --count) 
-    count = -1;
-  gcsCounter.unlock();
-  if (count < 0)
-    destroy();
+  // Only delete if the counter is still zero.
+  // because someone may have rescued the object...
+  // If yes, set the counter to -0x7fff to mark 
+  // the object as doomed and make sure things
+  // will work if the destructor uses a GP...
+  if (atomicCompareAndSwap(&count, 0, -0x7fff))
+    delete this;
 }
 
 
 // ------ GPBASE
 
 
-GPBase&
-GPBase::assign (GPEnabled *nptr)
-{
-  gcsCounter.lock();
-  if (nptr)
-    {
-      if (nptr->count >= 0)  
-        nptr->count++;
-      else
-        nptr = 0;
-    }
-  if (ptr)
-    {
-      GPEnabled *old = ptr;
-      ptr = nptr;
-      if (! --old->count) 
-        old->count = -1;
-      gcsCounter.unlock();      
-      if (old->count < 0)
-        old->destroy();
-    }
-  else
-    {
-      ptr = nptr;
-      gcsCounter.unlock();
-    }
-  return *this;
-}
+#define LOCKMASK 0x3f
+#define LOCKIDX(addr) ((((size_t)(addr))/sizeof(void*))&LOCKMASK)
+static int volatile locks[LOCKMASK+1];
+
 
 GPBase&
 GPBase::assign (const GPBase &sptr)
 {
-  gcsCounter.lock();
-  if (sptr.ptr) 
-    {
-      sptr.ptr->count++;
-    }
-  if (ptr)
-    {
-      GPEnabled *old = ptr;
-      ptr = sptr.ptr;
-      if (! --old->count) 
-        old->count = -1;
-      gcsCounter.unlock();      
-      if (old->count < 0)
-        old->destroy();
-    }
-  else
-    {
-      ptr = sptr.ptr;
-      gcsCounter.unlock();
-    }
+  int volatile *lockb = locks+LOCKIDX(&sptr);
+  atomicAcquireOrSpin(lockb);
+  GPEnabled *nptr = sptr.ptr;
+  if (nptr)
+    nptr->ref();
+  atomicRelease(lockb);
+  int volatile *locka = locks+LOCKIDX(this);
+  atomicAcquireOrSpin(locka);
+  GPEnabled *old = ptr;
+  ptr = nptr;
+  atomicRelease(locka);
+  if (old)
+    old->unref();
   return *this;
 }
+
+GPBase&
+GPBase::assign (GPEnabled *nptr)
+{
+  if (nptr)
+    nptr->ref();
+  int volatile *locka = locks+LOCKIDX(this);
+  atomicAcquireOrSpin(locka);
+  GPEnabled *old = ptr;
+  ptr = nptr;
+  atomicRelease(locka);
+  if (old)
+    old->unref();
+  return *this;
+}
+
+
 
 
 // ------ GPBUFFERBASE

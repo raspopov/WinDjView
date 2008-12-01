@@ -368,6 +368,14 @@ bool CMyTreeCtrl::DeleteItem(HTREEITEM hItem)
 	TreeNode* pNode = reinterpret_cast<TreeNode*>(hItem);
 	ASSERT_POINTER(pNode, TreeNode);
 
+	while (pNode->pChild != NULL)
+	{
+		bool bBatchUpdate = m_bBatchUpdate;
+		m_bBatchUpdate = true;
+		DeleteItem(reinterpret_cast<HTREEITEM>(pNode->pChild));
+		m_bBatchUpdate = bBatchUpdate;
+	}
+
 	TreeNode* pParent = pNode->pParent;
 	if (pParent->pChild == pNode)
 	{
@@ -405,6 +413,19 @@ bool CMyTreeCtrl::DeleteItem(HTREEITEM hItem)
 		RecalcLayout();
 
 	return true;
+}
+
+void CMyTreeCtrl::DeleteAllItems()
+{
+	bool bBatchUpdate = m_bBatchUpdate;
+
+	m_bBatchUpdate = true;
+	while (m_pRoot->pChild != NULL)
+		DeleteItem(reinterpret_cast<HTREEITEM>(m_pRoot->pChild));
+	m_bBatchUpdate = bBatchUpdate;
+
+	if (!m_bBatchUpdate)
+		RecalcLayout();
 }
 
 void CMyTreeCtrl::InitNotification(NMTREEVIEW& nmtv, UINT nCode)
@@ -1269,12 +1290,13 @@ void CMyTreeCtrl::SelectNode(TreeNode* pNode, UINT nAction)
 
 void CMyTreeCtrl::ExpandNode(TreeNode* pNode, bool bExpand, bool bAllChildren)
 {
-	bool bBatchUpdate = m_bBatchUpdate;
 	if (bAllChildren)
 	{
+		bool bBatchUpdate = m_bBatchUpdate;
 		m_bBatchUpdate = true;
 		for (TreeNode* pChild = pNode->pChild; pChild != NULL; pChild = pChild->pNext)
 			ExpandNode(pChild, bExpand, true);
+		m_bBatchUpdate = bBatchUpdate;
 	}
 
 	if (pNode->bCollapsed == !bExpand)
@@ -1305,7 +1327,6 @@ void CMyTreeCtrl::ExpandNode(TreeNode* pNode, bool bExpand, bool bAllChildren)
 
 	GetParent()->SendMessage(WM_NOTIFY, GetDlgCtrlID(), (LPARAM) &nmtv);
 
-	m_bBatchUpdate = bBatchUpdate;
 	if (!m_bBatchUpdate)
 	{
 		RecalcLayout();
