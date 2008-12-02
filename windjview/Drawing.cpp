@@ -649,6 +649,88 @@ void InvertFrame(CDC* pDC, const CRect& rect)
 	pDC->InvertRect(rcVertLine);
 }
 
+void FrameOval(CDC* pDC, const CRect& bounds, COLORREF color)
+{
+	CPen penSolid(PS_SOLID, 1, color);
+	CPen* pOldPen = pDC->SelectObject(&penSolid);
+
+	CPoint ptLeft(bounds.left, bounds.CenterPoint().y);
+	CPoint ptRight(bounds.left, bounds.CenterPoint().y);
+	pDC->Arc(bounds, ptLeft, ptRight);
+	pDC->Arc(bounds, ptRight, ptLeft);
+
+	pDC->SelectObject(pOldPen);
+}
+
+void InvertOvalFrame(CDC* pDC, const CRect& bounds)
+{
+	CRect rcClip;
+	pDC->GetClipBox(rcClip);
+	if (!rcClip.IntersectRect(CRect(rcClip), bounds))
+		return;
+
+	static COffscreenDC offscreenDC;
+
+	offscreenDC.Create(pDC, rcClip.Size());
+	CDIB* pDIB = offscreenDC.GetDIB();
+	if (pDIB == NULL || pDIB->m_hObject == NULL)
+	{
+		offscreenDC.Release();
+		return;
+	}
+
+	offscreenDC.SetViewportOrg(-rcClip.TopLeft());
+	offscreenDC.FillSolidRect(rcClip, RGB(0, 0, 0));
+	FrameOval(&offscreenDC, bounds, RGB(255, 255, 255));
+
+	pDC->BitBlt(rcClip.left, rcClip.top, rcClip.Width(), rcClip.Height(),
+			&offscreenDC, rcClip.left, rcClip.top, SRCINVERT);
+	offscreenDC.Release();
+}
+
+void FramePoly(CDC* pDC, LPPOINT points, int nCount, COLORREF color)
+{
+	CPen penSolid(PS_SOLID, 1, color);
+	CPen* pOldPen = pDC->SelectObject(&penSolid);
+
+	pDC->Polyline(points, nCount);
+
+	pDC->SelectObject(pOldPen);
+}
+
+void InvertPolyFrame(CDC* pDC, LPPOINT points, int nCount)
+{
+	if (nCount < 2)
+		return;
+
+	CRect rcBounds = CRect(points[0], CSize(1, 1));
+	for (int i = 0; i < nCount; ++i)
+		rcBounds.UnionRect(CRect(rcBounds), CRect(points[i], CSize(1, 1)));
+
+	CRect rcClip;
+	pDC->GetClipBox(rcClip);
+	if (!rcClip.IntersectRect(CRect(rcClip), rcBounds))
+		return;
+
+	static COffscreenDC offscreenDC;
+
+	offscreenDC.Create(pDC, rcClip.Size());
+	CDIB* pDIB = offscreenDC.GetDIB();
+	if (pDIB == NULL || pDIB->m_hObject == NULL)
+	{
+		offscreenDC.Release();
+		return;
+	}
+
+	offscreenDC.SetViewportOrg(-rcClip.TopLeft());
+	offscreenDC.FillSolidRect(rcClip, RGB(0, 0, 0));
+	FramePoly(&offscreenDC, points, nCount, RGB(255, 255, 255));
+
+	pDC->BitBlt(rcClip.left, rcClip.top, rcClip.Width(), rcClip.Height(),
+			&offscreenDC, rcClip.left, rcClip.top, SRCINVERT);
+	offscreenDC.Release();
+}
+
 void DrawDottedLine(CDC* pDC, const CPoint& ptStart, const CPoint& ptEnd, COLORREF color)
 {
 	if (ptStart.x == ptEnd.x)

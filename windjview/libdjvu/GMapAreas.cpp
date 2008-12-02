@@ -940,7 +940,7 @@ GMapArea::GMapArea(void) : target("_self"), border_type(NO_BORDER),
 //   hilite_color(0xffffffff), bounds_initialized(0) {}
    hilite_color(0xffffffff), bounds_initialized(0), opacity(50),
    is_text(false), has_pushpin(false), foreground_color(0),
-   is_line(false), line_width(1) {}
+   is_line(false), has_arrow(false), line_width(1) {}
 //>
 
 GMapRect::GMapRect(void) : xmin(0), ymin(0), xmax(0), ymax(0) {}

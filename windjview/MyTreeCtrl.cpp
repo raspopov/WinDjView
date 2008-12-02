@@ -118,18 +118,17 @@ void CMyTreeCtrl::OnPaint()
 	CPaintDC dcPaint(this);
 	dcPaint.SetViewportOrg(CPoint(0, 0));
 
-	CRect rcClient;
-	GetClientRect(rcClient);
+	CRect rcClient = ::GetClientRect(this);
 
 	CRect rcClip;
 	dcPaint.GetClipBox(rcClip);
-	rcClip.IntersectRect(rcClip, rcClient);
+	rcClip.IntersectRect(CRect(rcClip), rcClient);
 
 	m_offscreenDC.Create(&dcPaint, rcClip.Size());
 	m_offscreenDC.SetViewportOrg(-rcClip.TopLeft());
 	m_offscreenDC.IntersectClipRect(rcClip);
 
-	CPoint ptOffset = GetScrollPosition();
+	CPoint ptScroll = GetScrollPosition();
 
 	CFont* pOldFont = m_offscreenDC.SelectObject(&m_font);
 	COLORREF crBackground = ::GetSysColor(COLOR_WINDOW);
@@ -140,7 +139,7 @@ void CMyTreeCtrl::OnPaint()
 	if (nBottom < m_szDisplay.cy)
 	{
 		CRect rcBottom(0, nBottom, m_szDisplay.cx, m_szDisplay.cy);
-		m_offscreenDC.FillSolidRect(rcBottom - ptOffset, crBackground);
+		m_offscreenDC.FillSolidRect(rcBottom - ptScroll, crBackground);
 	}
 
 	m_offscreenDC.SelectObject(pOldFont);
@@ -153,7 +152,7 @@ void CMyTreeCtrl::OnPaint()
 
 int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 {
-	CPoint ptOffset = GetScrollPosition();
+	CPoint ptScroll = GetScrollPosition();
 
 	int nBottom = (pNode == m_pRoot ? 0 : pNode->rcNode.bottom);
 
@@ -161,10 +160,10 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 	rcLine.right = m_szDisplay.cx;
 
 	CRect rcIntersect;
-	if (pNode != m_pRoot && rcIntersect.IntersectRect(rcClip, rcLine - ptOffset))
+	if (pNode != m_pRoot && rcIntersect.IntersectRect(rcClip, rcLine - ptScroll))
 	{
 		COLORREF crBackground = ::GetSysColor(COLOR_WINDOW);
-		pDC->FillSolidRect(rcLine - ptOffset, crBackground);
+		pDC->FillSolidRect(rcLine - ptScroll, crBackground);
 
 		CFont* pOldFont = NULL;
 		if (pNode == m_pHoverNode)
@@ -177,21 +176,21 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 			rcSel.DeflateRect(s_nTextOffset - 3, 0, 0, 0);
 
 			COLORREF crSel = ::GetSysColor(GetFocus() == this ? COLOR_HIGHLIGHT : COLOR_BTNFACE);
-			pDC->FillSolidRect(rcSel - ptOffset, crSel);
+			pDC->FillSolidRect(rcSel - ptScroll, crSel);
 
 			COLORREF crSelText = ::GetSysColor(GetFocus() == this ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT);
 			pDC->SetTextColor(crSelText);
 
-			pDC->DrawText(pNode->strLabel, pNode->rcText - ptOffset, nFlags);
+			pDC->DrawText(pNode->strLabel, pNode->rcText - ptScroll, nFlags);
 
 			if (GetFocus() == this)
-				DrawDottedRect(pDC, rcSel - ptOffset, crSelText);
+				DrawDottedRect(pDC, rcSel - ptScroll, crSelText);
 		}
 		else
 		{
 			COLORREF crText = ::GetSysColor(pNode == m_pHoverNode ? COLOR_HOTLIGHT : COLOR_WINDOWTEXT);
 			pDC->SetTextColor(crText);
-			pDC->DrawText(pNode->strLabel, pNode->rcText - ptOffset, DT_LEFT | DT_NOPREFIX | DT_WORDBREAK);
+			pDC->DrawText(pNode->strLabel, pNode->rcText - ptScroll, DT_LEFT | DT_NOPREFIX | DT_WORDBREAK);
 		}
 
 		if (pNode == m_pHoverNode)
@@ -200,7 +199,7 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 		if (m_pImageList != NULL && pNode->nImage != -1)
 		{
 			m_pImageList->Draw(pDC, pNode == m_pSelection ? pNode->nSelectedImage : pNode->nImage,
-					pNode->rcImage.TopLeft() + (-ptOffset), ILD_NORMAL);
+					pNode->rcImage.TopLeft() + (-ptScroll), ILD_NORMAL);
 		}
 
 		COLORREF crLines = ::GetSysColor(COLOR_BTNSHADOW);
@@ -213,26 +212,26 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 			if (m_pRoot->pChild != pNode)
 			{
 				// This node is not the first child of the root, so there should be a vertical top half-line here
-				DrawDottedLine(pDC, CPoint(pNode->nLineX, pNode->rcNode.top) + (-ptOffset),
-					CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset), crLines);
+				DrawDottedLine(pDC, CPoint(pNode->nLineX, pNode->rcNode.top) + (-ptScroll),
+					CPoint(pNode->nLineX, pNode->nLineY) + (-ptScroll), crLines);
 			}
 
 			if (pNode->HasSibling())
 			{
 				// This node is not the last child, so there should be a vertical bottom half-line here
-				DrawDottedLine(pDC,	CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset),
-					CPoint(pNode->nLineX, pNode->rcNode.bottom) + (-ptOffset), crLines);
+				DrawDottedLine(pDC,	CPoint(pNode->nLineX, pNode->nLineY) + (-ptScroll),
+					CPoint(pNode->nLineX, pNode->rcNode.bottom) + (-ptScroll), crLines);
 			}
 
 			// Horizontal line
-			DrawDottedLine(pDC, CPoint(pNode->nLineX, pNode->nLineY) + (-ptOffset),
-				CPoint(pNode->nLineStopX, pNode->nLineY) + (-ptOffset), crLines);
+			DrawDottedLine(pDC, CPoint(pNode->nLineX, pNode->nLineY) + (-ptScroll),
+				CPoint(pNode->nLineStopX, pNode->nLineY) + (-ptScroll), crLines);
 
 			if (pNode->HasChildren() && !pNode->bCollapsed)
 			{
 				// Vertical line to the first child
-				DrawDottedLine(pDC, CPoint(pNode->pChild->nLineX, pNode->nLineY) + (-ptOffset),
-					CPoint(pNode->pChild->nLineX, pNode->rcNode.bottom) + (-ptOffset), crLines);
+				DrawDottedLine(pDC, CPoint(pNode->pChild->nLineX, pNode->nLineY) + (-ptScroll),
+					CPoint(pNode->pChild->nLineX, pNode->rcNode.bottom) + (-ptScroll), crLines);
 			}
 
 			TreeNode* pParent = pNode->pParent;
@@ -241,8 +240,8 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 				if (pParent->HasSibling())
 				{
 					// This node has a sibling node, so there should be a full vertical line here
-					DrawDottedLine(pDC, CPoint(pParent->nLineX, pNode->rcNode.top) + (-ptOffset),
-						CPoint(pParent->nLineX, pNode->rcNode.bottom) + (-ptOffset), crLines);
+					DrawDottedLine(pDC, CPoint(pParent->nLineX, pNode->rcNode.top) + (-ptScroll),
+						CPoint(pParent->nLineX, pNode->rcNode.bottom) + (-ptScroll), crLines);
 				}
 
 				pParent = pParent->pParent;
@@ -256,22 +255,22 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 			{
 				int iGlyph = (pNode->bCollapsed ? GLPS_CLOSED : GLPS_OPENED);
 
-				XPDrawThemeBackground(m_hTheme, pDC->m_hDC, TVP_GLYPH, iGlyph, pNode->rcGlyph - ptOffset, NULL);
+				XPDrawThemeBackground(m_hTheme, pDC->m_hDC, TVP_GLYPH, iGlyph, pNode->rcGlyph - ptScroll, NULL);
 			}
 			else
 			{
-				pDC->FillSolidRect(pNode->rcGlyph - ptOffset, crBackground);
-				FrameRect(pDC, pNode->rcGlyph - ptOffset, ::GetSysColor(COLOR_BTNSHADOW));
+				pDC->FillSolidRect(pNode->rcGlyph - ptScroll, crBackground);
+				FrameRect(pDC, pNode->rcGlyph - ptScroll, ::GetSysColor(COLOR_BTNSHADOW));
 
 				CRect rcHorz(pNode->rcGlyph.left + 2, pNode->rcGlyph.CenterPoint().y,
 					pNode->rcGlyph.right - 2, pNode->rcGlyph.CenterPoint().y + 1);
-				pDC->FillSolidRect(rcHorz - ptOffset, RGB(0, 0, 0));
+				pDC->FillSolidRect(rcHorz - ptScroll, RGB(0, 0, 0));
 
 				if (pNode->bCollapsed)
 				{
 					CRect rcVert(pNode->rcGlyph.CenterPoint().x, pNode->rcGlyph.top + 2,
 						pNode->rcGlyph.CenterPoint().x + 1, pNode->rcGlyph.bottom - 2);
-					pDC->FillSolidRect(rcVert - ptOffset, RGB(0, 0, 0));
+					pDC->FillSolidRect(rcVert - ptScroll, RGB(0, 0, 0));
 				}
 			}
 		}
@@ -454,13 +453,14 @@ void CMyTreeCtrl::EndBatchUpdate()
 
 void CMyTreeCtrl::RecalcLayout()
 {
-	CRect rcClient;
-	GetClientRect(rcClient);
+	int nCYHScroll = ::GetSystemMetrics(SM_CYHSCROLL);
+	int nCXVScroll = ::GetSystemMetrics(SM_CXVSCROLL);
 
-	if ((GetStyle() & WS_VSCROLL) != 0)
-		rcClient.right += ::GetSystemMetrics(SM_CXVSCROLL);
+	CSize szClient = ::GetClientSize(this);
 	if ((GetStyle() & WS_HSCROLL) != 0)
-		rcClient.bottom += ::GetSystemMetrics(SM_CYHSCROLL);
+		szClient.cy += nCYHScroll;
+	if ((GetStyle() & WS_VSCROLL) != 0)
+		szClient.cx += nCXVScroll;
 
 	CScreenDC dcScreen;
 
@@ -547,7 +547,7 @@ void CMyTreeCtrl::RecalcLayout()
 				
 				if (!pNode->strLabel.IsEmpty())
 				{
-					pNode->rcText.right = max(pNode->rcText.right, rcClient.right - s_nOffsetRight);
+					pNode->rcText.right = max(pNode->rcText.right, szClient.cx - s_nOffsetRight);
 					pNode->rcText.bottom = nTop + m_nItemHeight;
 
 					UINT nFlags = DT_CALCRECT | DT_LEFT | DT_NOPREFIX | DT_TOP |
@@ -597,25 +597,25 @@ void CMyTreeCtrl::RecalcLayout()
 
 		m_szDisplay.cy = nTop;
 
-		if (m_szDisplay.cx > rcClient.Width() && !bHorzScroll)
+		if (m_szDisplay.cx > szClient.cx && szClient.cy > nCYHScroll && !bHorzScroll)
 		{
 			bHorzScroll = true;
-			rcClient.bottom -= ::GetSystemMetrics(SM_CYHSCROLL);
+			szClient.cy -= nCYHScroll;
 		}
-		if (m_szDisplay.cy > rcClient.Height() && !bVertScroll)
+		if (m_szDisplay.cy > szClient.cy && szClient.cx > nCXVScroll && !bVertScroll)
 		{
 			bVertScroll = true;
 			bContinue = true;
-			rcClient.right -= ::GetSystemMetrics(SM_CXVSCROLL);
+			szClient.cx -= nCXVScroll;
 		}
 	} while (bContinue);
 
 	ShowScrollBar(SB_HORZ, bHorzScroll);
 	ShowScrollBar(SB_VERT, bVertScroll);
 
-	m_szDisplay.cx = max(m_szDisplay.cx, rcClient.Width());
-	m_szDisplay.cy = max(m_szDisplay.cy, rcClient.Height());
-	m_szPage = CSize(rcClient.Width()*3/4, rcClient.Height()*3/4);
+	m_szDisplay.cx = max(m_szDisplay.cx, szClient.cx);
+	m_szDisplay.cy = max(m_szDisplay.cy, szClient.cy);
+	m_szPage = CSize(szClient.cx*9/10, szClient.cy*9/10);
 
 	dc.SelectObject(pOldFont);
 
@@ -627,12 +627,12 @@ void CMyTreeCtrl::RecalcLayout()
 	// now update the bars as appropriate
 	if (bHorzScroll)
 	{
-		info.nPage = rcClient.Width();
+		info.nPage = szClient.cx;
 		info.nMax = m_szDisplay.cx - 1;
 		if (!SetScrollInfo(SB_HORZ, &info, true))
-			SetScrollRange(SB_HORZ, 0, m_szDisplay.cx - rcClient.Width(), true);
+			SetScrollRange(SB_HORZ, 0, m_szDisplay.cx - szClient.cx, true);
 
-		int nPos = max(0, min(m_szDisplay.cx - rcClient.Width(), GetScrollPos(SB_HORZ)));
+		int nPos = max(0, min(m_szDisplay.cx - szClient.cx, GetScrollPos(SB_HORZ)));
 		SetScrollPos(SB_HORZ, nPos, true);
 	}
 	else
@@ -642,12 +642,12 @@ void CMyTreeCtrl::RecalcLayout()
 
 	if (bVertScroll)
 	{
-		info.nPage = rcClient.Height();
+		info.nPage = szClient.cy;
 		info.nMax = m_szDisplay.cy - 1;
 		if (!SetScrollInfo(SB_VERT, &info, true))
-			SetScrollRange(SB_VERT, 0, m_szDisplay.cy - rcClient.Height(), true);
+			SetScrollRange(SB_VERT, 0, m_szDisplay.cy - szClient.cy, true);
 
-		int nPos = max(0, min(m_szDisplay.cy - rcClient.Height(), GetScrollPos(SB_VERT)));
+		int nPos = max(0, min(m_szDisplay.cy - szClient.cy, GetScrollPos(SB_VERT)));
 		SetScrollPos(SB_VERT, nPos, true);
 	}
 	else
@@ -776,15 +776,15 @@ CMyTreeCtrl::TreeNode* CMyTreeCtrl::HitTest(CPoint point, int* pnArea)
 
 CMyTreeCtrl::TreeNode* CMyTreeCtrl::HitTest(TreeNode* pNode, CPoint point, int* pnArea)
 {
-	CPoint ptOffset = GetScrollPosition();
+	CPoint ptScroll = GetScrollPosition();
 
-	if (pNode != m_pRoot && pNode->rcNode.PtInRect(point + ptOffset))
+	if (pNode != m_pRoot && pNode->rcNode.PtInRect(point + ptScroll))
 	{
-		if (pNode->rcLabel.PtInRect(point + ptOffset))
+		if (pNode->rcLabel.PtInRect(point + ptScroll))
 			*pnArea = HT_LABEL;
-		else if (pNode->rcImage.PtInRect(point + ptOffset))
+		else if (pNode->rcImage.PtInRect(point + ptScroll))
 			*pnArea = HT_IMAGE;
-		else if (pNode->rcGlyph.PtInRect(point + ptOffset))
+		else if (pNode->rcGlyph.PtInRect(point + ptScroll))
 			*pnArea = HT_GLYPH;
 		else
 			*pnArea = HT_OTHER;
@@ -807,8 +807,8 @@ CMyTreeCtrl::TreeNode* CMyTreeCtrl::HitTest(TreeNode* pNode, CPoint point, int* 
 
 void CMyTreeCtrl::InvalidateNode(TreeNode* pNode)
 {
-	CPoint ptOffset = GetScrollPosition();
-	InvalidateRect(pNode->rcNode + (-ptOffset));
+	CPoint ptScroll = GetScrollPosition();
+	InvalidateRect(pNode->rcNode - ptScroll);
 }
 
 void CMyTreeCtrl::OnMouseMove(UINT nFlags, CPoint point)
@@ -838,9 +838,7 @@ void CMyTreeCtrl::UpdateHoverNode()
 
 void CMyTreeCtrl::UpdateHoverNode(const CPoint& point)
 {
-	CRect rcClient;
-	GetClientRect(rcClient);
-
+	CRect rcClient = ::GetClientRect(this);
 	if (!rcClient.PtInRect(point))
 	{
 		SetHoverNode(NULL);
@@ -889,22 +887,21 @@ void CMyTreeCtrl::SetHoverNode(TreeNode* pNode)
 		{
 			InvalidateNode(pNode);
 
-			CPoint ptOffset = GetScrollPosition();
-			CRect rcLabel = pNode->rcLabel - ptOffset;
+			CPoint ptScroll = GetScrollPosition();
+			CRect rcLabel = pNode->rcLabel - ptScroll;
 
-			CRect rcClient, rcIntersect;
-			GetClientRect(rcClient);
-
+			CRect rcClient = ::GetClientRect(this);
+			CRect rcIntersect;
 			if (rcIntersect.IntersectRect(rcLabel, rcClient) && rcIntersect != rcLabel)
 			{
-				CPoint ptTooltip = pNode->rcLabel.TopLeft() + (-ptOffset);
+				CPoint ptTooltip = pNode->rcLabel.TopLeft() + (-ptScroll);
 				ptTooltip.Offset(s_nTextOffset - 3, 0);
 
 				CRect rcTooltip(pNode->rcLabel);
 				rcTooltip.DeflateRect(s_nTextOffset - 3, 0, 0, 0);
 
 				CRect rcTooltipText(pNode->rcText - rcTooltip.TopLeft());
-				rcTooltip -= ptOffset;
+				rcTooltip -= ptScroll;
 				ClientToScreen(rcTooltip);
 
 				m_bMouseInTooltip = true;
@@ -1400,12 +1397,11 @@ CMyTreeCtrl::TreeNode* CMyTreeCtrl::FindNextPageNode(TreeNode* pNode)
 	if (pNode->nIndex == -1 || pNode->nIndex + 1 == m_items.size())
 		return NULL;
 
-	CRect rcClient;
-	GetClientRect(rcClient);
+	CSize szClient = ::GetClientSize(this);
 
 	int nIndex = pNode->nIndex + 1;
 	while (nIndex + 1 < static_cast<int>(m_items.size()) &&
-			m_items[nIndex + 1]->rcNode.bottom <= pNode->rcNode.top + rcClient.Height())
+			m_items[nIndex + 1]->rcNode.bottom <= pNode->rcNode.top + szClient.cy)
 		++nIndex;
 
 	return m_items[nIndex];
@@ -1419,11 +1415,10 @@ CMyTreeCtrl::TreeNode* CMyTreeCtrl::FindPrevPageNode(TreeNode* pNode)
 	if (pNode->nIndex == -1 || pNode->nIndex == 0)
 		return NULL;
 
-	CRect rcClient;
-	GetClientRect(rcClient);
+	CSize szClient = ::GetClientSize(this);
 
 	int nIndex = pNode->nIndex - 1;
-	while (nIndex >= 1 && m_items[nIndex - 1]->rcNode.top >= pNode->rcNode.bottom - rcClient.Height())
+	while (nIndex >= 1 && m_items[nIndex - 1]->rcNode.top >= pNode->rcNode.bottom - szClient.cy)
 		--nIndex;
 
 	return m_items[nIndex];
@@ -1517,19 +1512,18 @@ void CMyTreeCtrl::CheckScrollBars(bool& bHasHorzBar, bool& bHasVertBar) const
 
 void CMyTreeCtrl::EnsureVisible(TreeNode* pNode)
 {
-	CPoint ptOffset = GetScrollPosition();
-	CRect rcNode = pNode->rcNode - ptOffset;
+	CPoint ptScroll = GetScrollPosition();
+	CRect rcNode = pNode->rcNode - ptScroll;
 
-	CRect rcClient;
-	GetClientRect(rcClient);
+	CRect rcClient = ::GetClientRect(this);
 
-	int nScroll = 0;
+	int nScrollBy = 0;
 	if (rcNode.bottom > rcClient.bottom)
-		nScroll = rcNode.bottom - rcClient.bottom;
-	if (rcNode.top - nScroll < rcClient.top)
-		nScroll = rcNode.top - rcClient.top;
+		nScrollBy = rcNode.bottom - rcClient.bottom;
+	if (rcNode.top - nScrollBy < rcClient.top)
+		nScrollBy = rcNode.top - rcClient.top;
 
-	OnScrollBy(CSize(0, nScroll));
+	OnScrollBy(CSize(0, nScrollBy));
 }
 
 void CMyTreeCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
@@ -1704,9 +1698,7 @@ BOOL CMyTreeCtrl::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lPa
 			CPaintDC dcPaint(this);
 			CFont* pOldFont = dcPaint.SelectObject(&m_pTree->m_font);
 
-			CRect rcClient;
-			GetClientRect(rcClient);
-
+			CRect rcClient = ::GetClientRect(this);
 			FrameRect(&dcPaint, rcClient, ::GetSysColor(COLOR_INFOTEXT));
 
 			rcClient.DeflateRect(1, 1);

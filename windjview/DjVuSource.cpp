@@ -144,7 +144,9 @@ static const TCHAR pszAttrBorderHideInactive[] = _T("border-hide-inactive");
 static const TCHAR pszAttrFill[] = _T("fill");
 static const TCHAR pszAttrFillColor[] = _T("fill-color");
 static const TCHAR pszAttrFillTransparency[] = _T("fill-transparency");
+static const TCHAR pszAttrFillHideInactive[] = _T("fill-hide-inactive");
 static const TCHAR pszAttrComment[] = _T("comment");
+static const TCHAR pszAttrCommentAlwaysShow[] = _T("always-show-comment");
 static const TCHAR pszAttrURL[] = _T("url");
 
 static const TCHAR pszTagRect[] = _T("rect");
@@ -155,12 +157,18 @@ static const TCHAR pszAttrBottom[] = _T("bottom");
 
 void Annotation::UpdateBounds()
 {
-	if (rects.empty())
-		return;
-
-	rectBounds = rects[0];
-	for (size_t i = 1; i < rects.size(); ++i)
-		rectBounds.recthull(GRect(rectBounds), rects[i]);
+	if (!rects.empty())
+	{
+		rectBounds = rects[0];
+		for (size_t i = 1; i < rects.size(); ++i)
+			rectBounds.recthull(GRect(rectBounds), rects[i]);
+	}
+	else if (!points.empty())
+	{
+		rectBounds = GRect(points[0].first, points[0].second, 1, 1);
+		for (size_t i = 1; i < points.size(); ++i)
+			rectBounds.recthull(GRect(rectBounds), GRect(points[i].first, points[i].second, 1, 1));
+	}
 }
 
 GUTF8String Annotation::GetXML() const
@@ -179,20 +187,28 @@ GUTF8String Annotation::GetXML() const
 			pszAttrBorderHideInactive, static_cast<int>(bHideInactiveBorder));
 
 	CString strFill;
-	strFill.Format(_T("%s=\"%d\" %s=\"#%06x\" %s=\"%d%%\""),
+	strFill.Format(_T("%s=\"%d\" %s=\"#%06x\" %s=\"%d%%\" %s=\"%d\""),
 			pszAttrFill, nFillType, pszAttrFillColor, crFill,
-			pszAttrFillTransparency, static_cast<int>(fTransparency*100 + 0.5));
+			pszAttrFillTransparency, static_cast<int>(fTransparency*100 + 0.5),
+			pszAttrFillHideInactive, static_cast<int>(bHideInactiveFill));
 
 	CString strBegin;
-	strBegin.Format(_T("<%s %s %s %s=\""), pszTagAnnotation,
-			strBorder, strFill, pszAttrComment);
+	strBegin.Format(_T("<%s %s %s %s=\"%d\" %s=\""),
+			pszTagAnnotation, strBorder, strFill, pszAttrCommentAlwaysShow,
+			static_cast<int>(bAlwaysShowComment), pszAttrComment);
 
 	CString strEnd;
-	strEnd.Format(_T("\" >\n%s</%s>\n"), strRects, pszTagAnnotation);
+	strEnd.Format(_T(">\n%s</%s>\n"), strRects, pszTagAnnotation);
+
+	GUTF8String strURLAttr;
+	if (strURL.length() > 0)
+	{
+		strURLAttr = GUTF8String(reinterpret_cast<const unsigned short*>(pszAttrURL))
+				+ "=\"" + strURL.toEscaped() + "\" ";
+	}
 
 	return MakeUTF8String(strBegin) + strComment.toEscaped() + "\" "
-		+ GUTF8String(reinterpret_cast<const unsigned short*>(pszAttrURL)) + "=\""
-		+ strURL.toEscaped() + MakeUTF8String(strEnd);
+		+ strURLAttr + MakeUTF8String(strEnd);
 }
 
 void Annotation::Load(const XMLNode& node)
@@ -211,9 +227,9 @@ void Annotation::Load(const XMLNode& node)
 	if (node.GetColorAttribute(pszAttrBorderColor, color))
 		crBorder = color;
 
-	int nHideInactive;
-	if (node.GetIntAttribute(pszAttrBorderHideInactive, nHideInactive))
-		bHideInactiveBorder = !!nHideInactive;
+	int nHideBorder;
+	if (node.GetIntAttribute(pszAttrBorderHideInactive, nHideBorder))
+		bHideInactiveBorder = !!nHideBorder;
 
 	int fillType;
 	if (node.GetIntAttribute(pszAttrFill, fillType))
@@ -232,9 +248,17 @@ void Annotation::Load(const XMLNode& node)
 			fTransparency = nPercent / 100.0;
 	}
 
+	int nHideFill;
+	if (node.GetIntAttribute(pszAttrFillHideInactive, nHideFill))
+		bHideInactiveFill = !!nHideFill;
+
 	wstring str;
 	if (node.GetAttribute(pszAttrComment, str))
 		strComment = MakeUTF8String(str);
+
+	int nShowComment;
+	if (node.GetIntAttribute(pszAttrCommentAlwaysShow, nShowComment))
+		bAlwaysShowComment = !!nShowComment;
 
 	if (node.GetAttribute(pszAttrURL, str))
 		strURL = MakeUTF8String(str);
@@ -258,6 +282,22 @@ void Annotation::Load(const XMLNode& node)
 	}
 
 	UpdateBounds();
+}
+
+static void Rotate(const CSize& szPage, int nRotate, GRect& rect)
+{
+	GRect input(0, 0, szPage.cx, szPage.cy);
+	GRect output(0, 0, szPage.cx, szPage.cy);
+
+	if ((nRotate % 2) != 0)
+		swap(input.xmax, input.ymax);
+
+	GRectMapper mapper;
+	mapper.clear();
+	mapper.set_input(input);
+	mapper.set_output(output);
+	mapper.rotate(nRotate);
+	mapper.unmap(rect);
 }
 
 void Annotation::Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate)
@@ -294,27 +334,47 @@ void Annotation::Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate)
 
 	fTransparency = 1.0 - max(0, min(100, pArea->opacity)) / 100.0;
 
+	if (pArea->is_text)
+	{
+		bAlwaysShowComment = true;
+		DWORD dwColor = pArea->foreground_color;
+		crForeground = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
+	}
+
 	strComment = pArea->comment;
 	strURL = pArea->url;
 
-	GRect rect = pArea->get_bound_rect();
-	if (nRotate != 0)
+	if (pArea->get_shape_type() == GMapArea::LINE || pArea->get_shape_type() == GMapArea::POLY)
 	{
-		GRect input(0, 0, szPage.cx, szPage.cy);
-		GRect output(0, 0, szPage.cx, szPage.cy);
+		GMapPoly* pPoly = (GMapPoly*)(GMapArea*) pArea;
+		for (int i = 0; i < pPoly->get_points_num(); ++i)
+		{
+			GRect rect(pPoly->get_x(i), pPoly->get_y(i), 1, 1);
+			if (nRotate != 0)
+				Rotate(szPage, nRotate, rect);
+			points.push_back(make_pair(rect.xmin, rect.ymin));
+		}
 
-		if ((nRotate % 2) != 0)
-			swap(input.xmax, input.ymax);
+		if (pArea->is_line)
+		{
+			bIsLine = true;
+			bHasArrow = pArea->has_arrow;
+			nLineWidth = pArea->line_width;
 
-		GRectMapper mapper;
-		mapper.clear();
-		mapper.set_input(input);
-		mapper.set_output(output);
-		mapper.rotate(nRotate);
-		mapper.unmap(rect);
+			DWORD dwColor = pArea->foreground_color;
+			crForeground = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
+		}
+	}
+	else
+	{
+		if (pArea->get_shape_type() == GMapArea::OVAL)
+			bOvalShape = true;
+
+		rects.push_back(pArea->get_bound_rect());
+		if (nRotate != 0)
+			Rotate(szPage, nRotate, rects.back());
 	}
 
-	rects.push_back(rect);
 	UpdateBounds();
 }
 

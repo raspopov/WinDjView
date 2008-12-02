@@ -239,15 +239,10 @@ void CMDIChild::OnSize(UINT nType, int cx, int cy)
 
 void CMDIChild::RecalcLayout()
 {
-	CRect rcClient;
-	GetClientRect(rcClient);
-	int nWidth = rcClient.Width() - s_nSplitterWidth;
+	CSize szClient = ::GetClientSize(this);
+	int nWidth = szClient.cx - s_nSplitterWidth;
 
-	CWnd* pFrame = GetParent();
-	while (pFrame != NULL && !pFrame->IsKindOf(RUNTIME_CLASS(CMDIChildWnd)))
-		pFrame = pFrame->GetParent();
-
-	InvalidateRect(CRect(0, 0, rcClient.right, 1));
+	InvalidateRect(CRect(0, 0, szClient.cx, 1));
 
 	if (!m_bNavHidden)
 	{
@@ -267,17 +262,17 @@ void CMDIChild::RecalcLayout()
 		m_rcNavPane.left = 0;
 		m_rcNavPane.top = 1;
 		m_rcNavPane.right = m_nSplitterPos;
-		m_rcNavPane.bottom = max(m_rcNavPane.top, rcClient.bottom);
+		m_rcNavPane.bottom = max(m_rcNavPane.top, szClient.cy);
 
 		m_rcSplitter.left = m_nSplitterPos;
 		m_rcSplitter.top = 0;
 		m_rcSplitter.right = m_nSplitterPos + s_nSplitterWidth;
-		m_rcSplitter.bottom = rcClient.bottom;
+		m_rcSplitter.bottom = szClient.cy;
 
 		m_rcContent.left = m_nSplitterPos + s_nSplitterWidth;
 		m_rcContent.top = 1;
-		m_rcContent.right = max(m_rcContent.left, rcClient.right);
-		m_rcContent.bottom = max(m_rcContent.top, rcClient.bottom);
+		m_rcContent.right = max(m_rcContent.left, szClient.cx);
+		m_rcContent.bottom = max(m_rcContent.top, szClient.cy);
 
 		m_navPane.MoveWindow(m_rcNavPane);
 		InvalidateRect(m_rcSplitter);
@@ -286,8 +281,8 @@ void CMDIChild::RecalcLayout()
 	{
 		m_rcContent.left = 0;
 		m_rcContent.top = 1;
-		m_rcContent.right = rcClient.right;
-		m_rcContent.bottom = max(m_rcContent.top, rcClient.bottom);
+		m_rcContent.right = szClient.cx;
+		m_rcContent.bottom = max(m_rcContent.top, szClient.cy);
 	}
 
 	if (m_pContentWnd != NULL)
@@ -307,8 +302,7 @@ void CMDIChild::OnPaint()
 {
 	CPaintDC paintDC(this);
 
-	CRect rcClient;
-	GetClientRect(rcClient);
+	CRect rcClient = ::GetClientRect(this);
 
 	CPen pen(PS_SOLID, 1, ::GetSysColor(COLOR_BTNSHADOW));
 	CPen* pOldPen = paintDC.SelectObject(&pen);

@@ -77,21 +77,18 @@ void CMyStatusBar::DrawItem(LPDRAWITEMSTRUCT lpDrawItem)
 	CDC dc;
 	dc.Attach(lpDrawItem->hDC);
 
-	static CBrush brush(RGB(0, 0, 128));
+	CBrush brush(::GetSysColor(COLOR_HIGHLIGHT));
 	CBrush* pOldBrush = dc.SelectObject(&brush);
 	dc.Rectangle(&rcItem);
 
 	rcItem.DeflateRect(8, 0, 5, 0);
 
 	COLORREF clrOldText = dc.GetTextColor();
-	dc.SetTextColor(RGB(255, 255, 255));
+	dc.SetTextColor(COLOR_HIGHLIGHTTEXT);
 
-	COLORREF clrOldBk = dc.GetBkColor();
-	dc.SetBkColor(RGB(0, 0, 128));
-
+	dc.SetBkMode(TRANSPARENT);
 	dc.DrawText(m_strHilightMsg, &rcItem, DT_SINGLELINE | DT_VCENTER | DT_LEFT);
 
-	dc.SetBkColor(clrOldBk);
 	dc.SetTextColor(clrOldText);
 	dc.SelectObject(pOldBrush);
 

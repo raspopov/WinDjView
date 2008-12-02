@@ -102,6 +102,27 @@ CString FormatDouble(double fValue);
 void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, double& value, double def = 0.0, LPCTSTR pszSuffix = NULL);
 void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0, LPCTSTR pszSuffix = NULL);
 
+inline CRect GetClientRect(const CWnd* pWnd)
+{
+	ASSERT(pWnd != NULL);
+	CRect rect;
+	pWnd->GetClientRect(rect);
+	return rect;
+}
+
+inline CRect GetClientRect(const CWnd& wnd)
+	{ return GetClientRect(&wnd); }
+
+inline CSize GetClientSize(const CWnd* pWnd)
+{
+	ASSERT(pWnd != NULL);
+	CRect rect;
+	pWnd->GetClientRect(rect);
+	return rect.Size();
+}
+
+inline CSize GetClientSize(const CWnd& wnd)
+	{ return GetClientSize(&wnd); }
 
 #define PAGE_RENDERED 1
 #define PAGE_DECODED 2

@@ -1026,9 +1026,7 @@ void CMyColorPopup::OnPaint()
 	if (!m_strCustomText.IsEmpty())
 		DrawCell(&dc, CUSTOM_BOX_VALUE);
 
-    CRect rect;
-    GetClientRect(rect);
-
+    CRect rect = ::GetClientRect(this);
 	DrawBorder(&dc, rect, EDGE_RAISED, BF_RECT);
 }
 
@@ -1067,9 +1065,7 @@ void CMyColorPopup::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	CWnd::OnLButtonUp(nFlags, point);
 
-	CRect rcClient;
-	GetClientRect(rcClient);
-
+	CRect rcClient = ::GetClientRect(this);
 	if (rcClient.PtInRect(point) && m_nCurSel != INVALID_COLOR)
 		EndSelection(CPN_SELENDOK);
     else

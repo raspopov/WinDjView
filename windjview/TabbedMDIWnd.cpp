@@ -547,11 +547,10 @@ void CTabbedMDIWnd::UpdateToolTips()
 			rcClose.OffsetRect(s_nArrowWidth - m_nScrollPos, 0);
 		}
 
-		CRect rcTabIntersect, rcCloseIntersect;
-		if (rcTabIntersect.IntersectRect(rcTab, rcContents))
-			m_toolTip.AddTool(this, m_tabs[i].strName, rcTabIntersect, 2*i + 1);
-		if (HasCloseButton(i) && rcCloseIntersect.IntersectRect(rcClose, rcContents))
-			m_toolTip.AddTool(this, m_strCloseTab, rcCloseIntersect, 2*i + 2);
+		if (rcTab.IntersectRect(CRect(rcTab), rcContents))
+			m_toolTip.AddTool(this, m_tabs[i].strName, rcTab, 2*i + 1);
+		if (HasCloseButton(i) && rcClose.IntersectRect(CRect(rcClose), rcContents))
+			m_toolTip.AddTool(this, m_strCloseTab, rcClose, 2*i + 2);
 	}
 
 	m_toolTip.Activate(true);
@@ -942,9 +941,8 @@ void CTabbedMDIWnd::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
 	UpdateMetrics();
 
-	CRect rcClient;
-	GetClientRect(rcClient);
-	OnSize(0, rcClient.Width(), rcClient.Height());
+	CSize szClient = ::GetClientSize(this);
+	OnSize(0, szClient.cx, szClient.cy);
 }
 
 void CTabbedMDIWnd::OnSysColorChange()

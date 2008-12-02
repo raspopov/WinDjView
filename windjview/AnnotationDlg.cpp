@@ -36,14 +36,17 @@ const TCHAR* s_pszCustomColors = _T("Colors");
 IMPLEMENT_DYNAMIC(CAnnotationDlg, CMyDialog)
 
 CAnnotationDlg::CAnnotationDlg(UINT nTitle, CWnd* pParent)
-	: CMyDialog(CAnnotationDlg::IDD, pParent), m_nTitle(nTitle)
+	: CMyDialog(CAnnotationDlg::IDD, pParent), m_nTitle(nTitle),
+	  m_bDisableShowComment(false)
 {
 	m_nBorderType = Annotation::BorderNone;
 	m_nFillType = Annotation::FillSolid;
 	m_crBorder = RGB(0, 0, 0);
 	m_crFill = RGB(255, 255, 0);
 	m_nTransparency = 75;
-	m_bHideInactive = false;
+	m_bHideInactiveBorder = false;
+	m_bHideInactiveFill = false;
+	m_bAlwaysShowComment = false;
 	m_bAddBookmark = false;
 	m_bEnableBookmark = true;
 }
@@ -63,7 +66,9 @@ void CAnnotationDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BORDER_TYPE, m_cboBorderType);
 	DDX_Control(pDX, IDC_FILL_TYPE, m_cboFillType);
 	DDX_Text(pDX, IDC_COMMENT, m_strComment);
-	DDX_Check(pDX, IDC_HIDE_INACTIVE, m_bHideInactive);
+	DDX_Check(pDX, IDC_ALWAYS_SHOW_COMMENT, m_bAlwaysShowComment);
+	DDX_Check(pDX, IDC_HIDE_INACTIVE, m_bHideInactiveBorder);
+	DDX_Check(pDX, IDC_HIDE_INACTIVE_FILL, m_bHideInactiveFill);
 	DDX_Text(pDX, IDC_BOOKMARK_TITLE, m_strBookmark);
 
 	CString strTransparency;
@@ -87,6 +92,9 @@ BOOL CAnnotationDlg::OnInitDialog()
 	CMyDialog::OnInitDialog();
 
 	SetWindowText(LoadString(m_nTitle));
+
+	if (m_bDisableShowComment)
+		GetDlgItem(IDC_ALWAYS_SHOW_COMMENT)->EnableWindow(false);
 
 	m_sliderTransparency.SetRange(0, 100);
 	m_sliderTransparency.SetPos(m_nTransparency);
@@ -165,9 +173,7 @@ void CAnnotationDlg::UpdateControls()
 	m_colorFill.EnableWindow(m_nFillType == Annotation::FillSolid);
 	m_sliderTransparency.EnableWindow(m_nFillType == Annotation::FillSolid);
 	GetDlgItem(IDC_FILL_TRANSPARENCY_TEXT)->EnableWindow(m_nFillType == Annotation::FillSolid);
-
-	GetDlgItem(IDOK)->EnableWindow(m_nBorderType != Annotation::BorderNone
-			|| m_nFillType != Annotation::FillNone);
+	GetDlgItem(IDC_HIDE_INACTIVE_FILL)->EnableWindow(m_nFillType != Annotation::FillNone);
 }
 
 void CAnnotationDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)

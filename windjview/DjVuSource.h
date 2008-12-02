@@ -30,7 +30,10 @@ struct Annotation
 {
 	Annotation()
 		: bHideInactiveBorder(false), nBorderType(BorderNone), crBorder(RGB(0, 0, 0)),
-		  nFillType(FillSolid), crFill(RGB(255, 255, 0)), fTransparency(0.75) {}
+		  bHideInactiveFill(false), nFillType(FillSolid), crFill(RGB(255, 255, 0)),
+		  fTransparency(0.75), crForeground(RGB(0, 0, 0)),
+		  bAlwaysShowComment(false), bOvalShape(false), bIsLine(false),
+		  bHasArrow(false), nLineWidth(1) {}
 
 	void UpdateBounds();
 	GUTF8String GetXML() const;
@@ -54,13 +57,19 @@ struct Annotation
 	bool bHideInactiveBorder;
 	int nBorderType;
 	COLORREF crBorder;
+	bool bHideInactiveFill;
 	int nFillType;
 	COLORREF crFill;
 	double fTransparency;
+	COLORREF crForeground;
+	bool bAlwaysShowComment;
+	bool bOvalShape, bIsLine, bHasArrow;
+	int nLineWidth;
 	GUTF8String strComment;
 	GUTF8String strURL;
 
 	vector<GRect> rects;
+	vector<pair<int, int> > points;
 	GRect rectBounds;
 
 	void Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate);

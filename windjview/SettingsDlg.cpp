@@ -86,12 +86,12 @@ BOOL CSettingsDlg::OnInitDialog()
 	CWnd* pOK = GetDlgItem(IDOK);
 	CWnd* pPage = GetActivePage();
 
-	CRect rcOk, rcPage, rcClient;
+	CRect rcOk, rcPage;
 	pOK->GetWindowRect(rcOk);
 	ScreenToClient(rcOk);
 	pPage->GetWindowRect(rcPage);
 	ScreenToClient(rcPage);
-	GetClientRect(rcClient);
+	CRect rcClient = ::GetClientRect(this);
 
 	m_ctlAbout.Create(FormatString(IDS_VERSION_INFO, CURRENT_VERSION), WS_CHILD | WS_VISIBLE,
 		CRect(rcPage.left, rcOk.top, rcOk.left - 5, rcClient.bottom - 5), this, IDC_STATIC_ABOUT);

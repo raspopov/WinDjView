@@ -233,8 +233,7 @@ void CBookmarksWnd::OnContextMenu(CWnd* pWnd, CPoint point)
 	if (!m_bEnableEditing || pNode == NULL || pNode == m_pRoot)
 		return;
 
-	CRect rcClient;
-	GetClientRect(rcClient);
+	CRect rcClient = ::GetClientRect(this);
 	ClientToScreen(rcClient);
 
 	if (!rcClient.PtInRect(point))

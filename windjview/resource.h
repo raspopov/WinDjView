@@ -152,13 +152,14 @@
 #define IDS_FILE_TYPES                  302
 #define IDS_DOC_FILES_COLUMNS           303
 #define IDS_BOOKMARKS_FILTER            304
-#define IDS_EXPORT_BOOKMARKS			305
+#define IDS_EXPORT_BOOKMARKS            305
 #define IDS_IMPORT_BOOKMARKS            306
 #define IDS_CANNOT_OPEN_BOOKMARKS       307
 #define IDS_CANNOT_READ_BOOKMARKS       308
 #define IDS_BOOKMARKS_EMPTY             309
 #define IDS_BOOKMARKS_PROMPT            310
 #define IDS_BOOKMARKS_PROMPT_CAPTIONS   311
+#define IDS_SEARCH_WRAPPED              312
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -231,12 +232,15 @@
 #define IDC_BORDER_TYPE                 1069
 #define IDC_FILL_TYPE                   1070
 #define IDC_HIDE_INACTIVE               1071
+#define IDC_HIDE_INACTIVE_BORDER        1071
 #define IDC_FILL_TRANSPARENCY           1072
 #define IDC_FILL_TRANSPARENCY_TEXT      1073
 #define IDC_BORDER_COLOR                1074
 #define IDC_FILL_COLOR                  1075
 #define IDC_PROPERTIES                  1076
+#define IDC_HIDE_INACTIVE_FILL          1076
 #define IDC_FIND_ALL                    1077
+#define IDC_ALWAYS_SHOW_COMMENT         1077
 #define IDC_COMMENT                     1078
 #define IDC_PAGENUM                     1079
 #define IDC_BOOKMARK_TITLE              1080
@@ -376,7 +380,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        312
+#define _APS_NEXT_RESOURCE_VALUE        313
 #define _APS_NEXT_COMMAND_VALUE         33131
 #define _APS_NEXT_CONTROL_VALUE         1107
 #define _APS_NEXT_SYMED_VALUE           117

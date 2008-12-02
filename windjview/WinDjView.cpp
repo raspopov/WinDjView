@@ -882,29 +882,42 @@ void CDjViewApp::UpdateSearchHistory(CComboBoxEx& cboFind)
 	if (strText.IsEmpty())
 		return;
 
-	cboFind.SetCurSel(-1);
 	int nItem = cboFind.FindStringExact(-1, strText);
-	if (nItem != CB_ERR)
-		cboFind.DeleteItem(nItem);
-	else if (cboFind.GetCount() >= CAppSettings::HistorySize)
-		cboFind.DeleteItem(cboFind.GetCount() - 1);
+	if (nItem != 0)
+	{
+		// Keep focus on Find dialog
+		HWND hwndFocus = NULL;
+		if (m_pFindDlg != NULL && m_pFindDlg->IsWindowVisible() && ::IsChild(m_pFindDlg->m_hWnd, ::GetFocus()))
+			hwndFocus = ::GetFocus();
+
+		if (nItem != CB_ERR)
+			cboFind.DeleteItem(nItem);
+		else if (cboFind.GetCount() >= CAppSettings::HistorySize)
+			cboFind.DeleteItem(cboFind.GetCount() - 1);
+
+		COMBOBOXEXITEM item;
+		item.mask = CBEIF_TEXT;
+		item.iItem = 0;
+		item.pszText = strText.GetBuffer(0);
+		cboFind.InsertItem(&item);
+
+		if (hwndFocus != NULL)
+			::SetFocus(hwndFocus);
+	}
+	cboFind.SetCurSel(0);
 
 	list<CString>::iterator it = find(m_appSettings.searchHistory.begin(),
 			m_appSettings.searchHistory.end(), strText);
-	if (it != m_appSettings.searchHistory.end())
-		m_appSettings.searchHistory.erase(it);
+	if (it != m_appSettings.searchHistory.begin())
+	{
+		if (it != m_appSettings.searchHistory.end())
+			m_appSettings.searchHistory.erase(it);
 
-	if (m_appSettings.searchHistory.size() >= CAppSettings::HistorySize)
-		m_appSettings.searchHistory.pop_back();
+		if (m_appSettings.searchHistory.size() >= CAppSettings::HistorySize)
+			m_appSettings.searchHistory.pop_back();
 
-	COMBOBOXEXITEM item;
-	item.mask = CBEIF_TEXT;
-	item.iItem = 0;
-	item.pszText = strText.GetBuffer(0);
-	cboFind.InsertItem(&item);
-	cboFind.SetCurSel(0);
-
-	m_appSettings.searchHistory.push_front(strText);
+		m_appSettings.searchHistory.push_front(strText);
+	}
 }
 
 LRESULT CALLBACK CDjViewApp::KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)

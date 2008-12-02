@@ -74,7 +74,7 @@ protected:
 	CThumbnailsThread* m_pIdleThread;
 	int m_nPageCount;
 	DjVuSource* m_pSource;
-	bool m_bInsideUpdateView;
+	bool m_bInsideUpdateLayout;
 	CFont m_font;
 	int m_nSelectedPage, m_nCurrentPage;
 	bool m_bVisible, m_bInitialized;
@@ -94,7 +94,7 @@ protected:
 		TOP = 0,
 		RECALC = 1
 	};
-	void UpdateView(UpdateType updateType = TOP);
+	void UpdateLayout(UpdateType updateType = TOP);
 	void RecalcPageRects(int nPage);
 	void UpdateVisiblePages();
 	void UpdatePage(int nPage, CThumbnailsThread* pThread);

@@ -114,14 +114,12 @@ void CMyToolBar::OnNcPaint()
 {
 	CWindowDC dc(this);
 
-	CRect rcClient;
-	GetClientRect(rcClient);
+	CRect rcClient = ::GetClientRect(this);
 	CRect rcWindow;
 	GetWindowRect(rcWindow);
 	ScreenToClient(rcWindow);
 
-	CRect rcToolBar;
-	m_toolBar.GetClientRect(rcToolBar);
+	CRect rcToolBar = ::GetClientRect(m_toolBar);
 	m_toolBar.ClientToScreen(rcToolBar);
 	ScreenToClient(rcToolBar);
 

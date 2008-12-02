@@ -8,13 +8,14 @@ Changes in version 0.6 (2008-??-??):
 + Added an option to enable continuous scrolling in fullscreen mode.
 + Added an option to order pages from right to left in facing mode.
 + User-created bookmarks and annotations can be imported and exported.
++ More embedded hyperlink and annotation types are supported.
 + Drag mode is activated when right mouse button is pressed.
 + Added support for dictionaries that look up the word under mouse pointer.
-+ DPI value is now set when exporting page or selection as bitmap.
 + Thumbnail size can now be enlarged or reduced.
 + Document properties can be accessed from the File menu.
 + Added F3 hotkey for Find Next.
 + Added support for Unicode Supplementary Planes in contents and index.
++ DPI value is now set when exporting page or selection as bitmap.
 * Fixed saving "First page alone" setting for every document.
 * Fixed crash in magnify tool after rotating the page.
 * Fixed crash when exiting fullscreen mode.

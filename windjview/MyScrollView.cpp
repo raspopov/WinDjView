@@ -114,25 +114,154 @@ void CMyScrollView::SetScrollSizesNoRepaint(const CSize& szTotal,
 	ASSERT(m_totalDev.cx >= 0 && m_totalDev.cy >= 0);
 
 	if (m_hWnd != NULL)
-	{
-		// window has been created, invalidate now
-		UpdateBarsNoRepaint();
-	}
+		UpdateBars(false);
 }
 
 void CMyScrollView::SetScrollSizes(const CSize& szTotal, const CSize& szPage, const CSize& szLine)
 {
-	SetScrollSizesNoRepaint(szTotal, szPage, szLine);
+	ASSERT(szTotal.cx >= 0 && szTotal.cy >= 0);
+
+	m_nMapMode = MM_TEXT;
+	m_totalLog = szTotal;
+
+	m_totalDev = m_totalLog;
+	m_pageDev = szPage;
+	m_lineDev = szLine;
+	ASSERT(m_totalDev.cx >= 0 && m_totalDev.cy >= 0);
 
 	if (m_hWnd != NULL)
+		UpdateBars(true);
+}
+
+void CMyScrollView::GetScrollBarSizes(CSize& sizeSb) const
+{
+	// MFC Fix:  CScrollView::GetTrueClientSize
+
+	sizeSb.cx = sizeSb.cy = 0;
+	DWORD dwStyle = GetStyle();
+
+	if (GetScrollBarCtrl(SB_VERT) == NULL)
 	{
-		// window has been created, invalidate now
-		UpdateBars();
+		// vert scrollbars will impact client area of this window
+		sizeSb.cx = afxData.cxVScroll - CX_BORDER;  // MFC Fix
+	}
+	if (GetScrollBarCtrl(SB_HORZ) == NULL)
+	{
+		// horz scrollbars will impact client area of this window
+		sizeSb.cy = afxData.cyHScroll - CY_BORDER;  // MFC Fix
 	}
 }
 
-void CMyScrollView::UpdateBarsNoRepaint()
+bool CMyScrollView::GetTrueClientSize(CSize& size, CSize& sizeSb) const
 {
+	// From MFC:  CScrollView::GetTrueClientSize
+
+	size = ::GetClientSize(this);
+	GetScrollBarSizes(sizeSb);
+
+	DWORD dwStyle = GetStyle();
+
+	if (sizeSb.cx != 0 && (dwStyle & WS_VSCROLL))
+	{
+		// vert scrollbars will impact client area of this window
+		size.cx += sizeSb.cx;
+	}
+	if (sizeSb.cy != 0 && (dwStyle & WS_HSCROLL))
+	{
+		// horz scrollbars will impact client area of this window
+		size.cy += sizeSb.cy;
+	}
+
+	// return true if enough room
+	return (size.cx > sizeSb.cx && size.cy > sizeSb.cy);
+}
+
+bool CMyScrollView::AdjustClientSize(const CSize& szContent, CSize& szClient,
+		bool& bHScroll, bool& bVScroll) const
+{
+	CSize sizeSb;
+	GetScrollBarSizes(sizeSb);
+
+	bool bChanged = false;
+	if (szContent.cx > szClient.cx && sizeSb.cy != 0 && szClient.cy > sizeSb.cy && !bHScroll)
+	{
+		bHScroll = true;
+		bChanged = true;
+		szClient.cy -= sizeSb.cy;
+	}
+
+	if (szContent.cy > szClient.cy && sizeSb.cx != 0 && szClient.cx > sizeSb.cx && !bVScroll)
+	{
+		bVScroll = true;
+		bChanged = true;
+		szClient.cx -= sizeSb.cx;
+	}
+
+	if (szContent.cx > szClient.cx && sizeSb.cy != 0 && szClient.cy > sizeSb.cy && !bHScroll)
+	{
+		bHScroll = true;
+		bChanged = true;
+		szClient.cy -= sizeSb.cy;
+	}
+
+	return bChanged;
+}
+
+void CMyScrollView::GetScrollBarState(CSize sizeClient, CSize& needSb,
+	CSize& sizeRange, CPoint& ptMove, bool bInsideClient) const
+{
+	// From MFC:  CScrollView::GetScrollBarState
+
+	// get scroll bar sizes (the part that is in the client area)
+	CSize sizeSb;
+	GetScrollBarSizes(sizeSb);
+
+	// enough room to add scrollbars
+	sizeRange = m_totalDev - sizeClient;  // > 0 => need to scroll
+	ptMove = GetDeviceScrollPosition();  // point to move to (start at current scroll pos)
+
+	BOOL bNeedH = sizeRange.cx > 0;
+	if (!bNeedH)
+		ptMove.x = 0;  // jump back to origin
+	else if (bInsideClient)
+		sizeRange.cy += sizeSb.cy;  // need room for a scroll bar
+
+	BOOL bNeedV = sizeRange.cy > 0;
+	if (!bNeedV)
+		ptMove.y = 0;  // jump back to origin
+	else if (bInsideClient)
+		sizeRange.cx += sizeSb.cx;  // need room for a scroll bar
+
+	if (bNeedV && !bNeedH && sizeRange.cx > 0)
+	{
+		ASSERT(bInsideClient);
+		// need a horizontal scrollbar after all
+		bNeedH = TRUE;
+		sizeRange.cy += sizeSb.cy;
+	}
+
+	// if current scroll position will be past the limit, scroll to limit
+	if (sizeRange.cx > 0 && ptMove.x >= sizeRange.cx)
+		ptMove.x = sizeRange.cx;
+	if (sizeRange.cy > 0 && ptMove.y >= sizeRange.cy)
+		ptMove.y = sizeRange.cy;
+
+	// now update the bars as appropriate
+	needSb.cx = bNeedH;
+	needSb.cy = bNeedV;
+}
+
+void CMyScrollView::UpdateBars(bool bRepaint)
+{
+	// From MFC:  CScrollView::UpdateBars
+
+	// UpdateBars may cause window to be resized - ignore those resizings
+	if (m_bInsideUpdate)
+		return;         // Do not allow recursive calls
+
+	// Lock out recursion
+	m_bInsideUpdate = true;
+
 	// update the horizontal to reflect reality
 	// NOTE: turning on/off the scrollbars will cause 'OnSize' callbacks
 	ASSERT(m_totalDev.cx >= 0 && m_totalDev.cy >= 0);
@@ -164,14 +293,14 @@ void CMyScrollView::UpdateBarsNoRepaint()
 		if (!GetTrueClientSize(sizeClient, sizeSb))
 		{
 			// no room for scroll bars (common for zero sized elements)
-			CRect rect;
-			GetClientRect(&rect);
-			if (rect.right > 0 && rect.bottom > 0)
+			CSize szClient = ::GetClientSize(this);
+			if (szClient.cx > 0 && szClient.cy > 0)
 			{
 				// if entire client area is not invisible, assume we have
 				//  control over our scrollbars
 				EnableScrollBarCtrl(SB_BOTH, false);
 			}
+			m_bInsideUpdate = false;
 			return;
 		}
 	}
@@ -195,65 +324,63 @@ void CMyScrollView::UpdateBarsNoRepaint()
 	if (needSb.cy)
 		sizeClient.cx -= sizeSb.cx;
 
+	// hide scrollbars first to avoid redrawing
+	if (!needSb.cx)
+		EnableScrollBarCtrl(SB_HORZ, false);
+	if (!needSb.cy)
+		EnableScrollBarCtrl(SB_VERT, false);
+
 	// first scroll the window as needed
-	SetScrollPos(SB_HORZ, ptMove.x);
-	SetScrollPos(SB_VERT, ptMove.y);
+	if (bRepaint)
+	{
+		ScrollToDevicePosition(ptMove);
+	}
+	else
+	{
+		SetScrollPos(SB_HORZ, ptMove.x);
+		SetScrollPos(SB_VERT, ptMove.y);
+	}
 
 	// this structure needed to update the scrollbar page range
 	SCROLLINFO info;
 	info.fMask = SIF_PAGE|SIF_RANGE;
 	info.nMin = 0;
 
-	// now update the bars as appropriate
-	EnableScrollBarCtrl(SB_HORZ, needSb.cx);
+	// update the scrollbar page range
 	if (needSb.cx)
 	{
+		EnableScrollBarCtrl(SB_HORZ, true);
 		info.nPage = sizeClient.cx;
 		info.nMax = m_totalDev.cx-1;
 		if (!SetScrollInfo(SB_HORZ, &info, true))
 			SetScrollRange(SB_HORZ, 0, sizeRange.cx, true);
 	}
 
-	EnableScrollBarCtrl(SB_VERT, needSb.cy);
 	if (needSb.cy)
 	{
+		EnableScrollBarCtrl(SB_VERT, true);
 		info.nPage = sizeClient.cy;
 		info.nMax = m_totalDev.cy-1;
 		if (!SetScrollInfo(SB_VERT, &info, true))
 			SetScrollRange(SB_VERT, 0, sizeRange.cy, true);
 	}
+
+	// remove recursion lockout
+	m_bInsideUpdate = false;
 }
 
 void CMyScrollView::ScrollToPositionNoRepaint(CPoint pt)
 {
-	ASSERT(m_nMapMode > 0);     // not allowed for shrink to fit
-	if (m_nMapMode != MM_TEXT)
-	{
-		CWindowDC dc(NULL);
-		dc.SetMapMode(m_nMapMode);
-		dc.LPtoDP((LPPOINT)&pt);
-	}
-
-	// now in device coordinates - limit if out of range
-	int xMax = GetScrollLimit(SB_HORZ);
-	int yMax = GetScrollLimit(SB_VERT);
+	ASSERT(m_nMapMode == MM_TEXT);
 
 	BOOL bHasHorzBar, bHasVertBar;
 	CheckScrollBars(bHasHorzBar, bHasVertBar);
 
-	if (!bHasHorzBar)
-		xMax = 0;
-	if (!bHasVertBar)
-		yMax = 0;
+	int xMax = bHasHorzBar ? GetScrollLimit(SB_HORZ) : 0;
+	int yMax = bHasVertBar ? GetScrollLimit(SB_VERT) : 0;
 
-	if (pt.x < 0)
-		pt.x = 0;
-	else if (pt.x > xMax)
-		pt.x = xMax;
-	if (pt.y < 0)
-		pt.y = 0;
-	else if (pt.y > yMax)
-		pt.y = yMax;
+	pt.x = max(0, min(xMax, pt.x));
+	pt.y = max(0, min(yMax, pt.y));
 
 	SetScrollPos(SB_HORZ, pt.x);
 	SetScrollPos(SB_VERT, pt.y);
@@ -261,6 +388,8 @@ void CMyScrollView::ScrollToPositionNoRepaint(CPoint pt)
 
 void CMyScrollView::CheckScrollBars(BOOL& bHasHorzBar, BOOL& bHasVertBar) const
 {
+	// From MFC:  CScrollView::CheckScrollBars
+
 	DWORD dwStyle = GetStyle();
 	CScrollBar* pBar = GetScrollBarCtrl(SB_VERT);
 	bHasVertBar = (pBar != NULL && pBar->IsWindowEnabled())
@@ -271,9 +400,43 @@ void CMyScrollView::CheckScrollBars(BOOL& bHasHorzBar, BOOL& bHasVertBar) const
 			|| (dwStyle & WS_HSCROLL) != 0;
 }
 
+void CMyScrollView::CalcWindowRect(LPRECT lpClientRect, UINT nAdjustType)
+{
+	// From MFC:  CScrollView::CalcWindowRect
+
+	if (nAdjustType == adjustOutside)
+	{
+		// allow for special client-edge style
+		::AdjustWindowRectEx(lpClientRect, 0, FALSE, GetExStyle());
+
+		// if the view is being used in-place, add scrollbar sizes
+		//  (scollbars should appear on the outside when in-place editing)
+		CSize sizeClient(
+			lpClientRect->right - lpClientRect->left,
+			lpClientRect->bottom - lpClientRect->top);
+
+		CSize sizeRange = m_totalDev - sizeClient;
+
+		CSize sizeSb;
+		GetScrollBarSizes(sizeSb);
+
+		// adjust the window size based on the state
+		if (sizeRange.cy > 0)
+			lpClientRect->right += sizeSb.cx;
+		if (sizeRange.cx > 0)
+			lpClientRect->bottom += sizeSb.cy;
+	}
+	else
+	{
+		// call default to handle other non-client areas
+		::AdjustWindowRectEx(lpClientRect, GetStyle(), FALSE,
+			GetExStyle() & ~(WS_EX_CLIENTEDGE));
+	}
+}
+
 LRESULT CMyScrollView::OnMButtonDown(WPARAM wParam, LPARAM lParam)
 {
-	// From MFC's CScrollView::HandleMButtonDown
+	// From MFC:  CScrollView::HandleMButtonDown
 
 	UINT nFlags = static_cast<UINT>(wParam);
 	CPoint point(lParam);
@@ -615,8 +778,6 @@ void CMyAnchorWnd::Hide()
 void CMyAnchorWnd::OnPaint()
 {
 	CPaintDC dc(this);
-	CRect rect;
-	GetClientRect(&rect);
 
 	CDC dcBitmap;
 	dcBitmap.CreateCompatibleDC(&dc);

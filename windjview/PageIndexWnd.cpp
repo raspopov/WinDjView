@@ -452,17 +452,16 @@ void CPageIndexWnd::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 
 void CPageIndexWnd::UpdateControls()
 {
-	CRect rcClient;
-	GetClientRect(rcClient);
+	CSize szClient = ::GetClientSize(this);
 
 	CRect rcCombo;
 	m_cboLookup.GetWindowRect(rcCombo);
 
-	CSize szText(max(s_nMinTextWidth, rcClient.Width() - s_nRightGap), rcCombo.Height());
+	CSize szText(max(s_nMinTextWidth, szClient.cx - s_nRightGap), rcCombo.Height());
 	CPoint ptText(0, 0);
 
 	CPoint ptList(1, szText.cy + s_nVertGap + 1);
-	CSize szList(max(s_nMinTextWidth, rcClient.Width() - 1), max(s_nMinListHeight, rcClient.Height() - ptList.y));
+	CSize szList(max(s_nMinTextWidth, szClient.cx - 1), max(s_nMinListHeight, szClient.cy - ptList.y));
 
 	m_cboLookup.SetWindowPos(NULL, ptText.x, ptText.y, szText.cx, szText.cy, SWP_NOACTIVATE);
 	m_list.SetWindowPos(NULL, ptList.x, ptList.y, szList.cx, szList.cy, SWP_NOACTIVATE);
@@ -471,7 +470,7 @@ void CPageIndexWnd::UpdateControls()
 	m_rcList = CRect(ptList, szList);
 	m_rcList.InflateRect(1, 1);
 
-	m_rcGap = CRect(0, m_rcText.bottom, rcClient.Width(), m_rcList.top);
+	m_rcGap = CRect(0, m_rcText.bottom, szClient.cx, m_rcList.top);
 }
 
 BOOL CPageIndexWnd::OnEraseBkgnd(CDC* pDC)
@@ -483,14 +482,12 @@ void CPageIndexWnd::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
 
-	CRect rcClient;
-	GetClientRect(rcClient);
-
 	COLORREF clrBtnface = ::GetSysColor(COLOR_BTNFACE);
 	COLORREF clrShadow = ::GetSysColor(COLOR_BTNSHADOW);
 	CBrush brushShadow(clrShadow);
 
-	CRect rcRightGap(rcClient.Width() - s_nRightGap, 0, rcClient.Width(), m_rcGap.bottom);
+	CRect rcClient = ::GetClientRect(this);
+	CRect rcRightGap(rcClient.right - s_nRightGap, 0, rcClient.right, m_rcGap.bottom);
 	dc.FillSolidRect(rcRightGap, clrBtnface);
 	dc.FillSolidRect(m_rcGap, clrBtnface);
 

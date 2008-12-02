@@ -41,16 +41,20 @@ public:
 	CSliderCtrl m_sliderTransparency;
 	CComboBox m_cboBorderType;
 	CComboBox m_cboFillType;
-	BOOL m_bHideInactive;
+	BOOL m_bHideInactiveBorder;
+	BOOL m_bHideInactiveFill;
 	int m_nBorderType;
 	int m_nFillType;
 	COLORREF m_crBorder;
 	COLORREF m_crFill;
 	int m_nTransparency;
 	CString m_strComment;
+	BOOL m_bAlwaysShowComment;
 	bool m_bAddBookmark;
 	bool m_bEnableBookmark;
 	CString m_strBookmark;
+
+	bool m_bDisableShowComment;
 
 protected:
 	UINT m_nTitle;

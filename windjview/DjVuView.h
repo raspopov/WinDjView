@@ -251,22 +251,24 @@ protected:
 	};
 	vector<Page> m_pages;
 
-	CSize UpdatePageRect(int nPage);
-	CSize UpdatePageRectFacing(int nPage);
-	void PreparePageRect(int nPage);
-	void PreparePageRectFacing(int nPage);
-	CSize CalcPageSize(const CSize& szPage, int nDPI) const;
-	CSize CalcPageSize(const CSize& szPage, int nDPI, int nZoomType) const;
-	CSize CalcZoomedPageSize(const CSize& szPage, CSize szBounds, int nZoomType) const;
-	void CalcPageSizeFacing(const CSize& szPage1, int nDPI1, CSize& szDisplay1,
+	CSize UpdatePageRect(const CSize& szBounds, int nPage);
+	CSize UpdatePageRectFacing(const CSize& szBounds, int nPage);
+	void PreparePageRect(const CSize& szBounds, int nPage);
+	void PreparePageRectFacing(const CSize& szBounds, int nPage);
+	CSize CalcPageSize(const CSize& szBounds, const CSize& szPage, int nDPI) const;
+	CSize CalcPageSize(const CSize& szBounds, const CSize& szPage, int nDPI, int nZoomType) const;
+	CSize CalcPageBitmapSize(const CSize& szBounds, const CSize& szPage, int nZoomType) const;
+	void CalcPageSizeFacing(const CSize& szBounds,
+			const CSize& szPage1, int nDPI1, CSize& szDisplay1,
 			const CSize& szPage2, int nDPI2, CSize& szDisplay2) const;
-	void CalcPageSizeFacing(const CSize& szPage1, int nDPI1, CSize& szDisplay1,
+	void CalcPageSizeFacing(const CSize& szBounds,
+			const CSize& szPage1, int nDPI1, CSize& szDisplay1,
 			const CSize& szPage2, int nDPI2, CSize& szDisplay2, int nZoomType) const;
 	void UpdatePageSizes(int nTop, int nScroll = 0);
 	bool UpdatePagesFromTop(int nTop, int nBottom);
 	void UpdatePagesFromBottom(int nTop, int nBottom);
-	void UpdatePageSize(int nPage);
-	void UpdatePageSizeFacing(int nPage);
+	void UpdatePageSize(const CSize& szBounds, int nPage);
+	void UpdatePageSizeFacing(const CSize& szBounds, int nPage);
 	void DeleteBitmaps();
 	int GetPageFromPoint(CPoint point) const;
 	int GetPageNearPoint(CPoint point) const;
@@ -282,6 +284,7 @@ protected:
 	void PageDecoded(int nPage);
 	void SettingsChanged();
 	void UpdateCursor();
+	bool HasScrollBars() const;
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -295,18 +298,17 @@ protected:
 	void UpdatePagesCacheSingle(bool bUpdateImages);
 	void UpdatePagesCacheFacing(bool bUpdateImages);
 	void UpdatePagesCacheContinuous(bool bUpdateImages);
-	void UpdatePageCache(int nPage, const CRect& rcClient, bool bUpdateImages);
+	void UpdatePageCache(const CSize& szClient, int nPage, bool bUpdateImages);
 	void UpdatePageCacheSingle(int nPage, bool bUpdateImages);
 	void UpdatePageCacheFacing(int nPage, bool bUpdateImages);
 	bool IsViewNextpageEnabled();
 	bool IsViewPreviouspageEnabled() const;
 	void ClearSelection(int nPage = -1);
 	void UpdateSelectionStatus();
-	bool IsSelectionBelowTop(int nPage, const DjVuSelection& selection) const;
-	bool IsSelectionVisible(int nPage, const DjVuSelection& selection) const;
+	bool IsSelectionVisible(int nPage, const DjVuSelection& selection);
 	void EnsureSelectionVisible(int nPage, const DjVuSelection& selection);
-	CRect GetSelectionRect(int nPage, const DjVuSelection& selection) const;
-	CRect TranslatePageRect(int nPage, GRect rect, bool bToDisplay = true, bool bClip = true) const;
+	CRect GetSelectionRect(int nPage, const DjVuSelection& selection);
+	CRect TranslatePageRect(int nPage, GRect rect, bool bToDisplay = true, bool bClip = true);
 	bool m_bInsideUpdateLayout;
 
 	Annotation* m_pHoverAnno;
@@ -315,7 +317,7 @@ protected:
 	int m_nHoverPage;
 	bool m_bIgnoreMouseLeave;
 	Annotation* GetAnnotationFromPoint(const CPoint& point, int& nPage, bool& bCustom);
-	bool PtInAnnotation(const Annotation& anno, int nPage, const CPoint& point) const;
+	bool PtInAnnotation(const Annotation& anno, int nPage, const CPoint& point);
 	void UpdateHoverAnnotation(const CPoint& point);
 	void UpdateHoverAnnotation();
 	bool InvalidateAnno(Annotation* pAnno, int nPage);
@@ -343,7 +345,7 @@ protected:
 	bool m_bPopupMenu;
 	void StopDragging();
 	void OnContextMenu();
-	CPoint m_ptStart, m_ptStartPos, m_ptPrevCursor;
+	CPoint m_ptStart, m_ptStartPos, m_ptStartSel, m_ptPrevCursor;
 	int m_nStartPage, m_nPrevPage;
 	bool m_bClick;
 	CPoint m_ptClick, m_ptMouse;

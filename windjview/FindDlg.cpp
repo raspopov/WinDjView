@@ -146,7 +146,15 @@ void CFindDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 	CMyDialog::OnShowWindow(bShow, nStatus);
 
 	if (bShow)
+	{
 		UpdateButtons();
+		m_cboFind.SetFocus();
+
+		// Remove the "default" visual style that buttons could
+		// erroneously retain after they were clicked.
+		GetDlgItem(IDC_FIND_ALL)->ModifyStyle(BS_DEFPUSHBUTTON, 0);
+		GetDlgItem(IDCANCEL)->ModifyStyle(BS_DEFPUSHBUTTON, 0);
+	}
 }
 
 void CFindDlg::InitSearchHistory()
@@ -174,7 +182,7 @@ void CFindDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 
 BOOL CFindDlg::PreTranslateMessage(MSG* pMsg)
 {
-	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE && pMsg->wParam == VK_F3)
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_F3)
 	{
 		bool bShiftPressed = (::GetKeyState(VK_SHIFT) & 0x8000) != 0;
 		bool bControlPressed = (::GetKeyState(VK_CONTROL) & 0x8000) != 0;

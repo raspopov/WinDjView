@@ -77,8 +77,7 @@ void CNavPaneWnd::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
 
-	CRect rcClient;
-	GetClientRect(rcClient);
+	CRect rcClient = ::GetClientRect(this);
 
 	COLORREF clrBtnface = ::GetSysColor(COLOR_BTNFACE);
 	COLORREF clrTabBg = ChangeBrightness(clrBtnface, 0.87);
@@ -285,19 +284,16 @@ void CNavPaneWnd::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 
 void CNavPaneWnd::UpdateTabContents()
 {
-	CRect rcFull;
-	GetClientRect(&rcFull);
+	CRect rcContents = ::GetClientRect(this);
+	rcContents.DeflateRect(s_nTabsWidth + s_nLeftMargin + 2, s_nTopMargin, 0, 0);
 
-	rcFull.left += s_nTabsWidth + s_nLeftMargin + 2;
-	rcFull.top += s_nTopMargin;
-
-	CRect rcBordered(rcFull);
+	CRect rcBordered(rcContents);
 	rcBordered.DeflateRect(1, 1, 0, 0);
 
 	for (size_t i = 0; i < m_tabs.size(); ++i)
 	{
 		CWnd* pWnd = m_tabs[i].pWnd;
-		CRect rc = (m_tabs[i].bHasBorder ? rcBordered : rcFull);
+		const CRect& rc = (m_tabs[i].bHasBorder ? rcBordered : rcContents);
 
 		if (rc.Height() <= 0 || rc.Width() <= 0)
 		{
@@ -366,9 +362,8 @@ BOOL CNavPaneWnd::OnEraseBkgnd(CDC* pDC)
 
 void CNavPaneWnd::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	CRect rcClient;
-	GetClientRect(rcClient);
-	if (rcClient.Width() > 70)
+	CSize szClient = ::GetClientSize(this);
+	if (szClient.cx > 70)
 	{
 		if (m_rcClose.PtInRect(point))
 		{
@@ -419,8 +414,7 @@ void CNavPaneWnd::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	if (m_bDragging)
 	{
-		CRect rcClient;
-		GetClientRect(rcClient);
+		CRect rcClient = ::GetClientRect(this);
 		if (rcClient.Width() > 70)
 		{
 			CRect rcButton(CPoint(rcClient.right - 21, rcClient.top + 2), CSize(19, 18));
@@ -462,8 +456,7 @@ void CNavPaneWnd::UpdateButtons(bool bLButtonDown)
 	::GetCursorPos(&ptCursor);
 	ScreenToClient(&ptCursor);
 
-	CRect rcClient;
-	GetClientRect(rcClient);
+	CRect rcClient = ::GetClientRect(this);
 	if (rcClient.Width() <= 70)
 	{
 		if (::IsWindow(m_toolTip.m_hWnd))

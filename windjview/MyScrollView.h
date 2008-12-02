@@ -37,6 +37,16 @@ public:
 	virtual void OnPan(CSize szScroll);
 	virtual void OnEndPan();
 
+	bool AdjustClientSize(const CSize& szContent, CSize& szClient,
+		bool& bHScroll, bool& bVScroll) const;
+
+// Overrides:
+public:
+	virtual void CalcWindowRect(LPRECT lpClientRect,
+		UINT nAdjustType = adjustBorder);
+
+	void CheckScrollBars(BOOL& bHasHorzBar, BOOL& bHasVertBar) const;
+
 protected:
 	~CMyScrollView();
 	CMyAnchorWnd* m_pAnchorWnd;
@@ -45,9 +55,12 @@ protected:
 		const CSize& szPage, const CSize& szLine);
 	void SetScrollSizes(const CSize& szTotal,
 		const CSize& szPage, const CSize& szLine);
-	void UpdateBarsNoRepaint();
+	void UpdateBars(bool bRepaint);
 	void ScrollToPositionNoRepaint(CPoint pt);
-	void CheckScrollBars(BOOL& bHasHorzBar, BOOL& bHasVertBar) const;
+	void GetScrollBarSizes(CSize& sizeSb) const;
+	bool GetTrueClientSize(CSize& size, CSize& sizeSb) const;
+	void GetScrollBarState(CSize sizeClient, CSize& needSb,
+		CSize& sizeRange, CPoint& ptMove, bool bInsideClient) const;
 
 protected:
 	// Generated message map functions

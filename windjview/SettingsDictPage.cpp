@@ -75,10 +75,8 @@ BOOL CSettingsDictPage::OnInitDialog()
 
 	m_list.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
 
-	CRect rcClient;
-	m_list.GetClientRect(rcClient);
-
-	m_list.InsertColumn(0, _T(""), LVCFMT_LEFT, rcClient.Width() - 4);
+	CSize szList = GetClientSize(m_list);
+	m_list.InsertColumn(0, _T(""), LVCFMT_LEFT, szList.cx - 4);
 
 	for (int nLang = 0; nLang < theApp.GetDictLangsCount(); ++nLang)
 	{
