@@ -154,7 +154,7 @@ void CAnnotationDlg::ToggleDialog(bool bExpand, bool bCenterWindow)
 	CRect rcPos;
 	GetDlgItem(bExpand ? IDC_STATIC_MORE : IDC_STATIC_LESS)->GetWindowRect(rcPos);
 
-	rcWindow.bottom = rcPos.top;
+	rcWindow.bottom = rcPos.bottom + ::GetSystemMetrics(SM_CYBORDER);
 	MoveWindow(rcWindow);
 
 	if (bCenterWindow)

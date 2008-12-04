@@ -592,7 +592,7 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.bRestoreView = !!GetProfileInt(s_pszGlobalSection, s_pszRestoreView, m_appSettings.bRestoreView);
 	m_appSettings.nLanguage = GetProfileInt(s_pszGlobalSection, s_pszLanguage, m_appSettings.nLanguage);
 	m_appSettings.bMatchCase = !!GetProfileInt(s_pszGlobalSection, s_pszMatchCase, m_appSettings.bMatchCase);
-	m_appSettings.strVersion = GetProfileString(s_pszGlobalSection, s_pszVersion, CURRENT_VERSION);
+	m_appSettings.strVersion = GetProfileString(s_pszGlobalSection, s_pszVersion, _T(""));
 	m_appSettings.nCurLang = GetProfileInt(s_pszGlobalSection, s_pszCurrentLang, m_appSettings.nCurLang);
 	m_appSettings.nCurDict = GetProfileInt(s_pszGlobalSection, s_pszCurrentDict, m_appSettings.nCurDict);
 	m_appSettings.strDictLocation = GetProfileString(s_pszGlobalSection, s_pszDictLocation, m_appSettings.strDictLocation);

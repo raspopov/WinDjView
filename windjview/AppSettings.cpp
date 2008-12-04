@@ -53,7 +53,7 @@ CAppSettings::CAppSettings()
 
 	bNavPaneHidden = false;
 	bNavPaneCollapsed = false;
-	nNavPaneWidth = 200;
+	nNavPaneWidth = 205;
 
 	bRestoreAssocs = false;
 	bTopLevelDocs = false;

@@ -53,7 +53,7 @@ BOOL CMagnifyWnd::Create()
 	m_nWidth = 480;
 	m_nHeight = 320;
 
-	return CreateEx(WS_EX_TOPMOST | WS_EX_TOOLWINDOW, strWndClass, NULL, WS_POPUP,
+	return CreateEx(WS_EX_TOOLWINDOW, strWndClass, NULL, WS_POPUP,
 		CRect(0, 0, m_nWidth, m_nHeight), NULL, 0);
 }
 
@@ -67,6 +67,7 @@ void CMagnifyWnd::Show(CDjVuView* pOwner, CDjVuView* pContents, const CPoint& pt
 	m_pView->MoveWindow(1, 1, m_nWidth - 2, m_nHeight - 2);
 	CenterOnPoint(ptCenter);
 
+	SetWindowPos(&wndTop, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 	ShowWindow(SW_SHOWNA);
 }
 

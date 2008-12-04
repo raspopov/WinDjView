@@ -153,6 +153,7 @@ void CMyTreeCtrl::OnPaint()
 int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 {
 	CPoint ptScroll = GetScrollPosition();
+	bool bFocus = (GetFocus() == this);
 
 	int nBottom = (pNode == m_pRoot ? 0 : pNode->rcNode.bottom);
 
@@ -175,15 +176,15 @@ int CMyTreeCtrl::PaintNode(CDC* pDC, TreeNode* pNode, const CRect& rcClip)
 			CRect rcSel(pNode->rcLabel);
 			rcSel.DeflateRect(s_nTextOffset - 3, 0, 0, 0);
 
-			COLORREF crSel = ::GetSysColor(GetFocus() == this ? COLOR_HIGHLIGHT : COLOR_BTNFACE);
+			COLORREF crSel = ::GetSysColor(bFocus ? COLOR_HIGHLIGHT : COLOR_BTNFACE);
 			pDC->FillSolidRect(rcSel - ptScroll, crSel);
 
-			COLORREF crSelText = ::GetSysColor(GetFocus() == this ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT);
+			COLORREF crSelText = ::GetSysColor(bFocus ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT);
 			pDC->SetTextColor(crSelText);
 
 			pDC->DrawText(pNode->strLabel, pNode->rcText - ptScroll, nFlags);
 
-			if (GetFocus() == this)
+			if (bFocus)
 				DrawDottedRect(pDC, rcSel - ptScroll, crSelText);
 		}
 		else
@@ -1581,7 +1582,7 @@ BOOL CMyTreeCtrl::CTreeToolTip::Create(CMyTreeCtrl* pTree)
 	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
 			::LoadCursor(NULL, IDC_ARROW));
 
-	return CreateEx(WS_EX_TOPMOST | WS_EX_TOOLWINDOW, strWndClass, NULL, WS_POPUP,
+	return CreateEx(WS_EX_TOOLWINDOW, strWndClass, NULL, WS_POPUP,
 		CRect(0, 0, 0, 0), pTree, 0);
 }
 
@@ -1592,10 +1593,9 @@ void CMyTreeCtrl::CTreeToolTip::Show(const CString& strText,
 	m_bWrap = bWrap;
 	m_rcText = rcText;
 
-	MoveWindow(rcWindow.left, rcWindow.top, rcWindow.Width(), rcWindow.Height());
-	ShowWindow(SW_SHOWNOACTIVATE);
-	SetWindowPos(&wndTopMost, 0, 0, 0, 0,
-			SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER);
+	SetWindowPos(&wndTop, rcWindow.left, rcWindow.top,
+			rcWindow.Width(), rcWindow.Height(), SWP_NOACTIVATE);
+	ShowWindow(SW_SHOWNA);
 
 	Invalidate();
 	UpdateWindow();

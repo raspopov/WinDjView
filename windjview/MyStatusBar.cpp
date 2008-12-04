@@ -83,13 +83,11 @@ void CMyStatusBar::DrawItem(LPDRAWITEMSTRUCT lpDrawItem)
 
 	rcItem.DeflateRect(8, 0, 5, 0);
 
-	COLORREF clrOldText = dc.GetTextColor();
-	dc.SetTextColor(COLOR_HIGHLIGHTTEXT);
-
+	COLORREF crTextColor = dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
 	dc.SetBkMode(TRANSPARENT);
 	dc.DrawText(m_strHilightMsg, &rcItem, DT_SINGLELINE | DT_VCENTER | DT_LEFT);
 
-	dc.SetTextColor(clrOldText);
+	dc.SetTextColor(crTextColor);
 	dc.SelectObject(pOldBrush);
 
 	dc.Detach();

@@ -138,6 +138,7 @@ void CThumbnailsView::DrawPage(CDC* pDC, int nPage)
 	Page& page = m_pages[nPage];
 
 	COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
+	COLORREF clrWindowText = ::GetSysColor(COLOR_WINDOWTEXT);
 	COLORREF clrFrame = ::GetSysColor(COLOR_WINDOWFRAME);
 	COLORREF clrShadow = ::GetSysColor(COLOR_BTNSHADOW);
 	COLORREF clrBtnface = ::GetSysColor(COLOR_BTNFACE);
@@ -238,29 +239,31 @@ void CThumbnailsView::DrawPage(CDC* pDC, int nPage)
 			rcBorder.InflateRect(3, 3, 2, 2);
 	}
 
+	bool bFocus = (GetFocus() == this);
+
 	// Page number
 	CRect rcNumberFrame(page.rcNumber);
 	FrameRect(pDC, rcNumberFrame - ptScroll, clrFrame);
 
 	CRect rcNumber(rcNumberFrame);
 	rcNumber.DeflateRect(1, 1);
-	COLORREF color = (nPage == m_nCurrentPage ? clrHilight : clrWindow);
+	COLORREF color = (nPage == m_nCurrentPage ? clrBtnface : clrWindow);
 	pDC->FillSolidRect(rcNumber - ptScroll, color);
 
 	CFont* pOldFont = pDC->SelectObject(&m_font);
 	pDC->SetBkMode(TRANSPARENT);
-	pDC->SetTextColor(nPage == m_nCurrentPage ? clrWindow : clrFrame);
+	pDC->SetTextColor(clrWindowText);
 	pDC->DrawText(FormatString(_T("%d"), nPage + 1), rcNumber - ptScroll,
 		DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 	pDC->SelectObject(pOldFont);
 
 	if (nPage == m_nSelectedPage)
 	{
-		COLORREF color = (GetFocus() == this ? clrHilight : clrBtnface);
+		COLORREF color = (bFocus ? clrHilight : clrBtnface);
 
 		for (int i = 0; i < 3; i++)
 		{
-			if (GetFocus() == this || i == 0)
+			if (bFocus || i == 0)
 				rcNumberFrame.InflateRect(1, 1);
 			else
 				rcNumberFrame.InflateRect(1, 0, 1, 1);
@@ -555,10 +558,13 @@ bool CThumbnailsView::OnScroll(UINT nScrollCode, UINT nPos, bool bDoScroll)
 
 bool CThumbnailsView::OnScrollBy(CSize szScrollBy, bool bDoScroll)
 {
+	bool bVScroll = false;
+	if (bDoScroll)
+		bVScroll = CMyScrollView::OnScrollBy(CSize(0, szScrollBy.cy), false);
+
 	if (!CMyScrollView::OnScrollBy(szScrollBy, bDoScroll))
 		return false;
 
-	bool bVScroll = CMyScrollView::OnScrollBy(CSize(0, szScrollBy.cy), false);
 	if (bVScroll)
 		UpdateVisiblePages();
 

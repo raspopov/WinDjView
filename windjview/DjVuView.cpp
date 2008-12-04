@@ -902,6 +902,8 @@ void CDjVuView::OnInitialUpdate()
 		{
 			m_nZoomType = pDocSettings->nZoomType;
 			m_fZoom = max(min(pDocSettings->fZoom, 800.0), 10.0);
+			pAppSettings->nDefaultZoomType = m_nZoomType;
+			pAppSettings->fDefaultZoom = m_fZoom;
 		}
 
 		// Restore layout
@@ -910,6 +912,7 @@ void CDjVuView::OnInitialUpdate()
 			m_nLayout = pDocSettings->nLayout;
 			m_bFirstPageAlone = pDocSettings->bFirstPageAlone;
 			m_bRightToLeft = pDocSettings->bRightToLeft;
+			theApp.GetAppSettings()->nDefaultLayout = m_nLayout;
 		}
 
 		// Restore mode
@@ -2473,7 +2476,7 @@ void CDjVuView::OnViewRotate(UINT nID)
 	if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 		UpdatePageSizes(GetScrollPos(SB_VERT));
 
-	if (!m_bDragging)
+	if (!m_bDragging && !m_bPanning)
 		UpdateHoverAnnotation();
 
 	UpdatePageNumber();
@@ -2573,7 +2576,7 @@ void CDjVuView::ZoomTo(int nZoomType, double fZoom)
 	if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 		UpdatePageSizes(GetScrollPos(SB_VERT));
 
-	if (!m_bDragging)
+	if (!m_bDragging && !m_bPanning)
 		UpdateHoverAnnotation();
 
 	UpdatePageNumber();
@@ -3002,7 +3005,7 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 			m_bClick = false;
 	}
 
-	if (!m_bDragging && !m_bDraggingRight)
+	if (!m_bDragging && !m_bDraggingRight && !m_bPanning)
 	{
 		UpdateHoverAnnotation(point);
 		m_bInsideMouseMove = false;
@@ -3827,7 +3830,7 @@ void CDjVuView::ScrollToPosition(CPoint pt, bool bRepaint)
 	if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 		UpdateVisiblePages();
 
-	if (!m_bDragging)
+	if (!m_bDragging && !m_bPanning)
 		UpdateHoverAnnotation();
 
 	UpdatePageNumber();
@@ -3885,7 +3888,7 @@ bool CDjVuView::OnScrollBy(CSize szScrollBy, bool bDoScroll)
 	if (bUpdateVisible)
 		UpdateVisiblePages();
 
-	if (!m_bDragging)
+	if (!m_bDragging && !m_bPanning)
 		UpdateHoverAnnotation();
 
 	UpdatePageNumber();
@@ -6240,14 +6243,16 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 		if (m_pClickedAnno == msg->pAnno)
 			m_pClickedAnno = NULL;
 
-		UpdateHoverAnnotation();
+		if (!m_bDragging && !m_bPanning)
+			UpdateHoverAnnotation();
 	}
 	else if (message->code == ANNOTATION_ADDED)
 	{
 		const AnnotationMsg* msg = (const AnnotationMsg*) message;
 		InvalidateAnno(msg->pAnno, msg->nPage);
 
-		UpdateHoverAnnotation();
+		if (!m_bDragging && !m_bPanning)
+			UpdateHoverAnnotation();
 	}
 	else if (message->code == KEY_STATE_CHANGED)
 	{
@@ -6257,7 +6262,8 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 	else if (message->code == ANNOTATIONS_CHANGED)
 	{
 		Invalidate();
-		UpdateHoverAnnotation();
+		if (!m_bDragging && !m_bPanning)
+			UpdateHoverAnnotation();
 	}
 }
 

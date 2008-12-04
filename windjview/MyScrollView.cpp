@@ -682,9 +682,9 @@ BEGIN_MESSAGE_MAP(CMyAnchorWnd, CWnd)
 END_MESSAGE_MAP()
 
 CMyAnchorWnd::CMyAnchorWnd()
-	: m_pView(NULL), m_bQuitTracking(false), m_bVertScroll(false),
-	  m_bHorzScroll(false), m_pSetLayeredWindowAttributes(NULL),
-	  m_hUser32(NULL)
+	: m_nDefaultCursor(4), m_pView(NULL), m_bQuitTracking(false),
+	  m_bVertScroll(false), m_bHorzScroll(false),
+	  m_pSetLayeredWindowAttributes(NULL), m_hUser32(NULL)
 {
 	m_bitmap.LoadBitmap(IDB_PAN_ANCHOR);
 
@@ -862,7 +862,7 @@ BOOL CMyAnchorWnd::Create(CMyScrollView* pView)
 
 	m_pView = pView;
 
-	DWORD dwStyle = WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
+	DWORD dwStyle = WS_EX_TOOLWINDOW;
 	if (m_pSetLayeredWindowAttributes != NULL)
 		dwStyle |= WS_EX_LAYERED;
 	if (!CreateEx(dwStyle, strWndClass, NULL, WS_POPUP,
@@ -939,7 +939,9 @@ void CMyAnchorWnd::Show(const CPoint& ptAnchor, bool bHorzScroll, bool bVertScro
 
 	SetWindowPos(&wndTop, m_ptAnchor.x - s_nAnchorSize / 2,
 		m_ptAnchor.y - s_nAnchorSize / 2, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
-	ShowWindow(SW_SHOW);
+	ShowWindow(SW_SHOWNA);
+	Invalidate();
+	UpdateWindow();
 
 	m_bQuitTracking = false;
 	SetCapture();

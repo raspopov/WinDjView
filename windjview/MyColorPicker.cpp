@@ -816,7 +816,7 @@ bool CMyColorPopup::Create(CWnd* pParent)
 {
 	ASSERT(pParent != NULL && ::IsWindow(pParent->m_hWnd));
 
-	UINT nClassStyle = CS_CLASSDC | CS_SAVEBITS | CS_HREDRAW | CS_VREDRAW;
+	UINT nClassStyle = CS_DBLCLKS;
 	if (IsWinXPOrLater())
 	{
 		BOOL bDropShadow = FALSE;
@@ -828,7 +828,7 @@ bool CMyColorPopup::Create(CWnd* pParent)
 	static CString strWndClass = AfxRegisterWndClass(nClassStyle,
 			::LoadCursor(NULL, IDC_ARROW), (HBRUSH) (COLOR_MENU + 1));
 
-	if (!CreateEx(WS_EX_TOPMOST | WS_EX_TOOLWINDOW, strWndClass, _T(""),
+	if (!CreateEx(WS_EX_TOOLWINDOW, strWndClass, _T(""),
 			WS_POPUP, CRect(0, 0, 100, 100), pParent, 0))
 		return false;
 
@@ -1142,8 +1142,8 @@ void CMyColorPopup::SetPosition(const CRect& rcParent)
 			rcWindow = rcWindowUp;
 	}
 
-	SetWindowPos(&wndTopMost, rcWindow.left, rcWindow.top, rcWindow.Width(), rcWindow.Height(),
-			SWP_NOACTIVATE);
+	SetWindowPos(&wndTop, rcWindow.left, rcWindow.top,
+			rcWindow.Width(), rcWindow.Height(), SWP_NOACTIVATE);
 }
 
 void CMyColorPopup::InitToolTips()
