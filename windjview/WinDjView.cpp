@@ -282,6 +282,21 @@ CMainFrame* CDjViewApp::CreateMainFrame(bool bAppStartup, int nCmdShow)
 				SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
 	}
 
+	// After resolution is changed, or a monitor is unplugged,
+	// the window might appear completely offscreen. If this
+	// happens, center window at the current monitor.
+	CRect rcWorkArea = GetMonitorWorkArea(pMainFrame);
+	CRect rcWindow, rcIntersect;
+	pMainFrame->GetWindowRect(rcWindow);
+	if (!rcIntersect.IntersectRect(rcWindow, rcWorkArea))
+	{
+		CPoint ptOffset((rcWorkArea.Width() - rcWindow.Width()) / 2,
+				(rcWorkArea.Height() - rcWindow.Height()) / 2);
+		ptOffset += rcWorkArea.TopLeft();
+		pMainFrame->SetWindowPos(NULL, ptOffset.x, ptOffset.y, 0, 0,
+				SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+	}
+
 	// Enable drag/drop open
 	pMainFrame->DragAcceptFiles();
 
