@@ -76,6 +76,7 @@ protected:
 		CString strName;
 		CRect rcTab;
 		CWnd* pWnd;
+		CRect rcContent;
 		bool bHasBorder;
 		bool bHasSettings;
 	};

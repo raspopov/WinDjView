@@ -47,6 +47,8 @@ public:
 	double GetProfileDouble(LPCTSTR pszSection, LPCTSTR pszEntry, double fDefault);
 	BOOL WriteProfileCompressed(LPCTSTR pszSection, LPCTSTR pszEntry, const GUTF8String& value);
 	BOOL GetProfileCompressed(LPCTSTR pszSection, LPCTSTR pszEntry, GUTF8String& value);
+	bool EnumProfileKeys(LPCTSTR pszSection, vector<CString>& keys);
+	bool DeleteProfileKey(LPCTSTR pszSection, LPCTSTR pszKey);
 
 	virtual bool LoadDocSettings(const CString& strKey, DocSettings* pSettings);
 	virtual DictionaryInfo* GetDictionaryInfo(const CString& strPathName, bool bCheckPath = true);

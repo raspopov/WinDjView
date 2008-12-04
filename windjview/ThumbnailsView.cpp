@@ -324,7 +324,6 @@ void CThumbnailsView::UpdateAllThumbnails()
 	}
 
 	UpdateLayout(RECALC);
-	UpdateVisiblePages();
 
 	Invalidate();
 	UpdateWindow();
@@ -347,7 +346,7 @@ void CThumbnailsView::OnSize(UINT nType, int cx, int cy)
 
 void CThumbnailsView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	CSize szScroll(0, 0);
+	CSize szScrollBy(0, 0);
 	switch (nChar)
 	{
 	case VK_RIGHT:
@@ -399,27 +398,24 @@ void CThumbnailsView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		return;
 
 	case VK_NEXT:
-		szScroll.cy = m_pageDev.cy;
+		szScrollBy.cy = m_szPage.cy;
 		break;
 
 	case VK_PRIOR:
 	case VK_BACK:
-		szScroll.cy = -m_pageDev.cy;
+		szScrollBy.cy = -m_szPage.cy;
 		break;
 
 	case VK_HOME:
-		szScroll.cy = -GetScrollPosition().y;
+		szScrollBy.cy = -GetScrollPosition().y;
 		break;
 
 	case VK_END:
-		szScroll.cy = GetScrollLimit(SB_VERT) - GetScrollPosition().y;
+		szScrollBy.cy = GetScrollLimit(SB_VERT);
 		break;
 	}
 
-	OnScrollBy(szScroll);
-
-	if (szScroll.cy != 0)
-		UpdateVisiblePages();
+	OnScrollBy(szScrollBy);
 
 	CMyScrollView::OnKeyDown(nChar, nRepCnt, nFlags);
 }
@@ -545,93 +541,44 @@ LRESULT CThumbnailsView::OnShowSettings(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-BOOL CThumbnailsView::OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll)
+bool CThumbnailsView::OnScroll(UINT nScrollCode, UINT nPos, bool bDoScroll)
 {
-	int nCode = HIBYTE(nScrollCode);
+	if (!CMyScrollView::OnScroll(nScrollCode, nPos, bDoScroll))
+		return false;
+
+	int nCode = HIBYTE(nScrollCode);  // Vertical scrollbar
 	if (nCode == SB_THUMBTRACK)
-	{
-		SCROLLINFO si;
-		ZeroMemory(&si, sizeof(si));
-		si.cbSize = sizeof(si);
+		UpdateWindow();
 
-		if (!GetScrollInfo(SB_VERT, &si, SIF_TRACKPOS))
-			return true;
+	return true;
+}
 
-		int yOrig = GetScrollPos(SB_VERT);
+bool CThumbnailsView::OnScrollBy(CSize szScrollBy, bool bDoScroll)
+{
+	if (!CMyScrollView::OnScrollBy(szScrollBy, bDoScroll))
+		return false;
 
-		BOOL bResult = OnScrollBy(CSize(0, si.nTrackPos - yOrig), bDoScroll);
-		if (bResult && bDoScroll)
-		{
-			UpdateVisiblePages();
-			UpdateWindow();
-		}
+	bool bVScroll = CMyScrollView::OnScrollBy(CSize(0, szScrollBy.cy), false);
+	if (bVScroll)
+		UpdateVisiblePages();
 
-		return bResult;
-	}
-
-	BOOL bResult = CMyScrollView::OnScroll(nScrollCode, nPos, bDoScroll);
-	UpdateVisiblePages();
-
-	return bResult;
+	return true;
 }
 
 BOOL CThumbnailsView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 {
-	// we don't handle anything but scrolling
-	if ((nFlags & MK_CONTROL) != 0)
-		return true;
-
 	CWnd* pWnd = WindowFromPoint(point);
 	if (pWnd != this && !IsChild(pWnd) && IsFromCurrentProcess(pWnd) &&
 			pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
 		return true;
 
-	BOOL bHasHorzBar, bHasVertBar;
-	CheckScrollBars(bHasHorzBar, bHasVertBar);
-
-	if (!bHasVertBar && !bHasHorzBar)
-		return false;
-
-	UINT uWheelScrollLines = GetMouseScrollLines();
-	int nToScroll = ::MulDiv(-zDelta, uWheelScrollLines, WHEEL_DELTA);
-	int nDisplacement;
-
-	if (bHasVertBar && (!bHasHorzBar || (nFlags & MK_SHIFT) == 0))
+	if (CMyScrollView::OnMouseWheel(nFlags, zDelta, point))
 	{
-		if (uWheelScrollLines == WHEEL_PAGESCROLL)
-		{
-			nDisplacement = m_pageDev.cy;
-			if (zDelta > 0)
-				nDisplacement = -nDisplacement;
-		}
-		else
-		{
-			nDisplacement = nToScroll * m_lineDev.cy;
-			nDisplacement = min(nDisplacement, m_pageDev.cy);
-		}
-
-		OnScrollBy(CSize(0, nDisplacement));
-		UpdateVisiblePages();
-	}
-	else if (bHasHorzBar)
-	{
-		if (uWheelScrollLines == WHEEL_PAGESCROLL)
-		{
-			nDisplacement = m_pageDev.cx;
-			if (zDelta > 0)
-				nDisplacement = -nDisplacement;
-		}
-		else
-		{
-			nDisplacement = nToScroll * m_lineDev.cx;
-			nDisplacement = min(nDisplacement, m_pageDev.cx);
-		}
-
-		OnScrollBy(CSize(nDisplacement, 0));
+		UpdateWindow();
+		return true;
 	}
 
-	UpdateWindow();
-	return true;
+	return false;
 }
 
 bool CThumbnailsView::InvalidatePage(int nPage)
@@ -753,12 +700,10 @@ void CThumbnailsView::UpdateLayout(UpdateType updateType)
 
 	CSize szDevPage(szClient.cx*9/10, szClient.cy*9/10);
 	CSize szDevLine(15, 15);
-	SetScrollSizesNoRepaint(m_szDisplay, szDevPage, szDevLine);
+	SetScrollSizes(m_szDisplay, szDevPage, szDevLine, false);
 
 	if (updateType == TOP)
-	{
-		ScrollToPositionNoRepaint(m_pages[nAnchorPage].rcPage.TopLeft() + ptAnchorOffset);
-	}
+		ScrollToPosition(m_pages[nAnchorPage].rcPage.TopLeft() + ptAnchorOffset, false);
 
 	m_bInsideUpdateLayout = false;
 	UpdateVisiblePages();
@@ -960,7 +905,7 @@ void CThumbnailsView::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	CMyScrollView::OnShowWindow(bShow, nStatus);
 
-	m_bVisible = !!bShow;
+	m_bVisible = bShow && GetParent()->IsWindowVisible();
 	UpdateVisiblePages();
 }
 
@@ -992,11 +937,7 @@ void CThumbnailsView::EnsureVisible(int nPage)
 	else if (page.rcDisplay.bottom > ptScroll.y + szClient.cy)
 		nScrollBy = page.rcDisplay.bottom - ptScroll.y - szClient.cy;
 
-	if (nScrollBy != 0)
-	{
-		OnScrollBy(CSize(0, nScrollBy));
-		UpdateVisiblePages();
-	}
+	OnScrollBy(CSize(0, nScrollBy));
 }
 
 void CThumbnailsView::PauseDecoding()
@@ -1033,14 +974,6 @@ void CThumbnailsView::SettingsChanged()
 	}
 
 	UpdateVisiblePages();
-}
-
-void CThumbnailsView::OnPan(CSize szScroll)
-{
-	OnScrollBy(szScroll, true);
-
-	if (szScroll.cy != 0)
-		UpdateVisiblePages();
 }
 
 LRESULT CThumbnailsView::OnMDIActivate(WPARAM wParam, LPARAM lParam)

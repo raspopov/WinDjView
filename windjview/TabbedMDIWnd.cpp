@@ -380,15 +380,6 @@ void CTabbedMDIWnd::OnSize(UINT nType, int cx, int cy)
 		m_tabs[m_nActiveTab].pWnd->SetWindowPos(NULL, m_rcContent.left, m_rcContent.top,
 				m_rcContent.Width(), m_rcContent.Height(), SWP_NOACTIVATE | SWP_NOZORDER);
 	}
-//		HDWP hDWP = ::BeginDeferWindowPos(m_tabs.size());
-//		for (size_t nTab = 0; nTab < m_tabs.size(); ++nTab)
-//		{
-//			hDWP = ::DeferWindowPos(hDWP, m_tabs[nTab].pWnd->GetSafeHwnd(),
-//				NULL, m_rcContent.left, m_rcContent.top, m_rcContent.Width(), m_rcContent.Height(),
-//				SWP_NOACTIVATE | SWP_NOZORDER);
-//		}
-//		::EndDeferWindowPos(hDWP);
-//	}
 
 	InvalidateTabs();
 }
@@ -426,6 +417,8 @@ int CTabbedMDIWnd::AddTab(CWnd* pWnd, const CString& strName)
 
 	pWnd->ShowWindow(SW_HIDE);
 	pWnd->SetParent(this);
+	pWnd->SetWindowPos(NULL, m_rcContent.left, m_rcContent.top,
+				m_rcContent.Width(), m_rcContent.Height(), SWP_NOACTIVATE | SWP_NOZORDER);
 
 	InvalidateTabs();
 
@@ -847,7 +840,8 @@ void CTabbedMDIWnd::ActivateTab(int nTab, bool bRedraw)
 	if (nTab != -1)
 	{
 		m_tabs[nTab].pWnd->SetWindowPos(&wndTop, m_rcContent.left, m_rcContent.top,
-				m_rcContent.Width(), m_rcContent.Height(), SWP_SHOWWINDOW);
+				m_rcContent.Width(), m_rcContent.Height(), SWP_NOACTIVATE);
+		m_tabs[nTab].pWnd->ShowWindow(SW_SHOW);
 		m_tabs[nTab].pWnd->SendMessage(WM_MDI_ACTIVATE, true);
 		m_tabs[nTab].pWnd->SendMessageToDescendants(WM_MDI_ACTIVATE, true, 0, true, true);
 	}

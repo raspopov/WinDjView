@@ -227,12 +227,12 @@ void CNavPaneWnd::DrawTab(CDC* pDC, int nTab, bool bActive)
 	CPoint points[] = {
 			CPoint(rcTab.left, rcTab.top - 1),
 			CPoint(rcTab.right - 1, rcTab.top - s_nTabSize + 1),
-			CPoint(rcTab.right - 1, rcTab.top - 1),
-			CPoint(rcTab.left, rcTab.top - 1) };
+			CPoint(rcTab.right - 1, rcTab.top - 1) };
 
 	CBrush* pOldBrush = pDC->SelectObject(&brushBtnface);
 	CPen* pOldPen = pDC->SelectObject(&penBtnface);
-	pDC->Polygon(points, 4);
+	pDC->SetPolyFillMode(WINDING);
+	pDC->Polygon(points, 3);
 	pDC->SelectObject(pOldBrush);
 	pDC->SelectObject(pOldPen);
 
@@ -294,16 +294,19 @@ void CNavPaneWnd::UpdateTabContents()
 	{
 		CWnd* pWnd = m_tabs[i].pWnd;
 		const CRect& rc = (m_tabs[i].bHasBorder ? rcBordered : rcContents);
+		m_tabs[i].rcContent = rc;
 
-		if (rc.Height() <= 0 || rc.Width() <= 0)
+		if (i == m_nActiveTab)
 		{
-			pWnd->ShowWindow(SW_HIDE);
-		}
-		else
-		{
-			pWnd->ShowWindow(i == m_nActiveTab ? SW_SHOW : SW_HIDE);
-			pWnd->SetWindowPos(NULL, rc.left, rc.top, rc.Width(), rc.Height(),
-				SWP_NOACTIVATE);
+			if (rc.Height() <= 0 || rc.Width() <= 0)
+			{
+				pWnd->ShowWindow(SW_HIDE);
+			}
+			else
+			{
+				pWnd->SetWindowPos(NULL, rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOACTIVATE);
+				pWnd->ShowWindow(SW_SHOW);
+			}
 		}
 	}
 }
@@ -315,6 +318,7 @@ int CNavPaneWnd::AddTab(const CString& strName, CWnd* pWnd)
 	tab.strName = strName;
 	tab.bHasBorder = true;
 	tab.bHasSettings = false;
+	tab.rcContent = CRect(0, 0, 0, 0);
 
 	int nTop = s_nTabSize;
 	if (!m_tabs.empty())
@@ -334,17 +338,13 @@ int CNavPaneWnd::AddTab(const CString& strName, CWnd* pWnd)
 
 	m_tabs.push_back(tab);
 
-	if (m_nActiveTab == -1)
-	{
-		m_nActiveTab = m_tabs.size() - 1;
-		pWnd->ShowWindow(SW_SHOW);
-	}
-	else
-		pWnd->ShowWindow(SW_HIDE);
-
-	ASSERT(pWnd->GetParent() == this);
+	pWnd->ShowWindow(SW_HIDE);
+	pWnd->SetParent(this);
 	pWnd->ModifyStyle(WS_BORDER, 0);
 	pWnd->ModifyStyleEx(WS_EX_CLIENTEDGE, 0);
+
+	if (m_nActiveTab == -1)
+		m_nActiveTab = m_tabs.size() - 1;
 
 	if (::IsWindow(m_hWnd))
 	{
@@ -630,7 +630,19 @@ void CNavPaneWnd::ActivateTab(int nTab, bool bExpand)
 	m_nActiveTab = nTab;
 
 	for (size_t i = 0; i < m_tabs.size(); ++i)
-		m_tabs[i].pWnd->ShowWindow(i == nTab ? SW_SHOW : SW_HIDE);
+	{
+		const CRect& rc = m_tabs[i].rcContent;
+		if (i != nTab || rc.Width() <= 0 || rc.Height() <= 0)
+		{
+			m_tabs[i].pWnd->ShowWindow(SW_HIDE);
+		}
+		else
+		{
+			m_tabs[i].pWnd->SetWindowPos(NULL,
+					rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOACTIVATE);
+			m_tabs[i].pWnd->ShowWindow(SW_SHOW);
+		}
+	}
 
 	UpdateButtons(false);
 	Invalidate();
@@ -723,7 +735,7 @@ void CNavPaneWnd::SetTabSettings(int nTab, bool bHasSettings)
 
 	if (::IsWindow(m_hWnd))
 	{
-		UpdateTabContents();
+		UpdateButtons(false);
 		Invalidate();
 	}
 }

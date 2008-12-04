@@ -151,13 +151,15 @@ public:
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual void OnInitialUpdate();
-	virtual BOOL OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll = TRUE);
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual CScrollBar* GetScrollBarCtrl(int nBar) const;
 
-	virtual void OnStartPan();
-	virtual void OnPan(CSize szScroll);
+	virtual void ScrollToPosition(CPoint pt, bool bRepaint = true);
+	virtual bool OnScroll(UINT nScrollCode, UINT nPos, bool bDoScroll = true);
+	virtual bool OnScrollBy(CSize szScrollBy, bool bDoScroll = true);
+
+	virtual bool OnStartPan();
 	virtual void OnEndPan();
 
 protected:
@@ -251,8 +253,6 @@ protected:
 	};
 	vector<Page> m_pages;
 
-	CSize UpdatePageRect(const CSize& szBounds, int nPage);
-	CSize UpdatePageRectFacing(const CSize& szBounds, int nPage);
 	void PreparePageRect(const CSize& szBounds, int nPage);
 	void PreparePageRectFacing(const CSize& szBounds, int nPage);
 	CSize CalcPageSize(const CSize& szBounds, const CSize& szPage, int nDPI) const;
@@ -276,6 +276,8 @@ protected:
 	void ReadDisplayMode(GP<DjVuANT> pAnt);
 	bool IsValidPage(int nPage) const;
 	bool HasFacingPage(int nPage) const;
+	void GetFacingPages(int nPage, Page*& pLeftOrSingle, Page*& pOther,
+			int* pnLeftOrSingle = NULL, int* pnOther = NULL);
 	int FixPageNumber(int nPage) const;
 	int GetNextPage(int nPage) const;
 	void SetLayout(int nLayout, int nPage, int nOffset);
@@ -295,6 +297,10 @@ protected:
 		RECALC = 2
 	};
 	void UpdateLayout(UpdateType updateType = TOP);
+	CSize UpdateLayoutSinglePage(const CSize& szTrueClient);
+	CSize UpdateLayoutFacing(const CSize& szTrueClient);
+	CSize UpdateLayoutContinuous(const CSize& szTrueClient);
+	CSize UpdateLayoutContinuousFacing(const CSize& szTrueClient);
 	void UpdatePagesCacheSingle(bool bUpdateImages);
 	void UpdatePagesCacheFacing(bool bUpdateImages);
 	void UpdatePagesCacheContinuous(bool bUpdateImages);
@@ -309,7 +315,7 @@ protected:
 	void EnsureSelectionVisible(int nPage, const DjVuSelection& selection);
 	CRect GetSelectionRect(int nPage, const DjVuSelection& selection);
 	CRect TranslatePageRect(int nPage, GRect rect, bool bToDisplay = true, bool bClip = true);
-	bool m_bInsideUpdateLayout;
+	bool m_bInsideUpdateLayout, m_bInsideMouseMove;
 
 	Annotation* m_pHoverAnno;
 	Annotation* m_pClickedAnno;
@@ -387,9 +393,7 @@ protected:
 	afx_msg void OnUpdateViewPreviouspage(CCmdUI *pCmdUI);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-	afx_msg void OnRotateLeft();
-	afx_msg void OnRotateRight();
-	afx_msg void OnRotate180();
+	afx_msg void OnViewRotate(UINT nID);
 	afx_msg void OnViewFirstpage();
 	afx_msg void OnViewLastpage();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);

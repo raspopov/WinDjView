@@ -165,3 +165,9 @@ using namespace std;
 #define HDF_SORTUP 0x0400
 #define HDF_SORTDOWN 0x0200
 #endif
+
+#ifndef WS_EX_LAYERED
+#define WS_EX_LAYERED 0x00080000
+#define LWA_COLORKEY 0x00000001
+#define LWA_ALPHA 0x00000002
+#endif

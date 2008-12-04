@@ -221,6 +221,7 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 
 	CSize szImage(pImage->get_width(), pImage->get_height());
 	int nTotalRotate = GetTotalRotate(pImage, nRotate);
+	TRACE(_T("Image: %dx%d, rotate: %d\n"), szImage.cx, szImage.cy, nTotalRotate);
 
 	CSize szRotated(size);
 	if (nTotalRotate % 2 != 0)

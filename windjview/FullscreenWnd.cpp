@@ -106,6 +106,8 @@ void CFullscreenWnd::Hide()
 
 		m_pOwner->GetTopLevelParent()->ShowWindow(SW_SHOW);
 		m_pOwner->GetTopLevelParent()->SetForegroundWindow();
+
+		m_pOwner->UpdateVisiblePages();
 	}
 
 	ShowWindow(SW_HIDE);

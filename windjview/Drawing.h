@@ -127,11 +127,12 @@ void FrameRect(CDC* pDC, const CRect& rect, COLORREF color);
 void InvertFrame(CDC* pDC, const CRect& rect);
 void FrameOval(CDC* pDC, const CRect& bounds, COLORREF color);
 void InvertOvalFrame(CDC* pDC, const CRect& bounds);
-void FramePoly(CDC* pDC, LPPOINT points, int nCount, COLORREF color);
-void InvertPolyFrame(CDC* pDC, LPPOINT points, int nCount);
+void FramePoly(CDC* pDC, const POINT* points, int nCount, COLORREF color);
+void InvertPolyFrame(CDC* pDC, const POINT* points, int nCount);
 void DrawDottedLine(CDC* pDC, const CPoint& ptStart, const CPoint& ptEnd, COLORREF color);
 void DrawDottedRect(CDC* pDC, const CRect& rect, COLORREF color);
 void HighlightRect(CDC* pDC, const CRect& rect, COLORREF color, double fTransparency);
+void HighlightPolygon(CDC* pDC, const POINT* points, int nCount, COLORREF color, double fTransparency);
 
 enum ArrowType
 {

@@ -688,7 +688,7 @@ void InvertOvalFrame(CDC* pDC, const CRect& bounds)
 	offscreenDC.Release();
 }
 
-void FramePoly(CDC* pDC, LPPOINT points, int nCount, COLORREF color)
+void FramePoly(CDC* pDC, const POINT* points, int nCount, COLORREF color)
 {
 	CPen penSolid(PS_SOLID, 1, color);
 	CPen* pOldPen = pDC->SelectObject(&penSolid);
@@ -698,7 +698,7 @@ void FramePoly(CDC* pDC, LPPOINT points, int nCount, COLORREF color)
 	pDC->SelectObject(pOldPen);
 }
 
-void InvertPolyFrame(CDC* pDC, LPPOINT points, int nCount)
+void InvertPolyFrame(CDC* pDC, const POINT* points, int nCount)
 {
 	if (nCount < 2)
 		return;
@@ -814,6 +814,92 @@ void HighlightRect(CDC* pDC, const CRect& rect, COLORREF color, double fTranspar
 	offscreenDC.Release();
 }
 
+void HighlightPolygon(CDC* pDC, const POINT* points, int nCount, COLORREF color, double fTransparency)
+{
+	if (nCount < 2)
+		return;
+
+	CRect rcBounds = CRect(points[0], CSize(1, 1));
+	for (int i = 0; i < nCount; ++i)
+		rcBounds.UnionRect(CRect(rcBounds), CRect(points[i], CSize(1, 1)));
+
+	CRect rcClip;
+	pDC->GetClipBox(rcClip);
+	if (!rcClip.IntersectRect(CRect(rcClip), rcBounds))
+		return;
+
+	static COffscreenDC offscreenDC, maskDC;
+
+	offscreenDC.Create(pDC, rcClip.Size());
+	maskDC.Create(pDC, rcClip.Size());
+	CDIB* pDIB = offscreenDC.GetDIB();
+	CDIB* pMask = maskDC.GetDIB();
+	if (pDIB == NULL || pDIB->m_hObject == NULL ||
+			pMask == NULL || pMask->m_hObject == NULL)
+	{
+		offscreenDC.Release();
+		maskDC.Release();
+		return;
+	}
+
+	ASSERT(pDIB->GetBitsPerPixel() == 24);
+	ASSERT(pMask->GetBitsPerPixel() == 24);
+	offscreenDC.BitBlt(0, 0, rcClip.Width(), rcClip.Height(), pDC, rcClip.left, rcClip.top, SRCCOPY);
+
+	maskDC.SetViewportOrg(-rcClip.TopLeft());
+	maskDC.FillSolidRect(rcClip, RGB(255, 255, 255));
+
+	CBrush brushBlack(RGB(0, 0, 0));
+	CPen penBlack(PS_SOLID, 1, RGB(0, 0, 0));
+	CBrush* pOldBrush = maskDC.SelectObject(&brushBlack);
+	CPen* pOldPen = maskDC.SelectObject(&penBlack);
+	maskDC.SetPolyFillMode(WINDING);
+
+	maskDC.Polygon(points, nCount);
+
+	maskDC.SelectObject(pOldPen);
+	maskDC.SelectObject(pOldBrush);
+
+	int nRowLength = pDIB->GetWidth()*3;
+	while (nRowLength % 4 != 0)
+		++nRowLength;
+
+	LPBYTE pBits = pDIB->GetBits();
+	LPBYTE pMaskBits = pMask->GetBits();
+
+	BYTE tableRed[256], tableGreen[256], tableBlue[256];
+	for (int i = 0; i < 256; ++i)
+		tableRed[i] = tableGreen[i] = tableBlue[i] = i;
+
+	BuildTransparentcyTable(fTransparency, GetRValue(color), tableRed);
+	BuildTransparentcyTable(fTransparency, GetGValue(color), tableGreen);
+	BuildTransparentcyTable(fTransparency, GetBValue(color), tableBlue);
+
+	for (int y = 0; y < rcClip.Height(); ++y, pBits += nRowLength, pMaskBits += nRowLength)
+	{
+		LPBYTE pPixel = pBits;
+		LPBYTE pMaskPixel = pMaskBits;
+		for (int x = 0; x < rcClip.Width(); ++x, pMaskPixel += 3)
+		{
+			if (*pMaskPixel == 0)
+			{
+				*pPixel = tableBlue[*pPixel];
+				++pPixel;
+				*pPixel = tableGreen[*pPixel];
+				++pPixel;
+				*pPixel = tableRed[*pPixel];
+				++pPixel;
+			}
+			else
+				pPixel += 3;
+		}
+	}
+
+	pDC->BitBlt(rcClip.left, rcClip.top, rcClip.Width(), rcClip.Height(), &offscreenDC, 0, 0, SRCCOPY);
+	maskDC.Release();
+	offscreenDC.Release();
+}
+
 void DrawArrow(CDC* pDC, int nArrowType, const CRect& rect, COLORREF color)
 {
 	POINT points[3];
@@ -863,11 +949,10 @@ void DrawArrow(CDC* pDC, int nArrowType, const CRect& rect, COLORREF color)
 
 	CBrush* pOldBrush = pDC->SelectObject(&brush);
 	CPen* pOldPen = pDC->SelectObject(&pen);
-	int nPolyFillMode = pDC->SetPolyFillMode(WINDING);
+	pDC->SetPolyFillMode(WINDING);
 
 	pDC->Polygon(points, 3);
 
-	pDC->SetPolyFillMode(nPolyFillMode);
 	pDC->SelectObject(pOldPen);
 	pDC->SelectObject(pOldBrush);
 }

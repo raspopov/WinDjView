@@ -122,6 +122,7 @@ const TCHAR* s_pszAdjustPrinting = _T("adjust-printing");
 
 const TCHAR* s_pszDocumentsSection = _T("Documents");
 const TCHAR* s_pszSettings = _T("settings");
+const TCHAR* s_pszLastKnownLocation = _T("last-known-location");
 
 const TCHAR* s_pszDictionariesSection = _T("Dictionaries");
 const TCHAR* s_pszFileTimeLow = _T("modified-l");
@@ -647,18 +648,94 @@ void CDjViewApp::LoadSettings()
 	m_printSettings.bAdjustPrinting = !!GetProfileInt(s_pszPrintSection, s_pszAdjustPrinting, m_printSettings.bAdjustPrinting);
 }
 
-bool CDjViewApp::LoadDocSettings(const CString& strKey, DocSettings* pSettings)
+bool CDjViewApp::EnumProfileKeys(LPCTSTR pszSection, vector<CString>& keys)
 {
-	GUTF8String strSettings;
-	if (!GetProfileCompressed(s_pszDocumentsSection + CString(_T("\\")) + strKey, s_pszSettings, strSettings))
+	ASSERT(m_pszRegistryKey != NULL);
+	HKEY hSecKey = GetSectionKey(pszSection);
+	if (hSecKey == NULL)
 		return false;
 
-	stringstream sin((const char*) strSettings);
-	XMLParser parser;
-	if (parser.Parse(sin))
-		pSettings->Load(*parser.GetRoot());
+	TCHAR szName[256];
+	DWORD dwNameChars;
+	for (DWORD dwSubKey = 0; ; ++dwSubKey)
+	{
+		dwNameChars = 255;
+		LONG lResult = ::RegEnumKeyEx(hSecKey, dwSubKey, szName, &dwNameChars, NULL, NULL, NULL, NULL);
+		if (lResult == ERROR_SUCCESS)
+		{
+			dwNameChars = max(0, min(255, dwNameChars));
+			szName[dwNameChars] = '\0';
+			keys.push_back(szName);
+		}
+		else if (lResult == ERROR_MORE_DATA)
+			continue;
+		else
+			break;
+	}
 
+	::RegCloseKey(hSecKey);
 	return true;
+}
+
+bool CDjViewApp::DeleteProfileKey(LPCTSTR pszSection, LPCTSTR pszKey)
+{
+	ASSERT(m_pszRegistryKey != NULL);
+	HKEY hSecKey = GetSectionKey(pszSection);
+	if (hSecKey == NULL)
+		return false;
+
+	bool bResult = (::RegDeleteKey(hSecKey, pszKey) == ERROR_SUCCESS);
+	::RegCloseKey(hSecKey);
+	return bResult;
+}
+
+bool CDjViewApp::LoadDocSettings(const CString& strKey, DocSettings* pSettings)
+{
+	CString strProfileKey = s_pszDocumentsSection + CString(_T("\\")) + strKey;
+	GUTF8String strSettings;
+	if (GetProfileCompressed(strProfileKey, s_pszSettings, strSettings))
+	{
+		// Found settings by key
+		stringstream sin((const char*) strSettings);
+		XMLParser parser;
+		if (parser.Parse(sin))
+			pSettings->Load(*parser.GetRoot());
+
+		return true;
+	}
+
+	// Try to locate by last known filename
+	vector<CString> keys;
+	if (!EnumProfileKeys(s_pszDocumentsSection, keys))
+		return false;
+
+	for (size_t i = 0; i < keys.size(); ++i)
+	{
+		CString strPrevKey = s_pszDocumentsSection + CString(_T("\\")) + keys[i];
+		CString strFileName = GetProfileString(strPrevKey, s_pszLastKnownLocation, _T(""));
+		if (AfxComparePath(strFileName, pSettings->strLastKnownLocation))
+		{
+			GUTF8String strSettings;
+			if (GetProfileCompressed(strPrevKey, s_pszSettings, strSettings))
+			{
+				// Found settings by file name
+				stringstream sin((const char*) strSettings);
+				XMLParser parser;
+				if (parser.Parse(sin))
+					pSettings->Load(*parser.GetRoot());
+			}
+
+			// Will be stored by the new name, copy the old values and remove
+			// the old key.
+			WriteProfileCompressed(strProfileKey, s_pszSettings, strSettings);
+			WriteProfileString(strProfileKey, s_pszLastKnownLocation, strFileName);
+			DeleteProfileKey(s_pszDocumentsSection, keys[i]);
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void CDjViewApp::SaveSettings()
@@ -750,11 +827,13 @@ void CDjViewApp::SaveSettings()
 	for (map<MD5, DocSettings>::const_iterator it = settings.begin(); it != settings.end(); ++it)
 	{
 		CString strKey = (*it).first.ToString();
+		CString strProfileKey = s_pszDocumentsSection + CString(_T("\\")) + strKey;
 
 		const DocSettings& settings = (*it).second;
 		GUTF8String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + settings.GetXML();
 
-		WriteProfileCompressed(s_pszDocumentsSection + CString(_T("\\")) + strKey, s_pszSettings, xml);
+		WriteProfileCompressed(strProfileKey, s_pszSettings, xml);
+		WriteProfileString(strProfileKey, s_pszLastKnownLocation, settings.strLastKnownLocation);
 	}
 
 	map<CString, DictionaryInfo>::iterator itDic;

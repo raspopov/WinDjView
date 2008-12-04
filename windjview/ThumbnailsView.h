@@ -58,9 +58,9 @@ public:
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual void OnInitialUpdate();
-	virtual BOOL OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll = TRUE);
 
-	virtual void OnPan(CSize szScroll);
+	virtual bool OnScrollBy(CSize szScrollBy, bool bDoScroll = true);
+	virtual bool OnScroll(UINT nScrollCode, UINT nPos, bool bDoScroll = true);
 
 // Implementation
 public:

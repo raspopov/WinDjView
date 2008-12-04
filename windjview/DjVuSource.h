@@ -29,11 +29,11 @@ typedef GList<DjVuTXT::Zone*> DjVuSelection;
 struct Annotation
 {
 	Annotation()
-		: bHideInactiveBorder(false), nBorderType(BorderNone), crBorder(RGB(0, 0, 0)),
-		  bHideInactiveFill(false), nFillType(FillSolid), crFill(RGB(255, 255, 0)),
-		  fTransparency(0.75), crForeground(RGB(0, 0, 0)),
-		  bAlwaysShowComment(false), bOvalShape(false), bIsLine(false),
-		  bHasArrow(false), nLineWidth(1) {}
+		: bHideInactiveBorder(false), nBorderType(BorderNone),
+		  crBorder(RGB(0, 0, 0)), nBorderWidth(1), bHideInactiveFill(false),
+		  nFillType(FillSolid), crFill(RGB(255, 255, 0)), fTransparency(0.75),
+		  crForeground(RGB(0, 0, 0)), bAlwaysShowComment(false),
+		  bOvalShape(false), bIsLine(false), bHasArrow(false), nLineWidth(1) {}
 
 	void UpdateBounds();
 	GUTF8String GetXML() const;
@@ -44,7 +44,11 @@ struct Annotation
 	{
 		BorderNone = 0,
 		BorderSolid = 1,
-		BorderXOR = 2
+		BorderXOR = 2,
+		BorderShadowIn = 3,
+		BorderShadowOut = 4,
+		BorderEtchedIn = 5,
+		BorderEtchedOut = 6
 	};
 
 	enum FillType
@@ -57,6 +61,7 @@ struct Annotation
 	bool bHideInactiveBorder;
 	int nBorderType;
 	COLORREF crBorder;
+	int nBorderWidth;
 	bool bHideInactiveFill;
 	int nFillType;
 	COLORREF crFill;
@@ -151,6 +156,8 @@ struct DocSettings : public Observable
 	int nDisplayMode;
 	int nRotate;
 	int nOpenSidebarTab;
+
+	CString strLastKnownLocation;
 
 	map<int, PageSettings> pageSettings;
 	list<Bookmark> bookmarks;

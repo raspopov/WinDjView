@@ -308,6 +308,14 @@ void Annotation::Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate)
 		nBorderType = BorderNone;
 	else if (pArea->border_type == GMapArea::XOR_BORDER)
 		nBorderType = BorderXOR;
+	else if (pArea->border_type == GMapArea::SHADOW_IN_BORDER)
+		nBorderType = BorderShadowIn;
+	else if (pArea->border_type == GMapArea::SHADOW_OUT_BORDER)
+		nBorderType = BorderShadowOut;
+	else if (pArea->border_type == GMapArea::SHADOW_EIN_BORDER)
+		nBorderType = BorderEtchedIn;
+	else if (pArea->border_type == GMapArea::SHADOW_EOUT_BORDER)
+		nBorderType = BorderEtchedOut;
 	else
 		nBorderType = BorderSolid;
 
@@ -316,6 +324,11 @@ void Annotation::Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate)
 		DWORD dwColor = pArea->border_color;
 		crBorder = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
 	}
+
+	if (pArea->get_shape_type() != GMapArea::RECT && nBorderType > BorderXOR)
+		nBorderType = BorderXOR;
+
+	nBorderWidth = max(2, min(32, pArea->border_width));
 
 	bHideInactiveBorder = !pArea->border_always_visible;
 
@@ -359,7 +372,7 @@ void Annotation::Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate)
 		{
 			bIsLine = true;
 			bHasArrow = pArea->has_arrow;
-			nLineWidth = pArea->line_width;
+			nLineWidth = max(1, min(32, pArea->line_width));
 
 			DWORD dwColor = pArea->foreground_color;
 			crForeground = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
@@ -989,6 +1002,7 @@ DjVuSource* DjVuSource::FromFile(const CString& strFileName)
 	map<MD5, DocSettings>::iterator it = settings.find(digest);
 	bool bExisting = (it != settings.end());
 	DocSettings* pSettings = &settings[digest];
+	pSettings->strLastKnownLocation = pszName;
 
 	if (!bExisting && pApplication != NULL)
 	{
@@ -1107,18 +1121,6 @@ GP<DjVuImage> DjVuSource::GetPage(int nPage, Observer* observer)
 	}
 
 	m_lock.Lock();
-	// Notify all waiting threads that image is ready
-	for (size_t i = 0; i < data.requests.size(); ++i)
-	{
-		data.requests[i]->pImage = pImage;
-		::SetEvent(data.requests[i]->hEvent);
-	}
-
-	ASSERT(data.hDecodingThread == ::GetCurrentThread());
-	::SetThreadPriority(data.hDecodingThread, data.nOrigThreadPriority);
-	data.hDecodingThread = NULL;
-	data.requests.clear();
-
 	if (pImage != NULL)
 	{
 		pImage->set_rotate(0);
@@ -1135,6 +1137,18 @@ GP<DjVuImage> DjVuSource::GetPage(int nPage, Observer* observer)
 		if (data.info.bHasText)
 			m_bHasText = true;
 	}
+
+	// Notify all waiting threads that image is ready
+	for (size_t i = 0; i < data.requests.size(); ++i)
+	{
+		data.requests[i]->pImage = pImage;
+		::SetEvent(data.requests[i]->hEvent);
+	}
+
+	ASSERT(data.hDecodingThread == ::GetCurrentThread());
+	::SetThreadPriority(data.hDecodingThread, data.nOrigThreadPriority);
+	data.hDecodingThread = NULL;
+	data.requests.clear();
 	m_lock.Unlock();
 
 	return pImage;

@@ -284,9 +284,8 @@
 #define ID_ZOOM_ACTUALSIZE              32783
 #define ID_ZOOM_STRETCH                 32784
 #define ID_ZOOM_CUSTOM                  32785
-#define ID_VIEW_ROTATE                  32786
-#define ID_ROTATE_RIGHT                 32787
-#define ID_ROTATE_LEFT                  32788
+#define ID_ROTATE_LEFT                  32787
+#define ID_ROTATE_RIGHT                 32788
 #define ID_ROTATE_180                   32789
 #define ID_VIEW_FIRSTPAGE               32790
 #define ID_VIEW_LASTPAGE                32791
