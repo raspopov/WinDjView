@@ -62,7 +62,7 @@ public:
 
 
 // This is a simple XML parser designed to parse well-formed
-// computer-degerated XML documents. No error information is given
+// computer-generated XML documents. No error information is given
 // if parsing fails. The parser skips all headers and processing
 // instructions (including DOCTYPE) and comments. The input encoding
 // is assumed to be UTF-8 (<?xml?> header is not processed).

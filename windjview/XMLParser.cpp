@@ -318,7 +318,7 @@ int XMLParser::nextChar()
 		if (next == EOF || (ch = in->rdbuf()->sbumpc()) == EOF)
 			throw errIllegalCharacter;
 		if ((next ^ 0x80) >= 0x40 || (ch ^ 0x80) >= 0x40
-				|| (cur < 0xE1 && next < 0xA0))
+				|| (cur == 0xE0 && next < 0xA0))
 			throw errIllegalCharacter;
 		cur = ((cur & 0xF) << 12) + ((next ^ 0x80) << 6) + (ch ^ 0x80);
 		ch = in->rdbuf()->sbumpc();
@@ -332,7 +332,7 @@ int XMLParser::nextChar()
 				|| (ch = in->rdbuf()->sbumpc()) == EOF)
 			throw errIllegalCharacter;
 		if ((next ^ 0x80) >= 0x40 || (next2 ^ 0x80) >= 0x40 || (ch ^ 0x80) >= 0x40
-				|| (cur < 0xF1 && next < 0x90))
+				|| (cur == 0xF0 && next < 0x90) || (cur == 0xF4 && next > 0x8F))
 			throw errIllegalCharacter;
 		cur = ((cur & 0x07) << 18) + ((next ^ 0x80) << 12) + ((next2 ^ 0x80) << 6)
 				+ (ch ^ 0x80);

@@ -249,7 +249,7 @@ int ReadUTF8Character(const char* str, int& nBytes)
 	else if (c < 0xF0)
 	{
 		if (s[1] == 0 || s[2] == 0 || (s[1] ^ 0x80) >= 0x40
-				|| (s[2] ^ 0x80) >= 0x40 || (c < 0xE1 && s[1] < 0xA0))
+				|| (s[2] ^ 0x80) >= 0x40 || (c == 0xE0 && s[1] < 0xA0))
 			return -1;
 		nBytes = 3;
 		return ((s[0] & 0xF) << 12) + ((s[1] ^ 0x80) << 6) + (s[2] ^ 0x80);
@@ -258,7 +258,7 @@ int ReadUTF8Character(const char* str, int& nBytes)
 	{
 		if (s[1] == 0 || s[2] == 0 || s[3] == 0 || (s[1] ^ 0x80) >= 0x40
 				|| (s[2] ^ 0x80) >= 0x40 || (s[3] ^ 0x80) >= 0x40
-				|| (c < 0xF1 && s[1] < 0x90))
+				|| (c == 0xF0 && s[1] < 0x90) || (c == 0xF4 && s[1] > 0x8F))
 			return -1;
 		nBytes = 4;
 		return ((s[0] & 0x07) << 18) + ((s[1] ^ 0x80) << 12) + ((s[2] ^ 0x80) << 6)
