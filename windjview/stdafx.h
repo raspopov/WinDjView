@@ -44,8 +44,6 @@
 #pragma warning(disable: 4200 4786)
 #endif
 
-#define WM_ENDDIALOG (WM_APP + 4)
-
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
 
 // Turn off warnings in VC++ 2005
@@ -111,6 +109,18 @@ using namespace std;
 #include "libdjvu/DataPool.h"
 #include "libdjvu/DjVuText.h"
 #include "libdjvu/DjVmNav.h"
+
+// Application messages
+#define WM_PAGE_DECODED (WM_APP + 1)
+#define WM_PAGE_RENDERED (WM_APP + 2)
+#define WM_THUMBNAIL_RENDERED (WM_APP + 3)
+#define WM_ENDDIALOG (WM_APP + 4)
+#define WM_EXPAND_NAV (WM_APP + 5)
+#define WM_COLLAPSE_NAV (WM_APP + 6)
+#define WM_CLICKED_NAV_TAB (WM_APP + 7)
+#define WM_SHOW_SETTINGS (WM_APP + 8)
+#define WM_MDI_ACTIVATE (WM_APP + 9)
+#define WM_SHOWPARENT (WM_APP + 10)
 
 #ifndef DWORD_PTR
 #define DWORD_PTR UINT_PTR

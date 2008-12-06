@@ -22,8 +22,6 @@
 
 #include "Drawing.h"
 
-#define WM_MDI_ACTIVATE (WM_APP + 9)
-
 
 // CTabbedMDIWnd
 

@@ -41,9 +41,6 @@ inline bool IsStandardZoom(int nZoomType, double fZoom)
 CString MakePreviewString(const GUTF8String& text, int nStart, int nEnd);
 
 
-#define WM_PAGE_DECODED (WM_APP + 1)
-#define WM_PAGE_RENDERED (WM_APP + 2)
-
 class CDjVuView : public CMyScrollView, public Observer, public Observable
 {
 protected: // create from serialization only
@@ -79,7 +76,6 @@ public:
 	int GetLayout() const { return m_nLayout; }
 	int GetRotate() const { return m_nRotate; }
 
-	void ResumeDecoding();
 	bool UpdatePageInfoFrom(CDjVuView* pFrom);
 	void CopyBitmapsFrom(CDjVuView* pFrom, bool bMove = false);
 	void CopyBitmapFrom(CDjVuView* pFrom, int nPage);
@@ -182,6 +178,7 @@ protected:
 	CEvent m_pageRendered;
 	bool m_bShiftDown, m_bControlDown;
 	bool m_bNeedUpdate;
+	bool m_bUpdateBitmaps;
 	UINT m_nTimerID;
 
 	COffscreenDC m_offscreenDC;
@@ -444,7 +441,8 @@ protected:
 	afx_msg void OnZoomToSelection();
 	afx_msg void OnSwitchFocus(UINT nID);
 	afx_msg void OnUpdateSwitchFocus(CCmdUI* pCmdUI);
-	afx_msg LRESULT OnMDIActivate(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	afx_msg LRESULT OnShowParent(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };
 

@@ -101,5 +101,6 @@ protected:
 	afx_msg void OnExpandNav();
 	afx_msg void OnCollapseNav();
 	afx_msg LRESULT OnClickedNavTab(WPARAM wparam, LPARAM lParam);
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	DECLARE_MESSAGE_MAP()
 };

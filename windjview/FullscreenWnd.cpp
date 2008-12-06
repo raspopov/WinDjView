@@ -98,16 +98,8 @@ void CFullscreenWnd::Hide()
 		m_pView->SetDocument(NULL);
 		m_pView->DestroyWindow();
 
-		m_pOwner->ResumeDecoding();
-
-		CThumbnailsView* pThumbnails = m_pOwner->GetMDIChild()->GetThumbnailsView();
-		if (pThumbnails != NULL)
-			pThumbnails->ResumeDecoding();
-
 		m_pOwner->GetTopLevelParent()->ShowWindow(SW_SHOW);
 		m_pOwner->GetTopLevelParent()->SetForegroundWindow();
-
-		m_pOwner->UpdateVisiblePages();
 	}
 
 	ShowWindow(SW_HIDE);

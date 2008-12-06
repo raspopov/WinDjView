@@ -70,6 +70,7 @@ BEGIN_MESSAGE_MAP(CMDIChild, CWnd)
 	ON_MESSAGE_VOID(WM_EXPAND_NAV, OnExpandNav)
 	ON_MESSAGE_VOID(WM_COLLAPSE_NAV, OnCollapseNav)
 	ON_MESSAGE(WM_CLICKED_NAV_TAB, OnClickedNavTab)
+	ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
 
@@ -291,6 +292,9 @@ void CMDIChild::RecalcLayout()
 
 void CMDIChild::HideNavPane(bool bHide)
 {
+	if (bHide == m_bNavHidden)
+		return;
+
 	m_bNavHidden = bHide;
 	RecalcLayout();
 
@@ -497,4 +501,13 @@ void CMDIChild::OnUpdate(const Observable* source, const Message* message)
 			pBookmarks->LoadUserBookmarks();
 		}
 	}
+}
+
+void CMDIChild::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	CWnd::OnShowWindow(bShow, nStatus);
+
+	CWnd* pParent = GetParent();
+	if (pParent == NULL || pParent != NULL && pParent->IsWindowVisible())
+		SendMessageToVisibleDescendants(m_hWnd, WM_SHOWPARENT, bShow, nStatus);
 }

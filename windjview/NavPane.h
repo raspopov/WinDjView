@@ -28,11 +28,6 @@ class CChildFrame;
 
 // CNavPaneWnd
 
-#define WM_EXPAND_NAV (WM_APP + 5)
-#define WM_COLLAPSE_NAV (WM_APP + 6)
-#define WM_CLICKED_NAV_TAB (WM_APP + 7)
-#define WM_SHOW_SETTINGS (WM_APP + 8)
-
 class CNavPaneWnd : public CWnd, public Observer, public Observable
 {
 	DECLARE_DYNCREATE(CNavPaneWnd)
@@ -116,5 +111,6 @@ protected:
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnThemeChanged();
 	afx_msg void OnSysColorChange();
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	DECLARE_MESSAGE_MAP()
 };

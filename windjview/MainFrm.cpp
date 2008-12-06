@@ -103,6 +103,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_WINDOW_PREV, OnWindowPrev)
 	ON_WM_ERASEBKGND()
 	ON_WM_NCACTIVATE()
+	ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -1792,4 +1793,13 @@ BOOL CMainFrame::OnNcActivate(BOOL bActive)
 		return false;
 
 	return CFrameWnd::OnNcActivate(bActive);
+}
+
+void CMainFrame::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	CFrameWnd::OnShowWindow(bShow, nStatus);
+
+	CWnd* pParent = GetParent();
+	if (pParent == NULL || pParent != NULL && pParent->IsWindowVisible())
+		SendMessageToVisibleDescendants(m_hWnd, WM_SHOWPARENT, bShow, nStatus);
 }

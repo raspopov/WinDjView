@@ -2355,17 +2355,18 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 			strMessage.ReleaseBuffer();
 			strMessage.Replace(_T("\n"), _T("\r\n"));
 
-			RECT rc;
+			RECT rc, rcClient;
 			::GetWindowRect(hwndMessage, &rc);
+			::GetClientRect(hwndMessageBox, &rcClient);
 			POINT pt;
-			pt.x = rc.left - 2;
+			pt.x = rc.left;
 			pt.y = rc.top;
 			::ScreenToClient(hwndMessageBox, &pt);
 
 			// Create the alternate EDIT window
 			HWND hwndEdit = ::CreateWindowEx(0, _T("edit"), strMessage,
 					ES_READONLY | ES_MULTILINE | WS_CHILD,
-					pt.x, pt.y, rc.right - rc.left + 4, rc.bottom - rc.top,
+					pt.x, pt.y, rcClient.right - pt.x, rc.bottom - rc.top,
 					hwndMessageBox, (HMENU) 0xFFFE, NULL, NULL);
 
 			HFONT hFont = (HFONT) ::SendMessage(hwndMessage, WM_GETFONT, 0, 0);

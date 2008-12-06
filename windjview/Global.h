@@ -102,6 +102,8 @@ CString FormatDouble(double fValue);
 void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, double& value, double def = 0.0, LPCTSTR pszSuffix = NULL);
 void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0, LPCTSTR pszSuffix = NULL);
 
+void SendMessageToVisibleDescendants(HWND hWnd, UINT message, WPARAM wParam = 0, LPARAM lParam = 0);
+
 inline CRect GetClientRect(const CWnd* pWnd)
 {
 	ASSERT(pWnd != NULL);

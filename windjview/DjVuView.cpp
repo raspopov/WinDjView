@@ -247,7 +247,8 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND(ID_ZOOM_TO_SELECTION, OnZoomToSelection)
 	ON_COMMAND_RANGE(ID_NEXT_PANE, ID_PREV_PANE, OnSwitchFocus)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_NEXT_PANE, ID_PREV_PANE, OnUpdateSwitchFocus)
-	ON_MESSAGE(WM_MDI_ACTIVATE, OnMDIActivate)
+	ON_WM_SHOWWINDOW()
+	ON_MESSAGE(WM_SHOWPARENT, OnShowParent)
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -266,7 +267,7 @@ CDjVuView::CDjVuView()
 	  m_bPanning(false), m_bHoverIsCustom(false), m_bDraggingRect(false),
 	  m_nSelectionPage(-1), m_pHoverAnno(NULL), m_bIgnoreMouseLeave(false),
 	  m_pClickedAnno(NULL), m_bDraggingLink(false), m_bPopupMenu(false),
-	  m_bClickedCustom(false)
+	  m_bClickedCustom(false), m_bUpdateBitmaps(false)
 {
 	m_nMargin = c_nDefaultMargin;
 	m_nShadowMargin = c_nDefaultShadowMargin;
@@ -1076,10 +1077,8 @@ void CDjVuView::RenderPage(int nPage, int nTimeout, bool bUpdateWindow)
 				nextPage.Init(m_pSource, nPage + 1);
 		}
 
-		UpdateLayout(RECALC);
+		UpdateLayout();
 		ScrollToPosition(CPoint(GetScrollPos(SB_HORZ), 0));
-
-		UpdateVisiblePages();
 	}
 	else if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 	{
@@ -1748,17 +1747,15 @@ void CDjVuView::UpdateVisiblePages()
 	if (m_nPage == -1 || m_pRenderThread->IsPaused())
 		return;
 
-	bool bUpdateImages = (m_nType != Normal || !!IsWindowVisible());
-
 	m_pRenderThread->PauseJobs();
 	m_pRenderThread->RemoveAllJobs();
 
 	if (m_nLayout == SinglePage)
-		UpdatePagesCacheSingle(bUpdateImages);
+		UpdatePagesCacheSingle(m_bUpdateBitmaps);
 	else if (m_nLayout == Facing)
-		UpdatePagesCacheFacing(bUpdateImages);
+		UpdatePagesCacheFacing(m_bUpdateBitmaps);
 	else if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
-		UpdatePagesCacheContinuous(bUpdateImages);
+		UpdatePagesCacheContinuous(m_bUpdateBitmaps);
 
 	m_pRenderThread->ResumeJobs();
 }
@@ -5647,11 +5644,6 @@ void CDjVuView::OnViewFullscreen()
 		return;
 	}
 
-	m_pRenderThread->PauseJobs();
-	CThumbnailsView* pThumbnails = GetMDIChild()->GetThumbnailsView();
-	if (pThumbnails != NULL)
-		pThumbnails->PauseDecoding();
-
 	CFullscreenWnd* pWnd = GetMainFrame()->GetFullscreenWnd();
 
 	CDjVuView* pView = (CDjVuView*)RUNTIME_CLASS(CDjVuView)->CreateObject();
@@ -5697,14 +5689,6 @@ void CDjVuView::OnViewFullscreen()
 
 	pView->UpdateLayout();
 	pView->UpdateWindow();
-}
-
-void CDjVuView::ResumeDecoding()
-{
-	m_pRenderThread->ResumeJobs();
-
-	UpdateLayout();
-	Invalidate();
 }
 
 int CDjVuView::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
@@ -6172,7 +6156,6 @@ void CDjVuView::UpdateMagnifyWnd()
 			CPoint(pMagnifyWnd->GetViewWidth() / 2, pMagnifyWnd->GetViewHeight() / 2);
 
 	pView->OnScrollBy(ptOffset - pView->GetScrollPosition());
-	pView->UpdateVisiblePages();
 
 	pView->SetRedraw(true);
 	pView->Invalidate();
@@ -6648,14 +6631,18 @@ void CDjVuView::OnUpdateSwitchFocus(CCmdUI* pCmdUI)
 	pCmdUI->Enable();
 }
 
-LRESULT CDjVuView::OnMDIActivate(WPARAM wParam, LPARAM lParam)
+void CDjVuView::OnShowWindow(BOOL bShow, UINT nStatus)
 {
-	bool bActive = !!wParam;
+	CMyScrollView::OnShowWindow(bShow, nStatus);
 
-	if (bActive)
-		ResumeDecoding();
-	else
-		m_pRenderThread->PauseJobs();
+	m_bUpdateBitmaps = true;
+	UpdateVisiblePages();
+}
+
+LRESULT CDjVuView::OnShowParent(WPARAM wParam, LPARAM lParam)
+{
+	m_bUpdateBitmaps = !!wParam;
+	UpdateVisiblePages();
 
 	return 0;
 }

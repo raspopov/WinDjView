@@ -62,7 +62,7 @@ BEGIN_MESSAGE_MAP(CThumbnailsView, CMyScrollView)
 	ON_MESSAGE(WM_THUMBNAIL_RENDERED, OnThumbnailRendered)
 	ON_WM_SHOWWINDOW()
 	ON_MESSAGE(WM_SHOW_SETTINGS, OnShowSettings)
-	ON_MESSAGE(WM_MDI_ACTIVATE, OnMDIActivate)
+	ON_MESSAGE(WM_SHOWPARENT, OnShowParent)
 END_MESSAGE_MAP()
 
 // CThumbnailsView construction/destruction
@@ -326,7 +326,7 @@ void CThumbnailsView::UpdateAllThumbnails()
 		m_pIdleThread->RejectCurrentJob();
 	}
 
-	UpdateLayout(RECALC);
+	UpdateLayout();
 
 	Invalidate();
 	UpdateWindow();
@@ -340,9 +340,7 @@ BOOL CThumbnailsView::OnEraseBkgnd(CDC* pDC)
 void CThumbnailsView::OnSize(UINT nType, int cx, int cy)
 {
 	if (m_nPageCount != 0)
-	{
 		UpdateLayout(TOP);
-	}
 
 	CMyScrollView::OnSize(nType, cx, cy);
 }
@@ -508,7 +506,6 @@ LRESULT CThumbnailsView::OnShowSettings(WPARAM wParam, LPARAM lParam)
 	tpm.cbSize = sizeof(tpm);
 	tpm.rcExclude = rcButton;
 
-
 	if (m_nThumbnailSize == 0)
 		pPopup->EnableMenuItem(ID_THUMBNAILS_REDUCE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	if (m_nThumbnailSize == CAppSettings::ThumbnailSizes - 1)
@@ -517,31 +514,32 @@ LRESULT CThumbnailsView::OnShowSettings(WPARAM wParam, LPARAM lParam)
 	int nID = pPopup->TrackPopupMenuEx(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
 			rcButton.left, rcButton.bottom, this, &tpm);
 
-	int nThumbnailSize = m_nThumbnailSize;
 	if (nID == ID_THUMBNAILS_REDUCE)
-		--nThumbnailSize;
+		ResizeThumbnails(m_nThumbnailSize - 1);
 	else if (nID == ID_THUMBNAILS_ENLARGE)
-		++nThumbnailSize;
-	nThumbnailSize = max(0, min(CAppSettings::ThumbnailSizes - 1, nThumbnailSize));
-
-	if (nThumbnailSize != m_nThumbnailSize)
-	{
-		m_nThumbnailSize = nThumbnailSize;
-		m_szThumbnail.cx = CAppSettings::thumbnailWidth[m_nThumbnailSize];
-		m_szThumbnail.cy = CAppSettings::thumbnailHeight[m_nThumbnailSize];
-
-		if (m_pThread != NULL && m_pIdleThread != NULL)
-		{
-			m_pThread->SetThumbnailSize(m_szThumbnail);
-			m_pIdleThread->SetThumbnailSize(m_szThumbnail);
-		}
-
-		UpdateAllThumbnails();
-	}
-
-	theApp.GetAppSettings()->nThumbnailSize = nThumbnailSize;
+		ResizeThumbnails(m_nThumbnailSize + 1);
 
 	return 0;
+}
+
+void CThumbnailsView::ResizeThumbnails(int nThumbnailSize)
+{
+	nThumbnailSize = max(0, min(CAppSettings::ThumbnailSizes - 1, nThumbnailSize));
+	theApp.GetAppSettings()->nThumbnailSize = nThumbnailSize;
+	if (nThumbnailSize == m_nThumbnailSize)
+		return;
+
+	m_nThumbnailSize = nThumbnailSize;
+	m_szThumbnail.cx = CAppSettings::thumbnailWidth[m_nThumbnailSize];
+	m_szThumbnail.cy = CAppSettings::thumbnailHeight[m_nThumbnailSize];
+
+	if (m_pThread != NULL && m_pIdleThread != NULL)
+	{
+		m_pThread->SetThumbnailSize(m_szThumbnail);
+		m_pIdleThread->SetThumbnailSize(m_szThumbnail);
+	}
+
+	UpdateAllThumbnails();
 }
 
 bool CThumbnailsView::OnScroll(UINT nScrollCode, UINT nPos, bool bDoScroll)
@@ -581,6 +579,17 @@ BOOL CThumbnailsView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 	if (CMyScrollView::OnMouseWheel(nFlags, zDelta, point))
 	{
 		UpdateWindow();
+		return true;
+	}
+
+	if ((nFlags & MK_CONTROL) != 0)
+	{
+		// Resize thumbnails
+		if (theApp.GetAppSettings()->bInvertWheelZoom == (zDelta < 0))
+			ResizeThumbnails(m_nThumbnailSize - 1);
+		else if (zDelta != 0)
+			ResizeThumbnails(m_nThumbnailSize + 1);
+
 		return true;
 	}
 
@@ -907,14 +916,6 @@ void CThumbnailsView::RecalcPageRects(int nPage)
 		page.rcBitmap.bottom + nFrameWidth + nNumberSkip), CSize(nNumberWidth, nNumberHeight));
 }
 
-void CThumbnailsView::OnShowWindow(BOOL bShow, UINT nStatus)
-{
-	CMyScrollView::OnShowWindow(bShow, nStatus);
-
-	m_bVisible = bShow && GetParent()->IsWindowVisible();
-	UpdateVisiblePages();
-}
-
 int CThumbnailsView::GetPageFromPoint(CPoint point)
 {
 	point += GetScrollPosition();
@@ -946,23 +947,6 @@ void CThumbnailsView::EnsureVisible(int nPage)
 	OnScrollBy(CSize(0, nScrollBy));
 }
 
-void CThumbnailsView::PauseDecoding()
-{
-	m_pThread->PauseJobs();
-	m_pThread->RemoveAllJobs();
-
-	m_pIdleThread->PauseJobs();
-	m_pIdleThread->RemoveAllJobs();
-}
-
-void CThumbnailsView::ResumeDecoding()
-{
-	m_pThread->ResumeJobs();
-	m_pIdleThread->ResumeJobs();
-
-	UpdateLayout(TOP);
-}
-
 void CThumbnailsView::SettingsChanged()
 {
 	CDisplaySettings appSettings = *theApp.GetDisplaySettings();
@@ -973,19 +957,23 @@ void CThumbnailsView::SettingsChanged()
 		m_displaySetting = appSettings;
 
 		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
-		{
 			m_pages[nPage].DeleteBitmap();
-			InvalidatePage(nPage);
-		}
-	}
 
+		UpdateAllThumbnails();
+	}
+}
+
+void CThumbnailsView::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	CMyScrollView::OnShowWindow(bShow, nStatus);
+
+	m_bVisible = bShow && GetParent()->IsWindowVisible();
 	UpdateVisiblePages();
 }
 
-LRESULT CThumbnailsView::OnMDIActivate(WPARAM wParam, LPARAM lParam)
+LRESULT CThumbnailsView::OnShowParent(WPARAM wParam, LPARAM lParam)
 {
-	bool bActive = !!wParam;
-	m_bVisible = bActive && IsWindowVisible();
+	m_bVisible = !!wParam;
 	UpdateVisiblePages();
 	return 0;
 }

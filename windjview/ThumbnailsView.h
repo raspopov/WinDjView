@@ -28,8 +28,6 @@ class DjVuSource;
 class CThumbnailsThread;
 
 
-#define WM_THUMBNAIL_RENDERED (WM_APP + 3)
-
 // CThumbnailsView
 
 class CThumbnailsView : public CMyScrollView, public Observable, public Observer
@@ -48,9 +46,6 @@ public:
 	void SetCurrentPage(int nPage);
 	void SetSelectedPage(int nPage);
 	void EnsureVisible(int nPage);
-
-	void PauseDecoding();
-	void ResumeDecoding();
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -101,6 +96,7 @@ protected:
 	bool InvalidatePage(int nPage);
 	void DrawPage(CDC* pDC, int nPage);
 	int GetPageFromPoint(CPoint point);
+	void ResizeThumbnails(int nThumbnailSize);
 	void UpdateAllThumbnails();
 
 	struct Page
@@ -135,8 +131,8 @@ protected:
 	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
 	afx_msg void OnDestroy();
 	afx_msg LRESULT OnThumbnailRendered(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg LRESULT OnShowSettings(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnMDIActivate(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	afx_msg LRESULT OnShowParent(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };

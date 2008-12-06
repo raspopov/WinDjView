@@ -68,6 +68,7 @@ BEGIN_MESSAGE_MAP(CNavPaneWnd, CWnd)
 	ON_WM_SETFOCUS()
 	ON_MESSAGE_VOID(WM_THEMECHANGED, OnThemeChanged)
 	ON_WM_SYSCOLORCHANGE()
+	ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
 
@@ -774,4 +775,13 @@ void CNavPaneWnd::OnThemeChanged()
 void CNavPaneWnd::OnSysColorChange()
 {
 	Invalidate();
+}
+
+void CNavPaneWnd::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	CWnd::OnShowWindow(bShow, nStatus);
+
+	CWnd* pParent = GetParent();
+	if (pParent == NULL || pParent != NULL && pParent->IsWindowVisible())
+		SendMessageToVisibleDescendants(m_hWnd, WM_SHOWPARENT, bShow, nStatus);
 }
