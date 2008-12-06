@@ -66,6 +66,7 @@ LINK_OBJS = \
 	"$(INTDIR)\LocalizedStringDlg.obj" \
 	"$(INTDIR)\MyDropTarget.obj" \
 	"$(INTDIR)\MyFileDialog.obj" \
+	"$(INTDIR)\MyTheme.obj" \
 	"$(INTDIR)\stdafx.obj" \
 	"$(INTDIR)\WarningsDlg.obj" \
 	"$(INTDIR)\XMLParser.obj" \
@@ -82,6 +83,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\LocalizedStringDlg.obj" : MyDropTarget.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDropTarget.obj" : MyDropTarget.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyFileDialog.obj" : MyFileDialog.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MyTheme.obj" : MyTheme.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\WarningsDlg.obj" : WarningsDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\XMLParser.obj" : XMLParser.cpp "$(INTDIR)" $(PCH)
 
