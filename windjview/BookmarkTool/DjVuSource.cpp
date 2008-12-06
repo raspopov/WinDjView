@@ -1,18 +1,19 @@
 //	WinDjView
-//	Copyright (C) 2004-2007 Andrew Zhezherun
+//	Copyright (C) 2004-2008 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License version 2
-//	as published by the Free Software Foundation.
+//	it under the terms of the GNU General Public License as published by
+//	the Free Software Foundation; either version 2 of the License, or
+//	(at your option) any later version.
 //
 //	This program is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program; if not, write to the Free Software
-//	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//	You should have received a copy of the GNU General Public License along
+//	with this program; if not, write to the Free Software Foundation, Inc.,
+//	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
@@ -52,6 +53,15 @@ void PageInfo::Update(GP<DjVuImage> pImage)
 
 		bHasText = !!(pImage->get_djvu_file()->text != NULL);
 		bDecoded = true;
+	}
+
+	try
+	{
+		if (bHasText && !bTextDecoded)
+			DecodeText(pImage->get_text());
+	}
+	catch (GException&)
+	{
 	}
 
 	try
@@ -134,7 +144,9 @@ static const TCHAR pszAttrBorderHideInactive[] = _T("border-hide-inactive");
 static const TCHAR pszAttrFill[] = _T("fill");
 static const TCHAR pszAttrFillColor[] = _T("fill-color");
 static const TCHAR pszAttrFillTransparency[] = _T("fill-transparency");
+static const TCHAR pszAttrFillHideInactive[] = _T("fill-hide-inactive");
 static const TCHAR pszAttrComment[] = _T("comment");
+static const TCHAR pszAttrCommentAlwaysShow[] = _T("always-show-comment");
 static const TCHAR pszAttrURL[] = _T("url");
 
 static const TCHAR pszTagRect[] = _T("rect");
@@ -145,12 +157,18 @@ static const TCHAR pszAttrBottom[] = _T("bottom");
 
 void Annotation::UpdateBounds()
 {
-	if (rects.empty())
-		return;
-
-	rectBounds = rects[0];
-	for (size_t i = 1; i < rects.size(); ++i)
-		rectBounds.recthull(GRect(rectBounds), rects[i]);
+	if (!rects.empty())
+	{
+		rectBounds = rects[0];
+		for (size_t i = 1; i < rects.size(); ++i)
+			rectBounds.recthull(GRect(rectBounds), rects[i]);
+	}
+	else if (!points.empty())
+	{
+		rectBounds = GRect(points[0].first, points[0].second, 1, 1);
+		for (size_t i = 1; i < points.size(); ++i)
+			rectBounds.recthull(GRect(rectBounds), GRect(points[i].first, points[i].second, 1, 1));
+	}
 }
 
 GUTF8String Annotation::GetXML() const
@@ -169,20 +187,28 @@ GUTF8String Annotation::GetXML() const
 			pszAttrBorderHideInactive, static_cast<int>(bHideInactiveBorder));
 
 	CString strFill;
-	strFill.Format(_T("%s=\"%d\" %s=\"#%06x\" %s=\"%d%%\""),
+	strFill.Format(_T("%s=\"%d\" %s=\"#%06x\" %s=\"%d%%\" %s=\"%d\""),
 			pszAttrFill, nFillType, pszAttrFillColor, crFill,
-			pszAttrFillTransparency, static_cast<int>(fTransparency*100 + 0.5));
+			pszAttrFillTransparency, static_cast<int>(fTransparency*100 + 0.5),
+			pszAttrFillHideInactive, static_cast<int>(bHideInactiveFill));
 
 	CString strBegin;
-	strBegin.Format(_T("<%s %s\n%s\n%s=\""), pszTagAnnotation,
-			strBorder, strFill, pszAttrComment);
+	strBegin.Format(_T("<%s %s %s %s=\"%d\" %s=\""),
+			pszTagAnnotation, strBorder, strFill, pszAttrCommentAlwaysShow,
+			static_cast<int>(bAlwaysShowComment), pszAttrComment);
 
 	CString strEnd;
-	strEnd.Format(_T("\" >\n%s</%s>\n"), strRects, pszTagAnnotation);
+	strEnd.Format(_T(">\n%s</%s>\n"), strRects, pszTagAnnotation);
+
+	GUTF8String strURLAttr;
+	if (strURL.length() > 0)
+	{
+		strURLAttr = GUTF8String(reinterpret_cast<const unsigned short*>(pszAttrURL))
+				+ "=\"" + strURL.toEscaped() + "\" ";
+	}
 
 	return MakeUTF8String(strBegin) + strComment.toEscaped() + "\" "
-		+ GUTF8String(reinterpret_cast<const unsigned short*>(pszAttrURL)) + "=\""
-		+ strURL.toEscaped() + MakeUTF8String(strEnd);
+		+ strURLAttr + MakeUTF8String(strEnd);
 }
 
 void Annotation::Load(const XMLNode& node)
@@ -201,9 +227,9 @@ void Annotation::Load(const XMLNode& node)
 	if (node.GetColorAttribute(pszAttrBorderColor, color))
 		crBorder = color;
 
-	int nHideInactive;
-	if (node.GetIntAttribute(pszAttrBorderHideInactive, nHideInactive))
-		bHideInactiveBorder = !!nHideInactive;
+	int nHideBorder;
+	if (node.GetIntAttribute(pszAttrBorderHideInactive, nHideBorder))
+		bHideInactiveBorder = !!nHideBorder;
 
 	int fillType;
 	if (node.GetIntAttribute(pszAttrFill, fillType))
@@ -222,9 +248,17 @@ void Annotation::Load(const XMLNode& node)
 			fTransparency = nPercent / 100.0;
 	}
 
+	int nHideFill;
+	if (node.GetIntAttribute(pszAttrFillHideInactive, nHideFill))
+		bHideInactiveFill = !!nHideFill;
+
 	wstring str;
 	if (node.GetAttribute(pszAttrComment, str))
 		strComment = MakeUTF8String(str);
+
+	int nShowComment;
+	if (node.GetIntAttribute(pszAttrCommentAlwaysShow, nShowComment))
+		bAlwaysShowComment = !!nShowComment;
 
 	if (node.GetAttribute(pszAttrURL, str))
 		strURL = MakeUTF8String(str);
@@ -250,6 +284,22 @@ void Annotation::Load(const XMLNode& node)
 	UpdateBounds();
 }
 
+static void Rotate(const CSize& szPage, int nRotate, GRect& rect)
+{
+	GRect input(0, 0, szPage.cx, szPage.cy);
+	GRect output(0, 0, szPage.cx, szPage.cy);
+
+	if ((nRotate % 2) != 0)
+		swap(input.xmax, input.ymax);
+
+	GRectMapper mapper;
+	mapper.clear();
+	mapper.set_input(input);
+	mapper.set_output(output);
+	mapper.rotate(nRotate);
+	mapper.unmap(rect);
+}
+
 void Annotation::Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate)
 {
 	sourceArea = pArea;
@@ -258,6 +308,14 @@ void Annotation::Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate)
 		nBorderType = BorderNone;
 	else if (pArea->border_type == GMapArea::XOR_BORDER)
 		nBorderType = BorderXOR;
+	else if (pArea->border_type == GMapArea::SHADOW_IN_BORDER)
+		nBorderType = BorderShadowIn;
+	else if (pArea->border_type == GMapArea::SHADOW_OUT_BORDER)
+		nBorderType = BorderShadowOut;
+	else if (pArea->border_type == GMapArea::SHADOW_EIN_BORDER)
+		nBorderType = BorderEtchedIn;
+	else if (pArea->border_type == GMapArea::SHADOW_EOUT_BORDER)
+		nBorderType = BorderEtchedOut;
 	else
 		nBorderType = BorderSolid;
 
@@ -266,6 +324,11 @@ void Annotation::Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate)
 		DWORD dwColor = pArea->border_color;
 		crBorder = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
 	}
+
+	if (pArea->get_shape_type() != GMapArea::RECT && nBorderType > BorderXOR)
+		nBorderType = BorderXOR;
+
+	nBorderWidth = max(2, min(32, pArea->border_width));
 
 	bHideInactiveBorder = !pArea->border_always_visible;
 
@@ -282,28 +345,49 @@ void Annotation::Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate)
 		crFill = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
 	}
 
-	fTransparency = 0.75;
+	fTransparency = 1.0 - max(0, min(100, pArea->opacity)) / 100.0;
+
+	if (pArea->is_text)
+	{
+		bAlwaysShowComment = true;
+		DWORD dwColor = pArea->foreground_color;
+		crForeground = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
+	}
+
 	strComment = pArea->comment;
 	strURL = pArea->url;
 
-	GRect rect = pArea->get_bound_rect();
-	if (nRotate != 0)
+	if (pArea->get_shape_type() == GMapArea::LINE || pArea->get_shape_type() == GMapArea::POLY)
 	{
-		GRect input(0, 0, szPage.cx, szPage.cy);
-		GRect output(0, 0, szPage.cx, szPage.cy);
+		GMapPoly* pPoly = (GMapPoly*)(GMapArea*) pArea;
+		for (int i = 0; i < pPoly->get_points_num(); ++i)
+		{
+			GRect rect(pPoly->get_x(i), pPoly->get_y(i), 1, 1);
+			if (nRotate != 0)
+				Rotate(szPage, nRotate, rect);
+			points.push_back(make_pair(rect.xmin, rect.ymin));
+		}
 
-		if ((nRotate % 2) != 0)
-			swap(input.xmax, input.ymax);
+		if (pArea->is_line)
+		{
+			bIsLine = true;
+			bHasArrow = pArea->has_arrow;
+			nLineWidth = max(1, min(32, pArea->line_width));
 
-		GRectMapper mapper;
-		mapper.clear();
-		mapper.set_input(input);
-		mapper.set_output(output);
-		mapper.rotate(nRotate);
-		mapper.unmap(rect);
+			DWORD dwColor = pArea->foreground_color;
+			crForeground = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
+		}
+	}
+	else
+	{
+		if (pArea->get_shape_type() == GMapArea::OVAL)
+			bOvalShape = true;
+
+		rects.push_back(pArea->get_bound_rect());
+		if (nRotate != 0)
+			Rotate(szPage, nRotate, rects.back());
 	}
 
-	rects.push_back(rect);
 	UpdateBounds();
 }
 
@@ -493,27 +577,40 @@ static const TCHAR pszAttrZoomType[] = _T("zoom-type");
 static const TCHAR pszAttrZoom[] = _T("zoom");
 static const TCHAR pszAttrLayout[] = _T("layout");
 static const TCHAR pszAttrFirstPage[] = _T("first-page");
+static const TCHAR pszAttrRightToLeft[] = _T("right-to-left");
 static const TCHAR pszAttrDisplayMode[] = _T("display-mode");
 static const TCHAR pszAttrRotate[] = _T("rotate");
+static const TCHAR pszAttrOpenSidebarTab[] = _T("sidebar-tab");
 static const TCHAR pszTagBookmarks[] = _T("bookmarks");
+static const TCHAR pszTagContent[] = _T("content");
 
 DocSettings::DocSettings()
 	: nPage(-1), ptOffset(0, 0), nZoomType(-10), fZoom(100.0), nLayout(-1),
-	  bFirstPageAlone(false), nDisplayMode(-1), nRotate(0)
+	  bFirstPageAlone(false), bRightToLeft(false), nDisplayMode(-1), nRotate(0),
+	  nOpenSidebarTab(-1)
 {
 }
 
-GUTF8String DocSettings::GetXML() const
+GUTF8String DocSettings::GetXML(bool skip_view_settings) const
 {
 	GUTF8String result;
 
 	CString strHead;
-	strHead.Format(_T("<%s %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%.2lf%%\"")
-		_T(" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" >\n"),
-		pszTagSettings, pszAttrStartPage, nPage, pszAttrOffsetX, ptOffset.x,
-		pszAttrOffsetY, ptOffset.y, pszAttrZoomType, nZoomType, pszAttrZoom, fZoom,
-		pszAttrLayout, nLayout, pszAttrFirstPage, static_cast<int>(bFirstPageAlone),
-		pszAttrDisplayMode, nDisplayMode, pszAttrRotate, nRotate);
+	if (skip_view_settings)
+	{
+		strHead.Format(_T("<%s>\n"), pszTagContent);
+	}
+	else
+	{
+		strHead.Format(_T("<%s %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%.2lf%%\"")
+				_T(" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\" %s=\"%d\">\n"),
+				pszTagSettings, pszAttrStartPage, nPage, pszAttrOffsetX, ptOffset.x,
+				pszAttrOffsetY, ptOffset.y, pszAttrZoomType, nZoomType, pszAttrZoom, fZoom,
+				pszAttrLayout, nLayout, pszAttrFirstPage, static_cast<int>(bFirstPageAlone),
+				pszAttrRightToLeft, static_cast<int>(bRightToLeft),
+				pszAttrDisplayMode, nDisplayMode, pszAttrRotate, nRotate,
+				pszAttrOpenSidebarTab, nOpenSidebarTab);
+	}
 
 	result += MakeUTF8String(strHead);
 
@@ -541,28 +638,40 @@ GUTF8String DocSettings::GetXML() const
 		}
 	}
 
-	result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagSettings));
+	if (skip_view_settings)
+		result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagContent));
+	else
+		result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagSettings));
 
 	return result;
 }
 
 void DocSettings::Load(const XMLNode& node)
 {
-	if (MakeCString(node.tagName) != pszTagSettings)
+	CString strTagName = MakeCString(node.tagName);
+	if (strTagName != pszTagSettings && strTagName != pszTagContent)
 		return;
 
-	node.GetIntAttribute(pszAttrStartPage, nPage);
-	node.GetLongAttribute(pszAttrOffsetX, ptOffset.x);
-	node.GetLongAttribute(pszAttrOffsetY, ptOffset.y);
-	node.GetIntAttribute(pszAttrZoomType, nZoomType);
-	node.GetDoubleAttribute(pszAttrZoom, fZoom);
-	node.GetIntAttribute(pszAttrLayout, nLayout);
-	node.GetIntAttribute(pszAttrDisplayMode, nDisplayMode);
-	node.GetIntAttribute(pszAttrRotate, nRotate);
+	if (strTagName == pszTagSettings)
+	{
+		node.GetIntAttribute(pszAttrStartPage, nPage);
+		node.GetLongAttribute(pszAttrOffsetX, ptOffset.x);
+		node.GetLongAttribute(pszAttrOffsetY, ptOffset.y);
+		node.GetIntAttribute(pszAttrZoomType, nZoomType);
+		node.GetDoubleAttribute(pszAttrZoom, fZoom);
+		node.GetIntAttribute(pszAttrLayout, nLayout);
+		node.GetIntAttribute(pszAttrDisplayMode, nDisplayMode);
+		node.GetIntAttribute(pszAttrRotate, nRotate);
+		node.GetIntAttribute(pszAttrOpenSidebarTab, nOpenSidebarTab);
 
-	int nFirstPage;
-	if (node.GetIntAttribute(pszAttrFirstPage, nFirstPage))
-		bFirstPageAlone = (nFirstPage != 0);
+		int nFirstPage;
+		if (node.GetIntAttribute(pszAttrFirstPage, nFirstPage))
+			bFirstPageAlone = (nFirstPage != 0);
+
+		int nRightToLeft;
+		if (node.GetIntAttribute(pszAttrRightToLeft, nRightToLeft))
+			bRightToLeft = (nRightToLeft != 0);
+	}
 
 	pageSettings.clear();
 	bookmarks.clear();
@@ -644,10 +753,15 @@ bool DocSettings::DeleteAnnotation(const Annotation* pAnno, int nPage)
 			ASSERT(&(temp.front()) == pCurAnno);
 
 			UpdateObservers(AnnotationMsg(ANNOTATION_DELETED, pCurAnno, nPage));
+
+			if (settings.anno.empty())
+				pageSettings.erase(nPage);
 			return true;
 		}
 	}
 
+	if (settings.anno.empty())
+		pageSettings.erase(nPage);
 	return false;
 }
 
@@ -888,10 +1002,22 @@ DjVuSource* DjVuSource::FromFile(const CString& strFileName)
 	map<MD5, DocSettings>::iterator it = settings.find(digest);
 	bool bExisting = (it != settings.end());
 	DocSettings* pSettings = &settings[digest];
+	pSettings->strLastKnownLocation = pszName;
 
 	if (!bExisting && pApplication != NULL)
 	{
 		pApplication->LoadDocSettings(digest.ToString(), pSettings);
+
+		// Remove annotations for non-existing pages.
+		map<int, PageSettings>::iterator it;
+		for (it = pSettings->pageSettings.begin(); it != pSettings->pageSettings.end();)
+		{
+			int nPage = it->first;
+			if (nPage < 0 || nPage >= pDoc->get_pages_num())
+				pSettings->pageSettings.erase(it++);
+			else
+				++it;
+		}
 	}
 
 	DjVuSource* pSource = new DjVuSource(pszName, pDoc, pSettings);
@@ -995,18 +1121,6 @@ GP<DjVuImage> DjVuSource::GetPage(int nPage, Observer* observer)
 	}
 
 	m_lock.Lock();
-	// Notify all waiting threads that image is ready
-	for (size_t i = 0; i < data.requests.size(); ++i)
-	{
-		data.requests[i]->pImage = pImage;
-		::SetEvent(data.requests[i]->hEvent);
-	}
-
-	ASSERT(data.hDecodingThread == ::GetCurrentThread());
-	::SetThreadPriority(data.hDecodingThread, data.nOrigThreadPriority);
-	data.hDecodingThread = NULL;
-	data.requests.clear();
-
 	if (pImage != NULL)
 	{
 		pImage->set_rotate(0);
@@ -1023,6 +1137,18 @@ GP<DjVuImage> DjVuSource::GetPage(int nPage, Observer* observer)
 		if (data.info.bHasText)
 			m_bHasText = true;
 	}
+
+	// Notify all waiting threads that image is ready
+	for (size_t i = 0; i < data.requests.size(); ++i)
+	{
+		data.requests[i]->pImage = pImage;
+		::SetEvent(data.requests[i]->hEvent);
+	}
+
+	ASSERT(data.hDecodingThread == ::GetCurrentThread());
+	::SetThreadPriority(data.hDecodingThread, data.nOrigThreadPriority);
+	data.hDecodingThread = NULL;
+	data.requests.clear();
 	m_lock.Unlock();
 
 	return pImage;

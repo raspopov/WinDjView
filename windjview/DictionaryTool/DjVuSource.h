@@ -1,18 +1,19 @@
 //	WinDjView
-//	Copyright (C) 2004-2007 Andrew Zhezherun
+//	Copyright (C) 2004-2008 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License version 2
-//	as published by the Free Software Foundation.
+//	it under the terms of the GNU General Public License as published by
+//	the Free Software Foundation; either version 2 of the License, or
+//	(at your option) any later version.
 //
 //	This program is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program; if not, write to the Free Software
-//	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//	You should have received a copy of the GNU General Public License along
+//	with this program; if not, write to the Free Software Foundation, Inc.,
+//	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
@@ -28,8 +29,11 @@ typedef GList<DjVuTXT::Zone*> DjVuSelection;
 struct Annotation
 {
 	Annotation()
-		: bHideInactiveBorder(false), nBorderType(BorderNone), crBorder(RGB(0, 0, 0)),
-		  nFillType(FillSolid), crFill(RGB(255, 255, 0)), fTransparency(0.75) {}
+		: bHideInactiveBorder(false), nBorderType(BorderNone),
+		  crBorder(RGB(0, 0, 0)), nBorderWidth(1), bHideInactiveFill(false),
+		  nFillType(FillSolid), crFill(RGB(255, 255, 0)), fTransparency(0.75),
+		  crForeground(RGB(0, 0, 0)), bAlwaysShowComment(false),
+		  bOvalShape(false), bIsLine(false), bHasArrow(false), nLineWidth(1) {}
 
 	void UpdateBounds();
 	GUTF8String GetXML() const;
@@ -40,7 +44,11 @@ struct Annotation
 	{
 		BorderNone = 0,
 		BorderSolid = 1,
-		BorderXOR = 2
+		BorderXOR = 2,
+		BorderShadowIn = 3,
+		BorderShadowOut = 4,
+		BorderEtchedIn = 5,
+		BorderEtchedOut = 6
 	};
 
 	enum FillType
@@ -53,13 +61,20 @@ struct Annotation
 	bool bHideInactiveBorder;
 	int nBorderType;
 	COLORREF crBorder;
+	int nBorderWidth;
+	bool bHideInactiveFill;
 	int nFillType;
 	COLORREF crFill;
 	double fTransparency;
+	COLORREF crForeground;
+	bool bAlwaysShowComment;
+	bool bOvalShape, bIsLine, bHasArrow;
+	int nLineWidth;
 	GUTF8String strComment;
 	GUTF8String strURL;
 
 	vector<GRect> rects;
+	vector<pair<int, int> > points;
 	GRect rectBounds;
 
 	void Init(GP<GMapArea> pArea, const CSize& szPage, int nRotate);
@@ -123,19 +138,31 @@ struct DocSettings : public Observable
 {
 	DocSettings();
 
+	enum SidebarTab
+	{
+		Thumbnails = 0,
+		Contents = 1,
+		Bookmarks = 2,
+		PageIndex = 3
+	};
+
 	int nPage;
 	CPoint ptOffset;
 	int nZoomType;
 	double fZoom;
 	int nLayout;
 	bool bFirstPageAlone;
+	bool bRightToLeft;
 	int nDisplayMode;
 	int nRotate;
+	int nOpenSidebarTab;
+
+	CString strLastKnownLocation;
 
 	map<int, PageSettings> pageSettings;
 	list<Bookmark> bookmarks;
 
-	GUTF8String GetXML() const;
+	GUTF8String GetXML(bool skip_view_settings = false) const;
 	void Load(const XMLNode& node);
 
 	Annotation* AddAnnotation(const Annotation& anno, int nPage);

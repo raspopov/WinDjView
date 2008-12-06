@@ -1,18 +1,19 @@
 //	WinDjView
-//	Copyright (C) 2004-2007 Andrew Zhezherun
+//	Copyright (C) 2004-2008 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License version 2
-//	as published by the Free Software Foundation.
+//	it under the terms of the GNU General Public License as published by
+//	the Free Software Foundation; either version 2 of the License, or
+//	(at your option) any later version.
 //
 //	This program is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program; if not, write to the Free Software
-//	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//	You should have received a copy of the GNU General Public License along
+//	with this program; if not, write to the Free Software Foundation, Inc.,
+//	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
 
 // $Id$
@@ -85,6 +86,46 @@ GUTF8String MakeUTF8String(const wstring& strText);
 
 bool MoveToTrash(LPCTSTR lpszFileName);
 
+void CreateSystemDialogFont(CFont& font);
+void CreateSystemIconFont(CFont& font);
+void CreateSystemMenuFont(CFont& font);
+
+UINT GetMouseScrollLines();
+
+CRect GetMonitorWorkArea(const CPoint& point);
+CRect GetMonitorWorkArea(CWnd* pWnd);
+CRect GetMonitorRect(CWnd* pWnd);
+
+bool IsFromCurrentProcess(CWnd* pWnd);
+
+CString FormatDouble(double fValue);
+void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, double& value, double def = 0.0, LPCTSTR pszSuffix = NULL);
+void AFXAPI DDX_MyText(CDataExchange* pDX, int nIDC, DWORD& value, DWORD def = 0, LPCTSTR pszSuffix = NULL);
+
+void SendMessageToVisibleDescendants(HWND hWnd, UINT message, WPARAM wParam = 0, LPARAM lParam = 0);
+
+inline CRect GetClientRect(const CWnd* pWnd)
+{
+	ASSERT(pWnd != NULL);
+	CRect rect;
+	pWnd->GetClientRect(rect);
+	return rect;
+}
+
+inline CRect GetClientRect(const CWnd& wnd)
+	{ return GetClientRect(&wnd); }
+
+inline CSize GetClientSize(const CWnd* pWnd)
+{
+	ASSERT(pWnd != NULL);
+	CRect rect;
+	pWnd->GetClientRect(rect);
+	return rect.Size();
+}
+
+inline CSize GetClientSize(const CWnd& wnd)
+	{ return GetClientSize(&wnd); }
+
 #define PAGE_RENDERED 1
 #define PAGE_DECODED 2
 #define LINK_CLICKED 3
@@ -106,6 +147,11 @@ bool MoveToTrash(LPCTSTR lpszFileName);
 #define SOURCE_RELEASED 19
 #define KEY_STATE_CHANGED 20
 #define DICT_LIST_CHANGED 21
+#define SIDEBAR_TAB_CHANGED 22
+#define TAB_ACTIVATED 24
+#define TAB_CLOSED 25
+#define ANNOTATIONS_CHANGED 26
+#define BOOKMARKS_CHANGED 27
 
 class CDIB;
 struct Bookmark;
@@ -176,6 +222,14 @@ struct KeyStateChanged : public Message
 
 	UINT nKey;
 	bool bPressed;
+};
+
+struct TabMsg : public Message
+{
+	TabMsg(int msg, CWnd* pWnd_)
+		: Message(msg), pWnd(pWnd_) {}
+
+	CWnd* pWnd;
 };
 
 
