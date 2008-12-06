@@ -64,6 +64,7 @@ LINK_OBJS = \
 	"$(INTDIR)\Global.obj" \
 	"$(INTDIR)\MyDropTarget.obj" \
 	"$(INTDIR)\MyFileDialog.obj" \
+	"$(INTDIR)\MyTheme.obj" \
 	"$(INTDIR)\stdafx.obj" \
 	"$(INTDIR)\XMLParser.obj" \
 	"$(INTDIR)\BookmarkTool.res"
@@ -77,6 +78,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\Global.obj" : Global.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyDropTarget.obj" : MyDropTarget.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyFileDialog.obj" : MyFileDialog.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MyTheme.obj" : MyTheme.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\XMLParser.obj" : XMLParser.cpp "$(INTDIR)" $(PCH)
 
 "$(INTDIR)\stdafx.obj" $(PCH) : stdafx.cpp "$(INTDIR)"
