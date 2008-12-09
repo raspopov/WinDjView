@@ -283,8 +283,8 @@ BEGIN
             MENUITEM "&Facing\tCtrl+Alt+3",         ID_LAYOUT_FACING
             MENUITEM "C&ontinuous - Facing\tCtrl+Alt+4", ID_LAYOUT_CONTINUOUS_FACING
             MENUITEM SEPARATOR
-            MENUITEM "First Page &Alone",           ID_LAYOUT_FIRSTPAGE_ALONE
-            MENUITEM "Right-to-left Order",         ID_LAYOUT_RTL_ORDER
+            MENUITEM "First Page &Alone\tCtrl+E",   ID_LAYOUT_FIRSTPAGE_ALONE
+            MENUITEM "Right-to-left Order\tCtrl+R", ID_LAYOUT_RTL_ORDER
         END
         POPUP "&Display"
         BEGIN
@@ -358,7 +358,8 @@ BEGIN
     END
     POPUP "Bookmarks Settings"
     BEGIN
-        MENUITEM "&Wrap long bookmarks",        ID_WRAP_BOOKMARKS
+        MENUITEM "&Expand Top-Level Bookmarks", ID_BOOKMARK_TOP_LEVEL
+        MENUITEM "&Wrap Long Bookmarks",        ID_BOOKMARK_WRAP
     END
     POPUP "Tab"
     BEGIN
@@ -400,6 +401,8 @@ BEGIN
     "2",            ID_LAYOUT_CONTINUOUS,   VIRTKEY, CONTROL, ALT, NOINVERT
     "4",            ID_LAYOUT_CONTINUOUS_FACING, VIRTKEY, CONTROL, ALT, NOINVERT
     "3",            ID_LAYOUT_FACING,       VIRTKEY, CONTROL, ALT, NOINVERT
+    "E",            ID_LAYOUT_FIRSTPAGE_ALONE, VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_LAYOUT_RTL_ORDER,    VIRTKEY, CONTROL, NOINVERT
     "1",            ID_LAYOUT_SINGLEPAGE,   VIRTKEY, CONTROL, ALT, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_TAB,         ID_NEXT_PANE,           VIRTKEY, NOINVERT
@@ -437,6 +440,7 @@ BEGIN
     VK_OEM_MINUS,   ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
     VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
     "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
+    "T",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
 END
 
 
@@ -1177,8 +1181,9 @@ STRINGTABLE
 BEGIN
     ID_ZOOM_STRETCH         "Stretch page to the window"
     ID_ZOOM_CUSTOM          "Specify custom zoom"
-    ID_ROTATE_RIGHT         "Rotate right 90 degrees\nRotate Right"
+    ID_BOOKMARK_TOP_LEVEL   "Expand or collapse top-level bookmarks"
     ID_ROTATE_LEFT          "Rotate left 90 degrees\nRotate Left"
+    ID_ROTATE_RIGHT         "Rotate right 90 degrees\nRotate Right"
     ID_ROTATE_180           "Rotate 180 degrees\nRotate 180"
     ID_VIEW_FIRSTPAGE       "Go to first page\nFirst Page"
     ID_VIEW_LASTPAGE        "Go to last page\nLast Page"
@@ -1329,6 +1334,7 @@ END
 
 STRINGTABLE 
 BEGIN
+    ID_BOOKMARK_WRAP        "Turn wrapping long bookmarks on or off"
     ID_LAYOUT_RTL_ORDER     "Order the pages from right to left in facing and continuous-facing layouts"
     ID_FILE_DOC_PROPERTIES  "Display properties of the active document\nDocument Properties"
     ID_FILE_IMPORT_BOOKMARKS 
@@ -1348,6 +1354,7 @@ BEGIN
     IDS_BOOKMARKS_PROMPT    "There are existing bookmarks and annotations for this document. Would you like to append the new bookmarks and annotations, or to replace the existing ones?"
     IDS_BOOKMARKS_PROMPT_CAPTIONS "Append\nReplace"
     IDS_SEARCH_WRAPPED      "Passed the end of the document"
+    IDS_BOOKMARK_TOP_LEVEL  "&Expand Top-Level Bookmarks\n&Collapse Top-Level Bookmarks"
 END
 
 #endif    // English (U.S.) resources

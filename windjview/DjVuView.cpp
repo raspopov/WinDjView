@@ -6635,7 +6635,7 @@ void CDjVuView::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	CMyScrollView::OnShowWindow(bShow, nStatus);
 
-	m_bUpdateBitmaps = true;
+	m_bUpdateBitmaps = bShow && GetParent()->IsWindowVisible();
 	UpdateVisiblePages();
 }
 

@@ -756,8 +756,10 @@ void SendMessageToVisibleDescendants(HWND hWnd, UINT message, WPARAM wParam, LPA
 		 hWndChild = ::GetNextWindow(hWndChild, GW_HWNDNEXT))
 	{
 		LONG lStyle = ::GetWindowLong(hWndChild, GWL_STYLE);
-		if ((lStyle & WS_VISIBLE) != 0)
-			::SendMessage(hWndChild, message, wParam, lParam);
+		if ((lStyle & WS_VISIBLE) == 0)
+			continue;
+
+		::SendMessage(hWndChild, message, wParam, lParam);
 
 		// send to child windows after parent
 		if (::GetTopWindow(hWndChild) != NULL)

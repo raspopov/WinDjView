@@ -975,5 +975,6 @@ LRESULT CThumbnailsView::OnShowParent(WPARAM wParam, LPARAM lParam)
 {
 	m_bVisible = !!wParam;
 	UpdateVisiblePages();
+
 	return 0;
 }

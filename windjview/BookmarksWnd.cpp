@@ -290,16 +290,41 @@ LRESULT CBookmarksWnd::OnShowSettings(WPARAM wParam, LPARAM lParam)
 	tpm.cbSize = sizeof(tpm);
 	tpm.rcExclude = rcButton;
 
+	bool bCanToggleTopLevel = false;
+	bool bExpandTopLevel = true;
+	for (TreeNode* pNode = m_pRoot->pChild; pNode != NULL; pNode = pNode->pNext)
+	{
+		if (pNode->pChild != NULL)
+		{
+			bCanToggleTopLevel = true;
+			if (!pNode->bCollapsed)
+				bExpandTopLevel = false;
+		}
+	}
+
+	CString strToggle;
+	AfxExtractSubString(strToggle, LoadString(IDS_BOOKMARK_TOP_LEVEL), bExpandTopLevel ? 0 : 1);
+	pPopup->ModifyMenu(ID_BOOKMARK_TOP_LEVEL, MF_BYCOMMAND | MF_STRING,
+			ID_BOOKMARK_TOP_LEVEL, strToggle);
+	if (!bCanToggleTopLevel)
+		pPopup->EnableMenuItem(ID_BOOKMARK_TOP_LEVEL, MF_BYCOMMAND | MF_DISABLED);
 	if (theApp.GetAppSettings()->bWrapLongBookmarks)
-		pPopup->CheckMenuItem(ID_WRAP_BOOKMARKS, MF_BYCOMMAND | MF_CHECKED);
+		pPopup->CheckMenuItem(ID_BOOKMARK_WRAP, MF_BYCOMMAND | MF_CHECKED);
 
 	int nID = pPopup->TrackPopupMenuEx(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
 			rcButton.left, rcButton.bottom, this, &tpm);
 
-	if (nID == ID_WRAP_BOOKMARKS)
+	if (nID == ID_BOOKMARK_WRAP)
 	{
 		theApp.GetAppSettings()->bWrapLongBookmarks = !theApp.GetAppSettings()->bWrapLongBookmarks;
 		theApp.UpdateObservers(APP_SETTINGS_CHANGED);
+	}
+	else if (nID == ID_BOOKMARK_TOP_LEVEL && bCanToggleTopLevel)
+	{
+		BeginBatchUpdate();
+		for (TreeNode* pNode = m_pRoot->pChild; pNode != NULL; pNode = pNode->pNext)
+			ExpandNode(pNode, bExpandTopLevel);
+		EndBatchUpdate();
 	}
 
 	return 0;

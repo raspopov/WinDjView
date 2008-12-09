@@ -135,7 +135,6 @@ protected:
 protected:
 	// Generated message map functions
 	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
-	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
 	afx_msg void OnViewToolbar();

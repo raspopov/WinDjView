@@ -739,13 +739,10 @@ void CMyTreeCtrl::OnLButtonDown(UINT nFlags, CPoint point)
 		{
 			SelectNode(pNode, TVC_BYMOUSE);
 		}
-		else if (nArea == HT_GLYPH)
+		else if (nArea == HT_GLYPH && pNode->HasChildren())
 		{
-			if (pNode->HasChildren())
-			{
-				bool bAllChildren = (nFlags & (MK_CONTROL | MK_SHIFT)) != 0;
-				ToggleNode(pNode, bAllChildren);
-			}
+			bool bAllChildren = (nFlags & (MK_CONTROL | MK_SHIFT)) != 0;
+			ToggleNode(pNode, bAllChildren);
 		}
 	}
 
@@ -1532,9 +1529,11 @@ void CMyTreeCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
 	int nArea;
 	TreeNode* pNode = HitTest(point, &nArea);
 
-	if (pNode != NULL && (nArea == HT_IMAGE || nArea == HT_LABEL) && pNode->HasChildren())
+	if (pNode != NULL && pNode->HasChildren()
+			&& (nArea == HT_IMAGE || nArea == HT_LABEL || nArea == HT_GLYPH))
 	{
-		ToggleNode(pNode);
+		bool bAllChildren = (nFlags & (MK_CONTROL | MK_SHIFT)) != 0;
+		ToggleNode(pNode, bAllChildren);
 		return;
 	}
 

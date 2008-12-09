@@ -160,6 +160,7 @@
 #define IDS_BOOKMARKS_PROMPT            310
 #define IDS_BOOKMARKS_PROMPT_CAPTIONS   311
 #define IDS_SEARCH_WRAPPED              312
+#define IDS_BOOKMARK_TOP_LEVEL          313
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -284,6 +285,7 @@
 #define ID_ZOOM_ACTUALSIZE              32783
 #define ID_ZOOM_STRETCH                 32784
 #define ID_ZOOM_CUSTOM                  32785
+#define ID_BOOKMARK_TOP_LEVEL           32786
 #define ID_ROTATE_LEFT                  32787
 #define ID_ROTATE_RIGHT                 32788
 #define ID_ROTATE_180                   32789
@@ -365,7 +367,7 @@
 #define ID_BOOKMARK_MOVEDOWN            33119
 #define ID_THUMBNAILS_ENLARGE           33120
 #define ID_THUMBNAILS_REDUCE            33121
-#define ID_WRAP_BOOKMARKS               33122
+#define ID_BOOKMARK_WRAP                33122
 #define ID_TAB_CLOSE                    33123
 #define ID_TAB_CLOSE_OTHER              33124
 #define ID_WINDOW_NEXT                  33125
@@ -379,7 +381,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        313
+#define _APS_NEXT_RESOURCE_VALUE        314
 #define _APS_NEXT_COMMAND_VALUE         33131
 #define _APS_NEXT_CONTROL_VALUE         1107
 #define _APS_NEXT_SYMED_VALUE           117
