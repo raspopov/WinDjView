@@ -1549,6 +1549,8 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 	}
 	else if (message->code == TAB_CLOSED)
 	{
+		theApp.SaveSettings();
+
 		CMDIChild* pWnd = (CMDIChild*) static_cast<const TabMsg*>(message)->pWnd;
 		CDjVuView* pView = (CDjVuView*) pWnd->GetContent();
 		if (pView == GetActiveView())

@@ -329,6 +329,8 @@ void CDjVuDoc::OnFileClose()
 		return;
 	}
 
+	theApp.SaveSettings();
+
 	CDocument::OnFileClose();
 }
 
