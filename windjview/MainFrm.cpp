@@ -568,19 +568,7 @@ void CMainFrame::UpdatePageCombo(const CDjVuView* pView)
 {
 	if (pView == NULL)
 		return;
-/*
-	if (pView->GetPageCount() != m_cboPage.GetCount())
-	{
-		m_cboPage.SetCurSel(-1);
-		m_cboPage.ResetContent();
-		m_cboPage.InitStorage(pView->GetPageCount(), pView->GetPageCount()*5);
-		m_cboPage.SetRedraw(false);
-		for (int i = 1; i <= pView->GetPageCount(); ++i)
-			m_cboPage.AddString(FormatString(_T("%d"), i));
-		m_cboPage.SetRedraw(true);
-		m_cboPage.Invalidate();
-	}
-*/
+
 	int nPage = pView->GetCurrentPage();
 	CString strPage = FormatString(_T("%d"), nPage + 1);
 	CString strCurPage;
