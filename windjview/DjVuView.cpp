@@ -1744,7 +1744,7 @@ void CDjVuView::UpdatePagesCacheContinuous(bool bUpdateImages)
 
 void CDjVuView::UpdateVisiblePages()
 {
-	if (m_nPage == -1 || m_pRenderThread->IsPaused())
+	if (m_nPageCount == 0 || m_pRenderThread->IsPaused())
 		return;
 
 	m_pRenderThread->PauseJobs();
@@ -2020,7 +2020,7 @@ bool CDjVuView::IsViewPreviouspageEnabled() const
 
 void CDjVuView::OnSize(UINT nType, int cx, int cy)
 {
-	if (cx > 0 && cy > 0 && m_nPage != -1 && !m_bInsideUpdateLayout)
+	if (cx > 0 && cy > 0 && m_nPageCount > 0 && !m_bInsideUpdateLayout)
 	{
 		UpdateLayout();
 
@@ -3813,7 +3813,7 @@ LRESULT CDjVuView::OnPageDecoded(WPARAM wParam, LPARAM lParam)
 
 void CDjVuView::ScrollToPosition(CPoint pt, bool bRepaint)
 {
-	if (!bRepaint || m_nPage == -1)
+	if (!bRepaint || m_nPageCount == 0)
 	{
 		CMyScrollView::ScrollToPosition(pt, bRepaint);
 		return;
@@ -3859,7 +3859,7 @@ bool CDjVuView::OnScroll(UINT nScrollCode, UINT nPos, bool bDoScroll)
 
 bool CDjVuView::OnScrollBy(CSize szScrollBy, bool bDoScroll)
 {
-	if (!bDoScroll || m_nPage == -1)
+	if (!bDoScroll || m_nPageCount == 0)
 		return CMyScrollView::OnScrollBy(szScrollBy, bDoScroll);
 
 	bool bUpdateVisible = false;

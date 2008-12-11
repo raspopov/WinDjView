@@ -467,7 +467,10 @@ void CThumbnailsView::SetCurrentPage(int nPage)
 	m_nCurrentPage = nPage;
 
 	if (m_nCurrentPage != -1)
+	{
 		InvalidatePage(m_nCurrentPage);
+		EnsureVisible(m_nCurrentPage);
+	}
 
 	UpdateWindow();
 }
@@ -623,7 +626,7 @@ int CThumbnailsView::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT mess
 	if (message == WM_LBUTTONDOWN)
 	{
 		// set focus to this view, but don't notify the parent frame
-		OnActivateView(TRUE, this, this);
+		OnActivateView(true, this, this);
 	}
 
 	return nResult;
@@ -851,12 +854,7 @@ void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 	else if (message->code == CURRENT_PAGE_CHANGED)
 	{
 		const PageMsg* msg = static_cast<const PageMsg*>(message);
-
-		if (GetCurrentPage() != msg->nPage)
-		{
-			SetCurrentPage(msg->nPage);
-			EnsureVisible(msg->nPage);
-		}
+		SetCurrentPage(msg->nPage);
 	}
 	else if (message->code == ROTATE_CHANGED)
 	{
@@ -882,7 +880,6 @@ void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 		m_nRotate = pView->GetRotate();
 
 		SetCurrentPage(pView->GetCurrentPage());
-		EnsureVisible(pView->GetCurrentPage());
 
 		m_bInitialized = true;
 		UpdateLayout(RECALC);
@@ -934,6 +931,8 @@ int CThumbnailsView::GetPageFromPoint(CPoint point)
 
 void CThumbnailsView::EnsureVisible(int nPage)
 {
+	ASSERT(nPage >= 0 && nPage < m_nPageCount);
+
 	CSize szClient = ::GetClientSize(this);
 	CPoint ptScroll = GetScrollPosition();
 	Page& page = m_pages[nPage];
@@ -966,6 +965,9 @@ void CThumbnailsView::SettingsChanged()
 void CThumbnailsView::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	CMyScrollView::OnShowWindow(bShow, nStatus);
+
+	if (bShow && m_nCurrentPage != -1)
+		EnsureVisible(m_nCurrentPage);
 
 	m_bVisible = bShow && GetParent()->IsWindowVisible();
 	UpdateVisiblePages();
