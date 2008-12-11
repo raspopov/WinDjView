@@ -236,6 +236,7 @@ BEGIN
     POPUP "&View"
     BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "Tab &Bar",                    ID_VIEW_TAB_BAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM "S&idebar",                    ID_VIEW_SIDEBAR
         MENUITEM SEPARATOR

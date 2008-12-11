@@ -138,9 +138,11 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
 	afx_msg void OnViewToolbar();
+	afx_msg void OnViewTabBar();
 	afx_msg void OnViewStatusBar();
 	afx_msg void OnViewSidebar();
 	afx_msg void OnViewDictBar();
+	afx_msg void OnUpdateViewTabBar(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewSidebar(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewDictBar(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewStatusBar(CCmdUI* pCmdUI);

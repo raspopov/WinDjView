@@ -118,6 +118,7 @@ struct CAppSettings
 	bool bWindowMaximized;
 
 	bool bToolbar;
+	bool bTabBar;
 	bool bStatusBar;
 	bool bDictBar;
 

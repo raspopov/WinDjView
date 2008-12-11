@@ -43,6 +43,9 @@ public:
 	CWnd* GetActiveTab() const;
 	int GetTabCount() const { return static_cast<int>(m_tabs.size()); }
 
+	bool IsTabBarVisible() const { return !m_bTabBarHidden; }
+	void ShowTabBar(bool bShow);
+
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
 // Implementation

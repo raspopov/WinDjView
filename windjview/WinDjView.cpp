@@ -56,6 +56,7 @@ const TCHAR* s_pszHeight = _T("height");
 const TCHAR* s_pszMaximized = _T("maximized");
 const TCHAR* s_pszChildMaximized = _T("child-maximized");
 const TCHAR* s_pszToolbar = _T("toobar");
+const TCHAR* s_pszTabBar = _T("tabbar");
 const TCHAR* s_pszStatusBar = _T("statusbar");
 const TCHAR* s_pszDictBar = _T("dictbar");
 const TCHAR* s_pszZoom = _T("zoom");
@@ -584,6 +585,7 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.nWindowHeight = GetProfileInt(s_pszDisplaySection, s_pszHeight, m_appSettings.nWindowHeight);
 	m_appSettings.bWindowMaximized = !!GetProfileInt(s_pszDisplaySection, s_pszMaximized, m_appSettings.bWindowMaximized);
 	m_appSettings.bToolbar = !!GetProfileInt(s_pszDisplaySection, s_pszToolbar, m_appSettings.bToolbar);
+	m_appSettings.bTabBar = !!GetProfileInt(s_pszDisplaySection, s_pszTabBar, m_appSettings.bTabBar);
 	m_appSettings.bStatusBar = !!GetProfileInt(s_pszDisplaySection, s_pszStatusBar, m_appSettings.bStatusBar);
 	m_appSettings.bDictBar = !!GetProfileInt(s_pszDisplaySection, s_pszDictBar, m_appSettings.bDictBar);
 	m_appSettings.nDefaultZoomType = GetProfileInt(s_pszDisplaySection, s_pszZoom, m_appSettings.nDefaultZoomType);
@@ -761,6 +763,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySection, s_pszHeight, m_appSettings.nWindowHeight);
 	WriteProfileInt(s_pszDisplaySection, s_pszMaximized, m_appSettings.bWindowMaximized);
 	WriteProfileInt(s_pszDisplaySection, s_pszToolbar, m_appSettings.bToolbar);
+	WriteProfileInt(s_pszDisplaySection, s_pszTabBar, m_appSettings.bTabBar);
 	WriteProfileInt(s_pszDisplaySection, s_pszStatusBar, m_appSettings.bStatusBar);
 	WriteProfileInt(s_pszDisplaySection, s_pszDictBar, m_appSettings.bDictBar);
 	WriteProfileInt(s_pszDisplaySection, s_pszZoom, m_appSettings.nDefaultZoomType);

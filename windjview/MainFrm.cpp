@@ -49,9 +49,11 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_CREATE()
 	ON_WM_ACTIVATE()
 	ON_COMMAND(ID_VIEW_TOOLBAR, OnViewToolbar)
+	ON_COMMAND(ID_VIEW_TAB_BAR, OnViewTabBar)
 	ON_COMMAND(ID_VIEW_STATUS_BAR, OnViewStatusBar)
 	ON_COMMAND(ID_VIEW_SIDEBAR, OnViewSidebar)
 	ON_COMMAND(ID_VIEW_DICTBAR, OnViewDictBar)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_TAB_BAR, OnUpdateViewTabBar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_SIDEBAR, OnUpdateViewSidebar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_DICTBAR, OnUpdateViewDictBar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_STATUS_BAR, OnUpdateViewStatusBar)
@@ -361,6 +363,15 @@ void CMainFrame::OnViewToolbar()
 	theApp.GetAppSettings()->bToolbar = !!m_wndToolBar.IsWindowVisible();
 }
 
+void CMainFrame::OnViewTabBar()
+{
+	if (theApp.m_bTopLevelDocs)
+		return;
+
+	m_tabbedMDI.ShowTabBar(!m_tabbedMDI.IsTabBarVisible());
+	theApp.GetAppSettings()->bTabBar = m_tabbedMDI.IsTabBarVisible();
+}
+
 void CMainFrame::OnViewStatusBar()
 {
 	CFrameWnd::OnBarCheck(ID_VIEW_STATUS_BAR);
@@ -381,6 +392,18 @@ void CMainFrame::OnViewDictBar()
 {
 	ShowControlBar(&m_wndDictBar, !m_wndDictBar.IsWindowVisible(), false);
 	theApp.GetAppSettings()->bDictBar = !!m_wndDictBar.IsWindowVisible();
+}
+
+void CMainFrame::OnUpdateViewTabBar(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_tabbedMDI.IsTabBarVisible());
+
+	if (theApp.m_bTopLevelDocs && pCmdUI->m_pMenu != NULL)
+	{
+		pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
+		pCmdUI->m_nIndex--;
+		pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
+	}
 }
 
 void CMainFrame::OnUpdateViewSidebar(CCmdUI* pCmdUI)
@@ -424,6 +447,9 @@ void CMainFrame::UpdateToolbars()
 	ShowControlBar(&m_wndToolBar, pSettings->bToolbar, false);
 	ShowControlBar(&m_wndDictBar, pSettings->bDictBar && theApp.GetDictLangsCount() > 0, false);
 	ShowControlBar(&m_wndStatusBar, pSettings->bStatusBar, false);
+
+	if (!theApp.m_bTopLevelDocs)
+		m_tabbedMDI.ShowTabBar(pSettings->bTabBar);
 }
 
 void CMainFrame::UpdateSettings()

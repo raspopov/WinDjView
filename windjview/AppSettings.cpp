@@ -43,6 +43,7 @@ CAppSettings::CAppSettings()
 	bWindowMaximized = false;
 
 	bToolbar = true;
+	bTabBar = true;
 	bStatusBar = true;
 	bDictBar = true;
 
@@ -61,7 +62,7 @@ CAppSettings::CAppSettings()
 	bFullscreenClicks = true;
 	bFullscreenHideScroll = true;
 	bFullscreenContinuousScroll = false;
-	bWarnCloseMultiple = false;
+	bWarnCloseMultiple = true;
 	bInvertWheelZoom = false;
 	bCloseOnEsc = false;
 	bWrapLongBookmarks = true;

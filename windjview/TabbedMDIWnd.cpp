@@ -959,3 +959,14 @@ CWnd* CTabbedMDIWnd::GetActiveTab() const
 
 	return NULL;
 }
+
+void CTabbedMDIWnd::ShowTabBar(bool bShow)
+{
+	if (bShow != m_bTabBarHidden)
+		return;
+
+	m_bTabBarHidden = !bShow;
+	CSize szClient = ::GetClientSize(this);
+	OnSize(0, szClient.cx, szClient.cy);
+	UpdateWindow();
+}
