@@ -80,7 +80,7 @@ protected:
 	CFont m_fontActive;
 	int m_nActiveTab;
 	void DrawTab(CDC* pDC, int nTab, bool bActive);
-	void UpdateButtons(bool bLButtonDown);
+	void UpdateButtons();
 	void UpdateCloseButton(bool bPressed, bool bActive);
 	int GetTabFromPoint(CPoint point);
 	void UpdateTabContents();
@@ -105,6 +105,7 @@ protected:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnMouseLeave();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnInitialUpdate();
 	afx_msg void OnDestroy();

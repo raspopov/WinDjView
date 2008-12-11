@@ -193,7 +193,7 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 {
 	m_tabbedMDI.Create(NULL, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-		CRect(0, 0, 0, 0), this, AFX_IDW_PANE_FIRST);
+			CRect(0, 0, 0, 0), this, AFX_IDW_PANE_FIRST);
 	m_tabbedMDI.BringWindowToTop();
 	return true;
 }

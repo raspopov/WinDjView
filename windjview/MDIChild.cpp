@@ -81,7 +81,8 @@ int CMDIChild::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	if (!m_navPane.Create(NULL, NULL, WS_CHILD | WS_VISIBLE, CRect(0, 0, 0, 0), this, 1))
+	if (!m_navPane.Create(NULL, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+			CRect(0, 0, 0, 0), this, 1))
 		return -1;
 
 	CCreateContext* pContext = (CCreateContext*) lpCreateStruct->lpCreateParams;
@@ -256,8 +257,11 @@ void CMDIChild::RecalcLayout()
 		else
 		{
 			m_bNavCollapsed = false;
-			m_nExpandedNavWidth = m_nSplitterPos;
-			theApp.GetAppSettings()->nNavPaneWidth = m_nExpandedNavWidth;
+			if (!m_bDragging)
+			{
+				m_nExpandedNavWidth = m_nSplitterPos;
+				theApp.GetAppSettings()->nNavPaneWidth = m_nExpandedNavWidth;
+			}
 		}
 
 		m_rcNavPane.left = 0;
@@ -400,6 +404,12 @@ void CMDIChild::StopDragging()
 {
 	m_bDragging = false;
 	ReleaseCapture();
+
+	if (!m_bNavCollapsed)
+	{
+		m_nExpandedNavWidth = m_nSplitterPos;
+		theApp.GetAppSettings()->nNavPaneWidth = m_nExpandedNavWidth;
+	}
 }
 
 BOOL CMDIChild::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
