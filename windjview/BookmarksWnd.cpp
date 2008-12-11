@@ -307,7 +307,7 @@ LRESULT CBookmarksWnd::OnShowSettings(WPARAM wParam, LPARAM lParam)
 	pPopup->ModifyMenu(ID_BOOKMARK_TOP_LEVEL, MF_BYCOMMAND | MF_STRING,
 			ID_BOOKMARK_TOP_LEVEL, strToggle);
 	if (!bCanToggleTopLevel)
-		pPopup->EnableMenuItem(ID_BOOKMARK_TOP_LEVEL, MF_BYCOMMAND | MF_DISABLED);
+		pPopup->EnableMenuItem(ID_BOOKMARK_TOP_LEVEL, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	if (theApp.GetAppSettings()->bWrapLongBookmarks)
 		pPopup->CheckMenuItem(ID_BOOKMARK_WRAP, MF_BYCOMMAND | MF_CHECKED);
 
