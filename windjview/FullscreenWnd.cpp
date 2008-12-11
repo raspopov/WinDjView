@@ -57,8 +57,15 @@ BOOL CFullscreenWnd::Create()
 			::LoadCursor(NULL, IDC_ARROW), NULL,
 			::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME)));
 
-	return CreateEx(0, strWndClass, NULL,
-		WS_POPUP, CRect(0, 0, 0, 0), NULL, 0);
+	if (!CreateEx(0, strWndClass, NULL,
+			WS_POPUP, CRect(0, 0, 0, 0), NULL, 0))
+		return false;
+
+	m_hIcon = theApp.LoadIcon(IDR_MAINFRAME);
+	SetIcon(m_hIcon, true);
+	SetIcon(m_hIcon, false);
+
+	return true;
 }
 
 void CFullscreenWnd::Show(CDjVuView* pOwner, CDjVuView* pContents)

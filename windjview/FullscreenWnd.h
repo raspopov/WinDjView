@@ -48,6 +48,7 @@ public:
 protected:
 	CDjVuView* m_pView;
 	CDjVuView* m_pOwner;
+	HICON m_hIcon;
 
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
