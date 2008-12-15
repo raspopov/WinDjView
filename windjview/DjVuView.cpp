@@ -2842,50 +2842,44 @@ CPoint CDjVuView::ScreenToDjVu(int nPage, const CPoint& point, bool bClip)
 	return ptResult;
 }
 
-void CDjVuView::GetTextPosFromTop(DjVuTXT::Zone& zone, const CPoint& pt, int& nPos) const
+void CDjVuView::GetTextPos(const DjVuTXT::Zone& zone, const CPoint& pt, int& nPos, double& fBest) const
 {
-	if (zone.rect.xmin > pt.x || zone.rect.ymax < pt.y)
-		return;
-
-	if (zone.rect.xmax < pt.x || zone.rect.ymin > pt.y)
-	{
-		int nEnd = zone.text_start + zone.text_length;
-		if (nPos == -1 || nPos < nEnd)
-			nPos = nEnd;
-		return;
-	}
-
-	if (zone.children.isempty()) 
-	{
-		nPos = zone.text_start;
-	}
-	else
+	if (!zone.children.isempty())
 	{
 		for (GPosition pos = zone.children; pos; ++pos)
-			GetTextPosFromTop(zone.children[pos], pt, nPos);
-	}
-}
-
-void CDjVuView::GetTextPosFromBottom(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos) const
-{
-	if (zone.rect.xmax < pt.x || zone.rect.ymin > pt.y)
+			GetTextPos(zone.children[pos], pt, nPos, fBest);
 		return;
+	}
 
-	if (zone.rect.xmin > pt.x || zone.rect.ymax < pt.y)
+	CPoint ptDiff(0, 0);
+	if (zone.rect.xmin > pt.x)
+		ptDiff.x = zone.rect.xmin - pt.x;
+	else if (zone.rect.xmax <= pt.x)
+		ptDiff.x = zone.rect.xmax - pt.x - 1;
+
+	if (zone.rect.ymax <= pt.y)
+		ptDiff.y = pt.y - zone.rect.ymax + 1;
+	else if (zone.rect.ymin > pt.y)
+		ptDiff.y = pt.y - zone.rect.ymin;
+
+	double fDistance = pow(pow(ptDiff.x, 2.0) + pow(ptDiff.y, 2.0), 0.5);
+	if (fDistance < fBest)
 	{
-		if (nPos == -1 || nPos > zone.text_start)
+		fBest = fDistance;
+		if (ptDiff.x < 0)
+		{
+			const DjVuTXT::Zone* pZone = &zone;
+			const DjVuTXT::Zone* pParent = pZone->get_parent();
+			while (pParent != NULL && &pParent->children[pParent->children.lastpos()] == pZone)
+			{
+				pZone = pParent;
+				pParent = pParent->get_parent();
+			}
+
+			nPos = pZone->text_start + pZone->text_length;
+		}
+		else
 			nPos = zone.text_start;
-		return;
-	}
-
-	if (zone.children.isempty()) 
-	{
-		nPos = zone.text_start;
-	}
-	else
-	{
-		for (GPosition pos = zone.children; pos; ++pos)
-			GetTextPosFromBottom(zone.children[pos], pt, nPos);
 	}
 }
 
@@ -2902,10 +2896,8 @@ int CDjVuView::GetTextPosFromPoint(int nPage, const CPoint& point)
 	CPoint ptDjVu = ScreenToDjVu(nPage, ptPage);
 
 	int nPos = -1;
-	GetTextPosFromTop(page.info.pText->page_zone, ptDjVu, nPos);
-
-	if (nPos == -1)
-		GetTextPosFromBottom(page.info.pText->page_zone, ptDjVu, nPos);
+	double fBest = 1e10;
+	GetTextPos(page.info.pText->page_zone, ptDjVu, nPos, fBest);
 
 	if (nPos == -1)
 		nPos = page.info.pText->textUTF8.length();

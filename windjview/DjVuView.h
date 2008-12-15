@@ -330,8 +330,7 @@ protected:
 	CPoint ScreenToDjVu(int nPage, const CPoint& point, bool bClip = true);
 	void UpdateDragAction();
 	int GetTextPosFromPoint(int nPage, const CPoint& point);
-	void GetTextPosFromTop(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos) const;
-	void GetTextPosFromBottom(DjVuTXT::Zone& zone,  const CPoint& pt, int& nPos) const;
+	void GetTextPos(const DjVuTXT::Zone& zone, const CPoint& pt, int& nPos, double& fBest) const;
 	void FindSelectionZones(DjVuSelection& list, DjVuTXT* pText, int nStart, int nEnd) const;
 	void SelectTextRange(int nPage, int nStart, int nEnd, bool& bInfoLoaded, CWaitCursor*& pWaitCursor);
 	bool m_bHasSelection;
