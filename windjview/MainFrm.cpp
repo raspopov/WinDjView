@@ -57,6 +57,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_SIDEBAR, OnUpdateViewSidebar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_DICTBAR, OnUpdateViewDictBar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_STATUS_BAR, OnUpdateViewStatusBar)
+	ON_COMMAND(ID_TOGGLE_NAV_PANE, OnToggleNavPane)
 	ON_WM_WINDOWPOSCHANGED()
 	ON_CBN_SELCHANGE(IDC_PAGENUM, OnChangePage)
 	ON_CONTROL(CBN_FINISHEDIT, IDC_PAGENUM, OnChangePageEdit)
@@ -380,12 +381,13 @@ void CMainFrame::OnViewStatusBar()
 
 void CMainFrame::OnViewSidebar()
 {
-	bool bHide = !theApp.GetAppSettings()->bNavPaneHidden;
-	theApp.GetAppSettings()->bNavPaneHidden = bHide;
-
 	CMDIChild* pMDIChild = (CMDIChild*) m_tabbedMDI.GetActiveTab();
-	if (pMDIChild != NULL)
-		pMDIChild->HideNavPane(bHide);
+	if (pMDIChild == NULL)
+		return;
+
+	bool bHide = !pMDIChild->IsNavPaneHidden();
+	theApp.GetAppSettings()->bNavPaneHidden = bHide;
+	pMDIChild->HideNavPane(bHide);
 }
 
 void CMainFrame::OnViewDictBar()
@@ -438,6 +440,17 @@ void CMainFrame::OnUpdateViewStatusBar(CCmdUI* pCmdUI)
 				ID_VIEW_DICTBAR, LoadString(IDR_DICTIONARIES_BAR));
 		pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
 	}
+}
+
+void CMainFrame::OnToggleNavPane()
+{
+	CMDIChild* pMDIChild = (CMDIChild*) m_tabbedMDI.GetActiveTab();
+	if (pMDIChild == NULL)
+		return;
+
+	bool bCollapsed = !pMDIChild->IsNavPaneCollapsed();
+	theApp.GetAppSettings()->bNavPaneCollapsed = bCollapsed;
+	pMDIChild->CollapseNavPane(bCollapsed);
 }
 
 void CMainFrame::UpdateToolbars()

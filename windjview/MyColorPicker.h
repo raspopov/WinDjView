@@ -26,11 +26,11 @@
 
 // CMyColorPopup messages
 
-#define CPN_SELCHANGE        WM_USER + 1001        // Color Picker selection change
-#define CPN_DROPDOWN         WM_USER + 1002        // Color Picker drop down
-#define CPN_CLOSEUP          WM_USER + 1003        // Color Picker close up
-#define CPN_SELENDOK         WM_USER + 1004        // Color Picker end OK
-#define CPN_SELENDCANCEL     WM_USER + 1005        // Color Picker end (cancelled)
+#define CPN_SELCHANGE (WM_USER + 1001)     // Color Picker selection change
+#define CPN_DROPDOWN (WM_USER + 1002)      // Color Picker drop down
+#define CPN_CLOSEUP (WM_USER + 1003)       // Color Picker close up
+#define CPN_SELENDOK (WM_USER + 1004)      // Color Picker end OK
+#define CPN_SELENDCANCEL (WM_USER + 1005)  // Color Picker end (cancelled)
 
 void AFXAPI DDX_Color(CDataExchange* pDX, int nIDC, COLORREF& crColor);
 

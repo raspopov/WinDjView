@@ -728,19 +728,19 @@ void CDjVuView::DrawPage(CDC* pDC, int nPage)
 	pDC->RestoreDC(nSaveDC);
 }
 
-void GetWords(DjVuTXT::Zone* pZone, const GRect& rect, DjVuSelection& list)
+void GetZones(DjVuTXT::Zone* pZone, int nZoneType, const GRect* rect, DjVuSelection& zones)
 {
 	GRect temp;
 	for (GPosition pos = pZone->children; pos; ++pos)
 	{
 		DjVuTXT::Zone* pChild = &pZone->children[pos];
-		if (!temp.intersect(pChild->rect, rect))
+		if (rect != NULL && !temp.intersect(pChild->rect, *rect))
 			continue;
 
-		if (pChild->ztype == DjVuTXT::WORD)
-			list.append(pChild);
-		else if (pChild->ztype < DjVuTXT::WORD)
-			GetWords(pChild, rect, list);
+		if (pChild->ztype == nZoneType)
+			zones.append(pChild);
+		else if (pChild->ztype < nZoneType)
+			GetZones(pChild, nZoneType, rect, zones);
 	}
 }
 
@@ -767,7 +767,7 @@ void CDjVuView::DrawTransparentText(CDC* pDC, int nPage)
 			abs(ptTopLeft.x - ptBottomRight.x), abs(ptTopLeft.y - ptBottomRight.y));
 
 	DjVuSelection zones;
-	GetWords(&page.info.pText->page_zone, rect, zones);
+	GetZones(&page.info.pText->page_zone, DjVuTXT::WORD, &rect, zones);
 
 	for (GPosition pos = zones; pos; ++pos)
 	{
@@ -4575,8 +4575,16 @@ CString MakePreviewString(const GUTF8String& text, int nStart, int nEnd)
 
 void CDjVuView::FindSelectionZones(DjVuSelection& sel, DjVuTXT* pText, int nStart, int nEnd) const
 {
-	for (GPosition pos = pText->page_zone.children; pos; ++pos)
-		pText->page_zone.children[pos].find_zones(sel, nStart, nEnd);
+	DjVuSelection selection;
+	pText->page_zone.find_zones(selection, nStart, nEnd);
+
+	for (GPosition pos = selection; pos; ++pos)
+	{
+		if (selection[pos]->ztype >= DjVuTXT::LINE)
+			sel.append(selection[pos]);
+		else
+			GetZones(selection[pos], DjVuTXT::LINE, NULL, sel);
+	}
 }
 
 CRect CDjVuView::GetSelectionRect(int nPage, const DjVuSelection& selection)

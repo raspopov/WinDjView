@@ -377,13 +377,14 @@
 #define ID_FILE_IMPORT_BOOKMARKS        33129
 #define ID_FILE_EXPORT_BOOKMARKS        33130
 #define ID_VIEW_TAB_BAR                 33131
+#define ID_TOGGLE_NAV_PANE              33132
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        314
-#define _APS_NEXT_COMMAND_VALUE         33132
+#define _APS_NEXT_COMMAND_VALUE         33133
 #define _APS_NEXT_CONTROL_VALUE         1107
 #define _APS_NEXT_SYMED_VALUE           117
 #endif

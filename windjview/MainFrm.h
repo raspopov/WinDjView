@@ -146,6 +146,7 @@ protected:
 	afx_msg void OnUpdateViewSidebar(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewDictBar(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewStatusBar(CCmdUI* pCmdUI);
+	afx_msg void OnToggleNavPane();
 	afx_msg void OnChangePage();
 	afx_msg void OnChangePageEdit();
 	afx_msg void OnDropDownPage();
