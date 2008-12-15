@@ -2057,6 +2057,11 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		GetTopLevelParent()->SendMessage(WM_COMMAND, ID_VIEW_GOTO_PAGE);
 		return;
 
+	case 'F':
+	case 'f':
+		GetTopLevelParent()->SendMessage(WM_COMMAND, ID_EDIT_FIND);
+		return;
+
 	case VK_HOME:
 		OnViewFirstpage();
 		return;
@@ -2866,7 +2871,7 @@ void CDjVuView::GetTextPos(const DjVuTXT::Zone& zone, const CPoint& pt, int& nPo
 	if (fDistance < fBest)
 	{
 		fBest = fDistance;
-		if (ptDiff.x < 0)
+		if (ptDiff.x < 0 || ptDiff.x == 0 && ptDiff.y < 0)
 		{
 			const DjVuTXT::Zone* pZone = &zone;
 			const DjVuTXT::Zone* pParent = pZone->get_parent();
