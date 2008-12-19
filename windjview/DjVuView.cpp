@@ -2847,12 +2847,13 @@ CPoint CDjVuView::ScreenToDjVu(int nPage, const CPoint& point, bool bClip)
 	return ptResult;
 }
 
-void CDjVuView::GetTextPos(const DjVuTXT::Zone& zone, const CPoint& pt, int& nPos, double& fBest) const
+void CDjVuView::GetTextPos(const DjVuTXT::Zone& zone, const CPoint& pt,
+		int& nPos, double& fBest, bool bReturnBlockStart) const
 {
 	if (!zone.children.isempty())
 	{
 		for (GPosition pos = zone.children; pos; ++pos)
-			GetTextPos(zone.children[pos], pt, nPos, fBest);
+			GetTextPos(zone.children[pos], pt, nPos, fBest, bReturnBlockStart);
 		return;
 	}
 
@@ -2871,7 +2872,7 @@ void CDjVuView::GetTextPos(const DjVuTXT::Zone& zone, const CPoint& pt, int& nPo
 	if (fDistance < fBest)
 	{
 		fBest = fDistance;
-		if (ptDiff.x < 0 || ptDiff.x == 0 && ptDiff.y < 0)
+		if (!bReturnBlockStart && (ptDiff.x < 0 || ptDiff.x == 0 && ptDiff.y < 0))
 		{
 			const DjVuTXT::Zone* pZone = &zone;
 			const DjVuTXT::Zone* pParent = pZone->get_parent();
@@ -2888,7 +2889,7 @@ void CDjVuView::GetTextPos(const DjVuTXT::Zone& zone, const CPoint& pt, int& nPo
 	}
 }
 
-int CDjVuView::GetTextPosFromPoint(int nPage, const CPoint& point)
+int CDjVuView::GetTextPosFromPoint(int nPage, const CPoint& point, bool bReturnBlockStart)
 {
 	Page& page = m_pages[nPage];
 	if (page.info.bHasText && !page.info.bTextDecoded)
@@ -2902,7 +2903,7 @@ int CDjVuView::GetTextPosFromPoint(int nPage, const CPoint& point)
 
 	int nPos = -1;
 	double fBest = 1e10;
-	GetTextPos(page.info.pText->page_zone, ptDjVu, nPos, fBest);
+	GetTextPos(page.info.pText->page_zone, ptDjVu, nPos, fBest, bReturnBlockStart);
 
 	if (nPos == -1)
 		nPos = page.info.pText->textUTF8.length();
@@ -5786,7 +5787,7 @@ void CDjVuView::OnLButtonDblClk(UINT nFlags, CPoint point)
 		if (nPage == -1)
 			return;
 
-		int nPos = GetTextPosFromPoint(nPage, point);
+		int nPos = GetTextPosFromPoint(nPage, point, true);
 		bool bInfoLoaded = false;
 		CWaitCursor* pWaitCursor = NULL;
 		SelectTextRange(nPage, nPos, nPos + 1, bInfoLoaded, pWaitCursor);

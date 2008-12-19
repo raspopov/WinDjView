@@ -329,10 +329,14 @@ protected:
 	int m_nSelStartPos;
 	CPoint ScreenToDjVu(int nPage, const CPoint& point, bool bClip = true);
 	void UpdateDragAction();
-	int GetTextPosFromPoint(int nPage, const CPoint& point);
-	void GetTextPos(const DjVuTXT::Zone& zone, const CPoint& pt, int& nPos, double& fBest) const;
-	void FindSelectionZones(DjVuSelection& list, DjVuTXT* pText, int nStart, int nEnd) const;
-	void SelectTextRange(int nPage, int nStart, int nEnd, bool& bInfoLoaded, CWaitCursor*& pWaitCursor);
+	int GetTextPosFromPoint(int nPage, const CPoint& point,
+			bool bReturnBlockStart = false);
+	void GetTextPos(const DjVuTXT::Zone& zone, const CPoint& pt,
+			int& nPos, double& fBest, bool bReturnBlockStart = false) const;
+	void FindSelectionZones(DjVuSelection& list, DjVuTXT* pText,
+			int nStart, int nEnd) const;
+	void SelectTextRange(int nPage, int nStart, int nEnd,
+			bool& bInfoLoaded, CWaitCursor*& pWaitCursor);
 	bool m_bHasSelection;
 	int m_nSelectionPage;
 	GRect m_rcSelection;
