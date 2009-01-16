@@ -136,12 +136,14 @@ void CMyToolBar::OnPaint()
 
 void CMyToolBar::OnRButtonDown(UINT nFlags, CPoint point)
 {
-	// Just eat the message. Standard windows toolbar does some strange things after right-clicking.
+	// Just eat the message. Standard windows toolbar does some strange
+	// things after right-clicking.
 }
 
 void CMyToolBar::OnRButtonUp(UINT nFlags, CPoint point)
 {
-	// Just eat the message. Standard windows toolbar does some strange things after right-clicking.
+	// Just eat the message. Standard windows toolbar does some strange
+	// things after right-clicking.
 }
 
 void CMyToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
@@ -156,6 +158,12 @@ void CMyToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 
 	if (pTBCD->nmcd.dwDrawStage == CDDS_ITEMPREPAINT)
 	{
+		if (m_controls.find(pTBCD->nmcd.dwItemSpec) != m_controls.end())
+		{
+			*pResult = CDRF_SKIPDEFAULT;
+			return;
+		}
+
 		for (size_t nLabel = 0; nLabel < m_labels.size(); ++nLabel)
 		{
 			if (pTBCD->nmcd.dwItemSpec == m_labels[nLabel].nID)
@@ -301,4 +309,24 @@ void CMyToolBar::OnSysColorChange()
 {
 	Invalidate();
 	m_toolBar.Invalidate();
+}
+
+void CMyToolBar::SetControl(int nPos, UINT nID, int nWidth)
+{
+	m_controls.insert(nID);
+
+	TBBUTTON btn;
+	ZeroMemory(&btn, sizeof(btn));
+	btn.idCommand = nID;
+	btn.fsStyle = TBSTYLE_BUTTON;
+
+	TBBUTTONINFO info;
+	ZeroMemory(&info, sizeof(info));
+	info.cbSize = sizeof(info);
+	info.dwMask = TBIF_SIZE;
+	info.cx = nWidth;
+
+	GetToolBarCtrl().DeleteButton(nPos);
+	GetToolBarCtrl().InsertButton(nPos, &btn);
+	GetToolBarCtrl().SetButtonInfo(nID, &info);
 }

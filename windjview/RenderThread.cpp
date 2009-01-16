@@ -115,6 +115,9 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 			break;
 		}
 
+		// Cannot stop while the owner is being updated
+		pThread->m_stopping.Lock();
+
 		pThread->m_lock.Lock();
 		bool bNotify = (!pThread->m_bRejectCurrentJob);
 		pThread->m_currentJob.nPage = -1;
@@ -122,8 +125,6 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 			pThread->m_jobReady.SetEvent();
 		pThread->m_lock.Unlock();
 
-		// Cannot stop while the owner is being updated
-		pThread->m_stopping.Lock();
 		if (bNotify)
 		{
 			switch (job.type)
@@ -142,6 +143,7 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 		{
 			delete pBitmap;
 		}
+
 		pThread->m_stopping.Unlock();
 	}
 

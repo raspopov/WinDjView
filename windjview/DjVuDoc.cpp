@@ -264,7 +264,7 @@ void CDjVuDoc::OnFileInstall()
 		if (!m_pSource->GetDictionaryInfo()->bInstalled)
 			OnCloseDocument();
 
-		AfxMessageBox(IDS_INSTALLATION_SUCCEEDED, MB_ICONEXCLAMATION | MB_OK);
+		AfxMessageBox(IDS_INSTALLATION_SUCCEEDED, MB_ICONINFORMATION | MB_OK);
 	}
 	else if (hResult != E_ABORT)
 	{
@@ -456,7 +456,7 @@ void CDjVuDoc::OnFileImportBookmarks()
 			++it;
 	}
 
-	if (settings.bookmarks.empty() || settings.pageSettings.empty())
+	if (settings.bookmarks.empty() && settings.pageSettings.empty())
 	{
 		AfxMessageBox(IDS_BOOKMARKS_EMPTY, MB_OK | MB_ICONINFORMATION);
 		return;
@@ -465,8 +465,8 @@ void CDjVuDoc::OnFileImportBookmarks()
 	list<Bookmark> tmpBookmarks;
 	map<int, PageSettings> tmpPageSettings;
 
-	if (!m_pSource->GetSettings()->bookmarks.empty() ||
-			!m_pSource->GetSettings()->pageSettings.empty())
+	if (!settings.bookmarks.empty() && !m_pSource->GetSettings()->bookmarks.empty()
+			|| !settings.pageSettings.empty() && !m_pSource->GetSettings()->pageSettings.empty())
 	{
 		int nResult = theApp.DoMessageBox(IDS_BOOKMARKS_PROMPT,
 				MB_YESNOCANCEL | MB_ICONQUESTION, 0, IDS_BOOKMARKS_PROMPT_CAPTIONS);
@@ -475,8 +475,10 @@ void CDjVuDoc::OnFileImportBookmarks()
 
 		if (nResult == IDNO)
 		{
-			tmpBookmarks.swap(m_pSource->GetSettings()->bookmarks);
-			tmpPageSettings.swap(m_pSource->GetSettings()->pageSettings);
+			if (!settings.bookmarks.empty())
+				tmpBookmarks.swap(m_pSource->GetSettings()->bookmarks);
+			if (!settings.pageSettings.empty())
+				tmpPageSettings.swap(m_pSource->GetSettings()->pageSettings);
 		}
 	}
 

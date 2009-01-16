@@ -50,6 +50,7 @@ public:
 	CToolBarCtrl& GetToolBarCtrl() const { return m_toolBar.GetToolBarCtrl(); }
 
 	void InsertLabel(int nPos, UINT nID, CFont* pFont);
+	void SetControl(int nPos, UINT nID, int nWidth);
 
 // Implementation
 public:
@@ -67,6 +68,7 @@ protected:
 		CFont* pFont;
 	};
 	vector<Label> m_labels;
+	set<UINT> m_controls;
 
 	CToolBar m_toolBar;
 

@@ -214,7 +214,7 @@ void CMainFrame::InitToolBar()
 	m_wndToolBar.SetWindowText(LoadString(IDS_TOOLBAR_TITLE));
 
 	int nComboPage = m_wndToolBar.GetToolBar().CommandToIndex(ID_VIEW_NEXTPAGE) - 1;
-	m_wndToolBar.GetToolBar().SetButtonInfo(nComboPage, IDC_PAGENUM, TBBS_SEPARATOR, 65);
+	m_wndToolBar.SetControl(nComboPage, IDC_PAGENUM, 65);
 
 	CRect rcItem;
 	m_wndToolBar.GetToolBar().GetItemRect(nComboPage, rcItem);
@@ -228,7 +228,7 @@ void CMainFrame::InitToolBar()
 	m_cboPage.GetEditCtrl()->SetInteger();
 
 	int nComboZoom = m_wndToolBar.GetToolBar().CommandToIndex(ID_ZOOM_IN) - 1;
-	m_wndToolBar.GetToolBar().SetButtonInfo(nComboZoom, IDC_ZOOM, TBBS_SEPARATOR, 110);
+	m_wndToolBar.SetControl(nComboZoom, IDC_ZOOM, 110);
 
 	m_wndToolBar.GetToolBar().GetItemRect(nComboZoom, rcItem);
 	rcItem.DeflateRect(3, 0);
@@ -259,14 +259,17 @@ void CMainFrame::InitDictBar()
 
 	m_wndDictBar.InsertLabel(0, IDC_LOOKUP_LABEL, &m_font);
 
-	TBBUTTON btn;
-	ZeroMemory(&btn, sizeof(btn));
-	btn.iBitmap = 135;
-	btn.idCommand = IDC_LOOKUP;
-	btn.fsStyle = TBSTYLE_SEP;
+	TBBUTTON btnSep;
+	ZeroMemory(&btnSep, sizeof(btnSep));
+	btnSep.iBitmap = 0;
+	btnSep.idCommand = IDC_STATIC;
+	btnSep.fsStyle = TBSTYLE_SEP;
+
+	// Lookup combo
+	m_wndDictBar.GetToolBarCtrl().InsertButton(1, &btnSep);
+	m_wndDictBar.SetControl(1, IDC_LOOKUP, 135);
 
 	CRect rcItem;
-	m_wndDictBar.GetToolBarCtrl().InsertButton(1, &btn);
 	m_wndDictBar.GetToolBar().GetItemRect(1, rcItem);
 	rcItem.DeflateRect(3, 0);
 	rcItem.bottom += 160;
@@ -281,17 +284,12 @@ void CMainFrame::InitDictBar()
 
 	m_cboLookup.SetWindowText(theApp.GetAppSettings()->strFind);
 
-	// Separator
-	btn.iBitmap = 0;
-	btn.idCommand = IDC_STATIC;
-	m_wndDictBar.GetToolBarCtrl().InsertButton(3, &btn);
-
+	m_wndDictBar.GetToolBarCtrl().InsertButton(3, &btnSep);
 	m_wndDictBar.InsertLabel(4, IDC_LANGUAGE_LIST_LABEL, &m_font);
 
 	// Language combo
-	btn.iBitmap = 250;
-	btn.idCommand = IDC_LANGUAGE_LIST;
-	m_wndDictBar.GetToolBarCtrl().InsertButton(5, &btn);
+	m_wndDictBar.GetToolBarCtrl().InsertButton(5, &btnSep);
+	m_wndDictBar.SetControl(5, IDC_LANGUAGE_LIST, 250);
 
 	m_wndDictBar.GetToolBar().GetItemRect(5, rcItem);
 	rcItem.DeflateRect(3, 0);
@@ -302,17 +300,12 @@ void CMainFrame::InitDictBar()
 	m_cboLangs.SetFont(&m_boldFont);
 	m_cboLangs.SetItemHeight(-1, 16);
 
-	// Separator
-	btn.iBitmap = 0;
-	btn.idCommand = IDC_STATIC;
-	m_wndDictBar.GetToolBarCtrl().InsertButton(6, &btn);
-
+	m_wndDictBar.GetToolBarCtrl().InsertButton(6, &btnSep);
 	m_wndDictBar.InsertLabel(7, IDC_DICTIONARY_LABEL, &m_font);
 
 	// Dictionary combo
-	btn.iBitmap = 350;
-	btn.idCommand = IDC_DICTIONARY;
-	m_wndDictBar.GetToolBarCtrl().InsertButton(8, &btn);
+	m_wndDictBar.GetToolBarCtrl().InsertButton(8, &btnSep);
+	m_wndDictBar.SetControl(8, IDC_DICTIONARY, 350);
 
 	m_wndDictBar.GetToolBar().GetItemRect(8, rcItem);
 	rcItem.DeflateRect(3, 0);

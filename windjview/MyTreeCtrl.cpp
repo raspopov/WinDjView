@@ -660,6 +660,7 @@ void CMyTreeCtrl::RecalcLayout()
 	UpdateHoverNode();
 
 	Invalidate();
+	UpdateWindow();
 }
 
 int CMyTreeCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
