@@ -304,6 +304,9 @@ void CMDIChild::HideNavPane(bool bHide)
 
 	m_navPane.ShowWindow(bHide ? SW_HIDE : SW_SHOW);
 	UpdateWindow();
+
+	if (m_bNavHidden)
+		m_pContentWnd->SetFocus();
 }
 
 void CMDIChild::OnPaint()
@@ -362,6 +365,9 @@ void CMDIChild::CollapseNavPane(bool bCollapse)
 
 	m_nSplitterPos = m_bNavCollapsed ? CNavPaneWnd::s_nTabsWidth : m_nExpandedNavWidth;
 	RecalcLayout();
+
+	if (m_bNavCollapsed)
+		m_pContentWnd->SetFocus();
 }
 
 void CMDIChild::OnMouseMove(UINT nFlags, CPoint point)
@@ -441,7 +447,6 @@ void CMDIChild::OnExpandNav()
 void CMDIChild::OnCollapseNav()
 {
 	CollapseNavPane(true);
-	m_pContentWnd->SetFocus();
 }
 
 LRESULT CMDIChild::OnClickedNavTab(WPARAM wparam, LPARAM lParam)
