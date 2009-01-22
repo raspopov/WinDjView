@@ -191,6 +191,7 @@ protected:
 	afx_msg void OnNextPane(UINT nID);
 	afx_msg void OnUpdateNextPane(CCmdUI* pCmdUI);
 	afx_msg BOOL OnNcActivate(BOOL bActive);
+	afx_msg void OnMouseWheelPage(NMHDR* pNMHDR, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
 };
 

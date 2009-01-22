@@ -20,6 +20,7 @@
 
 #include "stdafx.h"
 #include "MyComboBox.h"
+#include "Global.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -54,6 +55,7 @@ CMyComboBox::~CMyComboBox()
 
 BEGIN_MESSAGE_MAP(CMyComboBox, CComboBox)
 	ON_WM_CREATE()
+	ON_WM_MOUSEWHEEL()
 END_MESSAGE_MAP()
 
 
@@ -73,6 +75,29 @@ int CMyComboBox::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	return 0;
+}
+
+BOOL CMyComboBox::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
+{
+	CWnd* pWnd = WindowFromPoint(point);
+	if (pWnd != this && !IsChild(pWnd) && IsFromCurrentProcess(pWnd)
+			&& pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
+		return true;
+
+	if ((nFlags & MK_CONTROL) != 0 || (nFlags & MK_SHIFT) != 0)
+		return false;
+
+	NMCBWHEEL nm;
+	ZeroMemory(&nm, sizeof(nm));
+	nm.hdr.hwndFrom = GetSafeHwnd();
+	nm.hdr.idFrom = GetDlgCtrlID();
+	nm.hdr.code = CBN_MOUSEWHEEL;
+	nm.bUp = (zDelta > 0);
+
+	if (GetParent()->SendMessage(WM_NOTIFY, GetDlgCtrlID(), (LPARAM) &nm))
+		return true;
+
+	return CComboBox::OnMouseWheel(nFlags, zDelta, point);
 }
 
 BOOL CMyComboBox::CNotifyingEdit::PreTranslateMessage(MSG* pMsg)
@@ -95,6 +120,19 @@ BOOL CMyComboBox::CNotifyingEdit::PreTranslateMessage(MSG* pMsg)
 	}
 
 	return CMyEdit::PreTranslateMessage(pMsg);
+}
+
+BOOL CMyComboBox::CNotifyingEdit::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	if (message == WM_MOUSEWHEEL)
+	{
+		LRESULT lResult = GetParent()->SendMessage(WM_MOUSEWHEEL, wParam, lParam);
+		if (pResult != NULL)
+			*pResult = lResult;
+		return true;
+	}
+
+	return CMyEdit::OnWndMsg(message, wParam, lParam, pResult);
 }
 
 // CMyComboBoxEx
@@ -124,4 +162,27 @@ int CMyComboBoxEx::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_edit.SubclassWindow(CComboBoxEx::GetEditCtrl()->GetSafeHwnd());
 
 	return 0;
+}
+
+BOOL CMyComboBoxEx::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
+{
+	CWnd* pWnd = WindowFromPoint(point);
+	if (pWnd != this && !IsChild(pWnd) && IsFromCurrentProcess(pWnd)
+			&& pWnd->SendMessage(WM_MOUSEWHEEL, MAKEWPARAM(nFlags, zDelta), MAKELPARAM(point.x, point.y)) != 0)
+		return true;
+
+	if ((nFlags & MK_CONTROL) != 0 || (nFlags & MK_SHIFT) != 0)
+		return false;
+
+	NMCBWHEEL nm;
+	ZeroMemory(&nm, sizeof(nm));
+	nm.hdr.hwndFrom = GetSafeHwnd();
+	nm.hdr.idFrom = GetDlgCtrlID();
+	nm.hdr.code = CBN_MOUSEWHEEL;
+	nm.bUp = (zDelta > 0);
+
+	if (GetParent()->SendMessage(WM_NOTIFY, GetDlgCtrlID(), (LPARAM) &nm))
+		return true;
+
+	return CComboBoxEx::OnMouseWheel(nFlags, zDelta, point);
 }

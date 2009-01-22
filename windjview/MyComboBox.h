@@ -27,6 +27,13 @@
 
 #define CBN_FINISHEDIT 100
 #define CBN_CANCELEDIT 101
+#define CBN_MOUSEWHEEL 102
+
+struct NMCBWHEEL
+{
+	NMHDR hdr;
+	BOOL bUp;
+};
 
 class CMyComboBox : public CComboBox
 {
@@ -41,13 +48,16 @@ public:
 protected:
 	class CNotifyingEdit : public CMyEdit
 	{
+	public:
 		virtual BOOL PreTranslateMessage(MSG* pMsg);
+		virtual BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 	};
 
 	CNotifyingEdit m_edit;
 
 	// Message map functions
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint point);
 	DECLARE_MESSAGE_MAP()
 
 	friend class CMyComboBoxEx;
@@ -68,5 +78,6 @@ protected:
 
 	// Message map functions
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint point);
 	DECLARE_MESSAGE_MAP()
 };

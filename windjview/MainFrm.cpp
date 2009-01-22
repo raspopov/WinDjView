@@ -66,6 +66,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_CBN_SELCHANGE(IDC_ZOOM, OnChangeZoom)
 	ON_CONTROL(CBN_FINISHEDIT, IDC_ZOOM, OnChangeZoomEdit)
 	ON_CONTROL(CBN_CANCELEDIT, IDC_ZOOM, OnCancelChange)
+	ON_NOTIFY(CBN_MOUSEWHEEL, IDC_PAGENUM, OnMouseWheelPage)
 	ON_MESSAGE(WM_DDE_EXECUTE, OnDDEExecute)
 	ON_COMMAND(ID_EDIT_FIND, OnEditFind)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND, OnUpdateEditFind)
@@ -1825,4 +1826,32 @@ BOOL CMainFrame::OnNcActivate(BOOL bActive)
 		return false;
 
 	return CFrameWnd::OnNcActivate(bActive);
+}
+
+void CMainFrame::OnMouseWheelPage(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	NMCBWHEEL* pNMWheel = reinterpret_cast<NMCBWHEEL*>(pNMHDR);
+
+	CDjVuView* pView = (CDjVuView*) GetActiveView();
+	if (pView == NULL)
+		return;
+
+	// Parse the page displayed in the combo box instead of taking the current
+	// page from the active view:  we want to go through all page numbers here,
+	// but in Facing modes "current page + 1" may refer to the same view, and
+	// there will be no scrolling at all.
+	CString strPage;
+	m_cboPage.GetWindowText(strPage);
+	int nPage = 0;
+	_stscanf(strPage, _T("%d"), &nPage);
+
+	nPage = nPage - 1 + (pNMWheel->bUp ? -1 : 1);
+	if (nPage >= 0 && nPage < pView->GetPageCount())
+	{
+		pView->GoToPage(nPage);
+		CString strPage = FormatString(_T("%d"), nPage + 1);
+		m_cboPage.SetWindowText(strPage);
+	}
+
+	*pResult = 1;
 }
