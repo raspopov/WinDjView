@@ -131,10 +131,11 @@ struct CAppSettings
 	bool bNavPaneCollapsed;
 	int nNavPaneWidth;
 
-	bool bRestoreAssocs;
+	bool bWarnNotDefaultViewer;
 	bool bTopLevelDocs;
-	bool bGenAllThumbnails;
 	bool bWarnCloseMultiple;
+	bool bHideSingleTab;
+	bool bGenAllThumbnails;
 	bool bInvertWheelZoom;
 	bool bCloseOnEsc;
 	bool bWrapLongBookmarks;

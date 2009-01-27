@@ -468,8 +468,10 @@ void CDjVuDoc::OnFileImportBookmarks()
 	if (!settings.bookmarks.empty() && !m_pSource->GetSettings()->bookmarks.empty()
 			|| !settings.pageSettings.empty() && !m_pSource->GetSettings()->pageSettings.empty())
 	{
-		int nResult = theApp.DoMessageBox(IDS_BOOKMARKS_PROMPT,
-				MB_YESNOCANCEL | MB_ICONQUESTION, 0, IDS_BOOKMARKS_PROMPT_CAPTIONS);
+		CDjViewApp::MessageBoxOptions mbo;
+		mbo.strCaptions = LoadString(IDS_BOOKMARKS_PROMPT_CAPTIONS);
+		int nResult = theApp.DoMessageBox(LoadString(IDS_BOOKMARKS_PROMPT),
+				MB_YESNOCANCEL | MB_ICONQUESTION, 0, mbo);
 		if (nResult == IDCANCEL)
 			return;
 

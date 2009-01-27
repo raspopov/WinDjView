@@ -360,6 +360,11 @@ void CTabbedMDIWnd::OnSize(UINT nType, int cx, int cy)
 {
 	CWnd::OnSize(nType, cx, cy);
 
+	UpdateSize(cx, cy);
+}
+
+void CTabbedMDIWnd::UpdateSize(int cx, int cy)
+{
 	if (cx <= 0 || cy <= 0)
 		return;
 
@@ -445,9 +450,6 @@ void CTabbedMDIWnd::CloseTab(int nTab, bool bRedraw)
 	}
 
 	CWnd* pWnd = m_tabs[nTab].pWnd;
-	UpdateObservers(TabMsg(TAB_CLOSED, pWnd));
-	pWnd->DestroyWindow();
-
 	m_tabs.erase(m_tabs.begin() + nTab);
 
 	UpdateTabRects();
@@ -464,6 +466,9 @@ void CTabbedMDIWnd::CloseTab(int nTab, bool bRedraw)
 	InvalidateTabs();
 	if (m_nActiveTab == -1)
 		Invalidate();
+
+	UpdateObservers(TabMsg(TAB_CLOSED, pWnd));
+	pWnd->DestroyWindow();
 
 	if (bRedraw)
 		UpdateWindow();
@@ -966,7 +971,8 @@ void CTabbedMDIWnd::ShowTabBar(bool bShow)
 		return;
 
 	m_bTabBarHidden = !bShow;
+
 	CSize szClient = ::GetClientSize(this);
-	OnSize(0, szClient.cx, szClient.cy);
+	UpdateSize(szClient.cx, szClient.cy);
 	UpdateWindow();
 }

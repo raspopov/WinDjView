@@ -34,12 +34,12 @@ public:
 // Dialog Data
 	enum { IDD = IDD_SETTINGS_GENERAL };
 	BOOL m_bTopLevelDocs;
-	BOOL m_bGenAllThumbnails;
 	BOOL m_bWarnCloseMultiple;
+	BOOL m_bHideSingleTab;
+	BOOL m_bGenAllThumbnails;
 	BOOL m_bInvertWheelZoom;
 	BOOL m_bCloseOnEsc;
 	BOOL m_bWrapLongBookmarks;
-	BOOL m_bRestoreView;
 	BOOL m_bFullscreenClicks;
 	BOOL m_bFullscreenHideScroll;
 	BOOL m_bFullscreenContinuousScroll;

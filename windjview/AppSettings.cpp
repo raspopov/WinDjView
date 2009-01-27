@@ -56,13 +56,14 @@ CAppSettings::CAppSettings()
 	bNavPaneCollapsed = false;
 	nNavPaneWidth = 205;
 
-	bRestoreAssocs = false;
+	bWarnNotDefaultViewer = true;
 	bTopLevelDocs = false;
+	bWarnCloseMultiple = true;
+	bHideSingleTab = false;
 	bGenAllThumbnails = true;
 	bFullscreenClicks = true;
 	bFullscreenHideScroll = true;
 	bFullscreenContinuousScroll = false;
-	bWarnCloseMultiple = true;
 	bInvertWheelZoom = false;
 	bCloseOnEsc = false;
 	bWrapLongBookmarks = true;

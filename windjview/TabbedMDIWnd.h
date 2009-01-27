@@ -95,6 +95,7 @@ protected:
 	void ActivateTab(int nTab, bool bRedraw = true);
 	void CloseTab(int nTab, bool bRedraw = true);
 	void InvalidateTabs();
+	void UpdateSize(int cx, int cy);
 
 	// Generated message map functions
 	afx_msg void OnPaint();

@@ -53,6 +53,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_VIEW_STATUS_BAR, OnViewStatusBar)
 	ON_COMMAND(ID_VIEW_SIDEBAR, OnViewSidebar)
 	ON_COMMAND(ID_VIEW_DICTBAR, OnViewDictBar)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_TOOLBAR, OnUpdateViewToolbar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_TAB_BAR, OnUpdateViewTabBar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_SIDEBAR, OnUpdateViewSidebar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_DICTBAR, OnUpdateViewDictBar)
@@ -390,11 +391,28 @@ void CMainFrame::OnViewDictBar()
 	theApp.GetAppSettings()->bDictBar = !!m_wndDictBar.IsWindowVisible();
 }
 
+void CMainFrame::OnUpdateViewToolbar(CCmdUI* pCmdUI)
+{
+	OnUpdateControlBarMenu(pCmdUI);
+
+	if (!theApp.m_bTopLevelDocs
+			&& (!theApp.GetAppSettings()->bHideSingleTab || m_tabbedMDI.GetTabCount() > 1)
+			&& pCmdUI->m_pMenu != NULL
+			&& pCmdUI->m_pMenu->GetMenuItemID(pCmdUI->m_nIndex + 1) != ID_VIEW_TAB_BAR)
+	{
+		pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex + 1, MF_BYPOSITION | MF_STRING,
+				ID_VIEW_TAB_BAR, LoadString(IDS_TAB_BAR_MENU));
+		pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
+		pCmdUI->m_bEnableChanged = true;
+	}
+}
+
 void CMainFrame::OnUpdateViewTabBar(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(m_tabbedMDI.IsTabBarVisible());
 
-	if (theApp.m_bTopLevelDocs && pCmdUI->m_pMenu != NULL)
+	if (pCmdUI->m_pMenu != NULL && (theApp.m_bTopLevelDocs
+			|| theApp.GetAppSettings()->bHideSingleTab && m_tabbedMDI.GetTabCount() == 1))
 	{
 		pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
 		pCmdUI->m_nIndex--;
@@ -433,6 +451,7 @@ void CMainFrame::OnUpdateViewStatusBar(CCmdUI* pCmdUI)
 		pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex + 1, MF_BYPOSITION | MF_STRING,
 				ID_VIEW_DICTBAR, LoadString(IDR_DICTIONARIES_BAR));
 		pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
+		pCmdUI->m_bEnableChanged = true;
 	}
 }
 
@@ -456,7 +475,10 @@ void CMainFrame::UpdateToolbars()
 	ShowControlBar(&m_wndStatusBar, pSettings->bStatusBar, false);
 
 	if (!theApp.m_bTopLevelDocs)
-		m_tabbedMDI.ShowTabBar(pSettings->bTabBar);
+	{
+		m_tabbedMDI.ShowTabBar(pSettings->bTabBar &&
+				(!theApp.GetAppSettings()->bHideSingleTab || m_tabbedMDI.GetTabCount() > 1));
+	}
 }
 
 void CMainFrame::UpdateSettings()
@@ -996,7 +1018,13 @@ void CMainFrame::OnActivateWindow(UINT nID)
 
 void CMainFrame::AddMDIChild(CWnd* pMDIChild, CDocument* pDocument)
 {
+	if (theApp.GetAppSettings()->bHideSingleTab && m_tabbedMDI.GetTabCount() == 0)
+		m_tabbedMDI.ShowTabBar(false);
+
 	m_tabbedMDI.AddTab(pMDIChild, pDocument->GetTitle());
+
+	if (!theApp.GetAppSettings()->bHideSingleTab || m_tabbedMDI.GetTabCount() > 1)
+		m_tabbedMDI.ShowTabBar(theApp.GetAppSettings()->bTabBar);
 }
 
 void CMainFrame::CloseMDIChild(CWnd* pMDIChild)
@@ -1571,6 +1599,7 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 	else if (message->code == TAB_CLOSED)
 	{
 		theApp.SaveSettings();
+		UpdateToolbars();
 
 		CMDIChild* pWnd = (CMDIChild*) static_cast<const TabMsg*>(message)->pWnd;
 		CDjVuView* pView = (CDjVuView*) pWnd->GetContent();
@@ -1583,6 +1612,10 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 			OnUpdateFrameTitle(true);
 			DrawMenuBar();
 		}
+	}
+	else if (message->code == APP_SETTINGS_CHANGED)
+	{
+		UpdateToolbars();
 	}
 }
 

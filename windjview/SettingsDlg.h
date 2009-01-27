@@ -23,7 +23,7 @@
 #include "AppSettings.h"
 #include "SettingsGeneralPage.h"
 #include "SettingsDisplayPage.h"
-#include "SettingsAssocsPage.h"
+#include "SettingsAdvancedPage.h"
 #include "SettingsDictPage.h"
 
 
@@ -41,7 +41,7 @@ public:
 
 	CSettingsGeneralPage m_pageGeneral;
 	CSettingsDisplayPage m_pageDisplay;
-	CSettingsAssocsPage m_pageAssocs;
+	CSettingsAdvancedPage m_pageAdvanced;
 	CSettingsDictPage m_pageDict;
 
 protected:

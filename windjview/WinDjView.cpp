@@ -76,13 +76,14 @@ const TCHAR* s_pszUnits = _T("units");
 const TCHAR* s_pszThumbnailSize = _T("thumbnail-size");
 
 const TCHAR* s_pszGlobalSection = _T("Settings");
+const TCHAR* s_pszWarnNotDefaultViewer = _T("warn-not-default-viewer");
 const TCHAR* s_pszTopLevelDocs = _T("top-level-docs");
-const TCHAR* s_pszRestoreAssocs = _T("assocs");
+const TCHAR* s_pszWarnCloseMultiple = _T("warn-close-multiple");
+const TCHAR* s_pszHideSingleTab = _T("hide-single-tab");
 const TCHAR* s_pszGenAllThumbnails = _T("gen-all-thumbs");
 const TCHAR* s_pszFullscreenClicks = _T("fullscreen-clicks");
 const TCHAR* s_pszFullscreenHideScroll = _T("fullscreen-hide-scroll");
 const TCHAR* s_pszFullscreenContinuousScroll = _T("fullscreen-continuous");
-const TCHAR* s_pszWarnCloseMultiple = _T("warn-close-multiple");
 const TCHAR* s_pszInvertWheelZoom = _T("invert-wheel-zoom");
 const TCHAR* s_pszCloseOnEsc = _T("close-on-esc");
 const TCHAR* s_pszWrapLongBookmarks = _T("wrap-long-bookmarks");
@@ -223,9 +224,6 @@ BOOL CDjViewApp::InitInstance()
 
 	m_bTopLevelDocs = m_appSettings.bTopLevelDocs;
 
-	if (m_appSettings.bRestoreAssocs)
-		RegisterShellFileTypes();
-
 	// Enable DDE Execute open
 	EnableShellOpen();
 
@@ -236,6 +234,19 @@ BOOL CDjViewApp::InitInstance()
 
 	m_hHook = ::SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, NULL, ::GetCurrentThreadId());
 	m_nTimerID = ::SetTimer(NULL, 1, 100, TimerProc);
+
+	if (m_appSettings.bWarnNotDefaultViewer && RegisterShellFileTypes(true))
+	{
+		MessageBoxOptions mbo;
+		mbo.strCheckBox = LoadString(IDS_WARN_NOT_DEFAULT_VIEWER);
+		mbo.pCheckValue = &m_appSettings.bWarnNotDefaultViewer;
+		if (DoMessageBox(LoadString(IDS_PROMPT_MAKE_DEFAULT_VIEWER),
+						 MB_ICONEXCLAMATION | MB_YESNO, 0, mbo) == IDYES
+				&& !RegisterShellFileTypesElevate(pMainFrame))
+		{
+			AfxMessageBox(IDS_MAKE_DEFAULT_FAILED, MB_ICONERROR | MB_OK);
+		}
+	}
 
 	if (m_appSettings.strVersion != CURRENT_VERSION)
 		OnAppAbout();
@@ -596,13 +607,14 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.bNavPaneCollapsed = !!GetProfileInt(s_pszDisplaySection, s_pszNavCollapsed, m_appSettings.bNavPaneCollapsed);
 	m_appSettings.nNavPaneWidth = GetProfileInt(s_pszDisplaySection, s_pszNavWidth, m_appSettings.nNavPaneWidth);
 
-	m_appSettings.bRestoreAssocs = !!GetProfileInt(s_pszGlobalSection, s_pszRestoreAssocs, m_appSettings.bRestoreAssocs);
+	m_appSettings.bWarnNotDefaultViewer = !!GetProfileInt(s_pszGlobalSection, s_pszWarnNotDefaultViewer, m_appSettings.bWarnNotDefaultViewer);
 	m_appSettings.bTopLevelDocs = !!GetProfileInt(s_pszGlobalSection, s_pszTopLevelDocs, m_appSettings.bTopLevelDocs);
+	m_appSettings.bWarnCloseMultiple = !!GetProfileInt(s_pszGlobalSection, s_pszWarnCloseMultiple, m_appSettings.bWarnCloseMultiple);
+	m_appSettings.bHideSingleTab = !!GetProfileInt(s_pszGlobalSection, s_pszHideSingleTab, m_appSettings.bHideSingleTab);
 	m_appSettings.bGenAllThumbnails = !!GetProfileInt(s_pszGlobalSection, s_pszGenAllThumbnails, m_appSettings.bGenAllThumbnails);
 	m_appSettings.bFullscreenClicks = !!GetProfileInt(s_pszGlobalSection, s_pszFullscreenClicks, m_appSettings.bFullscreenClicks);
 	m_appSettings.bFullscreenHideScroll = !!GetProfileInt(s_pszGlobalSection, s_pszFullscreenHideScroll, m_appSettings.bFullscreenHideScroll);
 	m_appSettings.bFullscreenContinuousScroll = !!GetProfileInt(s_pszGlobalSection, s_pszFullscreenContinuousScroll, m_appSettings.bFullscreenContinuousScroll);
-	m_appSettings.bWarnCloseMultiple = !!GetProfileInt(s_pszGlobalSection, s_pszWarnCloseMultiple, m_appSettings.bWarnCloseMultiple);
 	m_appSettings.bInvertWheelZoom = !!GetProfileInt(s_pszGlobalSection, s_pszInvertWheelZoom, m_appSettings.bInvertWheelZoom);
 	m_appSettings.bCloseOnEsc = !!GetProfileInt(s_pszGlobalSection, s_pszCloseOnEsc, m_appSettings.bCloseOnEsc);
 	m_appSettings.bWrapLongBookmarks = !!GetProfileInt(s_pszGlobalSection, s_pszWrapLongBookmarks, m_appSettings.bWrapLongBookmarks);
@@ -774,13 +786,14 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySection, s_pszNavCollapsed, m_appSettings.bNavPaneCollapsed);
 	WriteProfileInt(s_pszDisplaySection, s_pszNavWidth, m_appSettings.nNavPaneWidth);
 
-	WriteProfileInt(s_pszGlobalSection, s_pszRestoreAssocs, m_appSettings.bRestoreAssocs);
+	WriteProfileInt(s_pszGlobalSection, s_pszWarnNotDefaultViewer, m_appSettings.bWarnNotDefaultViewer);
 	WriteProfileInt(s_pszGlobalSection, s_pszTopLevelDocs, m_appSettings.bTopLevelDocs);
+	WriteProfileInt(s_pszGlobalSection, s_pszWarnCloseMultiple, m_appSettings.bWarnCloseMultiple);
+	WriteProfileInt(s_pszGlobalSection, s_pszHideSingleTab, m_appSettings.bHideSingleTab);
 	WriteProfileInt(s_pszGlobalSection, s_pszGenAllThumbnails, m_appSettings.bGenAllThumbnails);
 	WriteProfileInt(s_pszGlobalSection, s_pszFullscreenClicks, m_appSettings.bFullscreenClicks);
 	WriteProfileInt(s_pszGlobalSection, s_pszFullscreenHideScroll, m_appSettings.bFullscreenHideScroll);
 	WriteProfileInt(s_pszGlobalSection, s_pszFullscreenContinuousScroll, m_appSettings.bFullscreenContinuousScroll);
-	WriteProfileInt(s_pszGlobalSection, s_pszWarnCloseMultiple, m_appSettings.bWarnCloseMultiple);
 	WriteProfileInt(s_pszGlobalSection, s_pszInvertWheelZoom, m_appSettings.bInvertWheelZoom);
 	WriteProfileInt(s_pszGlobalSection, s_pszCloseOnEsc, m_appSettings.bCloseOnEsc);
 	WriteProfileInt(s_pszGlobalSection, s_pszWrapLongBookmarks, m_appSettings.bWrapLongBookmarks);
@@ -1053,7 +1066,7 @@ void CALLBACK CDjViewApp::TimerProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dw
 	}
 }
 
-bool SetRegHKCRValue(LPCTSTR lpszKey, LPCTSTR lpszValue, bool& bChanged)
+bool SetRegHKCRValue(LPCTSTR lpszKey, LPCTSTR lpszValue, bool& bChanged, bool bCheckOnly)
 {
 	CString strOldValue;
 	LONG cbData;
@@ -1065,7 +1078,7 @@ bool SetRegHKCRValue(LPCTSTR lpszKey, LPCTSTR lpszValue, bool& bChanged)
 			return true;
 	}
 
-	if (::RegSetValue(HKEY_CLASSES_ROOT, lpszKey, REG_SZ,
+	if (!bCheckOnly && ::RegSetValue(HKEY_CLASSES_ROOT, lpszKey, REG_SZ,
 			lpszValue, lstrlen(lpszValue) * sizeof(TCHAR)) != ERROR_SUCCESS)
 		return false;
 
@@ -1073,7 +1086,7 @@ bool SetRegHKCRValue(LPCTSTR lpszKey, LPCTSTR lpszValue, bool& bChanged)
 	return true;
 }
 
-bool CDjViewApp::RegisterShellFileTypes()
+bool CDjViewApp::RegisterShellFileTypes(bool bCheckOnly)
 {
 	bool bSuccess = true;
 	bool bChanged = false;
@@ -1104,14 +1117,14 @@ bool CDjViewApp::RegisterShellFileTypes()
 			ASSERT(strFileTypeId.Find(' ') == -1);  // no spaces allowed
 
 			// first register the type ID of our server
-			if (!SetRegHKCRValue(strFileTypeId, strFileTypeName, bChanged))
+			if (!SetRegHKCRValue(strFileTypeId, strFileTypeName, bChanged, bCheckOnly))
 			{
 				bSuccess = false;
 				continue;
 			}
 
 			strTemp.Format(_T("%s\\DefaultIcon"), (LPCTSTR)strFileTypeId);
-			if (!SetRegHKCRValue(strTemp, strDefaultIconCommandLine, bChanged))
+			if (!SetRegHKCRValue(strTemp, strDefaultIconCommandLine, bChanged, bCheckOnly))
 			{
 				bSuccess = false;
 				continue;
@@ -1119,7 +1132,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 
 			strTemp.Format(_T("%s\\shell\\open\\%s"), (LPCTSTR)strFileTypeId,
 				(LPCTSTR)_T("ddeexec"));
-			if (!SetRegHKCRValue(strTemp, _T("[open(\"%1\")]"), bChanged))
+			if (!SetRegHKCRValue(strTemp, _T("[open(\"%1\")]"), bChanged, bCheckOnly))
 			{
 				bSuccess = false;
 				continue;
@@ -1127,7 +1140,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 
 			strTemp.Format(_T("%s\\shell\\open\\%s\\Application"), (LPCTSTR)strFileTypeId,
 				(LPCTSTR)_T("ddeexec"));
-			if (!SetRegHKCRValue(strTemp, _T("WinDjView"), bChanged))
+			if (!SetRegHKCRValue(strTemp, _T("WinDjView"), bChanged, bCheckOnly))
 			{
 				bSuccess = false;
 				continue;
@@ -1135,7 +1148,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 
 			strTemp.Format(_T("%s\\shell\\open\\%s\\Topic"), (LPCTSTR)strFileTypeId,
 				(LPCTSTR)_T("ddeexec"));
-			if (!SetRegHKCRValue(strTemp, _T("System"), bChanged))
+			if (!SetRegHKCRValue(strTemp, _T("System"), bChanged, bCheckOnly))
 			{
 				bSuccess = false;
 				continue;
@@ -1146,7 +1159,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 			// path\shell\open\command = path filename
 			strTemp.Format(_T("%s\\shell\\open\\%s"), (LPCTSTR)strFileTypeId,
 				_T("command"));
-			if (!SetRegHKCRValue(strTemp, strOpenCommandLine, bChanged))
+			if (!SetRegHKCRValue(strTemp, strOpenCommandLine, bChanged, bCheckOnly))
 			{
 				bSuccess = false;
 				continue;
@@ -1168,7 +1181,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 				HKEY hKey = NULL;
 				::RegOpenKeyEx(HKEY_CURRENT_USER, strExplorerKey, 0, KEY_READ | KEY_WRITE, &hKey);
 
-				if (!SetRegHKCRValue(strFilterExt, strFileTypeId, bChanged))
+				if (!SetRegHKCRValue(strFilterExt, strFileTypeId, bChanged, bCheckOnly))
 				{
 					// Setting global association failed, set the user-level one instead.
 					if (hKey != NULL)
@@ -1181,7 +1194,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 								|| ::RegQueryValueEx(hKey, strProgId, 0, &dwType, (LPBYTE)(LPTSTR) strData.GetBufferSetLength(cbData / sizeof(TCHAR) + 1), &cbData) != ERROR_SUCCESS
 								|| (strData.ReleaseBuffer(), strData != strFileTypeId))
 						{
-							if (::RegSetValueEx(hKey, strProgId, 0, REG_SZ, (LPBYTE)(LPCTSTR) strFileTypeId, strFileTypeId.GetLength() * sizeof(TCHAR)) != ERROR_SUCCESS)
+							if (!bCheckOnly && ::RegSetValueEx(hKey, strProgId, 0, REG_SZ, (LPBYTE)(LPCTSTR) strFileTypeId, strFileTypeId.GetLength() * sizeof(TCHAR)) != ERROR_SUCCESS)
 								bSuccess = false;
 							else
 								bChanged = true;
@@ -1197,7 +1210,11 @@ bool CDjViewApp::RegisterShellFileTypes()
 							if (hChoiceKey != NULL)
 								::RegCloseKey(hChoiceKey);
 
-							if (::RegDeleteKey(HKEY_CURRENT_USER, strUserChoiceKey) != ERROR_SUCCESS)
+							if (bCheckOnly)
+							{
+								bChanged = true;
+							}
+							else if (::RegDeleteKey(HKEY_CURRENT_USER, strUserChoiceKey) != ERROR_SUCCESS)
 							{
 								bSuccess = false;
 							}
@@ -1216,7 +1233,11 @@ bool CDjViewApp::RegisterShellFileTypes()
 					else
 					{
 						HKEY hChoiceKey = NULL;
-						if (::RegCreateKey(HKEY_CURRENT_USER, strExplorerKey, &hKey) != ERROR_SUCCESS)
+						if (bCheckOnly)
+						{
+							bChanged = true;
+						}
+						else if (::RegCreateKey(HKEY_CURRENT_USER, strExplorerKey, &hKey) != ERROR_SUCCESS)
 						{
 							bSuccess = false;
 						}
@@ -1240,7 +1261,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 					DWORD cbData = 0;
 					if (::RegQueryValueEx(hKey, strProgId, 0, &dwType, NULL, &cbData) == ERROR_SUCCESS)
 					{
-						if (::RegDeleteValue(hKey, strProgId) != ERROR_SUCCESS)
+						if (!bCheckOnly && ::RegDeleteValue(hKey, strProgId) != ERROR_SUCCESS)
 							bSuccess = false;
 						else
 							bChanged = true;
@@ -1250,7 +1271,7 @@ bool CDjViewApp::RegisterShellFileTypes()
 					if (::RegOpenKeyEx(HKEY_CURRENT_USER, strUserChoiceKey, 0, KEY_READ, &hChoiceKey) == ERROR_SUCCESS)
 					{
 						::RegCloseKey(hChoiceKey);
-						if (::RegDeleteKey(HKEY_CURRENT_USER, strUserChoiceKey) != ERROR_SUCCESS)
+						if (!bCheckOnly && ::RegDeleteKey(HKEY_CURRENT_USER, strUserChoiceKey) != ERROR_SUCCESS)
 							bSuccess = false;
 						else
 							bChanged = true;
@@ -1262,6 +1283,9 @@ bool CDjViewApp::RegisterShellFileTypes()
 			}
 		}
 	}
+
+	if (bCheckOnly)
+		return bChanged;
 
 	if (bChanged && bSuccess)
 		::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
@@ -1323,15 +1347,16 @@ void CDjViewApp::OnFileSettings()
 	CSettingsDlg dlg;
 	if (dlg.DoModal() == IDOK)
 	{
-		m_appSettings.bRestoreAssocs = !!dlg.m_pageAssocs.m_bRestoreAssocs;
+		m_appSettings.bWarnNotDefaultViewer = !!dlg.m_pageAdvanced.m_bWarnNotDefaultViewer;
+		m_appSettings.bRestoreView = !!dlg.m_pageAdvanced.m_bRestoreView;
 
 		m_appSettings.bTopLevelDocs = !!dlg.m_pageGeneral.m_bTopLevelDocs;
-		m_appSettings.bGenAllThumbnails = !!dlg.m_pageGeneral.m_bGenAllThumbnails;
 		m_appSettings.bWarnCloseMultiple = !!dlg.m_pageGeneral.m_bWarnCloseMultiple;
+		m_appSettings.bHideSingleTab = !!dlg.m_pageGeneral.m_bHideSingleTab;
+		m_appSettings.bGenAllThumbnails = !!dlg.m_pageGeneral.m_bGenAllThumbnails;
 		m_appSettings.bInvertWheelZoom = !!dlg.m_pageGeneral.m_bInvertWheelZoom;
 		m_appSettings.bCloseOnEsc = !!dlg.m_pageGeneral.m_bCloseOnEsc;
 		m_appSettings.bWrapLongBookmarks = !!dlg.m_pageGeneral.m_bWrapLongBookmarks;
-		m_appSettings.bRestoreView = !!dlg.m_pageGeneral.m_bRestoreView;
 		m_appSettings.bFullscreenClicks = !!dlg.m_pageGeneral.m_bFullscreenClicks;
 		m_appSettings.bFullscreenHideScroll = !!dlg.m_pageGeneral.m_bFullscreenHideScroll;
 		m_appSettings.bFullscreenContinuousScroll = !!dlg.m_pageGeneral.m_bFullscreenContinuousScroll;
@@ -2260,8 +2285,11 @@ BOOL CDjViewApp::SaveAllModified()
 		int nOpenDocuments = GetDocumentCount();
 		if (nOpenDocuments > 1)
 		{
-			if (AfxMessageBox(FormatString(IDS_WARN_CLOSE_MULTIPLE, nOpenDocuments),
-					MB_ICONEXCLAMATION | MB_YESNO) != IDYES)
+			CDjViewApp::MessageBoxOptions mbo;
+			mbo.strCheckBox = LoadString(IDS_CHECK_CLOSE_MULTIPLE);
+			mbo.pCheckValue = &m_appSettings.bWarnCloseMultiple;
+			if (DoMessageBox(FormatString(IDS_WARN_CLOSE_MULTIPLE, nOpenDocuments),
+					MB_ICONEXCLAMATION | MB_YESNO, 0, mbo) != IDYES)
 				return false;
 		}
 	}
@@ -2300,37 +2328,23 @@ void CDjViewApp::EnableWindows(set<CWnd*>& disabled)
 	}
 }
 
-int CDjViewApp::DoMessageBox(LPCTSTR lpszText, UINT nType, UINT nIDHelp)
+int CDjViewApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDHelp)
 {
-	return DoMessageBox(lpszText, nType, nIDHelp, (LPCTSTR) NULL);
+	return DoMessageBox(lpszPrompt, nType, nIDHelp, MessageBoxOptions());
 }
 
-int CDjViewApp::DoMessageBox(UINT nIDPrompt, UINT nType, UINT nIDHelp, UINT nIDCaptions)
-{
-	return DoMessageBox(LoadString(nIDPrompt), nType, nIDHelp, LoadString(nIDCaptions));
-}
-
-int CDjViewApp::DoMessageBox(LPCTSTR lpszText, UINT nType, UINT nIDHelp, UINT nIDCaptions)
-{
-	return DoMessageBox(lpszText, nType, nIDHelp, LoadString(nIDCaptions));
-}
-
-int CDjViewApp::DoMessageBox(UINT nIDPrompt, UINT nType, UINT nIDHelp, LPCTSTR lpszCaptions)
-{
-	return DoMessageBox(LoadString(nIDPrompt), nType, nIDHelp, lpszCaptions);
-}
-
-int CDjViewApp::DoMessageBox(LPCTSTR lpszText, UINT nType, UINT nIDHelp, LPCTSTR lpszCaptions)
+int CDjViewApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDHelp, const MessageBoxOptions& mbo)
 {
 	ASSERT(m_hMBHook == NULL);
 	m_hMBHook = SetWindowsHookEx(WH_CBT, &MBHookProc, NULL, GetCurrentThreadId());
-	m_strMBCaptions = lpszCaptions;
 	m_nMBType = nType;
+	m_pMBWnd = NULL;
+	m_mbo = mbo;
 
 	set<CWnd*> disabled;
 	DisableTopLevelWindows(disabled);
 
-	int nResult = CWinApp::DoMessageBox(lpszText, nType, nIDHelp);
+	int nResult = CWinApp::DoMessageBox(lpszPrompt, nType, nIDHelp);
 
 	EnableWindows(disabled);
 
@@ -2340,7 +2354,28 @@ int CDjViewApp::DoMessageBox(LPCTSTR lpszText, UINT nType, UINT nIDHelp, LPCTSTR
 		m_hMBHook = NULL;
 	}
 
+	if (m_pMBWnd != NULL)
+	{
+		delete m_pMBWnd;
+		m_pMBWnd = NULL;
+	}
+
+	m_mbo.pCheckValue = NULL;
+
 	return nResult;
+}
+
+void MoveDlgItem(HWND hwndDlg, UINT nID, int dx, int dy)
+{
+	HWND hwndItem = GetDlgItem(hwndDlg, nID);
+	if (hwndItem == NULL)
+		return;
+
+	CRect rc;
+	::GetWindowRect(hwndItem, rc);
+	::ScreenToClient(hwndDlg, &rc.TopLeft());
+	::ScreenToClient(hwndDlg, &rc.BottomRight());
+	::MoveWindow(hwndItem, rc.left + dx, rc.top + dy, rc.Width(), rc.Height(), true);
 }
 
 LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
@@ -2358,9 +2393,9 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 			strMessage.ReleaseBuffer();
 			strMessage.Replace(_T("\n"), _T("\r\n"));
 
-			RECT rc, rcClient;
-			::GetWindowRect(hwndMessage, &rc);
-			::GetClientRect(hwndMessageBox, &rcClient);
+			CRect rc, rcClient;
+			::GetWindowRect(hwndMessage, rc);
+			::GetClientRect(hwndMessageBox, rcClient);
 			POINT pt;
 			pt.x = rc.left;
 			pt.y = rc.top;
@@ -2369,7 +2404,7 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 			// Create the alternate EDIT window
 			HWND hwndEdit = ::CreateWindowEx(0, _T("edit"), strMessage,
 					ES_READONLY | ES_MULTILINE | WS_CHILD,
-					pt.x, pt.y, rcClient.right - pt.x, rc.bottom - rc.top,
+					pt.x, pt.y, rcClient.right - pt.x, rc.Height(),
 					hwndMessageBox, (HMENU) 0xFFFE, NULL, NULL);
 
 			HFONT hFont = (HFONT) ::SendMessage(hwndMessage, WM_GETFONT, 0, 0);
@@ -2378,10 +2413,42 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 			::ShowWindow(hwndEdit, SW_SHOW);
 			::ShowWindow(hwndMessage, SW_HIDE);
+
+			if (theApp.m_mbo.pCheckValue != NULL)
+			{
+				CRect rcCheckBox(0, 0, 1, 9);  // dialog units
+				::MapDialogRect(hwndMessageBox, &rcCheckBox);
+				CRect rcCheckBoxSpace(0, 0, 1, 15);  // dialog units
+				::MapDialogRect(hwndMessageBox, &rcCheckBoxSpace);
+
+				HWND hwndCheckBox = ::CreateWindowEx(0, _T("button"),
+					theApp.m_mbo.strCheckBox, WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX,
+					pt.x, pt.y + rc.Height() + rcCheckBoxSpace.Height() - rcCheckBox.Height(),
+					rcClient.right - pt.x, rcCheckBox.Height(),
+					hwndMessageBox, (HMENU) 0xFFF0, NULL, NULL);
+
+				::SendMessage(hwndCheckBox, WM_SETFONT, (WPARAM) hFont, 1);
+
+				CRect rcMessageBox;
+				::GetWindowRect(hwndMessageBox, &rcMessageBox);
+				rc.bottom += rcCheckBoxSpace.Height();
+				::MoveWindow(hwndMessageBox, rcMessageBox.left, rcMessageBox.top,
+						rcMessageBox.Width(), rcMessageBox.Height() + rcCheckBoxSpace.Height(), true);
+
+				MoveDlgItem(hwndMessageBox, IDOK, 0, rcCheckBoxSpace.Height());
+				MoveDlgItem(hwndMessageBox, IDCANCEL, 0, rcCheckBoxSpace.Height());
+				MoveDlgItem(hwndMessageBox, IDABORT, 0, rcCheckBoxSpace.Height());
+				MoveDlgItem(hwndMessageBox, IDRETRY, 0, rcCheckBoxSpace.Height());
+				MoveDlgItem(hwndMessageBox, IDIGNORE, 0, rcCheckBoxSpace.Height());
+				MoveDlgItem(hwndMessageBox, IDYES, 0, rcCheckBoxSpace.Height());
+				MoveDlgItem(hwndMessageBox, IDNO, 0, rcCheckBoxSpace.Height());
+
+				::SendMessage(hwndCheckBox, BM_SETCHECK, *theApp.m_mbo.pCheckValue, 0);
+			}
 		}
 
 		int nType = (theApp.m_nMBType & MB_TYPEMASK);
-		CString strCaptions = theApp.m_strMBCaptions;
+		CString strCaptions = theApp.m_mbo.strCaptions;
 
 		CString strOk, strCancel, strAbort, strRetry, strIgnore, strYes, strNo;
 		switch (nType)
@@ -2433,11 +2500,33 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 		if (!strNo.IsEmpty() && GetDlgItem(hwndMessageBox, IDNO) != NULL)
 			SetDlgItemText(hwndMessageBox, IDNO, strNo);
 
+		if (theApp.m_mbo.pCheckValue != NULL)
+		{
+			ASSERT(theApp.m_pMBWnd == NULL);
+			theApp.m_pMBWnd = new CMyMessageBox();
+			theApp.m_pMBWnd->SubclassWindow(hwndMessageBox);
+		}
+
 		::UnhookWindowsHookEx(theApp.m_hMBHook);
 		theApp.m_hMBHook = NULL;
 	}
 
 	return ::CallNextHookEx(theApp.m_hMBHook, nCode, wParam, lParam);
+}
+
+BOOL CDjViewApp::CMyMessageBox::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	UINT nID = LOWORD(wParam);
+	HWND hWndCtrl = (HWND) lParam;
+	int nCode = HIWORD(wParam);
+
+	if (message == WM_COMMAND && nCode == BN_CLICKED && nID == 0xFFF0 && hWndCtrl != NULL)
+	{
+		ASSERT(theApp.m_mbo.pCheckValue != NULL);
+		*theApp.m_mbo.pCheckValue = (::SendMessage(hWndCtrl, BM_GETCHECK, 0, 0) != 0);
+	}
+
+	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
 }
 
 CFindDlg* CDjViewApp::GetFindDlg(bool bCreate)

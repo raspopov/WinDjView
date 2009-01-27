@@ -21,23 +21,27 @@
 #pragma once
 
 
-// CSettingsAssocsPage dialog
+// CSettingsAdvancedPage dialog
 
-class CSettingsAssocsPage : public CPropertyPage
+class CSettingsAdvancedPage : public CPropertyPage
 {
-	DECLARE_DYNAMIC(CSettingsAssocsPage)
+	DECLARE_DYNAMIC(CSettingsAdvancedPage)
 
 public:
-	CSettingsAssocsPage();
-	virtual ~CSettingsAssocsPage();
+	CSettingsAdvancedPage();
+	virtual ~CSettingsAdvancedPage();
 
 // Dialog Data
-	enum { IDD = IDD_SETTINGS_ASSOCS };
-	BOOL m_bRestoreAssocs;
+	enum { IDD = IDD_SETTINGS_ADVANCED };
+	BOOL m_bWarnNotDefaultViewer;
+	BOOL m_bRestoreView;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual BOOL OnInitDialog();
-	afx_msg void OnAssociate();
+	void UpdateButtons();
+
+	afx_msg void OnMakeDefault();
+	afx_msg void OnBackup();
 	DECLARE_MESSAGE_MAP()
 };

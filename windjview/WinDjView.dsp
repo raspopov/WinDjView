@@ -298,7 +298,7 @@ SOURCE=.\SearchResultsView.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\SettingsAssocsPage.cpp
+SOURCE=.\SettingsAdvancedPage.cpp
 # End Source File
 # Begin Source File
 
@@ -511,7 +511,7 @@ SOURCE=.\SearchResultsView.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SettingsAssocsPage.h
+SOURCE=.\SettingsAdvancedPage.h
 # End Source File
 # Begin Source File
 

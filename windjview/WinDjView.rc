@@ -559,7 +559,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS_GENERAL DIALOGEX 0, 0, 222, 160
+IDD_SETTINGS_GENERAL DIALOGEX 0, 0, 222, 168
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "General"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
@@ -568,23 +568,23 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,208,10
     CONTROL         "&Warn when closing multiple documents",IDC_WARN_CLOSE_MULTIPLE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
-    CONTROL         "Generate &thumbnails for all pages in background",IDC_GEN_ALL_THUMBNAILS,
+    CONTROL         "Hi&de tabs if only one document is open",IDC_HIDE_SINGLE_TAB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,208,10
-    CONTROL         "&Invert Ctrl+Mouse Wheel zooming direction",IDC_INVERT_WHEEL_ZOOM,
+    CONTROL         "Generate &thumbnails for all pages in background",IDC_GEN_ALL_THUMBNAILS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,208,10
-    CONTROL         "Close the program when &Escape key is pressed",IDC_CLOSE_ON_ESC,
+    CONTROL         "&Invert Ctrl+Mouse Wheel zooming direction",IDC_INVERT_WHEEL_ZOOM,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,208,10
-    CONTROL         "Wrap &long bookmarks",IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,77,208,10
-    CONTROL         "Restore open &page and view settings when opening a file",IDC_RESTORE_VIEW,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,208,10
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,109,208,1
-    LTEXT           "Fullscreen mode:",IDC_STATIC,7,115,57,10,SS_CENTERIMAGE
+    CONTROL         "Close the program when &Escape key is pressed",IDC_CLOSE_ON_ESC,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,77,208,10
+    CONTROL         "Wrap &long bookmarks",IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,208,10
+    LTEXT           "Fullscreen mode",IDC_STATIC,7,108,56,10,SS_CENTERIMAGE
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,62,113,153,1
     CONTROL         "&Mouse clicks switch pages",IDC_FULLSCREEN_CLICKS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,68,115,147,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,122,194,10
     CONTROL         "Always &hide scrollbars",IDC_FULLSCREEN_HIDESCROLL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,68,129,147,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,136,194,10
     CONTROL         "Enable &continuous scrolling",IDC_FULLSCREEN_CONTINUOUS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,68,143,147,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,150,194,10
 END
 
 IDD_FIND DIALOGEX 0, 0, 287, 64
@@ -723,15 +723,25 @@ BEGIN
     LTEXT           "A dictionary with this name is already installed in the system. Installation will replace the existing dictionary with the currently open file.",IDC_STATIC,7,7,176,26
 END
 
-IDD_SETTINGS_ASSOCS DIALOGEX 0, 0, 222, 134
+IDD_SETTINGS_ADVANCED DIALOGEX 0, 0, 222, 164
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
-CAPTION "File Associations"
+CAPTION "Advanced"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    LTEXT           "Press to associate WinDjView with .djvu and .djv files:",-1,7,7,182,9
-    PUSHBUTTON      "&Associate",IDC_ASSOCIATE,7,19,50,14
-    CONTROL         "&Restore associations at program start",IDC_RESTORE_ASSOCS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,38,208,10
+    LTEXT           "Default DjVu Viewer",IDC_STATIC,7,7,66,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,75,11,140,1
+    LTEXT           "WinDjView is currently the default viewer for DjVu files",IDC_DEFAULT_VIEWER_STATUS,21,21,118,19
+    PUSHBUTTON      "&Make default",IDC_MAKE_DEFAULT,145,21,70,14
+    CONTROL         "&Tell me if WinDjView is not the default DjVu viewer",IDC_WARN_NOT_DEFAULT_VIEWER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,42,178,10
+    LTEXT           "Bookmarks && Annotations",IDC_STATIC,7,60,86,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,94,65,121,1
+    LTEXT           "You can back up all your bookmarks and annotations for DjVu files. The backup file can also be used to transfer the bookmarks to another computer.",IDC_STATIC,23,74,192,28
+    PUSHBUTTON      "&Create a backup",IDC_CREATE_BACKUP,23,103,70,14
+    LTEXT           "Miscellaneous",IDC_STATIC,7,125,47,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,55,130,160,1
+    CONTROL         "&Restore open page and view settings when opening files",IDC_RESTORE_VIEW,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,139,194,10
 END
 
 IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 134
@@ -853,7 +863,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 153
+        BOTTOMMARGIN, 161
     END
 
     IDD_FIND, DIALOG
@@ -920,12 +930,12 @@ BEGIN
         BOTTOMMARGIN, 84
     END
 
-    IDD_SETTINGS_ASSOCS, DIALOG
+    IDD_SETTINGS_ADVANCED, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 126
+        BOTTOMMARGIN, 156
     END
 
     IDD_SETTINGS_DICT, DIALOG
@@ -1009,9 +1019,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_CONTENTS_TAB        "Contents"
-    IDS_ASSOCIATE_SUCCESSFUL 
-                            "Now you will be able to open .djvu and .djv files with WinDjView\nby double-clicking them in the Explorer."
-    IDS_ASSOCIATE_FAILED    "An error occurred while trying to register file associations.\nYou may not have enough permissions to write to system registry."
+    IDS_MAKE_DEFAULT_FAILED "An error occurred while trying to make WinDjView the default viewer.\nYour user account may not have the required permissions."
     IDS_PAGE_INDEX_TAB      "Index"
     IDS_THUMBNAILS_TAB      "Thumbnails"
     IDS_SEARCH_RESULTS_TAB  "Search Results"
@@ -1169,7 +1177,7 @@ BEGIN
     IDS_VERSION_ABOUT       "WinDjView %s"
     IDS_CURRENT_VERSION     "0.6"
     IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
-    IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure you want to proceed?"
+    IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure\nyou want to proceed?"
     IDS_OPENFILE            "Open"
     IDS_ALLFILTER           "All Files (*.*)"
     IDS_SETTINGS            "Settings"
@@ -1357,6 +1365,14 @@ BEGIN
     IDS_BOOKMARKS_PROMPT_CAPTIONS "Append\nReplace"
     IDS_SEARCH_WRAPPED      "Passed the end of the document"
     IDS_BOOKMARK_TOP_LEVEL  "&Expand Top-Level Bookmarks\n&Collapse Top-Level Bookmarks"
+    IDS_PROMPT_MAKE_DEFAULT_VIEWER 
+                            "WinDjView is currently not the default viewer for DjVu files.\nWould you like to always open DjVu files with WinDjView?"
+    IDS_WARN_NOT_DEFAULT_VIEWER 
+                            "&Always perform this check when starting WinDjView"
+    IDS_DEFAULT_VIEWER      "WinDjView is currently the default viewer for DjVu files."
+    IDS_NOT_DEFAULT_VIEWER  "WinDjView is currently not the default viewer for DjVu files."
+    IDS_TAB_BAR_MENU        "Tab &Bar"
+    IDS_CHECK_CLOSE_MULTIPLE "Always warn when closing multiple documents"
 END
 
 #endif    // English (U.S.) resources

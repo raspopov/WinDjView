@@ -70,7 +70,7 @@ public:
 	void EnableWindows(set<CWnd*>& disabled);
 
 	void SaveSettings();
-	bool RegisterShellFileTypes();
+	bool RegisterShellFileTypes(bool bCheckOnly = false);
 	bool RegisterShellFileTypesElevate(CWnd* pWnd = NULL);
 
 	void InitSearchHistory(CComboBoxEx& cboFind);
@@ -151,12 +151,18 @@ public:
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
 	virtual BOOL SaveAllModified();
-	virtual int DoMessageBox(LPCTSTR lpszText, UINT nType, UINT nIDHelp);
+	virtual int DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDHelp);
 
-	virtual int DoMessageBox(UINT nIDPrompt, UINT nType, UINT nIDHelp, UINT nIDCaptions);
-	virtual int DoMessageBox(LPCTSTR lpszText, UINT nType, UINT nIDHelp, UINT nIDCaptions);
-	virtual int DoMessageBox(UINT nIDPrompt, UINT nType, UINT nIDHelp, LPCTSTR lpszCaptions);
-	virtual int DoMessageBox(LPCTSTR lpszText, UINT nType, UINT nIDHelp, LPCTSTR lpszCaptions);
+	struct MessageBoxOptions
+	{
+		MessageBoxOptions() : pCheckValue(NULL) {}
+
+		CString strCaptions;
+		CString strCheckBox;
+		bool* pCheckValue;
+	};
+
+	virtual int DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDHelp, const MessageBoxOptions& mbo);
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -184,8 +190,16 @@ protected:
 
 	HHOOK m_hMBHook;
 	UINT m_nMBType;
-	CString m_strMBCaptions;
+	CWnd* m_pMBWnd;
+	MessageBoxOptions m_mbo;
 	static LRESULT CALLBACK MBHookProc(int nCode, WPARAM wParam, LPARAM lParam);
+
+	class CMyMessageBox : public CWnd
+	{
+	public:
+		virtual ~CMyMessageBox() {}
+		virtual BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
+	};
 
 	struct LanguageInfo
 	{

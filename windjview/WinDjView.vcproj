@@ -581,7 +581,7 @@
 				>
 			</File>
 			<File
-				RelativePath="SettingsAssocsPage.cpp"
+				RelativePath="SettingsAdvancedPage.cpp"
 				>
 			</File>
 			<File
@@ -824,7 +824,7 @@
 				>
 			</File>
 			<File
-				RelativePath="SettingsAssocsPage.h"
+				RelativePath="SettingsAdvancedPage.h"
 				>
 			</File>
 			<File

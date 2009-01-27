@@ -273,11 +273,11 @@ void CPrintDlg::OnOK()
 
 	SaveSettings();
 
-	if (m_hPrinter == NULL)
+	if (m_hPrinter == NULL || m_pPrinter == NULL || m_pPaper == NULL)
+	{
 		EndDialog(IDCANCEL);
-
-	// Printer handle and info struct are returned to the caller
-	ASSERT(m_hPrinter != NULL && m_pPrinter != NULL && m_pPaper != NULL);
+		return;
+	}
 
 	if (IsPrintSelection())
 	{
@@ -519,18 +519,28 @@ void CPrintDlg::OnChangePaper()
 	UpdateData(false);
 	UpdateDevMode();
 
-	CDC infoDC;
-	infoDC.Attach(::CreateIC(m_pPrinter->strDriverName, m_pPrinter->strPrinterName, NULL, m_pDevMode));
-	ASSERT(infoDC.m_hDC);
-
-	m_pPrinter->nPhysicalWidth = infoDC.GetDeviceCaps(PHYSICALWIDTH);
-	m_pPrinter->nPhysicalHeight = infoDC.GetDeviceCaps(PHYSICALHEIGHT);
-	m_pPrinter->nOffsetLeft = infoDC.GetDeviceCaps(PHYSICALOFFSETX);
-	m_pPrinter->nOffsetTop = infoDC.GetDeviceCaps(PHYSICALOFFSETY);
-	m_pPrinter->nUserWidth = infoDC.GetDeviceCaps(HORZRES);
-	m_pPrinter->nUserHeight = infoDC.GetDeviceCaps(VERTRES);
-
-	infoDC.DeleteDC();
+	HDC hInfoDC = ::CreateIC(m_pPrinter->strDriverName, m_pPrinter->strPrinterName, NULL, m_pDevMode);
+	if (hInfoDC != NULL)
+	{
+		CDC infoDC;
+		infoDC.Attach(hInfoDC);
+		m_pPrinter->nPhysicalWidth = infoDC.GetDeviceCaps(PHYSICALWIDTH);
+		m_pPrinter->nPhysicalHeight = infoDC.GetDeviceCaps(PHYSICALHEIGHT);
+		m_pPrinter->nOffsetLeft = infoDC.GetDeviceCaps(PHYSICALOFFSETX);
+		m_pPrinter->nOffsetTop = infoDC.GetDeviceCaps(PHYSICALOFFSETY);
+		m_pPrinter->nUserWidth = infoDC.GetDeviceCaps(HORZRES);
+		m_pPrinter->nUserHeight = infoDC.GetDeviceCaps(VERTRES);
+		infoDC.DeleteDC();
+	}
+	else
+	{
+		m_pPrinter->nPhysicalWidth = 100;
+		m_pPrinter->nPhysicalHeight = 100;
+		m_pPrinter->nOffsetLeft = 0;
+		m_pPrinter->nOffsetTop = 0;
+		m_pPrinter->nUserWidth = 100;
+		m_pPrinter->nUserHeight = 100;
+	}
 
 	m_bDrawPreview = true;
 	InvalidateRect(m_rcPreview, false);
@@ -586,18 +596,18 @@ void CPrintDlg::OnChangePrinter()
 	::GetPrinter(m_hPrinter, 2, NULL, 0, &cbNeeded);
 	if (cbNeeded == 0)
 	{
-		UpdateData(false);
 		::ClosePrinter(m_hPrinter);
 		m_hPrinter = NULL;
+		UpdateData(false);
 		return;
 	}
 
 	m_printerData.resize(cbNeeded + 1);
 	if (!::GetPrinter(m_hPrinter, 2, &m_printerData[0], cbNeeded, &cbNeeded))
 	{
-		UpdateData(false);
 		::ClosePrinter(m_hPrinter);
 		m_hPrinter = NULL;
+		UpdateData(false);
 		return;
 	}
 
@@ -612,11 +622,11 @@ void CPrintDlg::OnChangePrinter()
 		m_pPrinter->strPrinterName.GetBuffer(0), NULL, NULL, 0);
 	if (cbDevMode == 0)
 	{
-		UpdateData(false);
 		::ClosePrinter(m_hPrinter);
 		delete m_pPrinter;
 		m_hPrinter = NULL;
 		m_pPrinter = NULL;
+		UpdateData(false);
 		return;
 	}
 
@@ -752,7 +762,7 @@ void CPrintDlg::OnCopiesUpDown(NMHDR* pNMHDR, LRESULT* pResult)
 
 void CPrintDlg::OnProperties()
 {
-	if (m_hPrinter == NULL || m_pPrinter == NULL)
+	if (m_pPrinter == NULL)
 		return;
 
 	UpdateData();
@@ -820,6 +830,9 @@ void CPrintDlg::OnUpdateControls()
 void CPrintDlg::OnUpdateDialogData()
 {
 	UpdateData();
+
+	if (m_pPrinter == NULL)
+		return;
 
 	if (m_settings.nCopies > m_pPrinter->nMaxCopies)
 		m_settings.nCopies = m_pPrinter->nMaxCopies;

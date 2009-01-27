@@ -2,7 +2,7 @@ WinDjView changes history
 Copyright (C) 2004-2008 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 0.6 (2008-??-??):
+Changes in version 0.6 (2009-??-??):
 ! Added multiple top-level documents mode.
 ! Added a tab bar to the single-window mode.
 + Added an option to enable continuous scrolling in fullscreen mode.
@@ -16,6 +16,7 @@ Changes in version 0.6 (2008-??-??):
 + Added F3 hotkey for Find Next.
 + Added support for Unicode Supplementary Planes in contents and index.
 + DPI value is now set when exporting page or selection as bitmap.
++ Added a warning if WinDjView is not a default DjVu viewer.
 * Fixed saving "First page alone" setting for every document.
 * Fixed crash in magnify tool after rotating the page.
 * Fixed crash when exiting fullscreen mode.

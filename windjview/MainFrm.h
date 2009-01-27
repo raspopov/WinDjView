@@ -142,6 +142,7 @@ protected:
 	afx_msg void OnViewStatusBar();
 	afx_msg void OnViewSidebar();
 	afx_msg void OnViewDictBar();
+	afx_msg void OnUpdateViewToolbar(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewTabBar(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewSidebar(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewDictBar(CCmdUI* pCmdUI);

@@ -12,7 +12,7 @@
 #define IDD_SETTINGS                    107
 #define IDD_SETTINGS_GENERAL            108
 #define IDD_SETTINGS_DISPLAY            109
-#define IDD_SETTINGS_ASSOCS             110
+#define IDD_SETTINGS_ADVANCED           110
 #define IDD_ANNOTATION                  111
 #define IDD_RENAME_BOOKMARK             112
 #define IDD_INSTALL_DIC                 113
@@ -48,8 +48,7 @@
 #define IDB_CLOSE_TAB                   154
 #define IDR_DICTIONARIES_BAR            155
 #define IDS_CONTENTS_TAB                200
-#define IDS_ASSOCIATE_SUCCESSFUL        201
-#define IDS_ASSOCIATE_FAILED            202
+#define IDS_MAKE_DEFAULT_FAILED         202
 #define IDS_PAGE_INDEX_TAB              203
 #define IDS_THUMBNAILS_TAB              204
 #define IDS_SEARCH_RESULTS_TAB          205
@@ -161,6 +160,12 @@
 #define IDS_BOOKMARKS_PROMPT_CAPTIONS   311
 #define IDS_SEARCH_WRAPPED              312
 #define IDS_BOOKMARK_TOP_LEVEL          313
+#define IDS_PROMPT_MAKE_DEFAULT_VIEWER  314
+#define IDS_WARN_NOT_DEFAULT_VIEWER     315
+#define IDS_DEFAULT_VIEWER              316
+#define IDS_NOT_DEFAULT_VIEWER          317
+#define IDS_TAB_BAR_MENU                318
+#define IDS_CHECK_CLOSE_MULTIPLE        319
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -197,15 +202,16 @@
 #define IDC_IGNORE_MARGINS              1033
 #define IDC_STATIC_TEXT                 1034
 #define IDC_REVERSE                     1035
-#define IDC_RESTORE_ASSOCS              1036
+#define IDC_WARN_NOT_DEFAULT_VIEWER     1036
 #define IDC_MATCH_CASE                  1037
 #define IDC_GEN_ALL_THUMBNAILS          1038
 #define IDC_STATIC_LINK                 1039
 #define IDC_WARN_CLOSE_MULTIPLE         1040
 #define IDC_STATIC_LIB_LINK             1041
 #define IDC_FULLSCREEN_HIDESCROLL       1042
-#define IDC_ASSOCIATE                   1043
+#define IDC_MAKE_DEFAULT                1043
 #define IDC_TOP_LEVEL_DOCUMENTS         1044
+#define IDC_CREATE_BACKUP               1044
 #define IDC_FULLSCREEN_CLICKS           1045
 #define IDC_STATIC_ABOUT                1046
 #define IDC_FULLSCREEN_CONTINUOUS       1047
@@ -270,6 +276,8 @@
 #define IDC_STATIC_FILES                1103
 #define IDC_LIST_FILES                  1104
 #define IDC_SHOW_ALL_FILES              1105
+#define IDC_HIDE_SINGLE_TAB             1106
+#define IDC_DEFAULT_VIEWER_STATUS       1107
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_VIEW_NEXTPAGE_SHORTCUT       32773
@@ -383,9 +391,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        314
+#define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         33133
-#define _APS_NEXT_CONTROL_VALUE         1107
+#define _APS_NEXT_CONTROL_VALUE         1108
 #define _APS_NEXT_SYMED_VALUE           117
 #endif
 #endif

@@ -37,7 +37,7 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent)
 {
 	AddPage(&m_pageGeneral);
 	AddPage(&m_pageDisplay);
-	AddPage(&m_pageAssocs);
+	AddPage(&m_pageAdvanced);
 
 	if (theApp.GetDictLangsCount() > 0)
 		AddPage(&m_pageDict);
