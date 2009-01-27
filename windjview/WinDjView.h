@@ -191,6 +191,7 @@ protected:
 	HHOOK m_hMBHook;
 	UINT m_nMBType;
 	CWnd* m_pMBWnd;
+	CString m_strMBPrompt;
 	MessageBoxOptions m_mbo;
 	static LRESULT CALLBACK MBHookProc(int nCode, WPARAM wParam, LPARAM lParam);
 

@@ -2339,12 +2339,21 @@ int CDjViewApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDHelp, const
 	m_hMBHook = SetWindowsHookEx(WH_CBT, &MBHookProc, NULL, GetCurrentThreadId());
 	m_nMBType = nType;
 	m_pMBWnd = NULL;
+	m_strMBPrompt = lpszPrompt;
 	m_mbo = mbo;
+
+	CString strNewPrompt = lpszPrompt;
+
+	// Add the check box text to make Windows calculate dialog size for us.
+	// The prompt will be replaced by the original prompt, and the check
+	// box will be positioned at the bottom of the prompt area.
+	if (mbo.pCheckValue != NULL)
+		strNewPrompt += _T("\n\n") + m_mbo.strCheckBox;
 
 	set<CWnd*> disabled;
 	DisableTopLevelWindows(disabled);
 
-	int nResult = CWinApp::DoMessageBox(lpszPrompt, nType, nIDHelp);
+	int nResult = CWinApp::DoMessageBox(strNewPrompt, nType, nIDHelp);
 
 	EnableWindows(disabled);
 
@@ -2365,19 +2374,6 @@ int CDjViewApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDHelp, const
 	return nResult;
 }
 
-void MoveDlgItem(HWND hwndDlg, UINT nID, int dx, int dy)
-{
-	HWND hwndItem = GetDlgItem(hwndDlg, nID);
-	if (hwndItem == NULL)
-		return;
-
-	CRect rc;
-	::GetWindowRect(hwndItem, rc);
-	::ScreenToClient(hwndDlg, &rc.TopLeft());
-	::ScreenToClient(hwndDlg, &rc.BottomRight());
-	::MoveWindow(hwndItem, rc.left + dx, rc.top + dy, rc.Width(), rc.Height(), true);
-}
-
 LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	LRESULT lResult = 0;
@@ -2387,10 +2383,7 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 		HWND hwndMessage = GetDlgItem(hwndMessageBox, 0xFFFF);
 		if (hwndMessage != NULL)
 		{
-			CString strMessage;
-			int nLen = ::GetWindowTextLength(hwndMessage);
-			::GetWindowText(hwndMessage, strMessage.GetBufferSetLength(nLen), nLen + 1);
-			strMessage.ReleaseBuffer();
+			CString strMessage = theApp.m_strMBPrompt;
 			strMessage.Replace(_T("\n"), _T("\r\n"));
 
 			CRect rc, rcClient;
@@ -2418,32 +2411,19 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 			{
 				CRect rcCheckBox(0, 0, 1, 9);  // dialog units
 				::MapDialogRect(hwndMessageBox, &rcCheckBox);
-				CRect rcCheckBoxSpace(0, 0, 1, 15);  // dialog units
-				::MapDialogRect(hwndMessageBox, &rcCheckBoxSpace);
 
 				HWND hwndCheckBox = ::CreateWindowEx(0, _T("button"),
-					theApp.m_mbo.strCheckBox, WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX,
-					pt.x, pt.y + rc.Height() + rcCheckBoxSpace.Height() - rcCheckBox.Height(),
+					theApp.m_mbo.strCheckBox, WS_CHILD | WS_TABSTOP | BS_AUTOCHECKBOX,
+					pt.x, pt.y + rc.Height() - rcCheckBox.Height(),
 					rcClient.right - pt.x, rcCheckBox.Height(),
 					hwndMessageBox, (HMENU) 0xFFF0, NULL, NULL);
 
 				::SendMessage(hwndCheckBox, WM_SETFONT, (WPARAM) hFont, 1);
-
-				CRect rcMessageBox;
-				::GetWindowRect(hwndMessageBox, &rcMessageBox);
-				rc.bottom += rcCheckBoxSpace.Height();
-				::MoveWindow(hwndMessageBox, rcMessageBox.left, rcMessageBox.top,
-						rcMessageBox.Width(), rcMessageBox.Height() + rcCheckBoxSpace.Height(), true);
-
-				MoveDlgItem(hwndMessageBox, IDOK, 0, rcCheckBoxSpace.Height());
-				MoveDlgItem(hwndMessageBox, IDCANCEL, 0, rcCheckBoxSpace.Height());
-				MoveDlgItem(hwndMessageBox, IDABORT, 0, rcCheckBoxSpace.Height());
-				MoveDlgItem(hwndMessageBox, IDRETRY, 0, rcCheckBoxSpace.Height());
-				MoveDlgItem(hwndMessageBox, IDIGNORE, 0, rcCheckBoxSpace.Height());
-				MoveDlgItem(hwndMessageBox, IDYES, 0, rcCheckBoxSpace.Height());
-				MoveDlgItem(hwndMessageBox, IDNO, 0, rcCheckBoxSpace.Height());
+				::MoveWindow(hwndEdit, pt.x, pt.y, rcClient.right - pt.x,
+						rc.Height() - rcCheckBox.Height(), true);
 
 				::SendMessage(hwndCheckBox, BM_SETCHECK, *theApp.m_mbo.pCheckValue, 0);
+				::ShowWindow(hwndCheckBox, SW_SHOW);
 			}
 		}
 
