@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -862,10 +862,10 @@ BOOL CMyAnchorWnd::Create(CMyScrollView* pView)
 
 	m_pView = pView;
 
-	DWORD dwStyle = WS_EX_TOOLWINDOW;
+	DWORD dwExStyle = WS_EX_TOOLWINDOW;
 	if (m_pSetLayeredWindowAttributes != NULL)
-		dwStyle |= WS_EX_LAYERED;
-	if (!CreateEx(dwStyle, strWndClass, NULL, WS_POPUP,
+		dwExStyle |= WS_EX_LAYERED;
+	if (!CreateEx(dwExStyle, strWndClass, NULL, WS_POPUP,
 			CRect(0, 0, s_nAnchorSize, s_nAnchorSize), m_pView, 0))
 		return false;
 

@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -45,6 +45,7 @@ CRenderThread::CRenderThread(DjVuSource* pSource, Observer* pOwner)
 	UINT dwThreadId;
 	m_hThread = (HANDLE)_beginthreadex(NULL, 0, RenderThreadProc, this, 0, &dwThreadId);
 	::SetThreadPriority(m_hThread, THREAD_PRIORITY_BELOW_NORMAL);
+	theApp.ThreadStarted();
 }
 
 CRenderThread::~CRenderThread()
@@ -71,7 +72,6 @@ void CRenderThread::Stop()
 
 unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 {
-	theApp.ThreadStarted();
 	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 
 	CRenderThread* pThread = reinterpret_cast<CRenderThread*>(pvData);

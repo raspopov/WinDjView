@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -193,6 +193,7 @@ protected:
 	afx_msg void OnUpdateNextPane(CCmdUI* pCmdUI);
 	afx_msg BOOL OnNcActivate(BOOL bActive);
 	afx_msg void OnMouseWheelPage(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnNewVersion();
 	DECLARE_MESSAGE_MAP()
 };
 

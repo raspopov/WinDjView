@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -440,6 +440,28 @@ bool MakeWString(const GUTF8String& text, wstring& result)
 			::MultiByteToWideChar(CP_ACP, 0, (LPCSTR) text, -1, (LPWSTR) result.data(), nSize);
 		return true;
 	}
+}
+
+void MakeANSIString(const wstring& text, string& result)
+{
+	int nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+		(LPCWSTR)text.c_str(), -1, NULL, 0, NULL, NULL);
+	result.resize(nSize - 1);
+	::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+		(LPCWSTR)text.c_str(), -1, (LPSTR)result.data(), nSize, NULL, NULL);
+}
+
+void MakeANSIString(const CString& strText, string& result)
+{
+#ifdef _UNICODE
+	int nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+		(LPCWSTR)strText, -1, NULL, 0, NULL, NULL);
+	result.resize(nSize - 1);
+	::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
+		(LPCWSTR)strText, -1, (LPSTR)result.data(), nSize, NULL, NULL);
+#else
+	result = (LPCSTR)strText;
+#endif
 }
 
 void CreateSystemDialogFont(CFont& font)

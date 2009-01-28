@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ public:
 	enum { IDD = IDD_SETTINGS_ADVANCED };
 	BOOL m_bWarnNotDefaultViewer;
 	BOOL m_bRestoreView;
+	BOOL m_bCheckUpdates;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

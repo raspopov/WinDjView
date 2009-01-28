@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include "MDIChild.h"
 #include "DjVuView.h"
 #include "DjVuDoc.h"
-#include "AppSettings.h"
 #include "ThumbnailsView.h"
 #include "FullscreenWnd.h"
 #include "MagnifyWnd.h"
@@ -108,6 +107,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_WINDOW_PREV, OnWindowPrev)
 	ON_WM_ERASEBKGND()
 	ON_WM_NCACTIVATE()
+	ON_MESSAGE_VOID(WM_NOTIFY_NEW_VERSION, OnNewVersion)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -1018,12 +1018,14 @@ void CMainFrame::OnActivateWindow(UINT nID)
 
 void CMainFrame::AddMDIChild(CWnd* pMDIChild, CDocument* pDocument)
 {
-	if (theApp.GetAppSettings()->bHideSingleTab && m_tabbedMDI.GetTabCount() == 0)
+	if (theApp.m_bTopLevelDocs
+			|| theApp.GetAppSettings()->bHideSingleTab && m_tabbedMDI.GetTabCount() == 0)
 		m_tabbedMDI.ShowTabBar(false);
 
 	m_tabbedMDI.AddTab(pMDIChild, pDocument->GetTitle());
 
-	if (!theApp.GetAppSettings()->bHideSingleTab || m_tabbedMDI.GetTabCount() > 1)
+	if (!theApp.m_bTopLevelDocs
+			&& (!theApp.GetAppSettings()->bHideSingleTab || m_tabbedMDI.GetTabCount() > 1))
 		m_tabbedMDI.ShowTabBar(theApp.GetAppSettings()->bTabBar);
 }
 
@@ -1887,4 +1889,17 @@ void CMainFrame::OnMouseWheelPage(NMHDR* pNMHDR, LRESULT* pResult)
 	}
 
 	*pResult = 1;
+}
+
+void CMainFrame::OnNewVersion()
+{
+	CDjViewApp::MessageBoxOptions mbo;
+	mbo.strCheckBox = LoadString(IDS_CHECK_UPDATES);
+	mbo.pCheckValue = &theApp.GetAppSettings()->bCheckUpdates;
+	if (theApp.DoMessageBox(FormatString(IDS_NEW_VERSION_AVAILABLE, theApp.m_strNewVersion),
+			MB_ICONQUESTION | MB_YESNO, 0, mbo) == IDYES)
+	{
+		::ShellExecute(NULL, _T("open"), LoadString(IDS_WEBSITE_URL),
+			NULL, NULL, SW_SHOWNORMAL);
+	}
 }

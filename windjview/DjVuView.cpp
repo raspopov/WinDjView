@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -6107,9 +6107,10 @@ void CDjVuView::StartMagnify()
 	pView->OnInitialUpdate();
 
 	pView->UpdatePageInfoFrom(this);
-
 	pView->ShowWindow(SW_SHOW);
+
 	pView->UpdateCursor();
+	UpdateCursor();
 }
 
 void CDjVuView::UpdateMagnifyWnd()
@@ -6170,7 +6171,7 @@ void CDjVuView::UpdateMagnifyWnd()
 	pMagnifyWnd->CenterOnPoint(ptCenter);
 
 	GetTopLevelParent()->UpdateWindow();
-	pMagnifyWnd->UpdateWindow();
+	pMagnifyWnd->Update();
 }
 
 bool CDjVuView::OnStartPan()

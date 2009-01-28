@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -79,6 +79,8 @@ bool IsWinNT();
 
 void MakeWString(const CString& strText, wstring& result);
 bool MakeWString(const GUTF8String& text, wstring& result);
+void MakeANSIString(const wstring& text, string& result);
+void MakeANSIString(const CString& strText, string& result);
 CString MakeCString(const wstring& text);
 CString MakeCString(const GUTF8String& text);
 GUTF8String MakeUTF8String(const CString& strText);

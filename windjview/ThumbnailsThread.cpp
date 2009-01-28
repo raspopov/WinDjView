@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ CThumbnailsThread::CThumbnailsThread(DjVuSource* pSource, Observer* pOwner, bool
 	m_hThread = (HANDLE)_beginthreadex(NULL, 0, RenderThreadProc, this, 0, &dwThreadId);
 	::SetThreadPriority(m_hThread,
 			bIdle ? THREAD_PRIORITY_IDLE : THREAD_PRIORITY_BELOW_NORMAL);
+	theApp.ThreadStarted();
 }
 
 CThumbnailsThread::~CThumbnailsThread()
@@ -69,7 +70,6 @@ void CThumbnailsThread::Stop()
 
 unsigned int __stdcall CThumbnailsThread::RenderThreadProc(void* pvData)
 {
-	theApp.ThreadStarted();
 	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 
 	CThumbnailsThread* pThread = reinterpret_cast<CThumbnailsThread*>(pvData);

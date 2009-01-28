@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -20,15 +20,14 @@
 
 #include "stdafx.h"
 #include "WinDjView.h"
-#include "MainFrm.h"
 
+#include "MainFrm.h"
 #include "MyBitmapButton.h"
 #include "DjVuDoc.h"
 #include "DjVuView.h"
 #include "MDIChild.h"
 #include "MyDocManager.h"
 #include "MyDocTemplate.h"
-#include "AppSettings.h"
 #include "SettingsDlg.h"
 #include "UpdateDlg.h"
 #include "ThumbnailsView.h"
@@ -95,6 +94,9 @@ const TCHAR* s_pszCurrentLang = _T("cur-lang");
 const TCHAR* s_pszCurrentDict = _T("cur-dict");
 const TCHAR* s_pszDictLocation = _T("dict-location");
 const TCHAR* s_pszDictChoice = _T("dict-choice");
+const TCHAR* s_pszCheckUpdates = _T("check-updates");
+const TCHAR* s_pszLastUpdateLow = _T("last-update-l");
+const TCHAR* s_pszLastUpdateHigh = _T("last-update-h");
 
 const TCHAR* s_pszAnnotationsSection = _T("Annotations");
 const TCHAR* s_pszHideInactiveBorder = _T("hide-inactive");
@@ -156,7 +158,7 @@ CDjViewApp::CDjViewApp()
 	: m_bInitialized(false), m_bTopLevelDocs(false), m_pDjVuTemplate(NULL), m_pFindDlg(NULL),
 	  m_nThreadCount(0), m_hHook(NULL), m_pPendingSource(NULL), m_bShiftPressed(false),
 	  m_bControlPressed(false), m_nLangIndex(0), m_nTimerID(0),
-	  m_bOnlyRegisterTypes(false), m_nExitCode(0)
+	  m_bOnlyRegisterTypes(false), m_nExitCode(0), m_hUpdateThread(NULL)
 {
 	DjVuSource::SetApplication(this);
 }
@@ -246,6 +248,15 @@ BOOL CDjViewApp::InitInstance()
 		{
 			AfxMessageBox(IDS_MAKE_DEFAULT_FAILED, MB_ICONERROR | MB_OK);
 		}
+	}
+
+	__int64 cur_time = time(NULL);
+	if (m_appSettings.bCheckUpdates
+			&& cur_time - m_appSettings.nLastUpdateTime > 60*60*24*7)  // one week
+	{
+		UINT nThreadId;
+		m_hUpdateThread = (HANDLE)_beginthreadex(NULL, 0, CheckUpdateThreadProc, NULL, 0, &nThreadId);
+		ThreadStarted();
 	}
 
 	if (m_appSettings.strVersion != CURRENT_VERSION)
@@ -627,6 +638,11 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.strDictLocation = GetProfileString(s_pszGlobalSection, s_pszDictLocation, m_appSettings.strDictLocation);
 	m_appSettings.nDictChoice = GetProfileInt(s_pszGlobalSection, s_pszDictChoice, m_appSettings.nDictChoice);
 
+	m_appSettings.bCheckUpdates = !!GetProfileInt(s_pszGlobalSection, s_pszCheckUpdates, m_appSettings.bCheckUpdates);
+	UINT nLow = GetProfileInt(s_pszGlobalSection, s_pszLastUpdateLow, static_cast<int>(m_appSettings.nLastUpdateTime & 0xFFFFFFFF));
+	UINT nHigh = GetProfileInt(s_pszGlobalSection, s_pszLastUpdateHigh, static_cast<int>(m_appSettings.nLastUpdateTime >> 32));
+	m_appSettings.nLastUpdateTime = (static_cast<__int64>(nHigh) << 32) | static_cast<__int64>(nLow);
+
 	m_annoTemplate.bHideInactiveBorder = !!GetProfileInt(s_pszAnnotationsSection, s_pszHideInactiveBorder, m_annoTemplate.bHideInactiveBorder);
 	m_annoTemplate.nBorderType = GetProfileInt(s_pszAnnotationsSection, s_pszBorderType, m_annoTemplate.nBorderType);
 	m_annoTemplate.crBorder = GetProfileInt(s_pszAnnotationsSection, s_pszBorderColor, m_annoTemplate.crBorder);
@@ -684,11 +700,10 @@ bool CDjViewApp::EnumProfileKeys(LPCTSTR pszSection, vector<CString>& keys)
 	if (hSecKey == NULL)
 		return false;
 
-	TCHAR szName[256];
-	DWORD dwNameChars;
+	TCHAR szName[MAX_PATH];
 	for (DWORD dwSubKey = 0; ; ++dwSubKey)
 	{
-		dwNameChars = 255;
+		DWORD dwNameChars = MAX_PATH;
 		LONG lResult = ::RegEnumKeyEx(hSecKey, dwSubKey, szName, &dwNameChars, NULL, NULL, NULL, NULL);
 		if (lResult == ERROR_SUCCESS)
 		{
@@ -704,18 +719,6 @@ bool CDjViewApp::EnumProfileKeys(LPCTSTR pszSection, vector<CString>& keys)
 
 	::RegCloseKey(hSecKey);
 	return true;
-}
-
-bool CDjViewApp::DeleteProfileKey(LPCTSTR pszSection, LPCTSTR pszKey)
-{
-	ASSERT(m_pszRegistryKey != NULL);
-	HKEY hSecKey = GetSectionKey(pszSection);
-	if (hSecKey == NULL)
-		return false;
-
-	bool bResult = (::RegDeleteKey(hSecKey, pszKey) == ERROR_SUCCESS);
-	::RegCloseKey(hSecKey);
-	return bResult;
 }
 
 bool CDjViewApp::LoadDocSettings(const CString& strKey, DocSettings* pSettings)
@@ -805,6 +808,10 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszGlobalSection, s_pszCurrentDict, m_appSettings.nCurDict);
 	WriteProfileString(s_pszGlobalSection, s_pszDictLocation, m_appSettings.strDictLocation);
 	WriteProfileInt(s_pszGlobalSection, s_pszDictChoice, m_appSettings.nDictChoice);
+
+	WriteProfileInt(s_pszGlobalSection, s_pszCheckUpdates, m_appSettings.bCheckUpdates);
+	WriteProfileInt(s_pszGlobalSection, s_pszLastUpdateLow, static_cast<int>(m_appSettings.nLastUpdateTime & 0xFFFFFFFF));
+	WriteProfileInt(s_pszGlobalSection, s_pszLastUpdateHigh, static_cast<int>(m_appSettings.nLastUpdateTime >> 32));
 
 	WriteProfileInt(s_pszAnnotationsSection, s_pszHideInactiveBorder, m_annoTemplate.bHideInactiveBorder);
 	WriteProfileInt(s_pszAnnotationsSection, s_pszBorderType, m_annoTemplate.nBorderType);
@@ -951,13 +958,13 @@ int CDjViewApp::ExitInstance()
 		delete m_pFindDlg;
 	}
 
-	SaveSettings();
-
 	::KillTimer(NULL, m_nTimerID);
 	::UnhookWindowsHookEx(m_hHook);
 
 	ThreadTerminated();
 	::WaitForSingleObject(m_terminated, INFINITE);
+
+	SaveSettings();
 
 	DataPool::close_all();
 	::CoUninitialize();
@@ -1064,6 +1071,50 @@ void CALLBACK CDjViewApp::TimerProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dw
 		theApp.m_bControlPressed = bControlPressed;
 		theApp.UpdateObservers(KeyStateChanged(VK_CONTROL, bControlPressed));
 	}
+}
+
+bool RegDeleteKeyRec(HKEY hKeyRoot, LPCTSTR lpszSubKey)
+{
+	if (::RegDeleteKey(hKeyRoot, lpszSubKey) == ERROR_SUCCESS)
+		return true;
+
+	HKEY hKey;
+	LRESULT lResult = ::RegOpenKeyEx(hKeyRoot, lpszSubKey, 0, KEY_READ, &hKey);
+	if (lResult == ERROR_FILE_NOT_FOUND)
+		return true;
+	else if (lResult != ERROR_SUCCESS) 
+		return false;
+
+	CString strSubKey = lpszSubKey;
+	if (!strSubKey.IsEmpty() && strSubKey[strSubKey.GetLength() - 1] != '\\')
+		strSubKey += '\\';
+
+    // Enumerate the keys
+	TCHAR szKey[MAX_PATH];
+	DWORD dwNameChars = MAX_PATH;
+	while (::RegEnumKeyEx(hKey, 0, szKey, &dwNameChars, NULL, NULL, NULL, NULL) == ERROR_SUCCESS)
+	{
+		if (!RegDeleteKeyRec(hKeyRoot, strSubKey + szKey))
+			break;
+		dwNameChars = MAX_PATH;
+	}
+
+	::RegCloseKey(hKey);
+
+    // Try again to delete the key.
+	return (::RegDeleteKey(hKeyRoot, lpszSubKey) == ERROR_SUCCESS);
+}
+
+bool CDjViewApp::DeleteProfileKey(LPCTSTR pszSection, LPCTSTR pszKey)
+{
+	ASSERT(m_pszRegistryKey != NULL);
+	HKEY hSecKey = GetSectionKey(pszSection);
+	if (hSecKey == NULL)
+		return false;
+
+	bool bResult = RegDeleteKeyRec(hSecKey, pszKey);
+	::RegCloseKey(hSecKey);
+	return bResult;
 }
 
 bool SetRegHKCRValue(LPCTSTR lpszKey, LPCTSTR lpszValue, bool& bChanged, bool bCheckOnly)
@@ -1181,8 +1232,13 @@ bool CDjViewApp::RegisterShellFileTypes(bool bCheckOnly)
 				HKEY hKey = NULL;
 				::RegOpenKeyEx(HKEY_CURRENT_USER, strExplorerKey, 0, KEY_READ | KEY_WRITE, &hKey);
 
-				if (!SetRegHKCRValue(strFilterExt, strFileTypeId, bChanged, bCheckOnly))
+				bool bPrevChanged = bChanged;
+				bChanged = false;
+				if (!SetRegHKCRValue(strFilterExt, strFileTypeId, bChanged, bCheckOnly)
+						|| bCheckOnly && bChanged)
 				{
+					bChanged = bPrevChanged;
+
 					// Setting global association failed, set the user-level one instead.
 					if (hKey != NULL)
 					{
@@ -1214,16 +1270,17 @@ bool CDjViewApp::RegisterShellFileTypes(bool bCheckOnly)
 							{
 								bChanged = true;
 							}
-							else if (::RegDeleteKey(HKEY_CURRENT_USER, strUserChoiceKey) != ERROR_SUCCESS)
+							else if (!RegDeleteKeyRec(HKEY_CURRENT_USER, strUserChoiceKey))
 							{
 								bSuccess = false;
 							}
 							else
 							{
-								bChanged = true;
 								if (::RegCreateKey(HKEY_CURRENT_USER, strUserChoiceKey, &hChoiceKey) != ERROR_SUCCESS
 										|| ::RegSetValueEx(hChoiceKey, _T("Progid"), 0, REG_SZ, (LPBYTE)(LPCTSTR) strFileTypeId, strFileTypeId.GetLength() * sizeof(TCHAR)) != ERROR_SUCCESS)
 									bSuccess = false;
+								else
+									bChanged = true;
 							}
 
 							if (hChoiceKey != NULL)
@@ -1254,27 +1311,44 @@ bool CDjViewApp::RegisterShellFileTypes(bool bCheckOnly)
 							::RegCloseKey(hChoiceKey);
 					}
 				}
-				else if (hKey != NULL)
+				else
 				{
-					// Setting global association succeeded, remove the user-level one.
-					DWORD dwType;
-					DWORD cbData = 0;
-					if (::RegQueryValueEx(hKey, strProgId, 0, &dwType, NULL, &cbData) == ERROR_SUCCESS)
-					{
-						if (!bCheckOnly && ::RegDeleteValue(hKey, strProgId) != ERROR_SUCCESS)
-							bSuccess = false;
-						else
-							bChanged = true;
-					}
+					bChanged = bPrevChanged || bChanged;
 
-					HKEY hChoiceKey = NULL;
-					if (::RegOpenKeyEx(HKEY_CURRENT_USER, strUserChoiceKey, 0, KEY_READ, &hChoiceKey) == ERROR_SUCCESS)
+					if (hKey != NULL)
 					{
-						::RegCloseKey(hChoiceKey);
-						if (!bCheckOnly && ::RegDeleteKey(HKEY_CURRENT_USER, strUserChoiceKey) != ERROR_SUCCESS)
-							bSuccess = false;
-						else
-							bChanged = true;
+						// Setting global association succeeded, remove the user-level one.
+						DWORD dwType;
+						DWORD cbData = 0;
+						CString strData;
+						if (::RegQueryValueEx(hKey, strProgId, 0, &dwType, NULL, &cbData) == ERROR_SUCCESS)
+						{
+							if (dwType != REG_SZ
+									|| ::RegQueryValueEx(hKey, strProgId, 0, &dwType, (LPBYTE)(LPTSTR) strData.GetBufferSetLength(cbData / sizeof(TCHAR) + 1), &cbData) != ERROR_SUCCESS
+									|| (strData.ReleaseBuffer(), strData != strFileTypeId))
+							{
+								if (!bCheckOnly && ::RegDeleteValue(hKey, strProgId) != ERROR_SUCCESS)
+									bSuccess = false;
+								else
+									bChanged = true;
+							}
+						}
+
+						HKEY hChoiceKey = NULL;
+						if (::RegOpenKeyEx(HKEY_CURRENT_USER, strUserChoiceKey, 0, KEY_READ, &hChoiceKey) == ERROR_SUCCESS
+								&& ::RegQueryValueEx(hChoiceKey, _T("Progid"), 0, &dwType, NULL, &cbData) == ERROR_SUCCESS)
+						{
+							if (dwType != REG_SZ
+									|| ::RegQueryValueEx(hChoiceKey, _T("Progid"), 0, &dwType, (LPBYTE)(LPTSTR) strData.GetBufferSetLength(cbData / sizeof(TCHAR) + 1), &cbData) != ERROR_SUCCESS
+									|| (strData.ReleaseBuffer(), strData != strFileTypeId))
+							{
+								::RegCloseKey(hChoiceKey);
+								if (!bCheckOnly && !RegDeleteKeyRec(HKEY_CURRENT_USER, strUserChoiceKey))
+									bSuccess = false;
+								else
+									bChanged = true;
+							}
+						}
 					}
 				}
 
@@ -1349,6 +1423,7 @@ void CDjViewApp::OnFileSettings()
 	{
 		m_appSettings.bWarnNotDefaultViewer = !!dlg.m_pageAdvanced.m_bWarnNotDefaultViewer;
 		m_appSettings.bRestoreView = !!dlg.m_pageAdvanced.m_bRestoreView;
+		m_appSettings.bCheckUpdates = !!dlg.m_pageAdvanced.m_bCheckUpdates;
 
 		m_appSettings.bTopLevelDocs = !!dlg.m_pageGeneral.m_bTopLevelDocs;
 		m_appSettings.bWarnCloseMultiple = !!dlg.m_pageGeneral.m_bWarnCloseMultiple;
@@ -1743,11 +1818,10 @@ void CDjViewApp::LoadDictionaries()
 				NULL, NULL, NULL, NULL, NULL) == ERROR_SUCCESS)
 		{
 			TCHAR szKey[MAX_PATH];
-			DWORD dwSize = MAX_PATH;
-			FILETIME ftWrite;
 			for (int nKey = static_cast<int>(nSubKeys) - 1; nKey >= 0; --nKey)
 			{
-				if (::RegEnumKeyEx(hSecKey, nKey, szKey, &dwSize, 0, NULL, NULL, &ftWrite) != ERROR_SUCCESS)
+				DWORD dwSize = MAX_PATH;
+				if (::RegEnumKeyEx(hSecKey, nKey, szKey, &dwSize, 0, NULL, NULL, NULL) != ERROR_SUCCESS)
 					break;
 
 				CString strKey = szKey;
@@ -2561,4 +2635,62 @@ void CDjViewApp::UpdateFindDlg(CWnd* pNewParent)
 	pMainFrame->m_bDontActivate = false;
 	pMainFrame->SetFocus();
 	pMainFrame->SetForegroundWindow();
+}
+
+CString CDjViewApp::DownloadLastVersionString()
+{
+	CString strVersion;
+	CFile* pFile = NULL;
+
+	try
+	{
+		CInternetSession session;
+		session.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, 10000);
+
+		pFile = session.OpenURL(LoadString(IDS_VERSION_URL), 1,
+			INTERNET_FLAG_TRANSFER_ASCII | INTERNET_FLAG_RELOAD);
+		if (pFile == NULL)
+			AfxThrowInternetException(1);
+
+		CHAR szBuffer[1024];
+		int nRead = pFile->Read(szBuffer, 1023);
+		szBuffer[nRead] = '\0';
+
+		strVersion = szBuffer;
+		strVersion.TrimLeft();
+		strVersion.TrimRight();
+
+		pFile->Close();
+		delete pFile;
+		pFile = NULL;
+	}
+	catch (CException* e)
+	{
+		e->Delete();
+		strVersion.Empty();
+	}
+
+	if (pFile != NULL)
+		delete pFile;
+
+	if (strVersion.Find('<') != -1)
+		strVersion.Empty();
+
+	return strVersion;
+}
+
+unsigned int __stdcall CDjViewApp::CheckUpdateThreadProc(void* pvData)
+{
+	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+
+	theApp.m_strNewVersion = DownloadLastVersionString();
+	if (!theApp.m_strNewVersion.IsEmpty() && theApp.m_pMainWnd != NULL)
+	{
+		theApp.m_appSettings.nLastUpdateTime = time(NULL);
+		if (theApp.m_strNewVersion != CURRENT_VERSION)
+			theApp.m_pMainWnd->PostMessage(WM_NOTIFY_NEW_VERSION);
+	}
+
+	theApp.ThreadTerminated();
+	return 0;
 }

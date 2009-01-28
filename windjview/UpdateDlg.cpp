@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -72,46 +72,23 @@ void CUpdateDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 	{
 		UINT nThreadId;
 		m_hThread = (HANDLE)_beginthreadex(NULL, 0, UpdateThreadProc, this, 0, &nThreadId);
+		theApp.ThreadStarted();
 	}
 }
 
 unsigned int __stdcall CUpdateDlg::UpdateThreadProc(void* pvData)
 {
+	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+
 	CUpdateDlg* pDlg = reinterpret_cast<CUpdateDlg*>(pvData);
 
-	CString strVersion;
-	bool bOk = true;
-
-	try
-	{
-		CWaitCursor wait;
-
-		CInternetSession session;
-		session.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, 30000);
-
-		CFile* pFile = session.OpenURL(LoadString(IDS_VERSION_URL), 1,
-			INTERNET_FLAG_TRANSFER_ASCII | INTERNET_FLAG_RELOAD);
-		if (pFile == NULL)
-			AfxThrowInternetException(1);
-
-		CHAR szBuffer[1024];
-		int nRead = pFile->Read(szBuffer, 1023);
-		szBuffer[nRead] = '\0';
-
-		strVersion = szBuffer;
-		strVersion.TrimLeft();
-		strVersion.TrimRight();
-	}
-	catch (CException* e)
-	{
-		bOk = false;
-		e->Delete();
-	}
-
-	pDlg->m_bOk = bOk;
+	CString strVersion = CDjViewApp::DownloadLastVersionString();
+	pDlg->m_bOk = !strVersion.IsEmpty();
 	pDlg->m_strVersion = strVersion;
 
 	pDlg->SendMessage(WM_ENDDIALOG);
+
+	theApp.ThreadTerminated();
 	return 0;
 }
 
@@ -123,7 +100,7 @@ void CUpdateDlg::OnEndDialog()
 		{
 			AfxMessageBox(IDS_NO_UPDATES_AVAILABLE, MB_ICONINFORMATION | MB_OK);
 		}
-		else if (!m_strVersion.IsEmpty() && m_strVersion.GetLength() < 16 && m_strVersion.Find('<') == -1)
+		else if (m_strVersion.GetLength() < 16)
 		{
 			if (AfxMessageBox(FormatString(IDS_NEW_VERSION_AVAILABLE, m_strVersion),
 					MB_ICONQUESTION | MB_YESNO) == IDYES)

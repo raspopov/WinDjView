@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "BookmarksWnd.h"
+
 #include "DjVuSource.h"
-#include "AppSettings.h"
 #include "BookmarkDlg.h"
 #include "DjVuView.h"
 #include "NavPane.h"

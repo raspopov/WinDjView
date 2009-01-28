@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -38,6 +38,8 @@ public:
 	void Hide();
 	void CenterOnPoint(const CPoint& point);
 
+	void Update();
+
 	CDjVuView* GetView() const { return m_pView; }
 	CDjVuView* GetOwner() const { return m_pOwner; }
 
@@ -48,6 +50,11 @@ protected:
 	CDjVuView* m_pView;
 	CDjVuView* m_pOwner;
 	int m_nWidth, m_nHeight;
+
+	typedef BOOL (WINAPI* pfnSetLayeredWindowAttributes)(HWND hwnd,
+			COLORREF crKey, BYTE bAlpha, DWORD dwFlags);
+	pfnSetLayeredWindowAttributes m_pSetLayeredWindowAttributes;
+	HMODULE m_hUser32;
 
 	afx_msg void OnDestroy();
 	afx_msg void OnPaint();

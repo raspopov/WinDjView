@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
 
 #include "stdafx.h"
 #include "WinDjView.h"
-
 #include "DjVuDoc.h"
+
 #include "DjVuView.h"
 #include "MainFrm.h"
 #include "MDIChild.h"
@@ -211,28 +211,20 @@ void CDjVuDoc::OnFileExportText()
 	CWaitCursor wait;
 
 	strPathName = dlg.GetPathName();
+	CFile file;
+	if (!file.Open(strPathName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive))
+	{
+		AfxMessageBox(FormatString(IDS_CANNOT_WRITE_TO_FILE, strPathName), MB_OK | MB_ICONEXCLAMATION);
+		return;
+	}
+
 	wstring wtext;
 	GetDjVuView()->GetNormalizedText(wtext);
-	CString strText = MakeCString(wtext);
+	string text;
+	MakeANSIString(wtext, text);
 
-	CFile file;
-	if (file.Open(strPathName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive))
-	{
-#ifdef _UNICODE
-		// Get ANSI text
-		int nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-			strText, -1, NULL, 0, NULL, NULL);
-		LPSTR pszText = new CHAR[nSize];
-		::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-			strText, -1, pszText, nSize, NULL, NULL);
-
-		file.Write(pszText, strlen(pszText));
-		delete[] pszText;
-#else
-		file.Write(strText, strText.GetLength());
-#endif
-		file.Close();
-	}
+	file.Write(text.c_str(), text.length());
+	file.Close();
 }
 
 void CDjVuDoc::OnUpdateFileExportText(CCmdUI* pCmdUI)
@@ -394,11 +386,14 @@ void CDjVuDoc::OnFileExportBookmarks()
 	out << (const char*)strXML;
 
 	CFile file;
-	if (file.Open(strPathName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive))
+	if (!file.Open(strPathName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive))
 	{
-		file.Write(out.str().c_str(), strXML.length());
-		file.Close();
+		AfxMessageBox(FormatString(IDS_CANNOT_WRITE_TO_FILE, strPathName), MB_OK | MB_ICONEXCLAMATION);
+		return;
 	}
+
+	file.Write(out.str().c_str(), strXML.length());
+	file.Close();
 }
 
 void CDjVuDoc::OnUpdateFileExportBookmarks(CCmdUI* pCmdUI)

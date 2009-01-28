@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -34,6 +34,10 @@ class CMyDocTemplate;
 class CMainFrame;
 class CFindDlg;
 struct DocSettings;
+
+extern const TCHAR* s_pszDocumentsSection;
+extern const TCHAR* s_pszSettings;
+extern const TCHAR* s_pszLastKnownLocation;
 
 
 // CDjViewApp
@@ -78,6 +82,8 @@ public:
 
 	CFindDlg* GetFindDlg(bool bCreate = true);
 	void UpdateFindDlg(CWnd* pNewParent = NULL);
+
+	static CString DownloadLastVersionString();
 
 	// Dictionary API
 	int GetDictLangsCount() const
@@ -168,6 +174,7 @@ public:
 
 	bool m_bInitialized;
 	bool m_bTopLevelDocs;
+	CString m_strNewVersion;
 
 // Implementation
 protected:
@@ -240,6 +247,9 @@ protected:
 
 	bool m_bOnlyRegisterTypes;
 	int m_nExitCode;
+
+	static unsigned int __stdcall CheckUpdateThreadProc(void* pvData);
+	HANDLE m_hUpdateThread;
 
 	// Generated message map functions
 	afx_msg void OnAppAbout();

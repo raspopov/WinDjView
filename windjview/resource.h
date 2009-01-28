@@ -166,6 +166,10 @@
 #define IDS_NOT_DEFAULT_VIEWER          317
 #define IDS_TAB_BAR_MENU                318
 #define IDS_CHECK_CLOSE_MULTIPLE        319
+#define IDS_CANNOT_WRITE_TO_FILE        320
+#define IDS_REGISTRY_FILTER             321
+#define IDS_BACKUP_BOOKMARKS            322
+#define IDS_CHECK_UPDATES               323
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -234,6 +238,7 @@
 #define IDC_WRAP_BOOKMARKS              1064
 #define IDC_RESTORE_VIEW                1065
 #define IDC_DONATE                      1066
+#define IDC_CHECK_UPDATES               1066
 #define IDC_STATIC_VERSION              1067
 #define IDC_SPIN_PAGE                   1068
 #define IDC_BORDER_TYPE                 1069
@@ -391,7 +396,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        320
+#define _APS_NEXT_RESOURCE_VALUE        324
 #define _APS_NEXT_COMMAND_VALUE         33133
 #define _APS_NEXT_CONTROL_VALUE         1108
 #define _APS_NEXT_SYMED_VALUE           117

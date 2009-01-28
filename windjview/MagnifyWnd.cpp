@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -28,12 +28,25 @@
 
 IMPLEMENT_DYNAMIC(CMagnifyWnd, CWnd)
 CMagnifyWnd::CMagnifyWnd()
-	: m_pOwner(NULL), m_pView(NULL)
+	: m_pOwner(NULL), m_pView(NULL), m_hUser32(NULL)
 {
+	m_hUser32 = ::LoadLibrary(_T("user32.dll"));
+	if (m_hUser32 != NULL)
+	{
+		m_pSetLayeredWindowAttributes =
+				(pfnSetLayeredWindowAttributes) ::GetProcAddress(m_hUser32, "SetLayeredWindowAttributes");
+		if (m_pSetLayeredWindowAttributes == NULL)
+		{
+			::FreeLibrary(m_hUser32);
+			m_hUser32 = NULL;
+		}
+	}
 }
 
 CMagnifyWnd::~CMagnifyWnd()
 {
+	if (m_hUser32 != NULL)
+		::FreeLibrary(m_hUser32);
 }
 
 BEGIN_MESSAGE_MAP(CMagnifyWnd, CWnd)
@@ -53,8 +66,17 @@ BOOL CMagnifyWnd::Create()
 	m_nWidth = 480;
 	m_nHeight = 320;
 
-	return CreateEx(WS_EX_TOOLWINDOW, strWndClass, NULL, WS_POPUP,
-		CRect(0, 0, m_nWidth, m_nHeight), NULL, 0);
+	DWORD dwExStyle = WS_EX_TOOLWINDOW;
+	if (m_pSetLayeredWindowAttributes != NULL)
+		dwExStyle |= WS_EX_LAYERED;
+	if (!CreateEx(dwExStyle, strWndClass, NULL, WS_POPUP,
+			CRect(0, 0, m_nWidth, m_nHeight), NULL, 0))
+		return false;
+
+	if (m_pSetLayeredWindowAttributes != NULL)
+		m_pSetLayeredWindowAttributes(m_hWnd, 0, 0, LWA_ALPHA);
+
+	return true;
 }
 
 void CMagnifyWnd::Show(CDjVuView* pOwner, CDjVuView* pContents, const CPoint& ptCenter)
@@ -68,6 +90,14 @@ void CMagnifyWnd::Show(CDjVuView* pOwner, CDjVuView* pContents, const CPoint& pt
 	CenterOnPoint(ptCenter);
 
 	SetWindowPos(&wndTop, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+	Invalidate();
+
+	// To keep the layered window from briefly flashing its previous state, show
+	// it initially as completely transparent, and then change transparency when
+	// everything is ready.
+	if (m_pSetLayeredWindowAttributes != NULL)
+		m_pSetLayeredWindowAttributes(m_hWnd, 0, 0, LWA_ALPHA);
+
 	ShowWindow(SW_SHOWNA);
 }
 
@@ -89,6 +119,14 @@ void CMagnifyWnd::Hide()
 
 	m_pView = NULL;
 	m_pOwner = NULL;
+}
+
+void CMagnifyWnd::Update()
+{
+	UpdateWindow();
+
+	if (m_pSetLayeredWindowAttributes != NULL)
+		m_pSetLayeredWindowAttributes(m_hWnd, 0, 220, LWA_ALPHA);
 }
 
 void CMagnifyWnd::PostNcDestroy()

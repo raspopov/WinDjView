@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2008 Andrew Zhezherun
+//	Copyright (C) 2004-2009 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -121,6 +121,7 @@ using namespace std;
 #define WM_SHOW_SETTINGS (WM_APP + 8)
 #define WM_MDI_ACTIVATE (WM_APP + 9)
 #define WM_SHOWPARENT (WM_APP + 10)
+#define WM_NOTIFY_NEW_VERSION (WM_APP + 11)
 
 #ifndef DWORD_PTR
 #define DWORD_PTR UINT_PTR

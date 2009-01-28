@@ -458,7 +458,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,9,9,21,20
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2004-2008 Andrew Zhezherun",IDC_STATIC,40,17,149,8
+    LTEXT           "Copyright (C) 2004-2009 Andrew Zhezherun",IDC_STATIC,40,17,149,8
     DEFPUSHBUTTON   "Close",IDOK,194,7,50,14,WS_GROUP
     LTEXT           "Project homepage:",IDC_STATIC,40,35,64,8
     LTEXT           "DjVuLibre homepage:",IDC_STATIC,40,45,72,8
@@ -723,7 +723,7 @@ BEGIN
     LTEXT           "A dictionary with this name is already installed in the system. Installation will replace the existing dictionary with the currently open file.",IDC_STATIC,7,7,176,26
 END
 
-IDD_SETTINGS_ADVANCED DIALOGEX 0, 0, 222, 164
+IDD_SETTINGS_ADVANCED DIALOGEX 0, 0, 222, 171
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Advanced"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
@@ -742,6 +742,8 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,55,130,160,1
     CONTROL         "&Restore open page and view settings when opening files",IDC_RESTORE_VIEW,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,139,194,10
+    CONTROL         "&Automatically check for updates once a week",IDC_CHECK_UPDATES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,153,194,10
 END
 
 IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 134
@@ -805,7 +807,7 @@ BEGIN
             VALUE "FileDescription", "WinDjView"
             VALUE "FileVersion", "0.6"
             VALUE "InternalName", "WinDjView.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2008 Andrew Zhezherun. All rights reserved."
+            VALUE "LegalCopyright", "Copyright (C) 2004-2009 Andrew Zhezherun. All rights reserved."
             VALUE "OriginalFilename", "WinDjView.exe"
             VALUE "ProductName", "WinDjView"
             VALUE "ProductVersion", "0.6"
@@ -935,7 +937,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 156
+        BOTTOMMARGIN, 163
     END
 
     IDD_SETTINGS_DICT, DIALOG
@@ -1373,6 +1375,14 @@ BEGIN
     IDS_NOT_DEFAULT_VIEWER  "WinDjView is currently not the default viewer for DjVu files."
     IDS_TAB_BAR_MENU        "Tab &Bar"
     IDS_CHECK_CLOSE_MULTIPLE "Always warn when closing multiple documents"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_CANNOT_WRITE_TO_FILE "Could not write to file ""%s""."
+    IDS_REGISTRY_FILTER     "Registration Files (*.reg)|*.reg|All Files (*.*)|*.*||"
+    IDS_BACKUP_BOOKMARKS    "Backup Bookmarks"
+    IDS_CHECK_UPDATES       "Check for updates automatically"
 END
 
 #endif    // English (U.S.) resources
