@@ -24,7 +24,7 @@
 #include "DjVuView.h"
 
 
-// CFullscreenWnd
+// CMagnifyWnd
 
 IMPLEMENT_DYNAMIC(CMagnifyWnd, CWnd)
 CMagnifyWnd::CMagnifyWnd()
@@ -56,7 +56,7 @@ BEGIN_MESSAGE_MAP(CMagnifyWnd, CWnd)
 END_MESSAGE_MAP()
 
 
-// CFullscreenWnd message handlers
+// CMagnifyWnd message handlers
 
 BOOL CMagnifyWnd::Create()
 {
