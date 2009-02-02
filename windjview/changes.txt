@@ -1,4 +1,4 @@
-WinDjView changes history
+WinDjView history of changes
 Copyright (C) 2004-2009 Andrew Zhezherun
 ----------------------------------------
 
