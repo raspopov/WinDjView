@@ -237,7 +237,7 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 	// image size is very small, since quality does not matter at this
 	// scale. NOTE: this also deals with the special case of size (1, 1),
 	// which can force PnmScaleFixed into an infinite loop.
-	if ((szRotated.cx < szImage.cx / 10 || szRotated.cy < szImage.cy / 10)
+	if ((szRotated.cx < 10 || szRotated.cy < 10)
 			|| (szRotated.cx >= szImage.cx / 2 || szRotated.cy >= szImage.cy / 2))
 		nScaleMethod = CDisplaySettings::Default;
 

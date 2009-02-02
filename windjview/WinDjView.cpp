@@ -2471,7 +2471,7 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 			// Create the alternate EDIT window
 			HWND hwndEdit = ::CreateWindowEx(0, _T("edit"), strMessage,
 					ES_READONLY | ES_MULTILINE | WS_CHILD,
-					pt.x, pt.y, rcClient.right - pt.x, rc.Height(),
+					pt.x, pt.y, rc.Width() + 6, rc.Height(),
 					hwndMessageBox, (HMENU) 0xFFFE, NULL, NULL);
 
 			HFONT hFont = (HFONT) ::SendMessage(hwndMessage, WM_GETFONT, 0, 0);
@@ -2489,7 +2489,7 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 				HWND hwndCheckBox = ::CreateWindowEx(0, _T("button"),
 					theApp.m_mbo.strCheckBox, WS_CHILD | WS_TABSTOP | BS_AUTOCHECKBOX,
 					pt.x, pt.y + rc.Height() - rcCheckBox.Height(),
-					rcClient.right - pt.x, rcCheckBox.Height(),
+					rc.Width() + 6, rcCheckBox.Height(),
 					hwndMessageBox, (HMENU) 0xFFF0, NULL, NULL);
 
 				::SendMessage(hwndCheckBox, WM_SETFONT, (WPARAM) hFont, 1);

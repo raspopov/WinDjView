@@ -30,7 +30,7 @@ struct CDisplaySettings
 
 	CDisplaySettings() :
 			bAdjustDisplay(false), nBrightness(0), nContrast(0),
-			fGamma(1.0), nScaleMethod(Default), bInvertColors(false) {}
+			fGamma(1.0), nScaleMethod(PnmScaleFixed), bInvertColors(false) {}
 
 	int GetBrightness() const { return bAdjustDisplay ? nBrightness : 0; }
 	int GetContrast() const { return bAdjustDisplay ? nContrast : 0; }
