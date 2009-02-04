@@ -108,7 +108,7 @@ CDocPropertiesDlg::CDocPropertiesDlg(DjVuSource* pSource, CWnd* pParent)
 				m_files[i].nPageIndex = -1;
 
 			m_files[i].nSize = pFile->size;
-			m_files[i].strName = MakeCString(pFile->get_save_name());
+			m_files[i].strName = MakeCString(pFile->get_load_name());
 		}
 	}
 	else if (pDir0 != NULL)
