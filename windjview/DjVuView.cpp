@@ -618,6 +618,7 @@ void CDjVuView::DrawAnnotation(CDC* pDC, const Annotation& anno, int nPage, bool
 			}
 
 			HGDIOBJ hOldFont = ::SelectObject(pDC->m_hDC, it->second);
+			pDC->SetTextCharacterExtra(0);
 			pDC->DrawText(MakeCString(anno.strComment), rcText,
 					DT_NOPREFIX | DT_LEFT | DT_TOP | DT_WORDBREAK | DT_END_ELLIPSIS);
 			::SelectObject(pDC->m_hDC, hOldFont);
