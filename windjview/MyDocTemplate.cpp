@@ -147,6 +147,12 @@ CWnd* CMyDocTemplate::CreateNewMDIChild(CDocument* pDoc)
 
 CDocument* CMyDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, BOOL bMakeVisible)
 {
+	if (lpszPathName == NULL)
+	{
+		TRACE(traceAppMsg, 0, "Creating new documents is disabled.\n");
+		return NULL;
+	}
+
 	CWaitCursor wait;
 
 	CDocument* pDocument = CreateNewDocument();
@@ -172,38 +178,15 @@ CDocument* CMyDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, BOOL bMakeVisi
 	}
 	ASSERT_VALID(pMDIChild);
 
-	if (lpszPathName == NULL)
+	// open an existing document
+	if (!pDocument->OnOpenDocument(lpszPathName))
 	{
-		// create a new document - with default document name
-		SetDefaultTitle(pDocument);
-
-		// avoid creating temporary compound file when starting up invisible
-		if (!bMakeVisible)
-			pDocument->m_bEmbedded = true;
-
-		if (!pDocument->OnNewDocument())
-		{
-			// user has be alerted to what failed in OnNewDocument
-			TRACE(traceAppMsg, 0, "CDocument::OnNewDocument returned FALSE.\n");
-			pMDIChild->DestroyWindow();
-			return NULL;
-		}
-
-		// it worked, now bump untitled count
-		m_nUntitledCount++;
+		// user has be alerted to what failed in OnOpenDocument
+		TRACE(traceAppMsg, 0, "CDocument::OnOpenDocument returned FALSE.\n");
+		pMDIChild->DestroyWindow();
+		return NULL;
 	}
-	else
-	{
-		// open an existing document
-		if (!pDocument->OnOpenDocument(lpszPathName))
-		{
-			// user has be alerted to what failed in OnOpenDocument
-			TRACE(traceAppMsg, 0, "CDocument::OnOpenDocument returned FALSE.\n");
-			pMDIChild->DestroyWindow();
-			return NULL;
-		}
-		pDocument->SetPathName(lpszPathName);
-	}
+	pDocument->SetPathName(lpszPathName);
 
 	InitialUpdateMDIChild(pMDIChild, pDocument, bMakeVisible);
 	return pDocument;
