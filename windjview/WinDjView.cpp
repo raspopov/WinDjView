@@ -1205,6 +1205,14 @@ bool CDjViewApp::RegisterShellFileTypes(bool bCheckOnly)
 				continue;
 			}
 
+			strTemp.Format(_T("%s\\shell\\open\\%s\\IfExec"), (LPCTSTR)strFileTypeId,
+				(LPCTSTR)_T("ddeexec"));
+			if (!SetRegHKCRValue(strTemp, _T("[rem open]"), bChanged, bCheckOnly))
+			{
+				bSuccess = false;
+				continue;
+			}
+
 			strOpenCommandLine += _T(" \"%1\"");
 
 			// path\shell\open\command = path filename
