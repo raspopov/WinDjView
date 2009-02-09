@@ -398,6 +398,7 @@ void CMainFrame::OnUpdateViewToolbar(CCmdUI* pCmdUI)
 	OnUpdateControlBarMenu(pCmdUI);
 
 	if (!theApp.m_bTopLevelDocs
+			&& m_tabbedMDI.GetTabCount() > 0
 			&& (!theApp.GetAppSettings()->bHideSingleTab || m_tabbedMDI.GetTabCount() > 1)
 			&& pCmdUI->m_pMenu != NULL
 			&& pCmdUI->m_pMenu->GetMenuItemID(pCmdUI->m_nIndex + 1) != ID_VIEW_TAB_BAR)
@@ -414,6 +415,7 @@ void CMainFrame::OnUpdateViewTabBar(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_tabbedMDI.IsTabBarVisible());
 
 	if (pCmdUI->m_pMenu != NULL && (theApp.m_bTopLevelDocs
+			|| m_tabbedMDI.GetTabCount() == 0
 			|| theApp.GetAppSettings()->bHideSingleTab && m_tabbedMDI.GetTabCount() == 1))
 	{
 		pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
