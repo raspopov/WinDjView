@@ -194,6 +194,7 @@ protected:
 	afx_msg BOOL OnNcActivate(BOOL bActive);
 	afx_msg void OnMouseWheelPage(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnNewVersion();
+	afx_msg void OnNcDestroy();
 	DECLARE_MESSAGE_MAP()
 };
 

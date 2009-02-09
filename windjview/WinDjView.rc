@@ -144,10 +144,8 @@ BEGIN
     BUTTON      ID_VIEW_BACK
     BUTTON      ID_VIEW_FORWARD
     SEPARATOR
-    BUTTON      ID_LAYOUT_SINGLEPAGE
     BUTTON      ID_LAYOUT_CONTINUOUS
     BUTTON      ID_LAYOUT_FACING
-    BUTTON      ID_LAYOUT_CONTINUOUS_FACING
     SEPARATOR
     BUTTON      ID_ZOOM_OUT
     SEPARATOR
@@ -279,10 +277,8 @@ BEGIN
         END
         POPUP "La&yout"
         BEGIN
-            MENUITEM "&Single Page\tCtrl+Atl+1",    ID_LAYOUT_SINGLEPAGE
-            MENUITEM "&Continuous\tCtrl+Alt+2",     ID_LAYOUT_CONTINUOUS
-            MENUITEM "&Facing\tCtrl+Alt+3",         ID_LAYOUT_FACING
-            MENUITEM "C&ontinuous - Facing\tCtrl+Alt+4", ID_LAYOUT_CONTINUOUS_FACING
+            MENUITEM "&Continuous\tCtrl+Alt+1",     ID_LAYOUT_CONTINUOUS
+            MENUITEM "&Facing Pages\tCtrl+Alt+2",   ID_LAYOUT_FACING
             MENUITEM SEPARATOR
             MENUITEM "First Page &Alone\tCtrl+E",   ID_LAYOUT_FIRSTPAGE_ALONE
             MENUITEM "Right-to-left Order\tCtrl+R", ID_LAYOUT_RTL_ORDER
@@ -400,12 +396,10 @@ BEGIN
     VK_F3,          ID_FIND_STRING,         VIRTKEY, NOINVERT
     "F",            ID_FOCUS_TO_LOOKUP,     VIRTKEY, SHIFT, CONTROL, NOINVERT
     "H",            ID_HIGHLIGHT_SELECTION, VIRTKEY, CONTROL, NOINVERT
-    "2",            ID_LAYOUT_CONTINUOUS,   VIRTKEY, CONTROL, ALT, NOINVERT
-    "4",            ID_LAYOUT_CONTINUOUS_FACING, VIRTKEY, CONTROL, ALT, NOINVERT
-    "3",            ID_LAYOUT_FACING,       VIRTKEY, CONTROL, ALT, NOINVERT
+    "1",            ID_LAYOUT_CONTINUOUS,   VIRTKEY, CONTROL, ALT, NOINVERT
+    "2",            ID_LAYOUT_FACING,       VIRTKEY, CONTROL, ALT, NOINVERT
     "E",            ID_LAYOUT_FIRSTPAGE_ALONE, VIRTKEY, CONTROL, NOINVERT
     "R",            ID_LAYOUT_RTL_ORDER,    VIRTKEY, CONTROL, NOINVERT
-    "1",            ID_LAYOUT_SINGLEPAGE,   VIRTKEY, CONTROL, ALT, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_TAB,         ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
@@ -1154,13 +1148,10 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_LAYOUT_SINGLEPAGE    "Single page layout\nSingle Page"
-    ID_LAYOUT_CONTINUOUS    "Continuous page layout\nContinuous"
-    ID_LAYOUT_FACING        "Facing page layout\nFacing"
-    ID_LAYOUT_CONTINUOUS_FACING 
-                            "Continuous-facing page layout\nContinuous - Facing"
+    ID_LAYOUT_CONTINUOUS    "Toggle continuous page layout\nContinuous Layout"
+    ID_LAYOUT_FACING        "Show facing pages side-by-side\nFacing Pages"
     ID_LAYOUT_FIRSTPAGE_ALONE 
-                            "Display first page alone in facing and continuous-facing layouts"
+                            "Display first page alone when showing facing pages"
     ID_HIGHLIGHT_SELECTION  "Highlight current selection"
     ID_ANNOTATION_EDIT      "Edit properties of this annotation"
     ID_ANNOTATION_DELETE    "Remove this annotation"

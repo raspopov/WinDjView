@@ -280,10 +280,12 @@ CMainFrame* CDjViewApp::CreateMainFrame(bool bAppStartup, int nCmdShow)
 		return NULL;
 	}
 
-	CWnd* pPrevMainWnd = m_pMainWnd;
-	m_pMainWnd = pMainFrame;
-	AfxGetThread()->m_pMainWnd = m_pMainWnd;
 	m_frames.push_front(pMainFrame);
+	CWnd* pPrevMainWnd = m_pMainWnd;
+
+	m_mainWndLock.Lock();
+	m_pMainWnd = pMainFrame;
+	m_mainWndLock.Unlock();
 
 	pMainFrame->UpdateToolbars();
 
@@ -313,8 +315,9 @@ CMainFrame* CDjViewApp::CreateMainFrame(bool bAppStartup, int nCmdShow)
 	pMainFrame->GetWindowRect(rcWindow);
 	if (!rcIntersect.IntersectRect(rcWindow, rcWorkArea))
 	{
-		CPoint ptOffset((rcWorkArea.Width() - rcWindow.Width()) / 2,
-				(rcWorkArea.Height() - rcWindow.Height()) / 2);
+		CPoint ptOffset(
+				max(0, (rcWorkArea.Width() - rcWindow.Width()) / 2),
+				max(0, (rcWorkArea.Height() - rcWindow.Height()) / 2));
 		ptOffset += rcWorkArea.TopLeft();
 		pMainFrame->SetWindowPos(NULL, ptOffset.x, ptOffset.y, 0, 0,
 				SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
@@ -380,13 +383,20 @@ void CDjViewApp::ChangeMainWnd(CMainFrame* pMainFrame, bool bActivate)
 			m_frames.splice(m_frames.begin(), m_frames, it, ++it2);
 		}
 
+		m_mainWndLock.Lock();
 		m_pMainWnd = pMainFrame;
-		AfxGetThread()->m_pMainWnd = pMainFrame;
+		m_mainWndLock.Unlock();
 
 		if (bActivate)
 			pMainFrame->ActivateDocument(pMainFrame->GetActiveDocument());
 
 		UpdateFindDlg();
+	}
+	else if (pMainFrame == NULL)
+	{
+		m_mainWndLock.Lock();
+		m_pMainWnd = NULL;
+		m_mainWndLock.Unlock();
 	}
 }
 
@@ -2691,14 +2701,16 @@ unsigned int __stdcall CDjViewApp::CheckUpdateThreadProc(void* pvData)
 {
 	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 
+	theApp.m_mainWndLock.Lock();
+
 	theApp.m_strNewVersion = DownloadLastVersionString();
-	if (!theApp.m_strNewVersion.IsEmpty() && theApp.m_pMainWnd != NULL)
+	if (theApp.m_pMainWnd != NULL && !theApp.m_strNewVersion.IsEmpty() 
+			&& theApp.m_strNewVersion != CURRENT_VERSION)
 	{
-		theApp.m_appSettings.nLastUpdateTime = time(NULL);
-		if (theApp.m_strNewVersion != CURRENT_VERSION)
-			theApp.m_pMainWnd->PostMessage(WM_NOTIFY_NEW_VERSION);
+		theApp.m_pMainWnd->PostMessage(WM_NOTIFY_NEW_VERSION);
 	}
 
+	theApp.m_mainWndLock.Unlock();
 	theApp.ThreadTerminated();
 	return 0;
 }

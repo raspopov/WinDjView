@@ -37,7 +37,7 @@ CAppSettings::CAppSettings()
 {
 	nWindowPosX = 50;
 	nWindowPosY = 50;
-	nWindowWidth = 850;
+	nWindowWidth = 800;
 	nWindowHeight = 600;
 
 	bWindowMaximized = false;

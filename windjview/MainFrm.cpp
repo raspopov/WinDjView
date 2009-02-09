@@ -32,6 +32,7 @@
 #include "FindDlg.h"
 
 #include <dde.h>
+#include <afxole.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -108,6 +109,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_ERASEBKGND()
 	ON_WM_NCACTIVATE()
 	ON_MESSAGE_VOID(WM_NOTIFY_NEW_VERSION, OnNewVersion)
+	ON_WM_NCDESTROY()
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -1893,6 +1895,12 @@ void CMainFrame::OnMouseWheelPage(NMHDR* pNMHDR, LRESULT* pResult)
 
 void CMainFrame::OnNewVersion()
 {
+	theApp.GetAppSettings()->nLastUpdateTime = time(NULL);
+
+	CPushRoutingFrame* pPushFrame = NULL;
+	if (IsFullscreenMode())
+		pPushFrame = new CPushRoutingFrame((CFrameWnd*) m_pFullscreenWnd);
+
 	CDjViewApp::MessageBoxOptions mbo;
 	mbo.strCheckBox = LoadString(IDS_CHECK_UPDATES);
 	mbo.pCheckValue = &theApp.GetAppSettings()->bCheckUpdates;
@@ -1902,4 +1910,80 @@ void CMainFrame::OnNewVersion()
 		::ShellExecute(NULL, _T("open"), LoadString(IDS_WEBSITE_URL),
 			NULL, NULL, SW_SHOWNORMAL);
 	}
+
+	if (pPushFrame != NULL)
+		delete pPushFrame;
+}
+
+void CMainFrame::OnNcDestroy()
+{
+	// From MFC:  CWnd::OnNcDestroy
+	// WM_NCDESTROY is the absolute LAST message sent.
+	
+	// cleanup main and active windows
+	CWinThread* pThread = AfxGetThread();
+	if (pThread != NULL)
+	{
+		if (pThread->m_pMainWnd == this)
+		{
+			if (!afxContextIsDLL)
+			{
+				// shut down current thread if possible
+				if (pThread != AfxGetApp() || AfxOleCanExitApp())
+					AfxPostQuitMessage(0);
+			}
+
+			if (pThread == AfxGetApp())
+				theApp.ChangeMainWnd(NULL);
+			else
+				pThread->m_pMainWnd = NULL;
+		}
+		if (pThread->m_pActiveWnd == this)
+			pThread->m_pActiveWnd = NULL;
+	}
+
+#ifndef _AFX_NO_OLE_SUPPORT
+	// cleanup OLE drop target interface
+	if (m_pDropTarget != NULL)
+	{
+		m_pDropTarget->Revoke();
+		m_pDropTarget = NULL;
+	}
+#endif
+
+#ifndef _AFX_NO_OCC_SUPPORT
+	// cleanup control container
+	delete m_pCtrlCont;
+	m_pCtrlCont = NULL;
+#endif
+
+	// cleanup tooltip support
+	if (m_nFlags & WF_TOOLTIPS)
+	{
+		CToolTipCtrl* pToolTip = AfxGetModuleThreadState()->m_pToolTip;
+		if (pToolTip->GetSafeHwnd() != NULL)
+		{
+			TOOLINFO ti; memset(&ti, 0, sizeof(TOOLINFO));
+			ti.cbSize = sizeof(AFX_OLDTOOLINFO);
+			ti.uFlags = TTF_IDISHWND;
+			ti.hwnd = m_hWnd;
+			ti.uId = (UINT_PTR)m_hWnd;
+			pToolTip->SendMessage(TTM_DELTOOL, 0, (LPARAM)&ti);
+		}
+	}
+
+	// call default, unsubclass, and detach from the map
+	WNDPROC pfnWndProc = WNDPROC(GetWindowLongPtr(m_hWnd, GWLP_WNDPROC));
+	Default();
+	if (WNDPROC(GetWindowLongPtr(m_hWnd, GWLP_WNDPROC)) == pfnWndProc)
+	{
+		WNDPROC pfnSuper = *GetSuperWndProcAddr();
+		if (pfnSuper != NULL)
+			SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, reinterpret_cast<INT_PTR>(pfnSuper));
+	}
+	Detach();
+	ASSERT(m_hWnd == NULL);
+
+	// call special post-cleanup routine
+	PostNcDestroy();
 }

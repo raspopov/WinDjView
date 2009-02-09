@@ -208,8 +208,8 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_WM_MOUSEMOVE()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_RBUTTONUP()
-	ON_COMMAND_RANGE(ID_LAYOUT_SINGLEPAGE, ID_LAYOUT_CONTINUOUS_FACING, OnViewLayout)
-	ON_UPDATE_COMMAND_UI_RANGE(ID_LAYOUT_SINGLEPAGE, ID_LAYOUT_CONTINUOUS_FACING, OnUpdateViewLayout)
+	ON_COMMAND_RANGE(ID_LAYOUT_CONTINUOUS, ID_LAYOUT_FACING, OnViewLayout)
+	ON_UPDATE_COMMAND_UI_RANGE(ID_LAYOUT_CONTINUOUS, ID_LAYOUT_FACING, OnUpdateViewLayout)
 	ON_MESSAGE(WM_PAGE_RENDERED, OnPageRendered)
 	ON_MESSAGE(WM_PAGE_DECODED, OnPageDecoded)
 	ON_WM_DESTROY()
@@ -2392,20 +2392,26 @@ void CDjVuView::OnViewLayout(UINT nID)
 
 	switch (nID)
 	{
-	case ID_LAYOUT_SINGLEPAGE:
-		m_nLayout = SinglePage;
-		break;
-
 	case ID_LAYOUT_CONTINUOUS:
-		m_nLayout = Continuous;
+		if (m_nLayout == SinglePage)
+			m_nLayout = Continuous;
+		else if (m_nLayout == Facing)
+			m_nLayout = ContinuousFacing;
+		else if (m_nLayout == Continuous)
+			m_nLayout = SinglePage;
+		else if (m_nLayout == ContinuousFacing)
+			m_nLayout = Facing;
 		break;
 
 	case ID_LAYOUT_FACING:
-		m_nLayout = Facing;
-		break;
-
-	case ID_LAYOUT_CONTINUOUS_FACING:
-		m_nLayout = ContinuousFacing;
+		if (m_nLayout == SinglePage)
+			m_nLayout = Facing;
+		else if (m_nLayout == Facing)
+			m_nLayout = SinglePage;
+		else if (m_nLayout == Continuous)
+			m_nLayout = ContinuousFacing;
+		else if (m_nLayout == ContinuousFacing)
+			m_nLayout = Continuous;
 		break;
 	}
 
@@ -2433,20 +2439,12 @@ void CDjVuView::OnUpdateViewLayout(CCmdUI* pCmdUI)
 
 	switch (pCmdUI->m_nID)
 	{
-	case ID_LAYOUT_SINGLEPAGE:
-		pCmdUI->SetCheck(m_nLayout == SinglePage);
-		break;
-
 	case ID_LAYOUT_CONTINUOUS:
-		pCmdUI->SetCheck(m_nLayout == Continuous);
+		pCmdUI->SetCheck(m_nLayout == Continuous || m_nLayout == ContinuousFacing);
 		break;
 
 	case ID_LAYOUT_FACING:
-		pCmdUI->SetCheck(m_nLayout == Facing);
-		break;
-
-	case ID_LAYOUT_CONTINUOUS_FACING:
-		pCmdUI->SetCheck(m_nLayout == ContinuousFacing);
+		pCmdUI->SetCheck(m_nLayout == Facing || m_nLayout == ContinuousFacing);
 		break;
 	}
 }

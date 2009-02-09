@@ -348,10 +348,8 @@
 #define ID_VIEW_GOTO_PAGE               32833
 #define ID_LANGUAGE_FIRST               32834
 #define ID_LANGUAGE_LAST                33089
-#define ID_LAYOUT_SINGLEPAGE            33090
 #define ID_LAYOUT_CONTINUOUS            33091
 #define ID_LAYOUT_FACING                33092
-#define ID_LAYOUT_CONTINUOUS_FACING     33093
 #define ID_LAYOUT_FIRSTPAGE_ALONE       33094
 #define ID_HIGHLIGHT_SELECTION          33095
 #define ID_HIGHLIGHT_TEXT               33096

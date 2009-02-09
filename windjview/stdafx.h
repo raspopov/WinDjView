@@ -182,3 +182,7 @@ using namespace std;
 #define LWA_COLORKEY 0x00000001
 #define LWA_ALPHA 0x00000002
 #endif
+
+#ifndef TBSTYLE_EX_DOUBLEBUFFER
+#define TBSTYLE_EX_DOUBLEBUFFER 0x00000080
+#endif

@@ -61,7 +61,7 @@ BOOL CMyToolBar::Create(CWnd* pParentWnd, DWORD dwStyle, UINT nID)
 	VERIFY(AfxDeferRegisterClass(AFX_WNDCONTROLBAR_REG));
 
 	DWORD dwNewStyle = (dwStyle & CBRS_ALIGN_ANY) | (dwStyle & CBRS_BORDER_ANY)
-			| WS_CHILD | WS_CLIPSIBLINGS;
+			| WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
 	// Save the style
 	m_dwStyle = (dwNewStyle & CBRS_ALL);
@@ -70,8 +70,12 @@ BOOL CMyToolBar::Create(CWnd* pParentWnd, DWORD dwStyle, UINT nID)
 			dwNewStyle, CRect(0, 0, 0, 0), pParentWnd, nID))
 		return false;
 
-	DWORD dwToolBarStyle = dwStyle | WS_VISIBLE;
-	return m_toolBar.Create(this, dwToolBarStyle, 1);
+	DWORD dwToolBarStyle = dwStyle | WS_VISIBLE | WS_CLIPCHILDREN;
+	if (!m_toolBar.Create(this, dwToolBarStyle, 1))
+		return false;
+
+	m_toolBar.GetToolBarCtrl().SetExtendedStyle(TBSTYLE_EX_DOUBLEBUFFER);
+	return true;
 }
 
 BOOL CMyToolBar::CreateEx(CWnd* pParentWnd, DWORD dwCtrlStyle,
@@ -80,7 +84,7 @@ BOOL CMyToolBar::CreateEx(CWnd* pParentWnd, DWORD dwCtrlStyle,
 	VERIFY(AfxDeferRegisterClass(AFX_WNDCONTROLBAR_REG));
 
 	DWORD dwNewStyle = (dwStyle & CBRS_ALIGN_ANY) | (dwStyle & CBRS_BORDER_ANY)
-			| WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+			| WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
 	// Save the style
 	m_dwStyle = (dwNewStyle & CBRS_ALL);
@@ -89,8 +93,12 @@ BOOL CMyToolBar::CreateEx(CWnd* pParentWnd, DWORD dwCtrlStyle,
 			dwNewStyle, CRect(0, 0, 0, 0), pParentWnd, nID))
 		return false;
 
-	DWORD dwToolBarStyle = dwStyle | WS_VISIBLE;
-	return m_toolBar.CreateEx(this, dwCtrlStyle, dwToolBarStyle, rcBorders, 1);
+	DWORD dwToolBarStyle = dwStyle | WS_VISIBLE | WS_CLIPCHILDREN;
+	if (!m_toolBar.CreateEx(this, dwCtrlStyle, dwToolBarStyle, rcBorders, 1))
+		return false;
+
+	m_toolBar.GetToolBarCtrl().SetExtendedStyle(TBSTYLE_EX_DOUBLEBUFFER);
+	return true;
 }
 
 int CMyToolBar::OnCreate(LPCREATESTRUCT lpCreateStruct)

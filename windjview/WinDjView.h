@@ -186,6 +186,7 @@ protected:
 	CMyDocTemplate* m_pDjVuTemplate;
 	CFindDlg* m_pFindDlg;
 	list<CMainFrame*> m_frames;
+	CCriticalSection m_mainWndLock;
 
 	void LoadSettings();
 	void EnableShellOpen();
