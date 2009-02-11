@@ -1165,7 +1165,7 @@ bool CDjViewApp::RegisterShellFileTypes(bool bCheckOnly)
 		strOpenCommandLine.Format(_T("\"%s\""), strPathName);
 
 		CString strDefaultIconCommandLine;
-		strDefaultIconCommandLine.Format(_T("\"%s\",0"), strPathName, 0);
+		strDefaultIconCommandLine.Format(_T("%s,0"), strPathName, 0);
 
 		CString strFilterExt, strFileTypeId, strFileTypeName;
 		if (pTemplate->GetDocString(strFileTypeId,
