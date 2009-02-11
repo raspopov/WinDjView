@@ -1768,13 +1768,8 @@ void CMainFrame::OnUpdateWindowCascade(CCmdUI* pCmdUI)
 	pCmdUI->m_pMenu->DeleteMenu(ID_WINDOW_TILE_HORZ, MF_BYCOMMAND);
 	pCmdUI->m_pMenu->DeleteMenu(ID_WINDOW_TILE_VERT, MF_BYCOMMAND);
 
-	MENUITEMINFO info;
-	info.cbSize = sizeof(MENUITEMINFO);
-	info.fMask = MIIM_FTYPE;
-	while (pCmdUI->m_pMenu->GetMenuItemCount() > 0
-			&& pCmdUI->m_pMenu->GetMenuItemInfo(0, &info, TRUE)
-			&& info.fType == MFT_SEPARATOR)
-		pCmdUI->m_pMenu->DeleteMenu(0, MF_BYPOSITION);
+	// Delete the separator
+	pCmdUI->m_pMenu->DeleteMenu(0, MF_BYPOSITION);
 
 	// update end menu count
 	pCmdUI->m_nIndex = -1;

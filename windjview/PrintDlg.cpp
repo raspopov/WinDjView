@@ -809,6 +809,7 @@ void CPrintDlg::OnUpdateControls()
 	GetDlgItem(IDC_POSITION_TOP)->EnableWindow(bOk && !m_settings.bCenterImage);
 	GetDlgItem(IDC_POSITION_LEFT)->EnableWindow(bOk && !m_settings.bCenterImage);
 	GetDlgItem(IDC_CENTER_IMAGE)->EnableWindow(bOk);
+	GetDlgItem(IDC_AUTO_ROTATE)->EnableWindow(bOk);
 	GetDlgItem(IDC_CLIP_CONTENT)->EnableWindow(bOk && m_nRangeType != CurrentSelection);
 
 	GetDlgItem(IDC_MARGIN_LEFT)->EnableWindow(bOk);
