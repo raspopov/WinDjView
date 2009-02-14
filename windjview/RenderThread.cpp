@@ -259,7 +259,8 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 	GP<IW44Image> bg44 = pImage->get_bg44();
 	GP<GPixmap> bgpm = pImage->get_bgpm();
 	GP<GPixmap> fgpm = pImage->get_fgpm();
-	if (!displaySettings.bScaleColorPnm && (bg44 != NULL || bgpm != NULL || fgpm != NULL))
+	if (!displaySettings.bScaleColorPnm && (bg44 != NULL || bgpm != NULL || fgpm != NULL)
+			&& nDisplayMode != CDjVuView::BlackAndWhite)
 		bScalePnmFixed = false;
 
 	if (bScalePnmFixed)
