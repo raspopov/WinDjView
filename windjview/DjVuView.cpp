@@ -277,6 +277,19 @@ CDjVuView::CDjVuView()
 	m_nPageShadow = c_nDefaultPageShadow;
 
 	CreateSystemIconFont(m_sampleFont);
+
+	// Note: screen DPI is reported by Windows through the screen DC.
+	// However, the default value of 96 causes the common zoom levels
+	// of 50%, 100%, 150% look bad for common 300dpi and 600dpi documents,
+	// because the scaling factor will be non-integer. However, by
+	// explicitely setting dpi value to 100, we can cause common zoom
+	// levels to require integer subsampling, and the resulting images
+	// will look better and will be rendered faster.
+	//
+	// CScreenDC dcScreen;
+	// m_nScreenDPI = dcScreen.GetDeviceCaps(LOGPIXELSY);
+
+	m_nScreenDPI = 100;
 }
 
 CDjVuView::~CDjVuView()
@@ -444,8 +457,7 @@ void CDjVuView::DrawAnnotation(CDC* pDC, const Annotation& anno, int nPage, bool
 					if (CPoint(points[0]) != points[1] && anno.bHasArrow && szPage.cy > 0)
 					{
 						CScreenDC dcScreen;
-						int nLogPixels = dcScreen.GetDeviceCaps(LOGPIXELSY);
-						double fZoom = 1.0*page.szBitmap.cy*page.info.nDPI/(szPage.cy*nLogPixels);
+						double fZoom = 1.0*page.szBitmap.cy*page.info.nDPI/(szPage.cy*m_nScreenDPI);
 						double fArrowLength = 10*fZoom;
 						double fLength = pow(pow(1.0*points[1].x - points[0].x, 2.0)
 								+ pow(1.0*points[1].y - points[0].y, 2.0), 0.5);
@@ -457,9 +469,9 @@ void CDjVuView::DrawAnnotation(CDC* pDC, const Annotation& anno, int nPage, bool
 						double fBottomY = fBaseY + (points[0].x - points[1].x)*0.5*fArrowLength/fLength;
 
 						pDC->MoveTo(points[1]);
-						pDC->LineTo(static_cast<int>(fTopX), static_cast<int>(fTopY));
+						pDC->LineTo(static_cast<int>(fTopX + 0.5), static_cast<int>(fTopY + 0.5));
 						pDC->MoveTo(points[1]);
-						pDC->LineTo(static_cast<int>(fBottomX), static_cast<int>(fBottomY));
+						pDC->LineTo(static_cast<int>(fBottomX + 0.5), static_cast<int>(fBottomY + 0.5));
 					}
 
 					pDC->SelectObject(pOldPen);
@@ -600,9 +612,7 @@ void CDjVuView::DrawAnnotation(CDC* pDC, const Annotation& anno, int nPage, bool
 		if (szPage.cy > 0)
 		{
 			CFont curFont;
-			CScreenDC dcScreen;
-			int nLogPixels = dcScreen.GetDeviceCaps(LOGPIXELSY);
-			double fZoom = 1.0*page.szBitmap.cy*page.info.nDPI/(szPage.cy*nLogPixels);
+			double fZoom = 1.0*page.szBitmap.cy*page.info.nDPI/(szPage.cy*m_nScreenDPI);
 
 			LOGFONT lf;
 			m_sampleFont.GetLogFont(&lf);
@@ -1781,13 +1791,9 @@ CSize CDjVuView::CalcPageSize(const CSize& szBounds, const CSize& szPage, int nD
 	}
 	else
 	{
-		CScreenDC dcScreen;
-		int nLogPixelsX = dcScreen.GetDeviceCaps(LOGPIXELSX);
-		int nLogPixelsY = dcScreen.GetDeviceCaps(LOGPIXELSX);
-
 		CSize szDisplay;
-		szDisplay.cx = static_cast<int>(szPage.cx*nLogPixelsX*m_fZoom*0.01/nDPI);
-		szDisplay.cy = static_cast<int>(szPage.cy*nLogPixelsY*m_fZoom*0.01/nDPI);
+		szDisplay.cx = static_cast<int>(szPage.cx*m_nScreenDPI*m_fZoom*0.01/nDPI + 0.5);
+		szDisplay.cy = static_cast<int>(szPage.cy*m_nScreenDPI*m_fZoom*0.01/nDPI + 0.5);
 		return szDisplay;
 	}
 }
@@ -1803,20 +1809,20 @@ CSize CDjVuView::CalcPageBitmapSize(const CSize& szBounds, const CSize& szPage, 
 	switch (nZoomType)
 	{
 	case ZoomFitWidth:
-		szDisplay.cy = szDisplay.cx * szPage.cy / szPage.cx;
+		szDisplay.cy = static_cast<int>(1.0*szDisplay.cx*szPage.cy/szPage.cx + 0.5);
 		break;
 
 	case ZoomFitHeight:
-		szDisplay.cx = szDisplay.cy * szPage.cx / szPage.cy;
+		szDisplay.cx = static_cast<int>(1.0*szDisplay.cy*szPage.cx/szPage.cy + 0.5);
 		break;
 
 	case ZoomFitPage:
-		szDisplay.cx = szDisplay.cy * szPage.cx / szPage.cy;
+		szDisplay.cx = static_cast<int>(1.0*szDisplay.cy*szPage.cx/szPage.cy + 0.5);
 
 		if (szDisplay.cx > szNewBounds.cx)
 		{
 			szDisplay.cx = szNewBounds.cx;
-			szDisplay.cy = szDisplay.cx * szPage.cy / szPage.cx;
+			szDisplay.cy = min(szNewBounds.cy, static_cast<int>(1.0*szDisplay.cx*szPage.cy/szPage.cx + 0.5));
 		}
 		break;
 
@@ -1872,20 +1878,16 @@ void CDjVuView::CalcPageSizeFacing(const CSize& szBounds,
 	}
 	else
 	{
-		CScreenDC dcScreen;
-		int nLogPixelsX = dcScreen.GetDeviceCaps(LOGPIXELSX);
-		int nLogPixelsY = dcScreen.GetDeviceCaps(LOGPIXELSX);
-
 		if (bFirstPageOk)
 		{
-			szDisplay1.cx = static_cast<int>(szPage1.cx*nLogPixelsX*m_fZoom*0.01/nDPI1);
-			szDisplay1.cy = static_cast<int>(szPage1.cy*nLogPixelsY*m_fZoom*0.01/nDPI1);
+			szDisplay1.cx = static_cast<int>(szPage1.cx*m_nScreenDPI*m_fZoom*0.01/nDPI1 + 0.5);
+			szDisplay1.cy = static_cast<int>(szPage1.cy*m_nScreenDPI*m_fZoom*0.01/nDPI1 + 0.5);
 		}
 
 		if (bSecondPageOk)
 		{
-			szDisplay2.cx = static_cast<int>(szPage2.cx*nLogPixelsX*m_fZoom*0.01/nDPI2);
-			szDisplay2.cy = static_cast<int>(szPage2.cy*nLogPixelsY*m_fZoom*0.01/nDPI2);
+			szDisplay2.cx = static_cast<int>(szPage2.cx*m_nScreenDPI*m_fZoom*0.01/nDPI2 + 0.5);
+			szDisplay2.cy = static_cast<int>(szPage2.cy*m_nScreenDPI*m_fZoom*0.01/nDPI2 + 0.5);
 		}
 	}
 }
@@ -2332,10 +2334,7 @@ double CDjVuView::GetZoom() const
 		return 100.0;
 
 	// Calculate zoom from display area size
-	CScreenDC dcScreen;
-	int nLogPixels = dcScreen.GetDeviceCaps(LOGPIXELSX);
-
-	return 100.0*page.szBitmap.cx*page.info.nDPI/(szPage.cx*nLogPixels);
+	return 100.0*page.szBitmap.cx*page.info.nDPI/(szPage.cx*m_nScreenDPI);
 }
 
 double CDjVuView::GetZoom(ZoomType nZoomType) const
@@ -2347,9 +2346,6 @@ double CDjVuView::GetZoom(ZoomType nZoomType) const
 
 	// Calculate zoom from display area size
 	CSize szDisplay;
-
-	CScreenDC dcScreen;
-	int nLogPixels = dcScreen.GetDeviceCaps(LOGPIXELSX);
 
 	if (m_nLayout == SinglePage || m_nLayout == Continuous)
 	{
@@ -2368,7 +2364,7 @@ double CDjVuView::GetZoom(ZoomType nZoomType) const
 					szPage2, pNextPage->info.nDPI, szDisplay2, nZoomType);
 
 			if ((szPage.cx <= 0 || szPage.cy <= 0) && szPage2.cx > 0 && szPage2.cy > 0)
-				return 100.0*szDisplay2.cx*pNextPage->info.nDPI/(szPage2.cx*nLogPixels);
+				return 100.0*szDisplay2.cx*pNextPage->info.nDPI/(szPage2.cx*m_nScreenDPI);
 		}
 		else
 		{
@@ -2380,7 +2376,7 @@ double CDjVuView::GetZoom(ZoomType nZoomType) const
 	if (szPage.cx <= 0 || szPage.cy <= 0)
 		return 100.0;
 
-	return 100.0*szDisplay.cx*page.info.nDPI/(szPage.cx*nLogPixels);
+	return 100.0*szDisplay.cx*page.info.nDPI/(szPage.cx*m_nScreenDPI);
 }
 
 void CDjVuView::OnViewLayout(UINT nID)
@@ -2812,8 +2808,8 @@ CPoint CDjVuView::ScreenToDjVu(int nPage, const CPoint& point, bool bClip)
 	double fRatioX = szPage.cx / (1.0*page.szBitmap.cx);
 	double fRatioY = szPage.cy / (1.0*page.szBitmap.cy);
 
-	CPoint ptResult(static_cast<int>(point.x * fRatioX + 0.5),
-			static_cast<int>(szPage.cy - point.y * fRatioY + 0.5));
+	CPoint ptResult(static_cast<int>(point.x*fRatioX + 0.5),
+			static_cast<int>(szPage.cy - point.y*fRatioY + 0.5));
 
 	GRect output(0, 0, page.info.szPage.cx, page.info.szPage.cy);
 
@@ -4770,10 +4766,10 @@ CRect CDjVuView::TranslatePageRect(int nPage, GRect rect, bool bToDisplay, bool 
 		double fRatioX = (1.0*page.szBitmap.cx) / szPage.cx;
 		double fRatioY = (1.0*page.szBitmap.cy) / szPage.cy;
 
-		rcResult = CRect(static_cast<int>(rect.xmin * fRatioX + 0.5),
-			static_cast<int>((szPage.cy - rect.ymax) * fRatioY + 0.5),
-			static_cast<int>(rect.xmax * fRatioX + 0.5),
-			static_cast<int>((szPage.cy - rect.ymin) * fRatioY + 0.5));
+		rcResult = CRect(static_cast<int>(rect.xmin*fRatioX + 0.5),
+			static_cast<int>((szPage.cy - rect.ymax)*fRatioY + 0.5),
+			static_cast<int>(rect.xmax*fRatioX + 0.5),
+			static_cast<int>((szPage.cy - rect.ymin)*fRatioY + 0.5));
 
 		if (bClip)
 		{
@@ -5211,7 +5207,7 @@ void CDjVuView::OnViewZoomIn()
 	sort(zoomLevels.begin(), zoomLevels.end());
 
 	int nZoom;
-	for (nZoom = 0; nZoom < static_cast<int>(zoomLevels.size() - 1); ++nZoom)
+	for (nZoom = 0; nZoom < static_cast<int>(zoomLevels.size()) - 1; ++nZoom)
 	{
 		if (zoomLevels[nZoom] >= fCurrentZoom + 1e-2)
 			break;
@@ -6156,7 +6152,8 @@ void CDjVuView::UpdateMagnifyWnd()
 	double fRatioY = pView->m_pages[nPage].szBitmap.cy / (1.0*page.szBitmap.cy);
 
 	ptCursor += GetScrollPosition() - page.ptOffset;
-	CPoint ptResult(static_cast<int>(ptCursor.x * fRatioX), static_cast<int>(ptCursor.y * fRatioY));
+	CPoint ptResult(static_cast<int>(ptCursor.x*fRatioX + 0.5),
+			static_cast<int>(ptCursor.y*fRatioY + 0.5));
 
 	CPoint ptOffset = pView->m_pages[nPage].ptOffset + ptResult -
 			CPoint(pMagnifyWnd->GetViewWidth() / 2, pMagnifyWnd->GetViewHeight() / 2);
@@ -6294,7 +6291,7 @@ void CDjVuView::OnHighlight(UINT nID)
 	dlg.m_bHideInactiveBorder = theApp.GetAnnoTemplate()->bHideInactiveBorder;
 	dlg.m_nFillType = theApp.GetAnnoTemplate()->nFillType;
 	dlg.m_crFill = theApp.GetAnnoTemplate()->crFill;
-	dlg.m_nTransparency = static_cast<int>(theApp.GetAnnoTemplate()->fTransparency * 100.0 + 0.5);
+	dlg.m_nTransparency = static_cast<int>(theApp.GetAnnoTemplate()->fTransparency*100.0 + 0.5);
 	dlg.m_bHideInactiveFill = theApp.GetAnnoTemplate()->bHideInactiveFill;
 	dlg.m_bAlwaysShowComment = !m_bHasSelection ? theApp.GetAnnoTemplate()->bAlwaysShowComment : false;
 	dlg.m_bDisableShowComment = m_bHasSelection;
@@ -6395,7 +6392,7 @@ void CDjVuView::OnEditAnnotation()
 	dlg.m_bHideInactiveBorder = m_pClickedAnno->bHideInactiveBorder;
 	dlg.m_nFillType = m_pClickedAnno->nFillType;
 	dlg.m_crFill = m_pClickedAnno->crFill;
-	dlg.m_nTransparency = static_cast<int>(m_pClickedAnno->fTransparency * 100.0 + 0.5);
+	dlg.m_nTransparency = static_cast<int>(m_pClickedAnno->fTransparency*100.0 + 0.5);
 	dlg.m_bHideInactiveFill = m_pClickedAnno->bHideInactiveFill;
 	dlg.m_strComment = MakeCString(m_pClickedAnno->strComment);
 	dlg.m_bAlwaysShowComment = m_pClickedAnno->bAlwaysShowComment;
@@ -6585,12 +6582,9 @@ void CDjVuView::OnZoomToSelection()
 	const Page& page = m_pages[m_nSelectionPage];
 	CSize szPage = page.GetSize(m_nRotate);
 
-	CScreenDC dcScreen;
-	int nLogPixels = dcScreen.GetDeviceCaps(LOGPIXELSX);
-
 	double fScale = min(1.0*szClient.cx/m_rcSelection.width(),
 			1.0*szClient.cy/m_rcSelection.height());
-	double fZoom = 100.0*fScale*page.info.nDPI/nLogPixels;
+	double fZoom = 100.0*fScale*page.info.nDPI/m_nScreenDPI;
 
 	ZoomTo(ZoomPercent, fZoom);
 	szClient = ::GetClientSize(this);

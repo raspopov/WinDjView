@@ -307,7 +307,6 @@ void CThumbnailsView::OnInitialUpdate()
 	m_pages.resize(m_nPageCount);
 
 	m_displaySetting = *theApp.GetDisplaySettings();
-	m_displaySetting.nScaleMethod = CDisplaySettings::Default;
 
 	m_pThread = new CThumbnailsThread(m_pSource, this);
 	m_pThread->SetThumbnailSize(m_szThumbnail);
@@ -949,8 +948,6 @@ void CThumbnailsView::EnsureVisible(int nPage)
 void CThumbnailsView::SettingsChanged()
 {
 	CDisplaySettings appSettings = *theApp.GetDisplaySettings();
-	appSettings.nScaleMethod = CDisplaySettings::Default;
-
 	if (m_displaySetting != appSettings)
 	{
 		m_displaySetting = appSettings;

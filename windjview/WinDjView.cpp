@@ -672,7 +672,7 @@ void CDjViewApp::LoadSettings()
 	if (!m_appSettings.searchHistory.empty())
 		m_appSettings.strFind = m_appSettings.searchHistory.front();
 
-	m_displaySettings.nScaleMethod = GetProfileInt(s_pszDisplaySection, s_pszScaleMethod, m_displaySettings.nScaleMethod);
+	m_displaySettings.bScaleColorPnm = !!GetProfileInt(s_pszDisplaySection, s_pszScaleMethod, m_displaySettings.bScaleColorPnm);
 	m_displaySettings.bInvertColors = !!GetProfileInt(s_pszDisplaySection, s_pszInvertColors, m_displaySettings.bInvertColors);
 	m_displaySettings.bAdjustDisplay = !!GetProfileInt(s_pszDisplaySection, s_pszAdjustDisplay, m_displaySettings.bAdjustDisplay);
 	m_displaySettings.fGamma = GetProfileDouble(s_pszDisplaySection, s_pszGamma, m_displaySettings.fGamma);
@@ -848,7 +848,7 @@ void CDjViewApp::SaveSettings()
 				s_pszFindStringPrefix + FormatString(_T("%d"), nItem), _T(""));
 	}
 
-	WriteProfileInt(s_pszDisplaySection, s_pszScaleMethod, m_displaySettings.nScaleMethod);
+	WriteProfileInt(s_pszDisplaySection, s_pszScaleMethod, m_displaySettings.bScaleColorPnm);
 	WriteProfileInt(s_pszDisplaySection, s_pszInvertColors, m_displaySettings.bInvertColors);
 	WriteProfileInt(s_pszDisplaySection, s_pszAdjustDisplay, m_displaySettings.bAdjustDisplay);
 	WriteProfileDouble(s_pszDisplaySection, s_pszGamma, m_displaySettings.fGamma);

@@ -224,24 +224,45 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 	CSize szImage(pImage->get_width(), pImage->get_height());
 	int nTotalRotate = GetTotalRotate(pImage, nRotate);
 
-	CSize szRotated(size);
+	CSize szScaled(size);
 	if (nTotalRotate % 2 != 0)
-		swap(szRotated.cx, szRotated.cy);
+		swap(szScaled.cx, szScaled.cy);
 
-	GRect rect(0, 0, szRotated.cx, szRotated.cy);
+	GRect rect(0, 0, szScaled.cx, szScaled.cy);
 
-	int nScaleMethod = displaySettings.nScaleMethod;
+	bool bScalePnmFixed = true;
+
 	// Results from PnmScaleFixed are comparable to libdjvu scaling,
 	// when zoom factor is greater than 0.5, so use default faster scaling
 	// in this case. Additionally, use the default scaling when requested
-	// image size is very small, since quality does not matter at this
+	// image size is small, since quality does not matter at this
 	// scale. NOTE: this also deals with the special case of size (1, 1),
 	// which can force PnmScaleFixed into an infinite loop.
-	if ((szRotated.cx < 10 || szRotated.cy < 10)
-			|| (szRotated.cx >= szImage.cx / 2 || szRotated.cy >= szImage.cy / 2))
-		nScaleMethod = CDisplaySettings::Default;
+	if ((szScaled.cx < 150 || szScaled.cy < 150)
+			|| (szScaled.cx >= szImage.cx / 2 || szScaled.cy >= szImage.cy / 2))
+		bScalePnmFixed = false;
 
-	if (nScaleMethod == CDisplaySettings::PnmScaleFixed)
+	// Disable PnmFixed scaling if we perform an integer reduction of the image.
+	for (int nReduction = 1; nReduction <= 15; ++nReduction)
+	{
+		if (szScaled.cx*nReduction > szImage.cx - nReduction
+				&& szScaled.cx*nReduction < szImage.cx + nReduction
+				&& szScaled.cy*nReduction > szImage.cy - nReduction
+				&& szScaled.cy*nReduction < szImage.cy + nReduction)
+		{
+			bScalePnmFixed = false;
+			break;
+		}
+	}
+
+	// Disable PnmFixed scaling for color images according to settings
+	GP<IW44Image> bg44 = pImage->get_bg44();
+	GP<GPixmap> bgpm = pImage->get_bgpm();
+	GP<GPixmap> fgpm = pImage->get_fgpm();
+	if (!displaySettings.bScaleColorPnm && (bg44 != NULL || bgpm != NULL || fgpm != NULL))
+		bScalePnmFixed = false;
+
+	if (bScalePnmFixed)
 		rect = GRect(0, 0, szImage.cx, szImage.cy);
 
 	GP<GBitmap> pGBitmap;
@@ -288,7 +309,7 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 		if (nTotalRotate != 0)
 			pGPixmap = pGPixmap->rotate(nTotalRotate);
 
-		if (nScaleMethod == CDisplaySettings::PnmScaleFixed)
+		if (bScalePnmFixed)
 			pGPixmap = RescalePnm(pGPixmap, size.cx, size.cy);
 
 		pBitmap = RenderPixmap(*pGPixmap, displaySettings);
@@ -298,14 +319,14 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 		if (nTotalRotate != 0)
 			pGBitmap = pGBitmap->rotate(nTotalRotate);
 
-		if (nScaleMethod == CDisplaySettings::PnmScaleFixed)
+		if (bScalePnmFixed)
 			pGBitmap = RescalePnm(pGBitmap, size.cx, size.cy);
 
 		pBitmap = RenderBitmap(*pGBitmap, displaySettings);
 	}
 	else
 	{
-		pBitmap = RenderEmpty(szRotated, displaySettings);
+		pBitmap = RenderEmpty(size, displaySettings);
 	}
 
 	return pBitmap;

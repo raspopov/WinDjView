@@ -30,7 +30,7 @@ struct CDisplaySettings
 
 	CDisplaySettings() :
 			bAdjustDisplay(false), nBrightness(0), nContrast(0),
-			fGamma(1.0), nScaleMethod(PnmScaleFixed), bInvertColors(false) {}
+			fGamma(1.0), bScaleColorPnm(false), bInvertColors(false) {}
 
 	int GetBrightness() const { return bAdjustDisplay ? nBrightness : 0; }
 	int GetContrast() const { return bAdjustDisplay ? nContrast : 0; }
@@ -47,7 +47,7 @@ struct CDisplaySettings
 	bool operator==(const CDisplaySettings& rhs) const
 	{
 		return GetBrightness() == rhs.GetBrightness() && GetContrast() == rhs.GetContrast()
-				&& GetGamma() == rhs.GetGamma() && nScaleMethod == rhs.nScaleMethod
+				&& GetGamma() == rhs.GetGamma() && bScaleColorPnm == rhs.bScaleColorPnm
 				&& bInvertColors == rhs.bInvertColors;
 	}
 
@@ -61,7 +61,7 @@ struct CDisplaySettings
 	int nBrightness;
 	int nContrast;
 
-	int nScaleMethod;
+	bool bScaleColorPnm;
 	bool bInvertColors;
 };
 

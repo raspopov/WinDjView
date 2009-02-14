@@ -221,7 +221,7 @@
 #define IDC_FULLSCREEN_CONTINUOUS       1047
 #define IDC_FIND                        1048
 #define IDC_INVERT_WHEEL_ZOOM           1049
-#define IDC_HQ_SCALING                  1050
+#define IDC_HQ_COLOR_SCALING            1050
 #define IDC_ADJUST_DISPLAY              1051
 #define IDC_BRIGHTNESS                  1052
 #define IDC_CONTRAST                    1053

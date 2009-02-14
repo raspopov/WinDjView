@@ -35,7 +35,7 @@ public:
 
 // Dialog Data
 	enum { IDD = IDD_SETTINGS_DISPLAY };
-	BOOL m_bHQScaling;
+	BOOL m_bHQColorScaling;
 	BOOL m_bInvertColors;
 	BOOL m_bAdjustDisplay;
 	BOOL m_bAdjustPrinting;

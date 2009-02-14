@@ -182,6 +182,7 @@ protected:
 	UINT m_nTimerID;
 
 	COffscreenDC m_offscreenDC;
+	int m_nScreenDPI;
 
 	CCriticalSection m_dataLock;
 	set<CDIB*> m_bitmaps;

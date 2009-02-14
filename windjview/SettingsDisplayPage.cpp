@@ -38,7 +38,7 @@ CSettingsDisplayPage::CSettingsDisplayPage()
 	m_displaySettings = *theApp.GetDisplaySettings();
 
 	m_bAdjustDisplay = m_displaySettings.bAdjustDisplay;
-	m_bHQScaling = (m_displaySettings.nScaleMethod != CDisplaySettings::Default);
+	m_bHQColorScaling = m_displaySettings.bScaleColorPnm;
 	m_bInvertColors = m_displaySettings.bInvertColors;
 
 	m_nBrightness = m_displaySettings.nBrightness + 100;
@@ -57,7 +57,7 @@ void CSettingsDisplayPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_ADJUST_DISPLAY, m_bAdjustDisplay);
-	DDX_Check(pDX, IDC_HQ_SCALING, m_bHQScaling);
+	DDX_Check(pDX, IDC_HQ_COLOR_SCALING, m_bHQColorScaling);
 	DDX_Check(pDX, IDC_INVERT_COLORS, m_bInvertColors);
 	DDX_Check(pDX, IDC_ADJUST_PRINTING, m_bAdjustPrinting);
 
@@ -168,8 +168,7 @@ BOOL CSettingsDisplayPage::OnKillActive()
 		return false;
 
 	m_displaySettings.bAdjustDisplay = !!m_bAdjustDisplay;
-	m_displaySettings.nScaleMethod = (m_bHQScaling ?
-			CDisplaySettings::PnmScaleFixed : CDisplaySettings::Default);
+	m_displaySettings.bScaleColorPnm = !!m_bHQColorScaling;
 	m_displaySettings.bInvertColors = !!m_bInvertColors;
 
 	m_displaySettings.nBrightness = m_nBrightness - 100;

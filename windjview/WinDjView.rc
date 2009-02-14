@@ -621,7 +621,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Display"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    CONTROL         "&Sharp scaling at low zoom levels (slower)",IDC_HQ_SCALING,
+    CONTROL         "Improved &scaling for color pages (slower)",IDC_HQ_COLOR_SCALING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,208,10
     CONTROL         "&Invert colors",IDC_INVERT_COLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
     CONTROL         "A&djust settings:",IDC_ADJUST_DISPLAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,208,9
