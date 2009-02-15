@@ -127,7 +127,6 @@ void CMagnifyWnd::Hide()
 void CMagnifyWnd::Update()
 {
 	UpdateWindow();
-//	RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 
 	if (m_pSetLayeredWindowAttributes != NULL && m_bFirstUpdate)
 	{

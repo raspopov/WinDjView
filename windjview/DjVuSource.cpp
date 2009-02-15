@@ -1033,7 +1033,8 @@ bool DjVuSource::IsPageCached(int nPage, Observer* observer)
 	const PageData& data = m_pages[nPage];
 
 	m_lock.Lock();
-	bool bCached = (data.pImage != NULL && data.IsObservedBy(observer));
+	bool bCached = (data.pImage != NULL
+			&& (data.IsObservedBy(observer) || !data.HasObservers()));
 	m_lock.Unlock();
 
 	return bCached;

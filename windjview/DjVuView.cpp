@@ -1223,7 +1223,7 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 			ScrollToPosition(m_pages[nAnchorPage].ptOffset + ptAnchorOffset - szClient, false);
 	}
 
-	if (updateType != RECALC && (m_nLayout == Continuous || m_nLayout == ContinuousFacing))
+	if (updateType != RECALC)
 		UpdateVisiblePages();
 
 	m_bNeedUpdate = false;
@@ -5703,6 +5703,7 @@ void CDjVuView::OnViewFullscreen()
 	pView->m_nZoomType = ZoomFitPage;
 	pView->m_nDisplayMode = m_nDisplayMode;
 	pView->m_nRotate = m_nRotate;
+	pView->m_nPage = m_nPage;
 
 	if (theApp.GetAppSettings()->bFullscreenContinuousScroll)
 		pView->m_nLayout = m_nLayout;
@@ -5719,14 +5720,13 @@ void CDjVuView::OnViewFullscreen()
 
 	pView->UpdatePageInfoFrom(this);
 	pView->CopyBitmapsFrom(this);
-	pView->UpdateLayout(RECALC);
 
+	if (pView->m_nLayout == Continuous || pView->m_nLayout == ContinuousFacing)
+		pView->UpdateLayout(RECALC);
 	pView->RenderPage(m_nPage);
 
 	pView->ShowWindow(SW_SHOW);
 	pView->SetFocus();
-
-	pView->UpdateLayout();
 	pView->UpdateWindow();
 }
 
@@ -6122,6 +6122,7 @@ void CDjVuView::StartMagnify()
 	pView->m_bRightToLeft = m_bRightToLeft;
 	pView->m_nDisplayMode = m_nDisplayMode;
 	pView->m_nRotate = m_nRotate;
+	pView->m_nPage = nPage;
 
 	double fZoom = GetZoom();
 	double fZoomActualSize = GetZoom(ZoomActualSize);
@@ -6141,7 +6142,9 @@ void CDjVuView::StartMagnify()
 	pView->OnInitialUpdate();
 
 	pView->UpdatePageInfoFrom(this);
-	pView->UpdateLayout(RECALC);
+
+	if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
+		pView->UpdateLayout(RECALC);
 	pView->RenderPage(nPage);
 }
 
