@@ -1398,6 +1398,9 @@ PageInfo DjVuSource::ReadPageInfo(int nPage, bool bNeedText, bool bNeedAnno)
 
 bool DjVuSource::SaveAs(const CString& strFileName)
 {
+	if (AfxComparePath(strFileName, m_strFileName))
+		return false;
+
 	try
 	{
 		m_pDjVuDoc->wait_for_complete_init();
@@ -1406,13 +1409,15 @@ bool DjVuSource::SaveAs(const CString& strFileName)
 		// Close open files for this url
 		DataPool::load_file(url);
 
-		m_pDjVuDoc->write(ByteStream::create(url, "wb"), true);
-		return true;
+		if (!CopyFile(m_strFileName, strFileName, false))
+			return false;
 	}
 	catch (GException&)
 	{
 		return false;
 	}
+
+	return true;
 }
 
 void DjVuSource::UpdateDictionaries()

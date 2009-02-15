@@ -67,7 +67,7 @@ void CAnnotationDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_FILL_TYPE, m_cboFillType);
 	DDX_Text(pDX, IDC_COMMENT, m_strComment);
 	DDX_Check(pDX, IDC_ALWAYS_SHOW_COMMENT, m_bAlwaysShowComment);
-	DDX_Check(pDX, IDC_HIDE_INACTIVE, m_bHideInactiveBorder);
+	DDX_Check(pDX, IDC_HIDE_INACTIVE_BORDER, m_bHideInactiveBorder);
 	DDX_Check(pDX, IDC_HIDE_INACTIVE_FILL, m_bHideInactiveFill);
 	DDX_Text(pDX, IDC_BOOKMARK_TITLE, m_strBookmark);
 
@@ -168,7 +168,7 @@ void CAnnotationDlg::ToggleDialog(bool bExpand, bool bCenterWindow)
 void CAnnotationDlg::UpdateControls()
 {
 	m_colorBorder.EnableWindow(m_nBorderType == Annotation::BorderSolid);
-	GetDlgItem(IDC_HIDE_INACTIVE)->EnableWindow(m_nBorderType != Annotation::BorderNone);
+	GetDlgItem(IDC_HIDE_INACTIVE_BORDER)->EnableWindow(m_nBorderType != Annotation::BorderNone);
 
 	m_colorFill.EnableWindow(m_nFillType == Annotation::FillSolid);
 	m_sliderTransparency.EnableWindow(m_nFillType == Annotation::FillSolid);
