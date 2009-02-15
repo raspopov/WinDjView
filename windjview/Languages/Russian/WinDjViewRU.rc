@@ -277,8 +277,8 @@ BEGIN
         END
         POPUP "Р&асположение"
         BEGIN
-            MENUITEM "&Страницы подряд\tCtrl+Alt+2", ID_LAYOUT_CONTINUOUS
-            MENUITEM "&Разворот\tCtrl+Alt+3",       ID_LAYOUT_FACING
+            MENUITEM "&Страницы подряд\tCtrl+Alt+1", ID_LAYOUT_CONTINUOUS
+            MENUITEM "&Разворот\tCtrl+Alt+2",       ID_LAYOUT_FACING
             MENUITEM SEPARATOR
             MENUITEM "&Первая страница отдельно\tCtrl+E", ID_LAYOUT_FIRSTPAGE_ALONE
             MENUITEM "Порядок справа &налево\tCtrl+R", ID_LAYOUT_RTL_ORDER
