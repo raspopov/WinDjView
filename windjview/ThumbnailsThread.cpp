@@ -93,6 +93,9 @@ unsigned int __stdcall CThumbnailsThread::RenderThreadProc(void* pvData)
 
 		CDIB* pBitmap = pThread->Render(job);
 
+		// Cannot stop while the owner is being updated
+		pThread->m_stopping.Lock();
+
 		pThread->m_lock.Lock();
 		bool bNotify = (!pThread->m_bRejectCurrentJob);
 		pThread->m_currentJob.nPage = -1;
@@ -100,8 +103,6 @@ unsigned int __stdcall CThumbnailsThread::RenderThreadProc(void* pvData)
 			pThread->m_jobReady.SetEvent();
 		pThread->m_lock.Unlock();
 
-		// Cannot stop while the owner is being updated
-		pThread->m_stopping.Lock();
 		if (bNotify)
 			pThread->m_pOwner->OnUpdate(NULL, &BitmapMsg(THUMBNAIL_RENDERED, job.nPage, pBitmap));
 		pThread->m_stopping.Unlock();
@@ -162,16 +163,16 @@ CDIB* CThumbnailsThread::Render(Job& job)
 
 		if (szPage.cx > 0 && szPage.cy > 0)
 		{
-			CSize szDisplay = m_szThumbnail;
-			szDisplay.cx = szDisplay.cy * szPage.cx / szPage.cy;
+			CSize szDisplay = job.size;
+			szDisplay.cy = static_cast<int>(1.0*szDisplay.cx*szPage.cy/szPage.cx + 0.5);
 
-			if (szDisplay.cx > m_szThumbnail.cx)
+			if (szDisplay.cy > job.size.cy)
 			{
-				szDisplay.cx = m_szThumbnail.cx;
-				szDisplay.cy = szDisplay.cx * szPage.cy / szPage.cx;
+				szDisplay.cy = job.size.cy;
+				szDisplay.cx = min(job.size.cx, static_cast<int>(1.0*szDisplay.cy*szPage.cx/szPage.cy + 0.5));
 			}
 
-			pBitmap = CRenderThread::Render(pImage, szDisplay, job.displaySettings, CDjVuView::Color, job.nRotate);
+			pBitmap = CRenderThread::Render(pImage, szDisplay, job.displaySettings, CDjVuView::Color, job.nRotate, true);
 		}
 	}
 
@@ -184,16 +185,19 @@ CDIB* CThumbnailsThread::Render(Job& job)
 	return pBitmap;
 }
 
-void CThumbnailsThread::AddJob(int nPage, int nRotate, const CDisplaySettings& displaySettings)
+void CThumbnailsThread::AddJob(int nPage, int nRotate, const CSize& size, const CDisplaySettings& displaySettings)
 {
 	Job job;
 	job.nPage = nPage;
 	job.nRotate = nRotate;
+	job.size = size;
 	job.displaySettings = displaySettings;
 
 	m_lock.Lock();
-	if (m_currentJob.nPage == job.nPage && m_currentJob.nRotate == nRotate &&
-			m_currentJob.displaySettings == job.displaySettings)
+	if (m_currentJob.nPage == job.nPage
+			&& m_currentJob.nRotate == nRotate
+			&& m_currentJob.size == job.size
+			&& m_currentJob.displaySettings == job.displaySettings)
 	{
 		m_lock.Unlock();
 		return;

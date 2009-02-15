@@ -40,7 +40,8 @@ public:
 	void RemoveAllJobs();
 
 	static CDIB* Render(GP<DjVuImage> pImage, const CSize& size,
-		const CDisplaySettings& displaySettings, int nDisplayMode, int nRotate);
+		const CDisplaySettings& displaySettings, int nDisplayMode,
+		int nRotate, bool bThumbnail = false);
 
 	void PauseJobs();
 	void ResumeJobs();

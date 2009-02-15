@@ -81,7 +81,7 @@ protected:
 	CCriticalSection m_dataLock;
 	set<CDIB*> m_bitmaps;
 
-	CDisplaySettings m_displaySetting;
+	CDisplaySettings m_displaySettings;
 	void SettingsChanged();
 
 	enum UpdateType

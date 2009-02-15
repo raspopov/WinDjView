@@ -783,7 +783,11 @@ void CDjVuView::DrawTransparentText(CDC* pDC, int nPage)
 	for (GPosition pos = zones; pos; ++pos)
 	{
 		DjVuTXT::Zone* pZone = zones[pos];
-		if (pZone->text_length == 0)
+
+		CString strWord = MakeCString(page.info.pText->textUTF8.substr(pZone->text_start, pZone->text_length));
+		strWord.TrimLeft();
+		strWord.TrimRight();
+		if (strWord.IsEmpty())
 			continue;
 
 		CRect rcWord = TranslatePageRect(nPage, pZone->rect) - ptScroll;
@@ -806,11 +810,9 @@ void CDjVuView::DrawTransparentText(CDC* pDC, int nPage)
 		HGDIOBJ hOldFont = ::SelectObject(pDC->m_hDC, it->second);
 
 		pDC->SetTextCharacterExtra(0);
-		CString strWord = MakeCString(page.info.pText->textUTF8.substr(pZone->text_start, pZone->text_length));
-		strWord.TrimLeft();
-		strWord.TrimRight();
 		CSize szWordExtent = pDC->GetTextExtent(strWord);
-		pDC->SetTextCharacterExtra(static_cast<int>((1.0 * rcWord.Width() - szWordExtent.cx) / (strWord.GetLength() - 1)));
+		if (strWord.GetLength() > 1)
+			pDC->SetTextCharacterExtra(static_cast<int>((1.0*rcWord.Width() - szWordExtent.cx)/(strWord.GetLength() - 1)));
 
 		pDC->ExtTextOut(rcWord.left, rcWord.top, ETO_CLIPPED, rcWord, strWord + _T(" "), NULL);
 
@@ -1120,8 +1122,8 @@ void CDjVuView::ScrollToPage(int nPage, const CPoint& ptOffset, bool bMargin)
 	{
 		// Offset top-left to 1/10 of the client area
 		CSize szClient = ::GetClientSize(this);
-		ptPos.x -= static_cast<int>(0.1 * szClient.cx + 0.5);
-		ptPos.y -= static_cast<int>(0.1 * szClient.cy + 0.5);
+		ptPos.x -= static_cast<int>(0.1*szClient.cx + 0.5);
+		ptPos.y -= static_cast<int>(0.1*szClient.cy + 0.5);
 	}
 	else
 	{

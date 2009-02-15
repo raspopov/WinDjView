@@ -216,7 +216,8 @@ CDIB* CRenderThread::Render(Job& job)
 }
 
 CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
-		const CDisplaySettings& displaySettings, int nDisplayMode, int nRotate)
+		const CDisplaySettings& displaySettings, int nDisplayMode,
+		int nRotate, bool bThumbnail)
 {
 	if (size.cx <= 0 || size.cy <= 0)
 		return NULL;
@@ -231,6 +232,10 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 	GRect rect(0, 0, szScaled.cx, szScaled.cy);
 
 	bool bScalePnmFixed = true;
+
+	// Use fast scaling for thumbnails.
+	if (bThumbnail)
+		bScalePnmFixed = false;
 
 	// Results from PnmScaleFixed are comparable to libdjvu scaling,
 	// when zoom factor is greater than 0.5, so use default faster scaling

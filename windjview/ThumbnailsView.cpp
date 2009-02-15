@@ -308,13 +308,11 @@ void CThumbnailsView::OnInitialUpdate()
 	m_nPageCount = m_pSource->GetPageCount();
 	m_pages.resize(m_nPageCount);
 
-	m_displaySetting = *theApp.GetDisplaySettings();
+	m_displaySettings = *theApp.GetDisplaySettings();
+	m_displaySettings.bScaleColorPnm = false;
 
 	m_pThread = new CThumbnailsThread(m_pSource, this);
-	m_pThread->SetThumbnailSize(m_szThumbnail);
-
 	m_pIdleThread = new CThumbnailsThread(m_pSource, this, true);
-	m_pIdleThread->SetThumbnailSize(m_szThumbnail);
 
 	UpdateLayout(RECALC);
 }
@@ -536,12 +534,6 @@ void CThumbnailsView::ResizeThumbnails(int nThumbnailSize)
 	m_nThumbnailSize = nThumbnailSize;
 	m_szThumbnail.cx = CAppSettings::thumbnailWidth[m_nThumbnailSize];
 	m_szThumbnail.cy = CAppSettings::thumbnailHeight[m_nThumbnailSize];
-
-	if (m_pThread != NULL && m_pIdleThread != NULL)
-	{
-		m_pThread->SetThumbnailSize(m_szThumbnail);
-		m_pIdleThread->SetThumbnailSize(m_szThumbnail);
-	}
 
 	UpdateAllThumbnails();
 }
@@ -800,7 +792,7 @@ void CThumbnailsView::UpdatePage(int nPage, CThumbnailsThread* pThread)
 			!(page.szBitmap.cx <= m_szThumbnail.cx && page.szBitmap.cy == m_szThumbnail.cy ||
 			  page.szBitmap.cx == m_szThumbnail.cx && page.szBitmap.cy <= m_szThumbnail.cy))
 	{
-		pThread->AddJob(nPage, m_nRotate, m_displaySetting);
+		pThread->AddJob(nPage, m_nRotate, m_szThumbnail, m_displaySettings);
 		InvalidatePage(nPage);
 	}
 }
@@ -894,11 +886,11 @@ void CThumbnailsView::RecalcPageRects(int nPage)
 	if (page.pBitmap != NULL)
 	{
 		page.szDisplay.cx = m_szThumbnail.cx;
-		page.szDisplay.cy = page.szBitmap.cy * m_szThumbnail.cx / page.szBitmap.cx;
+		page.szDisplay.cy = static_cast<int>(1.0*m_szThumbnail.cx*page.szBitmap.cy/page.szBitmap.cx + 0.5);
 		if (page.szDisplay.cy > m_szThumbnail.cy)
 		{
 			page.szDisplay.cy = m_szThumbnail.cy;
-			page.szDisplay.cx = page.szBitmap.cx * m_szThumbnail.cy / page.szBitmap.cy;
+			page.szDisplay.cx = min(m_szThumbnail.cx, static_cast<int>(1.0*m_szThumbnail.cy*page.szBitmap.cx/page.szBitmap.cy + 0.5));
 		}
 
 		CPoint ptOffset = page.rcPage.Size() - page.szDisplay;
@@ -950,9 +942,11 @@ void CThumbnailsView::EnsureVisible(int nPage)
 void CThumbnailsView::SettingsChanged()
 {
 	CDisplaySettings appSettings = *theApp.GetDisplaySettings();
-	if (m_displaySetting != appSettings)
+	appSettings.bScaleColorPnm = false;
+
+	if (m_displaySettings != appSettings)
 	{
-		m_displaySetting = appSettings;
+		m_displaySettings = appSettings;
 
 		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 			m_pages[nPage].DeleteBitmap();

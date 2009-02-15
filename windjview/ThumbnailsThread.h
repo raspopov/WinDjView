@@ -33,9 +33,8 @@ public:
 	CThumbnailsThread(DjVuSource* pSource, Observer* pOwner, bool bIdle = false);
 	void Stop();
 
-	void SetThumbnailSize(CSize szThumbnail) { m_szThumbnail = szThumbnail; }
-
-	void AddJob(int nPage, int nRotate, const CDisplaySettings& displaySettings);
+	void AddJob(int nPage, int nRotate, const CSize& size,
+			const CDisplaySettings& displaySettings);
 	void RemoveAllJobs();
 
 	void PauseJobs();
@@ -53,12 +52,12 @@ private:
 	DjVuSource* m_pSource;
 	Observer* m_pOwner;
 	long m_nPaused;
-	CSize m_szThumbnail;
 
 	struct Job
 	{
 		int nPage;
 		int nRotate;
+		CSize size;
 		CDisplaySettings displaySettings;
 	};
 	list<Job> m_jobs;
