@@ -577,6 +577,8 @@ BOOL CAboutDlg::OnInitDialog()
 
 	m_btnDonate.LoadBitmaps(IDB_DONATE);
 
+	GetDlgItem(IDC_STATIC_LICENSE)->SetWindowText(LoadString(IDS_ABOUT_LICENSE));
+
 	return true;
 }
 
@@ -1633,6 +1635,12 @@ void CDjViewApp::SetLanguage(UINT nLangIndex)
 
 	if (nLangIndex == m_nLangIndex)
 		return;
+
+	if (m_nLangIndex != 0 && m_languages[m_nLangIndex].hInstance != NULL)
+	{
+		if (::FreeLibrary(m_languages[m_nLangIndex].hInstance))
+			m_languages[m_nLangIndex].hInstance = NULL;
+	}
 
 	m_nLangIndex = nLangIndex;
 	AfxSetResourceHandle(info.hInstance);

@@ -134,5 +134,7 @@ protected:
 	afx_msg LRESULT OnShowSettings(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg LRESULT OnShowParent(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu);
+	afx_msg void OnEnterIdle(UINT nWhy, CWnd* pWho);
 	DECLARE_MESSAGE_MAP()
 };

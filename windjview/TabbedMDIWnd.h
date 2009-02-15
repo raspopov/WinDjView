@@ -112,5 +112,7 @@ protected:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
 	afx_msg void OnSysColorChange();
+	afx_msg void OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu);
+	afx_msg void OnEnterIdle(UINT nWhy, CWnd* pWho);
 	DECLARE_MESSAGE_MAP()
 };

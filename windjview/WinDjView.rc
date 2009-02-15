@@ -312,7 +312,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "F&ullscreen\tCtrl+L",         ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
-        MENUITEM "Open this window",            ID_WINDOW_ACTIVATE_FIRST
+        MENUITEM "Activate this document",      ID_WINDOW_ACTIVATE_FIRST
     END
     POPUP "&Help"
     BEGIN
@@ -340,7 +340,7 @@ BEGIN
     END
     POPUP "Bookmark"
     BEGIN
-        MENUITEM "&Rename",                     ID_BOOKMARK_RENAME
+        MENUITEM "&Rename...",                  ID_BOOKMARK_RENAME
         MENUITEM "&Delete",                     ID_BOOKMARK_DELETE
         MENUITEM SEPARATOR
         MENUITEM "Move &Up",                    ID_BOOKMARK_MOVEUP
@@ -450,7 +450,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,9,9,21,20
+    ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2004-2009 Andrew Zhezherun",IDC_STATIC,40,17,149,8
     DEFPUSHBUTTON   "Close",IDOK,194,7,50,14,WS_GROUP
@@ -458,7 +458,7 @@ BEGIN
     LTEXT           "DjVuLibre homepage:",IDC_STATIC,40,45,72,8
     LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,106,35,139,8
     LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,114,45,131,8
-    LTEXT           "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.",IDC_STATIC,40,62,204,34
+    LTEXT           "License",IDC_STATIC_LICENSE,40,62,204,34
     LTEXT           "You can support further development of this program by donating through PayPal",IDC_STATIC,40,103,137,17
     CONTROL         "Donate",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | WS_TABSTOP,181,102,63,21
 END
@@ -513,8 +513,8 @@ BEGIN
     DEFPUSHBUTTON   "Print",IDOK,320,295,50,14
     PUSHBUTTON      "Close",IDCANCEL,375,295,50,14
     GROUPBOX        "Printer",IDC_STATIC,167,7,258,87
-    LTEXT           "Location:",IDC_STATIC,174,55,37,9
     LTEXT           "Type:",IDC_STATIC,174,40,37,9
+    LTEXT           "Location:",IDC_STATIC,174,55,37,9
     LTEXT           "Comment:",IDC_STATIC,174,70,37,9
     LTEXT           "Type",IDC_STATIC_TYPE,216,40,200,9
     LTEXT           "Location",IDC_STATIC_LOCATION,216,55,200,9
@@ -553,32 +553,32 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS_GENERAL DIALOGEX 0, 0, 222, 168
+IDD_SETTINGS_GENERAL DIALOGEX 0, 0, 222, 171
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "General"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     CONTROL         "&Open each document in its own top-level window",IDC_TOP_LEVEL_DOCUMENTS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,208,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,175,10
     CONTROL         "&Warn when closing multiple documents",IDC_WARN_CLOSE_MULTIPLE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,139,10
     CONTROL         "Hi&de tabs if only one document is open",IDC_HIDE_SINGLE_TAB,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,208,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,139,10
     CONTROL         "Generate &thumbnails for all pages in background",IDC_GEN_ALL_THUMBNAILS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,208,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,172,10
     CONTROL         "&Invert Ctrl+Mouse Wheel zooming direction",IDC_INVERT_WHEEL_ZOOM,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,208,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,155,10
     CONTROL         "Close the program when &Escape key is pressed",IDC_CLOSE_ON_ESC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,77,208,10
-    CONTROL         "Wrap &long bookmarks",IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,208,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,77,169,10
+    CONTROL         "Wrap &long bookmarks",IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,87,10
     LTEXT           "Fullscreen mode",IDC_STATIC,7,108,56,10,SS_CENTERIMAGE
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,62,113,153,1
     CONTROL         "&Mouse clicks switch pages",IDC_FULLSCREEN_CLICKS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,122,194,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,122,100,10
     CONTROL         "Always &hide scrollbars",IDC_FULLSCREEN_HIDESCROLL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,136,194,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,136,88,10
     CONTROL         "Enable &continuous scrolling",IDC_FULLSCREEN_CONTINUOUS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,150,194,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,150,104,10
 END
 
 IDD_FIND DIALOGEX 0, 0, 287, 64
@@ -616,26 +616,26 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,64,27,50,14
 END
 
-IDD_SETTINGS_DISPLAY DIALOGEX 0, 0, 222, 134
+IDD_SETTINGS_DISPLAY DIALOGEX 0, 0, 222, 171
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Display"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    CONTROL         "&High quality scaling of color pages (slower)",IDC_HQ_COLOR_SCALING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,208,10
-    CONTROL         "&Invert colors",IDC_INVERT_COLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,208,10
-    CONTROL         "A&djust settings:",IDC_ADJUST_DISPLAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,208,9
-    LTEXT           "&Brightness: 0",IDC_BRIGHTNESS_TEXT,7,49,52,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,61,48,154,12
-    LTEXT           "&Contrast: 0",IDC_CONTRAST_TEXT,7,63,52,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,61,62,154,12
-    LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,7,77,52,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,61,76,154,12
+    CONTROL         "&Invert colors",IDC_INVERT_COLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,58,10
+    CONTROL         "A&djust settings:",IDC_ADJUST_DISPLAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,68,10
+    LTEXT           "&Brightness: -100",IDC_BRIGHTNESS_TEXT,11,36,54,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,65,35,150,12
+    LTEXT           "&Contrast: -100",IDC_CONTRAST_TEXT,11,50,54,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,65,49,150,12
+    LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,11,64,54,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,65,63,150,12
     CONTROL         "Use adjustments for &printing",IDC_ADJUST_PRINTING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,93,208,9
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,107,208,1
-    LTEXT           "&Units:",IDC_STATIC,7,117,23,10
-    COMBOBOX        IDC_COMBO_UNITS,32,115,87,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,79,108,10
+    CONTROL         "&High quality (but slow) rendering of color pages",IDC_HQ_COLOR_SCALING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,93,168,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,111,208,1
+    LTEXT           "&Units:",IDC_STATIC,7,120,23,10
+    COMBOBOX        IDC_COMBO_UNITS,32,118,87,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_ANNOTATION DIALOGEX 0, 0, 210, 290
@@ -644,24 +644,24 @@ CAPTION "Edit Annotation"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "&Border",IDC_STATIC,7,7,24,9
-    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,30,11,163,1,WS_EX_STATICEDGE
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,30,11,173,1,WS_EX_STATICEDGE
     LTEXT           "Type:",IDC_STATIC,18,19,22,12,SS_CENTERIMAGE
     COMBOBOX        IDC_BORDER_TYPE,43,19,89,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Color:",IDC_STATIC,140,19,20,12,SS_CENTERIMAGE
     PUSHBUTTON      "",IDC_BORDER_COLOR,162,18,41,15
     CONTROL         "&Show only when hovered by mouse",IDC_HIDE_INACTIVE_BORDER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,35,129,11
-    LTEXT           "&Fill",IDC_STATIC,7,53,11,9
-    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,19,57,174,1,WS_EX_STATICEDGE
-    LTEXT           "Type:",IDC_STATIC,19,65,22,12,SS_CENTERIMAGE
-    COMBOBOX        IDC_FILL_TYPE,43,65,89,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Color:",IDC_STATIC,140,65,20,12,SS_CENTERIMAGE
-    PUSHBUTTON      "",IDC_FILL_COLOR,162,64,41,15
-    LTEXT           "&Transparency:",IDC_STATIC,19,83,47,12,SS_CENTERIMAGE
-    CONTROL         "Slider1",IDC_FILL_TRANSPARENCY,"msctls_trackbar32",WS_TABSTOP,70,84,111,12
-    RTEXT           "100%",IDC_FILL_TRANSPARENCY_TEXT,182,83,20,12,SS_CENTERIMAGE
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,36,129,11
+    LTEXT           "&Fill",IDC_STATIC,7,54,11,9
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,19,58,184,1,WS_EX_STATICEDGE
+    LTEXT           "Type:",IDC_STATIC,19,66,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_FILL_TYPE,43,66,89,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Color:",IDC_STATIC,140,66,20,12,SS_CENTERIMAGE
+    PUSHBUTTON      "",IDC_FILL_COLOR,162,65,41,15
+    LTEXT           "&Transparency:",IDC_STATIC,19,84,47,12,SS_CENTERIMAGE
+    CONTROL         "Slider1",IDC_FILL_TRANSPARENCY,"msctls_trackbar32",WS_TABSTOP,68,85,113,12
+    RTEXT           "100%",IDC_FILL_TRANSPARENCY_TEXT,182,84,20,12,SS_CENTERIMAGE
     CONTROL         "Show only when &hovered by mouse",IDC_HIDE_INACTIVE_FILL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,99,129,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,100,129,11
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,7,121,196,1,WS_EX_STATICEDGE
     LTEXT           "&Comment:",IDC_STATIC,7,130,33,13,SS_CENTERIMAGE
     EDITTEXT        IDC_COMMENT,43,130,160,47,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
@@ -724,10 +724,10 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "Default DjVu Viewer",IDC_STATIC,7,7,66,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,75,11,140,1
-    LTEXT           "WinDjView is currently the default viewer for DjVu files",IDC_DEFAULT_VIEWER_STATUS,21,21,118,19
+    LTEXT           "WinDjView is currently not the default viewer for DjVu files.",IDC_DEFAULT_VIEWER_STATUS,21,21,118,19
     PUSHBUTTON      "&Make default",IDC_MAKE_DEFAULT,145,21,70,14
     CONTROL         "&Tell me if WinDjView is not the default DjVu viewer",IDC_WARN_NOT_DEFAULT_VIEWER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,42,178,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,42,176,10
     LTEXT           "Bookmarks && Annotations",IDC_STATIC,7,60,86,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,94,65,121,1
     LTEXT           "You can back up all your bookmarks and annotations for DjVu files. The backup file can also be used to transfer the bookmarks to another computer.",IDC_STATIC,23,74,192,28
@@ -737,17 +737,17 @@ BEGIN
     CONTROL         "&Restore open page and view settings when opening files",IDC_RESTORE_VIEW,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,139,194,10
     CONTROL         "&Automatically check for updates once a week",IDC_CHECK_UPDATES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,153,194,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,153,160,10
 END
 
-IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 134
+IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 171
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Dictionaries"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_TABSTOP,7,42,208,67,WS_EX_CLIENTEDGE
     LTEXT           "Installed dictionaries:",IDC_STATIC,7,31,69,9
-    PUSHBUTTON      "&Uninstall",IDC_UNINSTALL,7,113,50,14
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_TABSTOP,7,42,208,104,WS_EX_CLIENTEDGE
+    PUSHBUTTON      "&Uninstall",IDC_UNINSTALL,7,150,50,14
     LTEXT           "Custom location:",IDC_STATIC,7,7,69,9
     LTEXT           "(Not selected)",IDC_CUSTOM_LOCATION,7,18,192,9
     PUSHBUTTON      "...",IDC_BROWSE_LOCATION,202,16,13,12
@@ -770,7 +770,7 @@ BEGIN
     LTEXT           "Number Of Files:",IDC_STATIC,7,55,62,9
     LTEXT           "Files",IDC_STATIC_FILES,72,55,260,9
     CONTROL         "&Show All Files",IDC_SHOW_ALL_FILES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,273,67,59,10
-    LTEXT           "&Pages:",IDC_STATIC,7,67,31,9
+    LTEXT           "&Pages:",IDC_STATIC,7,67,28,9
     CONTROL         "",IDC_LIST_FILES,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | WS_TABSTOP,7,79,325,124,WS_EX_CLIENTEDGE
 END
 
@@ -859,7 +859,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 161
+        BOTTOMMARGIN, 164
     END
 
     IDD_FIND, DIALOG
@@ -891,7 +891,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 127
+        BOTTOMMARGIN, 164
     END
 
     IDD_ANNOTATION, DIALOG
@@ -939,7 +939,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 127
+        BOTTOMMARGIN, 164
     END
 
     IDD_DOC_PROPERTIES, DIALOG
@@ -1100,7 +1100,6 @@ END
 STRINGTABLE 
 BEGIN
     ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
-    ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
     ID_WINDOW_CASCADE       "Arrange windows so they overlap\nCascade Windows"
     ID_WINDOW_TILE_HORZ     "Arrange windows as non-overlapping horizontal tiles\nTile Horizontal"
     ID_WINDOW_TILE_VERT     "Arrange windows as non-overlapping vertical tiles\nTile Vertical"
@@ -1200,26 +1199,26 @@ END
 STRINGTABLE 
 BEGIN
     ID_VIEW_FORWARD         "Go to next view\nNext View"
-    ID_WINDOW_ACTIVATE_FIRST "Activate this window"
-    ID_WINDOW_ACTIVATE_1    "Activate this window"
-    ID_WINDOW_ACTIVATE_2    "Activate this window"
-    ID_WINDOW_ACTIVATE_3    "Activate this window"
-    ID_WINDOW_ACTIVATE_4    "Activate this window"
-    ID_WINDOW_ACTIVATE_5    "Activate this window"
-    ID_WINDOW_ACTIVATE_6    "Activate this window"
-    ID_WINDOW_ACTIVATE_7    "Activate this window"
-    ID_WINDOW_ACTIVATE_8    "Activate this window"
-    ID_WINDOW_ACTIVATE_9    "Activate this window"
-    ID_WINDOW_ACTIVATE_10   "Activate this window"
-    ID_WINDOW_ACTIVATE_11   "Activate this window"
-    ID_WINDOW_ACTIVATE_12   "Activate this window"
+    ID_WINDOW_ACTIVATE_FIRST "Activate this document"
+    ID_WINDOW_ACTIVATE_1    "Activate this document"
+    ID_WINDOW_ACTIVATE_2    "Activate this document"
+    ID_WINDOW_ACTIVATE_3    "Activate this document"
+    ID_WINDOW_ACTIVATE_4    "Activate this document"
+    ID_WINDOW_ACTIVATE_5    "Activate this document"
+    ID_WINDOW_ACTIVATE_6    "Activate this document"
+    ID_WINDOW_ACTIVATE_7    "Activate this document"
+    ID_WINDOW_ACTIVATE_8    "Activate this document"
+    ID_WINDOW_ACTIVATE_9    "Activate this document"
+    ID_WINDOW_ACTIVATE_10   "Activate this document"
+    ID_WINDOW_ACTIVATE_11   "Activate this document"
+    ID_WINDOW_ACTIVATE_12   "Activate this document"
 END
 
 STRINGTABLE 
 BEGIN
-    ID_WINDOW_ACTIVATE_13   "Activate this window"
-    ID_WINDOW_ACTIVATE_14   "Activate this window"
-    ID_WINDOW_ACTIVATE_LAST "Activate this window"
+    ID_WINDOW_ACTIVATE_13   "Activate this document"
+    ID_WINDOW_ACTIVATE_14   "Activate this document"
+    ID_WINDOW_ACTIVATE_LAST "Activate this document"
     ID_ZOOM_IN              "Zoom In\nZoom In"
     ID_ZOOM_OUT             "Zoom Out\nZoom Out"
     ID_MODE_DRAG            "Activate hand tool\nHand Tool"
@@ -1337,13 +1336,18 @@ END
 
 STRINGTABLE 
 BEGIN
+    ID_THUMBNAILS_ENLARGE   "Increase the size of thumbnails"
+    ID_THUMBNAILS_REDUCE    "Decrease the size of thumbnails"
     ID_BOOKMARK_WRAP        "Turn wrapping long bookmarks on or off"
-    ID_LAYOUT_RTL_ORDER     "Order the pages from right to left in facing and continuous-facing layouts"
+    ID_TAB_CLOSE            "Close this tab"
+    ID_TAB_CLOSE_OTHER      "Close all tabs except this one"
+    ID_LAYOUT_RTL_ORDER     "Order the pages from right to left when showing facing pages"
     ID_FILE_DOC_PROPERTIES  "Display properties of the active document\nDocument Properties"
     ID_FILE_IMPORT_BOOKMARKS 
                             "Import bookmarks and annotations from a file\nImport Bookmarks"
     ID_FILE_EXPORT_BOOKMARKS 
                             "Export bookmarks and annotations to a file\nExport Bookmarks"
+    ID_VIEW_TAB_BAR         "Show or hide the tab bar\nTab Bar"
 END
 
 STRINGTABLE 
@@ -1374,6 +1378,7 @@ BEGIN
     IDS_REGISTRY_FILTER     "Registration Files (*.reg)|*.reg|All Files (*.*)|*.*||"
     IDS_BACKUP_BOOKMARKS    "Backup Bookmarks"
     IDS_CHECK_UPDATES       "Check for updates automatically"
+    IDS_ABOUT_LICENSE       "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version."
 END
 
 #endif    // English (U.S.) resources

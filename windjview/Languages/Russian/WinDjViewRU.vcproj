@@ -152,6 +152,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\res\close_tab.bmp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\res\dictbar.bmp"
 				>
 			</File>
@@ -229,6 +233,14 @@
 			</File>
 			<File
 				RelativePath="..\..\res\pan_ur.cur"
+				>
+			</File>
+			<File
+				RelativePath="..\..\res\settings.bmp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\res\split_h.cur"
 				>
 			</File>
 			<File

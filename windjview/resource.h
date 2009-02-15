@@ -170,6 +170,7 @@
 #define IDS_REGISTRY_FILTER             321
 #define IDS_BACKUP_BOOKMARKS            322
 #define IDS_CHECK_UPDATES               323
+#define IDS_ABOUT_LICENSE               324
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -243,7 +244,6 @@
 #define IDC_SPIN_PAGE                   1068
 #define IDC_BORDER_TYPE                 1069
 #define IDC_FILL_TYPE                   1070
-#define IDC_HIDE_INACTIVE               1071
 #define IDC_HIDE_INACTIVE_BORDER        1071
 #define IDC_FILL_TRANSPARENCY           1072
 #define IDC_FILL_TRANSPARENCY_TEXT      1073
@@ -283,6 +283,7 @@
 #define IDC_SHOW_ALL_FILES              1105
 #define IDC_HIDE_SINGLE_TAB             1106
 #define IDC_DEFAULT_VIEWER_STATUS       1107
+#define IDC_STATIC_LICENSE              1108
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_VIEW_NEXTPAGE_SHORTCUT       32773
@@ -394,9 +395,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        324
+#define _APS_NEXT_RESOURCE_VALUE        325
 #define _APS_NEXT_COMMAND_VALUE         33133
-#define _APS_NEXT_CONTROL_VALUE         1108
+#define _APS_NEXT_CONTROL_VALUE         1109
 #define _APS_NEXT_SYMED_VALUE           117
 #endif
 #endif

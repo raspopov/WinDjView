@@ -82,6 +82,10 @@ SOURCE=..\..\res\close.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\res\close_tab.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\res\dictbar.bmp
 # End Source File
 # Begin Source File
@@ -159,6 +163,14 @@ SOURCE=..\..\res\pan_ul.cur
 # Begin Source File
 
 SOURCE=..\..\res\pan_ur.cur
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\settings.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\res\split_h.cur
 # End Source File
 # Begin Source File
 

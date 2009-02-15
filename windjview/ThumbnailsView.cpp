@@ -63,6 +63,8 @@ BEGIN_MESSAGE_MAP(CThumbnailsView, CMyScrollView)
 	ON_WM_SHOWWINDOW()
 	ON_MESSAGE(WM_SHOW_SETTINGS, OnShowSettings)
 	ON_MESSAGE(WM_SHOWPARENT, OnShowParent)
+	ON_WM_MENUSELECT()
+	ON_WM_ENTERIDLE()
 END_MESSAGE_MAP()
 
 // CThumbnailsView construction/destruction
@@ -976,4 +978,19 @@ LRESULT CThumbnailsView::OnShowParent(WPARAM wParam, LPARAM lParam)
 	UpdateVisiblePages();
 
 	return 0;
+}
+
+void CThumbnailsView::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)
+{
+	CMyScrollView::OnMenuSelect(nItemID, nFlags, hSysMenu);
+
+	GetTopLevelFrame()->SendMessage(WM_MENUSELECT, MAKEWPARAM(nItemID, nFlags),
+			(LPARAM) hSysMenu);
+}
+
+void CThumbnailsView::OnEnterIdle(UINT nWhy, CWnd* pWho)
+{
+	CMyScrollView::OnEnterIdle(nWhy, pWho);
+
+	GetTopLevelFrame()->SendMessage(WM_ENTERIDLE, nWhy, (LPARAM) pWho->GetSafeHwnd());
 }

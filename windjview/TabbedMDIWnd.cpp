@@ -77,6 +77,8 @@ BEGIN_MESSAGE_MAP(CTabbedMDIWnd, CWnd)
 	ON_WM_DESTROY()
 	ON_WM_SETTINGCHANGE()
 	ON_WM_SYSCOLORCHANGE()
+	ON_WM_MENUSELECT()
+	ON_WM_ENTERIDLE()
 END_MESSAGE_MAP()
 
 
@@ -975,4 +977,19 @@ void CTabbedMDIWnd::ShowTabBar(bool bShow)
 	CSize szClient = ::GetClientSize(this);
 	UpdateSize(szClient.cx, szClient.cy);
 	UpdateWindow();
+}
+
+void CTabbedMDIWnd::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)
+{
+	CWnd::OnMenuSelect(nItemID, nFlags, hSysMenu);
+
+	GetTopLevelFrame()->SendMessage(WM_MENUSELECT, MAKEWPARAM(nItemID, nFlags),
+			(LPARAM) hSysMenu);
+}
+
+void CTabbedMDIWnd::OnEnterIdle(UINT nWhy, CWnd* pWho)
+{
+	CWnd::OnEnterIdle(nWhy, pWho);
+
+	GetTopLevelFrame()->SendMessage(WM_ENTERIDLE, nWhy, (LPARAM) pWho->GetSafeHwnd());
 }
