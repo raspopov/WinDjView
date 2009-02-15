@@ -50,6 +50,7 @@ protected:
 	CDjVuView* m_pView;
 	CDjVuView* m_pOwner;
 	int m_nWidth, m_nHeight;
+	bool m_bFirstUpdate;
 
 	typedef BOOL (WINAPI* pfnSetLayeredWindowAttributes)(HWND hwnd,
 			COLORREF crKey, BYTE bAlpha, DWORD dwFlags);

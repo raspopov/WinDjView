@@ -1054,7 +1054,7 @@ GP<DjVuImage> DjVuSource::GetPage(int nPage, Observer* observer)
 
 	if (data.hDecodingThread != NULL)
 	{
-		// Other thread is already decoding this page. Put
+		// Another thread is already decoding this page. Put
 		// ourselves in a list of waiting threads
 		PageRequest request;
 
@@ -1078,7 +1078,7 @@ GP<DjVuImage> DjVuSource::GetPage(int nPage, Observer* observer)
 			::SetThreadPriority(data.hDecodingThread, nOurPriority);
 
 		data.requests.push_back(&request);
-		
+
 		if (observer != NULL)
 			data.AddObserver(observer);
 
@@ -1201,6 +1201,23 @@ void DjVuSource::RemoveFromCache(int nPage, Observer* observer)
 	pImage = NULL;
 }
 
+void DjVuSource::ChangeObservedPages(Observer* observer,
+		const vector<int>& add, const vector<int>& remove)
+{
+	m_lock.Lock();
+	for (size_t i = 0; i < add.size(); ++i)
+	{
+		ASSERT(add[i] >= 0 && add[i] < m_nPageCount);
+		m_pages[add[i]].AddObserver(observer);
+	}
+	for (size_t i = 0; i < remove.size(); ++i)
+	{
+		ASSERT(remove[i] >= 0 && remove[i] < m_nPageCount);
+		m_pages[remove[i]].RemoveObserver(observer);
+	}
+	m_lock.Unlock();
+}
+
 int DjVuSource::GetPageFromId(const GUTF8String& strPageId) const
 {
 	if (m_pDjVuDoc == NULL)
@@ -1209,7 +1226,8 @@ int DjVuSource::GetPageFromId(const GUTF8String& strPageId) const
 	return m_pDjVuDoc->id_to_page(strPageId);
 }
 
-void DjVuSource::ReadAnnotations(GP<ByteStream> pInclStream, set<GUTF8String>& processed, GP<ByteStream> pAnnoStream)
+void DjVuSource::ReadAnnotations(GP<ByteStream> pInclStream,
+		set<GUTF8String>& processed, GP<ByteStream> pAnnoStream)
 {
 	// Look for shared annotations
 	GUTF8String strInclude;

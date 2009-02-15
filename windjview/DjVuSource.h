@@ -248,6 +248,8 @@ public:
 
 	GP<DjVuImage> GetPage(int nPage, Observer* observer = NULL);
 	void RemoveFromCache(int nPage, Observer* observer);
+	void ChangeObservedPages(Observer* observer,
+			const vector<int>& add, const vector<int>& remove);
 
 	PageInfo GetPageInfo(int nPage, bool bNeedText = false, bool bNeedAnno = false);
 	bool IsPageCached(int nPage, Observer* observer);

@@ -262,9 +262,9 @@ protected:
 	void CalcPageSizeFacing(const CSize& szBounds,
 			const CSize& szPage1, int nDPI1, CSize& szDisplay1,
 			const CSize& szPage2, int nDPI2, CSize& szDisplay2, int nZoomType) const;
-	void UpdatePageSizes(int nTop, int nScroll = 0);
-	bool UpdatePagesFromTop(int nTop, int nBottom);
-	void UpdatePagesFromBottom(int nTop, int nBottom);
+	void UpdatePageSizes(int nTop, int nScroll = 0, int nUpdateType = -1);
+	bool UpdatePagesFromTop(int nTop, int nBottom, int nUpdateType = -1);
+	void UpdatePagesFromBottom(int nTop, int nBottom, int nUpdateType = -1);
 	void UpdatePageSize(const CSize& szBounds, int nPage);
 	void UpdatePageSizeFacing(const CSize& szBounds, int nPage);
 	void DeleteBitmaps();
@@ -299,12 +299,12 @@ protected:
 	CSize UpdateLayoutFacing(const CSize& szTrueClient);
 	CSize UpdateLayoutContinuous(const CSize& szTrueClient);
 	CSize UpdateLayoutContinuousFacing(const CSize& szTrueClient);
-	void UpdatePagesCacheSingle(bool bUpdateImages);
-	void UpdatePagesCacheFacing(bool bUpdateImages);
-	void UpdatePagesCacheContinuous(bool bUpdateImages);
-	void UpdatePageCache(const CSize& szClient, int nPage, bool bUpdateImages);
-	void UpdatePageCacheSingle(int nPage, bool bUpdateImages);
-	void UpdatePageCacheFacing(int nPage, bool bUpdateImages);
+	void UpdatePagesCacheSingle(bool bUpdateImages, vector<int>& add, vector<int>& remove);
+	void UpdatePagesCacheFacing(bool bUpdateImages, vector<int>& add, vector<int>& remove);
+	void UpdatePagesCacheContinuous(bool bUpdateImages, vector<int>& add, vector<int>& remove);
+	void UpdatePageCache(const CSize& szClient, int nPage, bool bUpdateImages, vector<int>& add, vector<int>& remove);
+	void UpdatePageCacheSingle(int nPage, bool bUpdateImages, vector<int>& add, vector<int>& remove);
+	void UpdatePageCacheFacing(int nPage, bool bUpdateImages, vector<int>& add, vector<int>& remove);
 	bool IsViewNextpageEnabled();
 	bool IsViewPreviouspageEnabled() const;
 	void ClearSelection(int nPage = -1);

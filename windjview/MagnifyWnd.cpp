@@ -28,7 +28,7 @@
 
 IMPLEMENT_DYNAMIC(CMagnifyWnd, CWnd)
 CMagnifyWnd::CMagnifyWnd()
-	: m_pOwner(NULL), m_pView(NULL), m_hUser32(NULL)
+	: m_pOwner(NULL), m_pView(NULL), m_bFirstUpdate(true), m_hUser32(NULL)
 {
 	m_hUser32 = ::LoadLibrary(_T("user32.dll"));
 	if (m_hUser32 != NULL)
@@ -96,7 +96,10 @@ void CMagnifyWnd::Show(CDjVuView* pOwner, CDjVuView* pContents, const CPoint& pt
 	// it initially as completely transparent, and then change transparency when
 	// everything is ready.
 	if (m_pSetLayeredWindowAttributes != NULL)
+	{
 		m_pSetLayeredWindowAttributes(m_hWnd, 0, 0, LWA_ALPHA);
+		m_bFirstUpdate = true;
+	}
 
 	ShowWindow(SW_SHOWNA);
 }
@@ -124,9 +127,13 @@ void CMagnifyWnd::Hide()
 void CMagnifyWnd::Update()
 {
 	UpdateWindow();
+//	RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 
-	if (m_pSetLayeredWindowAttributes != NULL)
+	if (m_pSetLayeredWindowAttributes != NULL && m_bFirstUpdate)
+	{
 		m_pSetLayeredWindowAttributes(m_hWnd, 0, 220, LWA_ALPHA);
+		m_bFirstUpdate = false;
+	}
 }
 
 void CMagnifyWnd::PostNcDestroy()
