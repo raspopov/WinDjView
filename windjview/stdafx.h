@@ -28,12 +28,12 @@
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 #endif
 
-#define _WIN32_WINNT	0x0400
-
-#if (_MSC_VER >= 1200)
 #define WINVER			0x0500
+#define _WIN32_WINNT	0x0400
 #define _WIN32_IE		0x0400
-#define _WIN32_WINDOWS	0x0410
+
+#if (_MFC_VER > 0x0600)
+#define _WIN32_WINDOWS	0x0500
 #endif
 
 #ifdef NDEBUG
@@ -181,6 +181,9 @@ using namespace std;
 #define WS_EX_LAYERED 0x00080000
 #define LWA_COLORKEY 0x00000001
 #define LWA_ALPHA 0x00000002
+#define ULW_COLORKEY 0x00000001
+#define ULW_ALPHA 0x00000002
+#define ULW_OPAQUE 0x00000004
 #endif
 
 #ifndef TBSTYLE_EX_DOUBLEBUFFER

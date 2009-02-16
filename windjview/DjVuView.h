@@ -376,7 +376,7 @@ protected:
 
 	bool m_bDraggingMagnify;
 	void StartMagnify();
-	void UpdateMagnifyWnd();
+	void UpdateMagnifyWnd(bool bInitial = false);
 
 	int m_nMargin, m_nShadowMargin;
 	int m_nPageGap, m_nFacingGap;
@@ -394,6 +394,7 @@ protected:
 	afx_msg void OnUpdateViewPreviouspage(CCmdUI *pCmdUI);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg LRESULT OnPrintClient(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnViewRotate(UINT nID);
 	afx_msg void OnViewFirstpage();
 	afx_msg void OnViewLastpage();

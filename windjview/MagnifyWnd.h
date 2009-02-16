@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include "Drawing.h"
+
 class CDjVuView;
 
 
@@ -34,28 +36,28 @@ public:
 	virtual ~CMagnifyWnd();
 
 	BOOL Create();
-	void Show(CDjVuView* pOwner, CDjVuView* pContents, const CPoint& ptCenter);
+	void Init(CDjVuView* pOwner, CDjVuView* pContents);
 	void Hide();
 	void CenterOnPoint(const CPoint& point);
 
-	void Update();
-
-	CDjVuView* GetView() const { return m_pView; }
 	CDjVuView* GetOwner() const { return m_pOwner; }
-
-	int GetViewWidth() const { return m_nWidth - 2; }
-	int GetViewHeight() const { return m_nHeight - 2; }
+	CDjVuView* GetView() const { return m_pView; }
+	CSize GetViewSize() const { return m_rcPos.Size() - CSize(2, 2); }
+	CPoint GetCenterPoint() const { return m_rcPos.CenterPoint(); }
 
 protected:
 	CDjVuView* m_pView;
 	CDjVuView* m_pOwner;
-	int m_nWidth, m_nHeight;
-	bool m_bFirstUpdate;
+	CRect m_rcPos;
+	COffscreenDC m_offscreenDC;
 
-	typedef BOOL (WINAPI* pfnSetLayeredWindowAttributes)(HWND hwnd,
-			COLORREF crKey, BYTE bAlpha, DWORD dwFlags);
-	pfnSetLayeredWindowAttributes m_pSetLayeredWindowAttributes;
+	typedef BOOL (WINAPI* pfnUpdateLayeredWindow)(HWND hwnd, HDC hdcDst,
+			POINT* pptDst, SIZE* psize, HDC hdcSrc, POINT* pptSrc,
+            COLORREF crKey, BLENDFUNCTION* pblend, DWORD dwFlags);
+	pfnUpdateLayeredWindow m_pUpdateLayeredWindow;
 	HMODULE m_hUser32;
+
+	void RepaintContents();
 
 	afx_msg void OnDestroy();
 	afx_msg void OnPaint();

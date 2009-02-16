@@ -112,13 +112,6 @@ CThumbnailsView::~CThumbnailsView()
 
 void CThumbnailsView::OnDraw(CDC* pDC)
 {
-	// CScrollView sets viewport to minus scroll position, so that
-	// all drawing can be done in natural coordinates. Unfortunately,
-	// this does not work in Win98, because in this OS coordinates
-	// cannot be larger than 32767. So we will subtract scroll position
-	// explicitely.
-	pDC->SetViewportOrg(CPoint(0, 0));
-
 	CRect rcClip;
 	pDC->GetClipBox(rcClip);
 	rcClip.OffsetRect(GetScrollPosition());

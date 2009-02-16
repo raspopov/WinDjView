@@ -181,6 +181,7 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CView::OnFilePrintPreview)
 	ON_WM_ERASEBKGND()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
 	ON_COMMAND(ID_VIEW_NEXTPAGE, OnViewNextpage)
 	ON_COMMAND(ID_VIEW_PREVIOUSPAGE, OnViewPreviouspage)
 	ON_COMMAND(ID_VIEW_NEXTPAGE_SHORTCUT, OnViewNextpage)
@@ -826,7 +827,6 @@ void CDjVuView::DrawTransparentText(CDC* pDC, int nPage)
 	pDC->StrokePath();
 }
 
-
 // CDjVuView printing
 
 BOOL CDjVuView::OnPreparePrinting(CPrintInfo* pInfo)
@@ -1059,6 +1059,16 @@ BOOL CDjVuView::OnEraseBkgnd(CDC* pDC)
 	return true;
 }
 
+LRESULT CDjVuView::OnPrintClient(WPARAM wParam, LPARAM lParam)
+{
+	CDC dc;
+	dc.Attach((HDC) wParam);
+	OnPrepareDC(&dc);
+	OnDraw(&dc);
+	dc.Detach();
+	return true;
+}
+
 void CDjVuView::RenderPage(int nPage, int nTimeout, bool bUpdateWindow)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
@@ -1067,8 +1077,9 @@ void CDjVuView::RenderPage(int nPage, int nTimeout, bool bUpdateWindow)
 		nPage = FixPageNumber(nPage);
 	Page& page = m_pages[nPage];
 
-	m_nPendingPage = nPage;
 	m_pageRendered.ResetEvent();
+	if (nTimeout != -1)
+		m_nPendingPage = nPage;
 
 	if (m_nLayout == SinglePage || m_nLayout == Facing)
 	{
@@ -2714,7 +2725,7 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 		m_ptPrevCursor = CPoint(-1, -1);
 
 		StartMagnify();
-		UpdateMagnifyWnd();
+		UpdateMagnifyWnd(true);
 
 		SetCapture();
 		ShowCursor();
@@ -3756,9 +3767,19 @@ LRESULT CDjVuView::OnPageRendered(WPARAM wParam, LPARAM lParam)
 	page.pBitmap = pBitmap;
 	page.bBitmapRendered = true;
 	m_pageRendered.SetEvent();
-	
+
 	if (InvalidatePage(nPage))
+	{
+		// Notify the magnify window, because it will not repaint
+		// itself if is is layered.
+		if (m_nType == Magnify)
+		{
+			CMagnifyWnd* pMagnifyWnd = GetMainFrame()->GetMagnifyWnd();
+			pMagnifyWnd->CenterOnPoint(pMagnifyWnd->GetCenterPoint());
+		}
+
 		UpdateWindow();
+	}
 
 	return 0;
 }
@@ -5688,7 +5709,7 @@ void CDjVuView::OnViewFullscreen()
 
 	CFullscreenWnd* pWnd = GetMainFrame()->GetFullscreenWnd();
 
-	CDjVuView* pView = (CDjVuView*)RUNTIME_CLASS(CDjVuView)->CreateObject();
+	CDjVuView* pView = new CDjVuView();
 	pView->Create(NULL, NULL, WS_CHILD, CRect(0, 0, 0, 0), pWnd, 2);
 	pView->m_pDocument = m_pDocument;
 
@@ -6094,24 +6115,24 @@ void CDjVuView::CreateScrollbars()
 
 void CDjVuView::StartMagnify()
 {
-	CPoint ptCursor;
-	::GetCursorPos(&ptCursor);
-
 	CMagnifyWnd* pMagnifyWnd = GetMainFrame()->GetMagnifyWnd();
 
-	CDjVuView* pView = (CDjVuView*)RUNTIME_CLASS(CDjVuView)->CreateObject();
-	pView->Create(NULL, NULL, WS_CHILD, CRect(0, 0, 0, 0), pMagnifyWnd, 2);
+	CDjVuView* pView = new CDjVuView();
+	pView->Create(NULL, NULL, WS_CHILD | WS_VISIBLE, CRect(0, 0, 0, 0), pMagnifyWnd, 2);
 	pView->m_pDocument = m_pDocument;
 
-	pMagnifyWnd->Show(this, pView, ptCursor);
+	pMagnifyWnd->Init(this, pView);
 
+	CPoint ptCursor;
+	::GetCursorPos(&ptCursor);
 	ScreenToClient(&ptCursor);
 	int nPage = GetPageNearPoint(ptCursor);
 	if (nPage == -1)
 		nPage = m_nPage;
 	nPage = FixPageNumber(nPage);
 
-	int nExtraMargin = max(pMagnifyWnd->GetViewWidth(), pMagnifyWnd->GetViewHeight());
+	CSize szView = pMagnifyWnd->GetViewSize();
+	int nExtraMargin = max(szView.cx, szView.cy);
 
 	pView->m_nMargin = m_nMargin + nExtraMargin;
 	pView->m_nShadowMargin = m_nShadowMargin + nExtraMargin;
@@ -6147,16 +6168,18 @@ void CDjVuView::StartMagnify()
 	pView->OnInitialUpdate();
 
 	pView->UpdatePageInfoFrom(this);
-
 	if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 		pView->UpdateLayout(RECALC);
 	pView->RenderPage(nPage);
+
+	UpdateCursor();
+	pView->UpdateCursor();
 }
 
-void CDjVuView::UpdateMagnifyWnd()
+void CDjVuView::UpdateMagnifyWnd(bool bInitial)
 {
 	CMagnifyWnd* pMagnifyWnd = GetMainFrame()->GetMagnifyWnd();
-	if (!pMagnifyWnd->IsWindowVisible())
+	if (!bInitial && !pMagnifyWnd->IsWindowVisible())
 	{
 		StopDragging();
 		return;
@@ -6167,7 +6190,7 @@ void CDjVuView::UpdateMagnifyWnd()
 	CPoint ptCursor;
 	::GetCursorPos(&ptCursor);
 
-	if (ptCursor == m_ptPrevCursor)
+	if (!bInitial && ptCursor == m_ptPrevCursor)
 		return;
 	m_ptPrevCursor = ptCursor;
 
@@ -6200,27 +6223,15 @@ void CDjVuView::UpdateMagnifyWnd()
 	CPoint ptResult(static_cast<int>(ptCursor.x*fRatioX + 0.5),
 			static_cast<int>(ptCursor.y*fRatioY + 0.5));
 
+	CSize szView = pMagnifyWnd->GetViewSize();
 	CPoint ptOffset = pView->m_pages[nPage].ptOffset + ptResult -
-			CPoint(pMagnifyWnd->GetViewWidth() / 2, pMagnifyWnd->GetViewHeight() / 2);
-
+			CPoint(szView.cx / 2, szView.cy / 2);
 	pView->OnScrollBy(ptOffset - pView->GetScrollPosition());
-
-	if (!pView->IsWindowVisible())
-	{
-		pView->ShowWindow(SW_SHOW);
-
-		UpdateCursor();
-		pView->UpdateCursor();
-	}
 
 	pView->SetRedraw(true);
 	pView->Invalidate();
-	pView->UpdateWindow();
 
 	pMagnifyWnd->CenterOnPoint(ptCenter);
-
-	GetTopLevelParent()->UpdateWindow();
-	pMagnifyWnd->Update();
 }
 
 bool CDjVuView::OnStartPan()

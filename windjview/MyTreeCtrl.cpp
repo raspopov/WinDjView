@@ -116,7 +116,6 @@ BOOL CMyTreeCtrl::PreCreateWindow(CREATESTRUCT& cs)
 void CMyTreeCtrl::OnPaint()
 {
 	CPaintDC dcPaint(this);
-	dcPaint.SetViewportOrg(CPoint(0, 0));
 
 	CRect rcClient = ::GetClientRect(this);
 

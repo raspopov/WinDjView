@@ -122,10 +122,7 @@ void CMyScrollView::OnPrepareDC(CDC* pDC, CPrintInfo* pInfo)
 	// CScrollView sets viewport to minus scroll position, so that
 	// all drawing can be done in natural coordinates. However,
 	// this does not work in Win98, because in this OS coordinates
-	// cannot be larger than 32767.
-	// Therefore, we set the viewport to (0, 0) and leave the
-	// coordinate translation to the subclasses.
-	pDC->SetViewportOrg(CPoint(0, 0));
+	// cannot be larger than 32767. So we do not do that.
 
 	CView::OnPrepareDC(pDC, pInfo);
 }

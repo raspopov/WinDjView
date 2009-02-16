@@ -28,14 +28,14 @@
 
 IMPLEMENT_DYNAMIC(CMagnifyWnd, CWnd)
 CMagnifyWnd::CMagnifyWnd()
-	: m_pOwner(NULL), m_pView(NULL), m_bFirstUpdate(true), m_hUser32(NULL)
+	: m_pOwner(NULL), m_pView(NULL), m_hUser32(NULL)
 {
 	m_hUser32 = ::LoadLibrary(_T("user32.dll"));
 	if (m_hUser32 != NULL)
 	{
-		m_pSetLayeredWindowAttributes =
-				(pfnSetLayeredWindowAttributes) ::GetProcAddress(m_hUser32, "SetLayeredWindowAttributes");
-		if (m_pSetLayeredWindowAttributes == NULL)
+		m_pUpdateLayeredWindow =
+				(pfnUpdateLayeredWindow) ::GetProcAddress(m_hUser32, "UpdateLayeredWindow");
+		if (m_pUpdateLayeredWindow == NULL)
 		{
 			::FreeLibrary(m_hUser32);
 			m_hUser32 = NULL;
@@ -63,45 +63,26 @@ BOOL CMagnifyWnd::Create()
 	static CString strWndClass = AfxRegisterWndClass(CS_DBLCLKS,
 			::LoadCursor(NULL, IDC_ARROW));
 
-	m_nWidth = 480;
-	m_nHeight = 320;
+	m_rcPos = CRect(0, 0, 480, 320);
 
 	DWORD dwExStyle = WS_EX_TOOLWINDOW;
-	if (m_pSetLayeredWindowAttributes != NULL)
+	if (m_pUpdateLayeredWindow != NULL)
 		dwExStyle |= WS_EX_LAYERED;
-	if (!CreateEx(dwExStyle, strWndClass, NULL, WS_POPUP,
-			CRect(0, 0, m_nWidth, m_nHeight), NULL, 0))
+	if (!CreateEx(dwExStyle, strWndClass, NULL, WS_POPUP | WS_CLIPCHILDREN,
+			m_rcPos, NULL, 0))
 		return false;
-
-	if (m_pSetLayeredWindowAttributes != NULL)
-		m_pSetLayeredWindowAttributes(m_hWnd, 0, 0, LWA_ALPHA);
 
 	return true;
 }
 
-void CMagnifyWnd::Show(CDjVuView* pOwner, CDjVuView* pContents, const CPoint& ptCenter)
+void CMagnifyWnd::Init(CDjVuView* pOwner, CDjVuView* pContents)
 {
 	ASSERT(m_pOwner == NULL);
 
 	m_pOwner = pOwner;
+
 	m_pView = pContents;
-
-	m_pView->MoveWindow(1, 1, m_nWidth - 2, m_nHeight - 2);
-	CenterOnPoint(ptCenter);
-
-	SetWindowPos(&wndTop, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-	Invalidate();
-
-	// To keep the layered window from briefly flashing its previous state, show
-	// it initially as completely transparent, and then change transparency when
-	// everything is ready.
-	if (m_pSetLayeredWindowAttributes != NULL)
-	{
-		m_pSetLayeredWindowAttributes(m_hWnd, 0, 0, LWA_ALPHA);
-		m_bFirstUpdate = true;
-	}
-
-	ShowWindow(SW_SHOWNA);
+	m_pView->MoveWindow(1, 1, m_rcPos.Width() - 2, m_rcPos.Height() - 2);
 }
 
 void CMagnifyWnd::Hide()
@@ -124,15 +105,32 @@ void CMagnifyWnd::Hide()
 	m_pOwner = NULL;
 }
 
-void CMagnifyWnd::Update()
+void CMagnifyWnd::RepaintContents()
 {
-	UpdateWindow();
+	ASSERT(m_pUpdateLayeredWindow != NULL);
+	ASSERT(m_pView != NULL);
 
-	if (m_pSetLayeredWindowAttributes != NULL && m_bFirstUpdate)
-	{
-		m_pSetLayeredWindowAttributes(m_hWnd, 0, 220, LWA_ALPHA);
-		m_bFirstUpdate = false;
-	}
+	CScreenDC dcScreen;
+	m_offscreenDC.Create(&dcScreen, m_rcPos.Size());
+	FrameRect(&m_offscreenDC, m_rcPos - m_rcPos.TopLeft(),
+			::GetSysColor(COLOR_WINDOW));
+
+	m_offscreenDC.SetViewportOrg(1, 1);
+	int nSaveDC = m_offscreenDC.SaveDC();
+	m_offscreenDC.IntersectClipRect(0, 0, m_rcPos.Width() - 2, m_rcPos.Height() - 2);
+	m_pView->SendMessage(WM_PRINT, (WPARAM) m_offscreenDC.m_hDC, PRF_CLIENT);
+	m_offscreenDC.RestoreDC(nSaveDC);
+	m_offscreenDC.SetViewportOrg(0, 0);
+
+	BLENDFUNCTION bf;
+	bf.BlendOp = AC_SRC_OVER;
+	bf.BlendFlags = 0;
+	bf.SourceConstantAlpha = 220;
+	bf.AlphaFormat = 0;
+
+	m_pUpdateLayeredWindow(m_hWnd, NULL, &m_rcPos.TopLeft(), &m_rcPos.Size(),
+			m_offscreenDC.m_hDC, &CPoint(0, 0), 0, &bf, ULW_ALPHA);
+	m_offscreenDC.Release();
 }
 
 void CMagnifyWnd::PostNcDestroy()
@@ -141,16 +139,34 @@ void CMagnifyWnd::PostNcDestroy()
 	delete this;
 }
 
-void CMagnifyWnd::CenterOnPoint(const CPoint& point)
+void CMagnifyWnd::CenterOnPoint(const CPoint& pt)
 {
-	MoveWindow(point.x - m_nWidth / 2, point.y - m_nHeight / 2, m_nWidth, m_nHeight);
+	CPoint ptOffset(pt.x - m_rcPos.Width() / 2, pt.y - m_rcPos.Height() / 2);
+	m_rcPos += ptOffset - m_rcPos.TopLeft();
+
+	if (m_pUpdateLayeredWindow != NULL)
+	{
+		RepaintContents();
+	}
+	else
+	{
+		MoveWindow(m_rcPos.left, m_rcPos.top, m_rcPos.Width(), m_rcPos.Height());
+		m_pOwner->GetTopLevelParent()->UpdateWindow();
+		UpdateWindow();
+	}
+
+	if (!IsWindowVisible())
+	{
+		ShowWindow(SW_SHOWNA);
+		SendMessageToVisibleDescendants(m_hWnd, WM_SHOWPARENT, true);
+	}
 }
 
 void CMagnifyWnd::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
 
-	dc.FrameRect(CRect(0, 0, m_nWidth, m_nHeight), &CBrush(::GetSysColor(COLOR_WINDOWFRAME)));
+	FrameRect(&dc, m_rcPos - m_rcPos.TopLeft(), ::GetSysColor(COLOR_WINDOW));
 }
 
 BOOL CMagnifyWnd::OnEraseBkgnd(CDC* pDC)

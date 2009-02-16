@@ -159,7 +159,7 @@ int CMyComboBoxEx::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CComboBoxEx::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	m_edit.SubclassWindow(CComboBoxEx::GetEditCtrl()->GetSafeHwnd());
+	m_edit.SubclassWindow(GetEditCtrl()->GetSafeHwnd());
 
 	return 0;
 }
