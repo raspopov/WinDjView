@@ -6253,7 +6253,6 @@ void CDjVuView::UpdateMagnifyWnd(bool bInitial)
 	pView->OnScrollBy(ptOffset - pView->GetScrollPosition());
 
 	pView->SetRedraw(true);
-	pView->Invalidate();
 
 	pMagnifyWnd->CenterOnPoint(ptCenter);
 }
