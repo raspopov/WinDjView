@@ -113,7 +113,7 @@ void CMagnifyWnd::RepaintContents()
 	CScreenDC dcScreen;
 	m_offscreenDC.Create(&dcScreen, m_rcPos.Size());
 	FrameRect(&m_offscreenDC, m_rcPos - m_rcPos.TopLeft(),
-			::GetSysColor(COLOR_WINDOW));
+			::GetSysColor(COLOR_WINDOWFRAME));
 
 	m_offscreenDC.SetViewportOrg(1, 1);
 	int nSaveDC = m_offscreenDC.SaveDC();
@@ -166,7 +166,8 @@ void CMagnifyWnd::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
 
-	FrameRect(&dc, m_rcPos - m_rcPos.TopLeft(), ::GetSysColor(COLOR_WINDOW));
+	FrameRect(&dc, m_rcPos - m_rcPos.TopLeft(),
+			::GetSysColor(COLOR_WINDOWFRAME));
 }
 
 BOOL CMagnifyWnd::OnEraseBkgnd(CDC* pDC)
