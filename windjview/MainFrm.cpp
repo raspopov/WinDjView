@@ -1706,7 +1706,6 @@ void CMainFrame::OnWindowTileHorz()
 		// In workspace coordinates
 		int nTop = rcMonitor.Height() * nDoc / nFrameCount;
 		int nBottom = rcMonitor.Height() * (nDoc + 1) / nFrameCount;
-		++nDoc;
 
 		WINDOWPLACEMENT wndpl;
 		wndpl.length = sizeof(wndpl);
@@ -1741,7 +1740,6 @@ void CMainFrame::OnWindowTileVert()
 		// In workspace coordinates
 		int nLeft = rcMonitor.Width() * nDoc / nFrameCount;
 		int nRight = rcMonitor.Width() * (nDoc + 1) / nFrameCount;
-		++nDoc;
 
 		WINDOWPLACEMENT wndpl;
 		wndpl.length = sizeof(wndpl);

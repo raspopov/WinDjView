@@ -22,6 +22,7 @@ Changes in version 0.6 (2009-??-??):
 * Fixed crash in magnify tool after rotating the page.
 * Fixed crash when exiting fullscreen mode.
 * Fixed crash when compiled with Visual Studio 2005.
+* Many other small fixes and improvements.
 
 Changes in version 0.5 (2007-05-30):
 ! Implemented user-created bookmarks and annotations.
@@ -55,10 +56,10 @@ Changes in version 0.4.3 (2006-09-15):
 
 Changes in version 0.4.2 (2006-07-24):
 ! Added magnifying glass tool.
-+ Added option to wrap long bookmarks.
-+ Added option to hide scrollbars in fullscreen mode.
-+ Added option to invert direction of Ctrl+Mouse Wheel zooming.
-+ Added option to close the program when Escape is pressed.
++ Added an option to wrap long bookmarks.
++ Added an option to hide scrollbars in fullscreen mode.
++ Added an option to invert direction of Ctrl+Mouse Wheel zooming.
++ Added an option to close the program when Escape is pressed.
 + Added keyboard shortcuts to rotate pages, change layouts and open settings.
 * Fixed Open File dialog (.djv files were not displayed).
 * Fixed print dialog: collate option is now always available.
@@ -131,7 +132,7 @@ Changes in version 0.3.3 (2005-03-31):
 + Show all links works in fullscreen mode.
 + Added zoom in/out in fullscreen mode.
 + Added zoom in/out with Ctrl+Mouse Wheel.
-+ Added option to enable/disable switching pages in fullscreen mode
++ Added an option to enable/disable switching pages in fullscreen mode
   by mouse clicks.
 * Fixed crash when exiting fullscreen mode on Windows 98.
 * Fixed window positioning when task bar is always visible.
@@ -150,7 +151,7 @@ Changes in version 0.3.1 (2005-03-08):
 ! Added bookmarks.
 ! Added text selection, copying to clipboard and export to file.
 + Added zoom in/out toolbar buttons.
-+ Added option to disable generating thumbnails in background.
++ Added an option to disable generating thumbnails in background.
 + Added checking for updates.
 + Window title specifies file name first.
 * Thumbnails fixes and improvements.
