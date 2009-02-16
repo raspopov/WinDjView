@@ -175,7 +175,6 @@ protected:
 	CToolTipCtrl m_toolTip;
 	CString m_strToolTip;
 	CRenderThread* m_pRenderThread;
-	CEvent m_pageRendered;
 	bool m_bShiftDown, m_bControlDown;
 	bool m_bNeedUpdate;
 	bool m_bUpdateBitmaps;
@@ -188,7 +187,7 @@ protected:
 	set<CDIB*> m_bitmaps;
 
 	int m_nPage, m_nPageCount;
-	int m_nPendingPage;
+	long m_nPendingPage;
 	CSize m_szDisplay;
 	int CalcTopPage() const;
 	int CalcCurrentPage() const;
@@ -279,12 +278,15 @@ protected:
 	int FixPageNumber(int nPage) const;
 	int GetNextPage(int nPage) const;
 	void SetLayout(int nLayout, int nPage, int nOffset);
-	void UpdatePageNumber();
 	void PageRendered(int nPage, CDIB* pDIB);
 	void PageDecoded(int nPage);
 	void SettingsChanged();
 	void UpdateCursor();
 	bool HasScrollBars() const;
+
+	void UpdateDragAction();
+	void UpdatePageNumber();
+	void UpdateView(bool bUpdateSizes, bool bUpdatePages);
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -329,7 +331,6 @@ protected:
 	int m_nMode, m_nType;
 	int m_nSelStartPos;
 	CPoint ScreenToDjVu(int nPage, const CPoint& point, bool bClip = true);
-	void UpdateDragAction();
 	int GetTextPosFromPoint(int nPage, const CPoint& point,
 			bool bReturnBlockStart = false);
 	void GetTextPos(const DjVuTXT::Zone& zone, const CPoint& pt,
