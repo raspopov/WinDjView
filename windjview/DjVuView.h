@@ -310,7 +310,7 @@ protected:
 	void ClearSelection(int nPage = -1);
 	void UpdateSelectionStatus();
 	bool IsSelectionVisible(int nPage, const DjVuSelection& selection);
-	void EnsureSelectionVisible(int nPage, const DjVuSelection& selection);
+	void EnsureSelectionVisible(int nPage, const DjVuSelection& selection, bool bWait = false);
 	CRect GetSelectionRect(int nPage, const DjVuSelection& selection);
 	CRect TranslatePageRect(int nPage, GRect rect, bool bToDisplay = true, bool bClip = true);
 	bool m_bInsideUpdateLayout, m_bInsideMouseMove;

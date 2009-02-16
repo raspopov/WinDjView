@@ -4439,7 +4439,7 @@ void CDjVuView::OnFindString()
 
 				if (!IsSelectionVisible(nPage, page.selection))
 				{
-					EnsureSelectionVisible(nPage, page.selection);
+					EnsureSelectionVisible(nPage, page.selection, true);
 				}
 
 				if (bWrapping)
@@ -4669,11 +4669,15 @@ bool CDjVuView::IsSelectionVisible(int nPage, const DjVuSelection& selection)
 	return true;
 }
 
-void CDjVuView::EnsureSelectionVisible(int nPage, const DjVuSelection& selection)
+void CDjVuView::EnsureSelectionVisible(int nPage,
+		const DjVuSelection& selection, bool bWait)
 {
-	if ((m_nLayout == SinglePage || m_nLayout == Facing) && m_nPage != nPage)
+	if (m_nPage != nPage)
 	{
-		RenderPage(nPage, 1000);
+		if (bWait)
+			RenderPage(nPage, 1000, false);
+		else if (m_nLayout == SinglePage || m_nLayout == Facing)
+			RenderPage(nPage, -1, false);
 	}
 
 	CPoint ptScroll = GetScrollPosition();
@@ -4769,6 +4773,7 @@ void CDjVuView::EnsureSelectionVisible(int nPage, const DjVuSelection& selection
 	}
 
 	OnScrollBy(CPoint(nLeftPos, nTopPos) - ptScroll);
+	UpdateWindow();
 }
 
 CRect CDjVuView::TranslatePageRect(int nPage, GRect rect, bool bToDisplay, bool bClip)
