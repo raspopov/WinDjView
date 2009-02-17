@@ -32,18 +32,24 @@ public:
 	CMyScrollView();
 	virtual ~CMyScrollView();
 
-	void SetScrollSizes(const CSize& szContent, const CSize& szPage,
-			const CSize& szLine, bool bRepaint = true);
-
 // Attributes
 public:
-	CPoint GetScrollPosition() const;
-	void CheckScrollBars(bool& bHasHorzBar, bool& bHasVertBar) const;
+	const CPoint& GetScrollPosition() const { return m_ptScrollPos; }
+	const CSize& GetScrollLimit() const { return m_szScrollLimit; }
+	const CSize& GetViewportSize() const { return m_szViewport; }
+	bool HasHorzScrollBar() const { return m_bHorzScroll; }
+	bool HasVertScrollBar() const { return m_bVertScroll; }
+	bool HasScrollBars() const { return m_bHorzScroll || m_bVertScroll; }
 
 // Operations
 public:
-	bool AdjustClientSize(const CSize& szContent, CSize& szClient,
+	void ShowScrollBars(bool bShow);
+	void SetScrollSizes(const CSize& szContent, const CSize& szPage,
+			const CSize& szLine, bool bRepaint = true);
+	bool AdjustViewportSize(const CSize& szContent, CSize& szViewport,
 		bool& bHScroll, bool& bVScroll) const;
+
+	void InvalidateViewport();
 
 	virtual void ScrollToPosition(CPoint pt, bool bRepaint = true);
 	virtual bool OnScroll(UINT nScrollCode, UINT nPos, bool bDoScroll = true);
@@ -55,34 +61,41 @@ public:
 
 // Overrides
 public:
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	virtual void CalcWindowRect(LPRECT lpClientRect,
-		UINT nAdjustType = adjustBorder);
 	virtual void OnPrepareDC(CDC* pDC, CPrintInfo* pInfo = NULL);
+	virtual void CalcWindowRect(LPRECT lpClientRect,
+			UINT nAdjustType = adjustBorder);
 
 // Implementation
 protected:
 	CSize m_szContent;
-	CSize m_szPage;
-	CSize m_szLine;
+	CSize m_szPage, m_szLine;
 	CSize m_szScrollBars;
-
-	bool m_bInsideUpdate;
+	CSize m_szViewport, m_szScrollLimit;
+	CPoint m_ptScrollPos;
+	CScrollBar m_horzScrollBar, m_vertScrollBar;
+	bool m_bHorzScroll, m_bVertScroll;
+	bool m_bShowScrollBars;
 	CMyAnchorWnd* m_pAnchorWnd;
 
-	void UpdateBars(bool bRepaint);
-	void GetScrollBarSizes(CSize& szScrollBars) const;
-	bool GetTrueClientSize(CSize& szTrueClient, CSize& szScrollBars) const;
-	void CalcScrollBarState(const CSize& szClient, CSize& needScrollBars,
-		CSize& szRange, CPoint& ptMove, bool bInsideClient) const;
+	void UpdateBars(bool bRepaint = true);
+	void SetScrollPosition(const CPoint& pos);
+	void RepositionScrollBars(bool bHorzScroll, bool bVertScroll);
+	void CalcScrollBarState(bool& bNeedHorz, bool& bNeedVert,
+			CSize& szRange, CPoint& ptMove) const;
+	void DoPaint(CDC* pDC);
 
 	// Generated message map functions
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
-	afx_msg void OnCancelMode();
+	afx_msg void OnPaint();
+	afx_msg LRESULT OnPrintClient(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint point);
 	afx_msg LRESULT OnMButtonDown(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnCancelMode();
 	DECLARE_MESSAGE_MAP()
 };

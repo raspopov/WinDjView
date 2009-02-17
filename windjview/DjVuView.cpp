@@ -181,7 +181,6 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CView::OnFilePrintPreview)
 	ON_WM_ERASEBKGND()
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
 	ON_COMMAND(ID_VIEW_NEXTPAGE, OnViewNextpage)
 	ON_COMMAND(ID_VIEW_PREVIOUSPAGE, OnViewPreviouspage)
 	ON_COMMAND(ID_VIEW_NEXTPAGE_SHORTCUT, OnViewNextpage)
@@ -259,12 +258,11 @@ CDjVuView::CDjVuView()
 	  m_nLayout(SinglePage), m_nRotate(0), m_bDragging(false),
 	  m_bDraggingRight(false), m_pSource(NULL), m_pRenderThread(NULL),
 	  m_bInsideUpdateLayout(false), m_bInsideMouseMove(false), m_bClick(false),
-	  m_nPendingPage(-1), m_nClickedPage(-1),
-	  m_nMode(Drag), m_bHasSelection(false), m_nDisplayMode(Color),
-	  m_bShiftDown(false), m_bNeedUpdate(false), m_bCursorHidden(false),
-	  m_bDraggingPage(false), m_bDraggingText(false), m_bFirstPageAlone(false),
-	  m_bRightToLeft(false), m_bDraggingMagnify(false), m_pHScrollBar(NULL),
-	  m_pVScrollBar(NULL), m_bControlDown(false), m_nType(Normal),
+	  m_nPendingPage(-1), m_nClickedPage(-1), m_nMode(Drag),
+	  m_bHasSelection(false), m_nDisplayMode(Color), m_bShiftDown(false),
+	  m_bNeedUpdate(false), m_bCursorHidden(false), m_bDraggingPage(false),
+	  m_bDraggingText(false), m_bFirstPageAlone(false), m_bRightToLeft(false),
+	  m_bDraggingMagnify(false), m_bControlDown(false), m_nType(Normal),
 	  m_bPanning(false), m_bHoverIsCustom(false), m_bDraggingRect(false),
 	  m_nSelectionPage(-1), m_pHoverAnno(NULL), m_bIgnoreMouseLeave(false),
 	  m_pClickedAnno(NULL), m_bDraggingLink(false), m_bPopupMenu(false),
@@ -298,9 +296,6 @@ CDjVuView::~CDjVuView()
 	for (map<int, HFONT>::iterator it = m_fonts.begin(); it != m_fonts.end(); ++it)
 		::DeleteObject(it->second);
 
-	delete m_pHScrollBar;
-	delete m_pVScrollBar;
-
 	DeleteBitmaps();
 
 	m_dataLock.Lock();
@@ -313,11 +308,6 @@ CDjVuView::~CDjVuView()
 
 	if (m_pSource != NULL)
 		m_pSource->Release();
-}
-
-BOOL CDjVuView::PreCreateWindow(CREATESTRUCT& cs)
-{
-	return CMyScrollView::PreCreateWindow(cs);
 }
 
 
@@ -343,11 +333,11 @@ void CDjVuView::OnDraw(CDC* pDC)
 		return;
 	}
 
-	CRect rcClient = ::GetClientRect(this);
+	CRect rcViewport(CPoint(0, 0), GetViewportSize());
 
 	CRect rcClip;
 	pDC->GetClipBox(rcClip);
-	rcClip.IntersectRect(CRect(rcClip), rcClient);
+	rcClip.IntersectRect(CRect(rcClip), rcViewport);
 
 	m_offscreenDC.Create(pDC, rcClip.Size());
 	m_offscreenDC.SetViewportOrg(-rcClip.TopLeft());
@@ -1060,16 +1050,6 @@ BOOL CDjVuView::OnEraseBkgnd(CDC* pDC)
 	return true;
 }
 
-LRESULT CDjVuView::OnPrintClient(WPARAM wParam, LPARAM lParam)
-{
-	CDC dc;
-	dc.Attach((HDC) wParam);
-	OnPrepareDC(&dc);
-	OnDraw(&dc);
-	dc.Detach();
-	return true;
-}
-
 void CDjVuView::RenderPage(int nPage, int nTimeout, bool bUpdateWindow)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
@@ -1097,27 +1077,14 @@ void CDjVuView::RenderPage(int nPage, int nTimeout, bool bUpdateWindow)
 		}
 
 		UpdateLayout();
-
-		ScrollToPosition(CPoint(GetScrollPos(SB_HORZ), 0), bUpdateWindow && bSamePage);
-
-		if (!bUpdateWindow || !bSamePage)
-		{
-			UpdateView(false, false);
-			Invalidate();
-		}
+		ScrollToPosition(CPoint(GetScrollPosition().x, 0), bUpdateWindow && bSamePage);
 	}
 	else if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 	{
 		UpdatePageSizes(page.ptOffset.y, 0, RECALC);
 
 		int nUpdatedPos = page.ptOffset.y - m_nPageBorder - (nPage == 0 ? m_nMargin : min(m_nMargin, m_nPageGap));
-		ScrollToPosition(CPoint(GetScrollPos(SB_HORZ), nUpdatedPos), bUpdateWindow);
-
-		if (!bUpdateWindow)
-		{
-			UpdateView(false, true);
-			Invalidate();
-		}
+		ScrollToPosition(CPoint(GetScrollPosition().x, nUpdatedPos), bUpdateWindow);
 	}
 
 	if (nTimeout != -1 && !m_pages[nPage].bBitmapRendered)
@@ -1149,10 +1116,10 @@ void CDjVuView::ScrollToPage(int nPage, const CPoint& ptOffset, bool bMargin)
 
 	if (bMargin)
 	{
-		// Offset top-left to 1/10 of the client area
-		CSize szClient = ::GetClientSize(this);
-		ptPos.x -= static_cast<int>(0.1*szClient.cx + 0.5);
-		ptPos.y -= static_cast<int>(0.1*szClient.cy + 0.5);
+		// Offset top-left to 1/10 of the viewport
+		CSize szViewport = GetViewportSize();
+		ptPos.x -= static_cast<int>(0.1*szViewport.cx + 0.5);
+		ptPos.y -= static_cast<int>(0.1*szViewport.cy + 0.5);
 	}
 	else
 	{
@@ -1169,9 +1136,6 @@ void CDjVuView::ScrollToPage(int nPage, const CPoint& ptOffset, bool bMargin)
 	}
 
 	ScrollToPosition(ptPageOffset + ptPos, false);
-	UpdateView(false, true);
-
-	Invalidate();
 	UpdateWindow();
 }
 
@@ -1191,8 +1155,7 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 	m_bInsideUpdateLayout = true;
 
 	// Get the full client rect without the scrollbars.
-	CSize szTrueClient, szScrollBars;
-	GetTrueClientSize(szTrueClient, szScrollBars);
+	CSize szClient = ::GetClientSize(this);
 
 	// Save page and offset to restore after changes
 	int nAnchorPage = -1;
@@ -1209,8 +1172,8 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 		}
 		else if (updateType == BOTTOM)
 		{
-			CSize szClient = ::GetClientSize(this);
-			CPoint ptBottom = GetScrollPosition() + szClient;
+			CSize szViewport = GetViewportSize();
+			CPoint ptBottom = GetScrollPosition() + szViewport;
 
 			int nPage = CalcTopPage();
 			while (nPage < m_nPageCount - 1 &&
@@ -1228,17 +1191,17 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 		}
 	}
 
-	CSize szClient;
+	CSize szViewport;
 	if (m_nLayout == SinglePage)
-		szClient = UpdateLayoutSinglePage(szTrueClient);
+		szViewport = UpdateLayoutSinglePage(szClient);
 	else if (m_nLayout == Facing)
-		szClient = UpdateLayoutFacing(szTrueClient);
+		szViewport = UpdateLayoutFacing(szClient);
 	else if (m_nLayout == Continuous)
-		szClient = UpdateLayoutContinuous(szTrueClient);
+		szViewport = UpdateLayoutContinuous(szClient);
 	else if (m_nLayout == ContinuousFacing)
-		szClient = UpdateLayoutContinuousFacing(szTrueClient);
+		szViewport = UpdateLayoutContinuousFacing(szClient);
 
-	CSize szPage(szClient.cx*9/10, szClient.cy*9/10);
+	CSize szPage(szViewport.cx*9/10, szViewport.cy*9/10);
 	CSize szLine(15, 15);
 	SetScrollSizes(m_szDisplay, szPage, szLine, false);
 
@@ -1258,31 +1221,34 @@ void CDjVuView::UpdateLayout(UpdateType updateType)
 		if (updateType == TOP)
 			ScrollToPosition(m_pages[nAnchorPage].ptOffset + ptAnchorOffset, false);
 		else if (updateType == BOTTOM)
-			ScrollToPosition(m_pages[nAnchorPage].ptOffset + ptAnchorOffset - szClient, false);
+			ScrollToPosition(m_pages[nAnchorPage].ptOffset + ptAnchorOffset - szViewport, false);
 	}
 
 	if (updateType != RECALC)
+	{
 		UpdateVisiblePages();
+		InvalidateViewport();
+	}
 
 	m_bNeedUpdate = false;
 	m_bInsideUpdateLayout = false;
 }
 
-CSize CDjVuView::UpdateLayoutSinglePage(const CSize& szTrueClient)
+CSize CDjVuView::UpdateLayoutSinglePage(const CSize& szClient)
 {
 	// Update all page sizes so that cached bitmaps will be of right size.
 	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 	{
-		CSize szClient = szTrueClient;
+		CSize szViewport = szClient;
 		bool bHScroll = false, bVScroll = false;
 
 		CSize szDisplay;
 		do
 		{
-			PreparePageRect(szClient, nPage);
+			PreparePageRect(szViewport, nPage);
 			szDisplay = m_pages[nPage].rcDisplay.Size()
 					+ CSize(m_nMargin + m_nShadowMargin, m_nMargin + m_nShadowMargin);
-		} while (AdjustClientSize(szDisplay, szClient, bHScroll, bVScroll));
+		} while (AdjustViewportSize(szDisplay, szViewport, bHScroll, bVScroll));
 	}
 
 	Page& page = m_pages[m_nPage];
@@ -1291,47 +1257,47 @@ CSize CDjVuView::UpdateLayoutSinglePage(const CSize& szTrueClient)
 	m_szDisplay = page.rcDisplay.Size();
 
 	// Get the client size for the final display size.
-	CSize szClient = szTrueClient;
+	CSize szViewport = szClient;
 	bool bHScroll = false, bVScroll = false;
-	while (AdjustClientSize(m_szDisplay, szClient, bHScroll, bVScroll))
+	while (AdjustViewportSize(m_szDisplay, szViewport, bHScroll, bVScroll))
 		EMPTY_LOOP;
 
 	// Center horizontally
-	if (page.rcDisplay.Width() < szClient.cx)
+	if (page.rcDisplay.Width() < szViewport.cx)
 	{
-		page.ptOffset.x += (szClient.cx - page.rcDisplay.Width())/2;
-		page.rcDisplay.right = szClient.cx;
-		m_szDisplay.cx = szClient.cx;
+		page.ptOffset.x += (szViewport.cx - page.rcDisplay.Width())/2;
+		page.rcDisplay.right = szViewport.cx;
+		m_szDisplay.cx = szViewport.cx;
 	}
 
 	// Center vertically
-	if (page.rcDisplay.Height() < szClient.cy)
+	if (page.rcDisplay.Height() < szViewport.cy)
 	{
-		page.ptOffset.y += (szClient.cy - page.rcDisplay.Height())/2;
-		page.rcDisplay.bottom = szClient.cy;
-		m_szDisplay.cy = szClient.cy;
+		page.ptOffset.y += (szViewport.cy - page.rcDisplay.Height())/2;
+		page.rcDisplay.bottom = szViewport.cy;
+		m_szDisplay.cy = szViewport.cy;
 	}
 
-	return szClient;
+	return szViewport;
 }
 
-CSize CDjVuView::UpdateLayoutFacing(const CSize& szTrueClient)
+CSize CDjVuView::UpdateLayoutFacing(const CSize& szClient)
 {
 	// Update all page sizes so that cached bitmaps will be of right size.
 	for (int nPage = 0; nPage < m_nPageCount; nPage = GetNextPage(nPage))
 	{
-		CSize szClient = szTrueClient;
+		CSize szViewport = szClient;
 		bool bHScroll = false, bVScroll = false;
 
 		CSize szDisplay;
 		do
 		{
-			PreparePageRectFacing(szClient, nPage);
+			PreparePageRectFacing(szViewport, nPage);
 
 			int nRightmostPage = (HasFacingPage(nPage) && !m_bRightToLeft ? nPage + 1 : nPage);
 			szDisplay = m_pages[nRightmostPage].rcDisplay.BottomRight() +
 					CSize(m_nMargin + m_nShadowMargin, m_nMargin + m_nShadowMargin);
-		} while (AdjustClientSize(szDisplay, szClient, bHScroll, bVScroll));
+		} while (AdjustViewportSize(szDisplay, szViewport, bHScroll, bVScroll));
 	}
 
 	Page* pPage;
@@ -1355,50 +1321,50 @@ CSize CDjVuView::UpdateLayoutFacing(const CSize& szTrueClient)
 	}
 
 	// Get the client size for the final display size.
-	CSize szClient = szTrueClient;
+	CSize szViewport = szClient;
 	bool bHScroll = false, bVScroll = false;
-	while (AdjustClientSize(m_szDisplay, szClient, bHScroll, bVScroll))
+	while (AdjustViewportSize(m_szDisplay, szViewport, bHScroll, bVScroll))
 		EMPTY_LOOP;
 
 	// Center horizontally
-	if (m_szDisplay.cx < szClient.cx)
+	if (m_szDisplay.cx < szViewport.cx)
 	{
-		pPage->ptOffset.x += (szClient.cx - m_szDisplay.cx)/2;
-		pPage->rcDisplay.InflateRect(0, 0, (szClient.cx - m_szDisplay.cx)/2, 0);
+		pPage->ptOffset.x += (szViewport.cx - m_szDisplay.cx)/2;
+		pPage->rcDisplay.InflateRect(0, 0, (szViewport.cx - m_szDisplay.cx)/2, 0);
 		if (pNextPage != NULL)
 		{
-			pNextPage->ptOffset.x += (szClient.cx - m_szDisplay.cx)/2;
-			pNextPage->rcDisplay.OffsetRect((szClient.cx - m_szDisplay.cx)/2, 0);
-			pNextPage->rcDisplay.right = szClient.cx;
+			pNextPage->ptOffset.x += (szViewport.cx - m_szDisplay.cx)/2;
+			pNextPage->rcDisplay.OffsetRect((szViewport.cx - m_szDisplay.cx)/2, 0);
+			pNextPage->rcDisplay.right = szViewport.cx;
 		}
 		else
 		{
-			pPage->rcDisplay.right = szClient.cx;
+			pPage->rcDisplay.right = szViewport.cx;
 		}
 
-		m_szDisplay.cx = szClient.cx;
+		m_szDisplay.cx = szViewport.cx;
 	}
 
 	// Center vertically
-	if (m_szDisplay.cy < szClient.cy)
+	if (m_szDisplay.cy < szViewport.cy)
 	{
-		pPage->ptOffset.y += (szClient.cy - m_szDisplay.cy)/2;
-		pPage->rcDisplay.bottom = szClient.cy;
+		pPage->ptOffset.y += (szViewport.cy - m_szDisplay.cy)/2;
+		pPage->rcDisplay.bottom = szViewport.cy;
 		if (pNextPage != NULL)
 		{
-			pNextPage->ptOffset.y += (szClient.cy - m_szDisplay.cy)/2;
-			pNextPage->rcDisplay.bottom = szClient.cy;
+			pNextPage->ptOffset.y += (szViewport.cy - m_szDisplay.cy)/2;
+			pNextPage->rcDisplay.bottom = szViewport.cy;
 		}
 
-		m_szDisplay.cy = szClient.cy;
+		m_szDisplay.cy = szViewport.cy;
 	}
 
-	return szClient;
+	return szViewport;
 }
 
-CSize CDjVuView::UpdateLayoutContinuous(const CSize& szTrueClient)
+CSize CDjVuView::UpdateLayoutContinuous(const CSize& szClient)
 {
-	CSize szClient = szTrueClient;
+	CSize szViewport = szClient;
 	bool bHScroll = false, bVScroll = false;
 
 	do
@@ -1408,7 +1374,7 @@ CSize CDjVuView::UpdateLayoutContinuous(const CSize& szTrueClient)
 
 		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 		{
-			PreparePageRect(szClient, nPage);
+			PreparePageRect(szViewport, nPage);
 
 			Page& page = m_pages[nPage];
 			page.ptOffset.Offset(m_nMargin, nTop);
@@ -1423,16 +1389,16 @@ CSize CDjVuView::UpdateLayoutContinuous(const CSize& szTrueClient)
 		}
 
 		m_szDisplay.cy = m_pages.back().rcDisplay.bottom;
-	} while (AdjustClientSize(m_szDisplay, szClient, bHScroll, bVScroll));
+	} while (AdjustViewportSize(m_szDisplay, szViewport, bHScroll, bVScroll));
 
 	// Get the client size for the final display size.
-	szClient = szTrueClient;
+	szViewport = szClient;
 	bHScroll = bVScroll = false;
-	while (AdjustClientSize(m_szDisplay, szClient, bHScroll, bVScroll))
+	while (AdjustViewportSize(m_szDisplay, szViewport, bHScroll, bVScroll))
 		EMPTY_LOOP;
 
-	if (m_szDisplay.cx < szClient.cx)
-		m_szDisplay.cx = szClient.cx;
+	if (m_szDisplay.cx < szViewport.cx)
+		m_szDisplay.cx = szViewport.cx;
 
 	// Center pages horizontally
 	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
@@ -1446,9 +1412,9 @@ CSize CDjVuView::UpdateLayoutContinuous(const CSize& szTrueClient)
 	}
 
 	// Center pages vertically
-	if (m_szDisplay.cy < szClient.cy)
+	if (m_szDisplay.cy < szViewport.cy)
 	{
-		int nOffset = (szClient.cy - m_szDisplay.cy) / 2;
+		int nOffset = (szViewport.cy - m_szDisplay.cy) / 2;
 		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 		{
 			Page& page = m_pages[nPage];
@@ -1456,18 +1422,18 @@ CSize CDjVuView::UpdateLayoutContinuous(const CSize& szTrueClient)
 			page.ptOffset.Offset(0, nOffset);
 		}
 
-		m_szDisplay.cy = szClient.cy;
+		m_szDisplay.cy = szViewport.cy;
 
 		m_pages[0].rcDisplay.top = 0;
 		m_pages.back().rcDisplay.bottom = m_szDisplay.cy;
 	}
 
-	return szClient;
+	return szViewport;
 }
 
-CSize CDjVuView::UpdateLayoutContinuousFacing(const CSize& szTrueClient)
+CSize CDjVuView::UpdateLayoutContinuousFacing(const CSize& szClient)
 {
-	CSize szClient = szTrueClient;
+	CSize szViewport = szClient;
 	bool bHScroll = false, bVScroll = false;
 
 	do
@@ -1477,7 +1443,7 @@ CSize CDjVuView::UpdateLayoutContinuousFacing(const CSize& szTrueClient)
 
 		for (int nPage = 0; nPage < m_nPageCount; nPage = GetNextPage(nPage))
 		{
-			PreparePageRectFacing(szClient, nPage);
+			PreparePageRectFacing(szViewport, nPage);
 
 			Page* pPage;
 			Page* pNextPage;
@@ -1524,16 +1490,16 @@ CSize CDjVuView::UpdateLayoutContinuousFacing(const CSize& szTrueClient)
 		}
 
 		m_szDisplay.cy = m_pages.back().rcDisplay.bottom;
-	} while (AdjustClientSize(m_szDisplay, szClient, bHScroll, bVScroll));
+	} while (AdjustViewportSize(m_szDisplay, szViewport, bHScroll, bVScroll));
 
 	// Get the client size for the final display size.
-	szClient = szTrueClient;
+	szViewport = szClient;
 	bHScroll = bVScroll = false;
-	while (AdjustClientSize(m_szDisplay, szClient, bHScroll, bVScroll))
+	while (AdjustViewportSize(m_szDisplay, szViewport, bHScroll, bVScroll))
 		EMPTY_LOOP;
 
-	if (m_szDisplay.cx < szClient.cx)
-		m_szDisplay.cx = szClient.cx;
+	if (m_szDisplay.cx < szViewport.cx)
+		m_szDisplay.cx = szViewport.cx;
 
 	// Center pages horizontally
 	for (int nPage = 0; nPage < m_nPageCount; nPage = GetNextPage(nPage))
@@ -1566,9 +1532,9 @@ CSize CDjVuView::UpdateLayoutContinuousFacing(const CSize& szTrueClient)
 	}
 
 	// Center pages vertically
-	if (m_szDisplay.cy < szClient.cy)
+	if (m_szDisplay.cy < szViewport.cy)
 	{
-		int nOffset = (szClient.cy - m_szDisplay.cy) / 2;
+		int nOffset = (szViewport.cy - m_szDisplay.cy) / 2;
 		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 		{
 			Page& page = m_pages[nPage];
@@ -1576,7 +1542,7 @@ CSize CDjVuView::UpdateLayoutContinuousFacing(const CSize& szTrueClient)
 			page.ptOffset.Offset(0, nOffset);
 		}
 
-		m_szDisplay.cy = szClient.cy;
+		m_szDisplay.cy = szViewport.cy;
 
 		m_pages[0].rcDisplay.top = 0;
 		if (HasFacingPage(0))
@@ -1587,7 +1553,7 @@ CSize CDjVuView::UpdateLayoutContinuousFacing(const CSize& szTrueClient)
 			m_pages[m_nPageCount - 2].rcDisplay.bottom = m_szDisplay.cy;
 	}
 
-	return szClient;
+	return szViewport;
 }
 
 void CDjVuView::UpdatePagesCacheSingle(bool bUpdateImages,
@@ -1618,7 +1584,7 @@ void CDjVuView::UpdatePagesCacheFacing(bool bUpdateImages,
 	}
 }
 
-void CDjVuView::UpdatePageCache(const CSize& szClient, int nPage, bool bUpdateImages,
+void CDjVuView::UpdatePageCache(const CSize& szViewport, int nPage, bool bUpdateImages,
 		vector<int>& add, vector<int>& remove)
 {
 	// Pages visible on screen are put to the front of the rendering queue.
@@ -1627,7 +1593,7 @@ void CDjVuView::UpdatePageCache(const CSize& szClient, int nPage, bool bUpdateIm
 	// Pages which are within 10 screens from the view are put to the back
 	// of the decoding queue.
 
-	int nTop = GetScrollPos(SB_VERT);
+	int nTop = GetScrollPosition().y;
 	Page& page = m_pages[nPage];
 
 	if (!page.info.bDecoded)
@@ -1637,8 +1603,8 @@ void CDjVuView::UpdatePageCache(const CSize& szClient, int nPage, bool bUpdateIm
 
 		m_pRenderThread->AddReadInfoJob(nPage);
 	}
-	else if (page.rcDisplay.top < nTop + 3*szClient.cy &&
-			 page.rcDisplay.bottom > nTop - 2*szClient.cy)
+	else if (page.rcDisplay.top < nTop + 3*szViewport.cy &&
+			 page.rcDisplay.bottom > nTop - 2*szViewport.cy)
 	{
 		if (page.pBitmap == NULL || page.szBitmap != page.pBitmap->GetSize() && bUpdateImages)
 		{
@@ -1654,8 +1620,8 @@ void CDjVuView::UpdatePageCache(const CSize& szClient, int nPage, bool bUpdateIm
 	{
 		page.DeleteBitmap();
 
-		if (m_nType != Magnify && (page.rcDisplay.top < nTop + 11*szClient.cy
-				&& page.rcDisplay.bottom > nTop - 10*szClient.cy
+		if (m_nType != Magnify && (page.rcDisplay.top < nTop + 11*szViewport.cy
+				&& page.rcDisplay.bottom > nTop - 10*szViewport.cy
 				|| nPage == 0 || nPage == m_nPageCount - 1))
 		{
 			m_pRenderThread->AddDecodeJob(nPage);
@@ -1774,7 +1740,7 @@ void CDjVuView::UpdatePagesCacheContinuous(bool bUpdateImages,
 {
 	ASSERT(m_nLayout == Continuous || m_nLayout == ContinuousFacing);
 
-	CRect rcClient = ::GetClientRect(this);
+	CRect rcViewport(CPoint(0, 0), GetViewportSize());
 
 	int nTopPage = CalcTopPage();
 	int nBottomPage = CalcBottomPage(nTopPage);
@@ -1782,21 +1748,21 @@ void CDjVuView::UpdatePagesCacheContinuous(bool bUpdateImages,
 	for (int nDiff = m_nPageCount; nDiff >= 1; --nDiff)
 	{
 		if (nTopPage - nDiff >= 0)
-			UpdatePageCache(rcClient.Size(), nTopPage - nDiff, bUpdateImages, add, remove);
+			UpdatePageCache(rcViewport.Size(), nTopPage - nDiff, bUpdateImages, add, remove);
 		if (nBottomPage + nDiff < m_nPageCount)
-			UpdatePageCache(rcClient.Size(), nBottomPage + nDiff, bUpdateImages, add, remove);
+			UpdatePageCache(rcViewport.Size(), nBottomPage + nDiff, bUpdateImages, add, remove);
 	}
 
 	int nLastPage = m_nPage;
 	int nMaxSize = -1;
 	for (int nPage = nBottomPage; nPage >= nTopPage; --nPage)
 	{
-		UpdatePageCache(rcClient.Size(), nPage, bUpdateImages, add, remove);
+		UpdatePageCache(rcViewport.Size(), nPage, bUpdateImages, add, remove);
 
 		CRect rcBitmap(m_pages[nPage].ptOffset, m_pages[nPage].szBitmap);
 		CPoint ptScroll = GetScrollPosition();
 		CRect rcIntersect;
-		if (rcIntersect.IntersectRect(rcClient, rcBitmap - ptScroll)
+		if (rcIntersect.IntersectRect(rcViewport, rcBitmap - ptScroll)
 				&& rcIntersect.Width() * rcIntersect.Height() >= nMaxSize)
 		{
 			nLastPage = nPage;
@@ -1805,7 +1771,7 @@ void CDjVuView::UpdatePagesCacheContinuous(bool bUpdateImages,
 	}
 
 	// Push to the front of the queue a page with the largest visible area
-	UpdatePageCache(rcClient.Size(), nLastPage, bUpdateImages, add, remove);
+	UpdatePageCache(rcViewport.Size(), nLastPage, bUpdateImages, add, remove);
 }
 
 void CDjVuView::UpdateVisiblePages()
@@ -2055,7 +2021,7 @@ bool CDjVuView::IsViewNextpageEnabled()
 	if (m_nLayout == SinglePage || m_nLayout == Facing)
 		return GetNextPage(m_nPage) < m_nPageCount;
 	else if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
-		return GetScrollPos(SB_VERT) < GetScrollLimit(SB_VERT);
+		return GetScrollPosition().y < GetScrollLimit().cy;
 	else
 		return false;
 }
@@ -2080,7 +2046,7 @@ bool CDjVuView::IsViewPreviouspageEnabled() const
 	if (m_nLayout == SinglePage || m_nLayout == Facing)
 		return m_nPage > 0;
 	else if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
-		return GetScrollPos(SB_VERT) > 0;
+		return GetScrollPosition().y > 0;
 	else
 		return false;
 }
@@ -2091,8 +2057,6 @@ void CDjVuView::OnSize(UINT nType, int cx, int cy)
 	{
 		UpdateLayout();
 		UpdateView(true, false);
-
-		Invalidate();
 		UpdateWindow();
 
 		CView::OnSize(nType, cx, cy);
@@ -2109,7 +2073,7 @@ void CDjVuView::UpdateView(bool bUpdateSizes, bool bUpdatePages)
 	if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 	{
 		if (bUpdateSizes)
-			UpdatePageSizes(GetScrollPos(SB_VERT));
+			UpdatePageSizes(GetScrollPosition().y);
 
 		if (bUpdatePages)
 			UpdateVisiblePages();
@@ -2128,9 +2092,6 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	bool bScroll = true;
 	bool bNextPage = false, bPrevPage = false;
 	bool bAlignTop = false, bAlignBottom = false;
-
-	bool bHasHorzBar, bHasVertBar;
-	CheckScrollBars(bHasHorzBar, bHasVertBar);
 
 	switch (nChar)
 	{
@@ -2166,22 +2127,22 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 	case VK_DOWN:
 		szScroll.cy = 3*m_szLine.cy;
-		bNextPage = !bHasVertBar;
+		bNextPage = !HasVertScrollBar();
 		break;
 
 	case VK_UP:
 		szScroll.cy = -3*m_szLine.cy;
-		bPrevPage = !bHasVertBar;
+		bPrevPage = !HasVertScrollBar();
 		break;
 
 	case VK_RIGHT:
 		szScroll.cx = 3*m_szLine.cx;
-		bNextPage = !bHasHorzBar;
+		bNextPage = !HasHorzScrollBar();
 		break;
 
 	case VK_LEFT:
 		szScroll.cx = -3*m_szLine.cx;
-		bPrevPage = !bHasHorzBar;
+		bPrevPage = !HasHorzScrollBar();
 		break;
 
 	case VK_NEXT:
@@ -2214,10 +2175,10 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		int nExtra = 2*m_nPageBorder + m_nPageShadow + m_nPageGap;
 		if (bAlignTop)
 		{
-			CSize szClient = ::GetClientSize(this);
+			CSize szViewport = GetViewportSize();
 
-			ASSERT(szScroll.cy > 0 && szScroll.cy <= szClient.cy);
-			UpdatePageSizes(GetScrollPos(SB_VERT), szClient.cy + nExtra);
+			ASSERT(szScroll.cy > 0 && szScroll.cy <= szViewport.cy);
+			UpdatePageSizes(GetScrollPosition().y, szViewport.cy + nExtra);
 
 			// Scroll position could have been changed by UpdatePageSizes
 			CPoint ptScroll = GetScrollPosition();
@@ -2236,7 +2197,7 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			else if (nBottomPage < m_nPageCount - 1)
 			{
 				const Page& pageNext = m_pages[nBottomPage + 1];
-				if (page.ptOffset.y + page.szBitmap.cy <= ptScroll.y + szClient.cy)
+				if (page.ptOffset.y + page.szBitmap.cy <= ptScroll.y + szViewport.cy)
 				{
 					szScroll.cy = pageNext.ptOffset.y - ptScroll.y - m_nPageBorder - min(m_nMargin, m_nPageGap);
 				}
@@ -2244,10 +2205,10 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		}
 		else if (bAlignBottom)
 		{
-			CSize szClient = ::GetClientSize(this);
+			CSize szViewport = GetViewportSize();
 
-			ASSERT(szScroll.cy < 0 && szScroll.cy >= -szClient.cy);
-			UpdatePageSizes(GetScrollPos(SB_VERT), -szClient.cy - nExtra);
+			ASSERT(szScroll.cy < 0 && szScroll.cy >= -szViewport.cy);
+			UpdatePageSizes(GetScrollPosition().y, -szViewport.cy - nExtra);
 
 			// Scroll position could have been changed by UpdatePageSizes
 			CPoint ptScroll = GetScrollPosition();
@@ -2258,9 +2219,9 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			// Jump to the bottom of the previous page, if the top of the first page
 			// is on screen, and only a small part of the previous page is visible
 			// (less than client height minus page scroll).
-			if (page.ptOffset.y + page.szBitmap.cy < ptScroll.y + szClient.cy + szScroll.cy)
+			if (page.ptOffset.y + page.szBitmap.cy < ptScroll.y + szViewport.cy + szScroll.cy)
 			{
-				szScroll.cy = page.ptOffset.y + page.szBitmap.cy - szClient.cy -
+				szScroll.cy = page.ptOffset.y + page.szBitmap.cy - szViewport.cy -
 						ptScroll.y + m_nPageBorder + m_nPageShadow + m_nShadowMargin;
 			}
 			else if (nTopPage > 0)
@@ -2268,7 +2229,7 @@ void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				const Page& pagePrev = m_pages[nTopPage - 1];
 				if (page.ptOffset.y >= ptScroll.y)
 				{
-					szScroll.cy = pagePrev.ptOffset.y + pagePrev.szBitmap.cy - szClient.cy -
+					szScroll.cy = pagePrev.ptOffset.y + pagePrev.szBitmap.cy - szViewport.cy -
 							ptScroll.y + m_nPageBorder + m_nPageShadow + m_nShadowMargin;
 				}
 			}
@@ -2406,7 +2367,8 @@ double CDjVuView::GetZoom() const
 	if (m_nZoomType == ZoomPercent)
 		return m_fZoom;
 
-	const Page& page = m_pages[m_nPage];
+	int nTopPage = CalcTopPage();
+	const Page& page = m_pages[nTopPage];
 	CSize szPage = page.GetSize(m_nRotate);
 
 	if (szPage.cx <= 0 || szPage.cy <= 0)
@@ -2418,28 +2380,28 @@ double CDjVuView::GetZoom() const
 
 double CDjVuView::GetZoom(ZoomType nZoomType) const
 {
-	int nPage = m_nPage;
-	const Page& page = m_pages[nPage];
+	int nTopPage = CalcTopPage();
+	const Page& page = m_pages[nTopPage];
 	CSize szPage = page.GetSize(m_nRotate);
-	CSize szClient = ::GetClientSize(this);
+	CSize szViewport = GetViewportSize();
 
 	// Calculate zoom from display area size
 	CSize szDisplay;
 
 	if (m_nLayout == SinglePage || m_nLayout == Continuous)
 	{
-		szDisplay = CalcPageSize(szClient, szPage, page.info.nDPI, nZoomType);
+		szDisplay = CalcPageSize(szViewport, szPage, page.info.nDPI, nZoomType);
 	}
 	else if (m_nLayout == Facing || m_nLayout == ContinuousFacing)
 	{
-		const Page* pNextPage = (HasFacingPage(nPage) ? &m_pages[nPage + 1] : NULL);
+		const Page* pNextPage = (HasFacingPage(nTopPage) ? &m_pages[nTopPage + 1] : NULL);
 		CSize szPage = page.GetSize(m_nRotate);
 
 		if (pNextPage != NULL)
 		{
 			CSize szPage2 = pNextPage->GetSize(m_nRotate);
 			CSize szDisplay2;
-			CalcPageSizeFacing(szClient, szPage, page.info.nDPI, szDisplay,
+			CalcPageSizeFacing(szViewport, szPage, page.info.nDPI, szDisplay,
 					szPage2, pNextPage->info.nDPI, szDisplay2, nZoomType);
 
 			if ((szPage.cx <= 0 || szPage.cy <= 0) && szPage2.cx > 0 && szPage2.cy > 0)
@@ -2447,7 +2409,7 @@ double CDjVuView::GetZoom(ZoomType nZoomType) const
 		}
 		else
 		{
-			CalcPageSizeFacing(szClient, szPage, page.info.nDPI, szDisplay,
+			CalcPageSizeFacing(szViewport, szPage, page.info.nDPI, szDisplay,
 					szPage, page.info.nDPI, szDisplay, nZoomType);
 		}
 	}
@@ -2463,7 +2425,7 @@ void CDjVuView::OnViewLayout(UINT nID)
 	int nPrevLayout = m_nLayout;
 
 	int nAnchorPage = m_nPage;
-	int nOffset = GetScrollPos(SB_VERT) - m_pages[nAnchorPage].ptOffset.y;
+	CPoint ptOffset = GetScrollPosition() - m_pages[nAnchorPage].ptOffset;
 
 	switch (nID)
 	{
@@ -2501,7 +2463,7 @@ void CDjVuView::OnViewLayout(UINT nID)
 	}
 
 	if (m_nLayout != nPrevLayout)
-		SetLayout(m_nLayout, nAnchorPage, nOffset);
+		SetLayout(m_nLayout, nAnchorPage, ptOffset);
 }
 
 void CDjVuView::OnUpdateViewLayout(CCmdUI* pCmdUI)
@@ -2548,9 +2510,8 @@ void CDjVuView::OnViewRotate(UINT nID)
 	m_pRenderThread->RejectCurrentJob();
 
 	UpdateLayout();
+	AlignTopPage(false);
 	UpdateView(true, false);
-
-	Invalidate();
 	UpdateWindow();
 
 	UpdateObservers(RotateChanged(m_nRotate));
@@ -2566,7 +2527,7 @@ void CDjVuView::OnViewFirstpage()
 	}
 	else
 	{
-		ScrollToPosition(CPoint(GetScrollPos(SB_HORZ), 0));
+		ScrollToPosition(CPoint(GetScrollPosition().x, 0));
 		UpdateWindow();
 	}
 
@@ -2581,10 +2542,10 @@ void CDjVuView::OnViewLastpage()
 	}
 	else if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 	{
-		CSize szClient = ::GetClientSize(this);
-		UpdatePagesFromBottom(m_szDisplay.cy - szClient.cy, m_szDisplay.cy);
+		CSize szViewport = GetViewportSize();
+		UpdatePagesFromBottom(m_szDisplay.cy - szViewport.cy, m_szDisplay.cy);
 
-		ScrollToPosition(CPoint(GetScrollPos(SB_HORZ), GetScrollLimit(SB_VERT)));
+		ScrollToPosition(CPoint(GetScrollPosition().x, GetScrollLimit().cy));
 		UpdateWindow();
 	}
 }
@@ -2613,7 +2574,7 @@ void CDjVuView::OnCancelMode()
 	StopDragging();
 }
 
-void CDjVuView::ZoomTo(int nZoomType, double fZoom)
+void CDjVuView::ZoomTo(int nZoomType, double fZoom, bool bRedraw)
 {
 	if (nZoomType < ZoomStretch || nZoomType > ZoomPercent)
 	{
@@ -2640,12 +2601,67 @@ void CDjVuView::ZoomTo(int nZoomType, double fZoom)
 	}
 
 	UpdateLayout();
+	AlignTopPage(false);
 	UpdateView(true, false);
 
-	Invalidate();
-	UpdateWindow();
+	if (bRedraw)
+		UpdateWindow();
 
 	UpdateObservers(ZOOM_CHANGED);
+}
+
+void CDjVuView::AlignTopPage(bool bRepaint, int nPage)
+{
+	if (m_nLayout != Continuous && m_nLayout != ContinuousFacing)
+		return;
+
+	if (nPage == -1)
+		nPage = CalcTopPage();
+
+	int nWidth, nLeft;
+	if (m_nLayout == Continuous)
+	{
+		const Page& page = m_pages[nPage];
+		nWidth = page.szBitmap.cx + m_nMargin + m_nShadowMargin + 2*m_nPageBorder + m_nPageShadow;
+		nLeft = page.ptOffset.x - m_nPageBorder - m_nMargin;
+	}
+	else if (m_nLayout == ContinuousFacing)
+	{
+		Page* pPage;
+		Page* pNextPage;
+		GetFacingPages(nPage, pPage, pNextPage);
+
+		if (pPage != NULL && pNextPage != NULL)
+		{
+			nLeft = min(pPage->ptOffset.x, pNextPage->ptOffset.x) - m_nPageBorder - m_nMargin;
+			nWidth = pPage->szBitmap.cx + pNextPage->szBitmap.cx + m_nMargin
+					+ m_nShadowMargin + m_nFacingGap + 4*m_nPageBorder + 2*m_nPageShadow;
+		}
+		else
+		{
+			nLeft = pPage->ptOffset.x - m_nPageBorder - m_nMargin;
+			nWidth = 2*pPage->szBitmap.cx + m_nMargin + m_nShadowMargin + m_nFacingGap
+					+ 4*m_nPageBorder + 2*m_nPageShadow;
+
+			if (nPage == 0 && m_bFirstPageAlone && !m_bRightToLeft
+					|| nPage == m_nPageCount - 1 && m_bRightToLeft)
+			{
+				// This page is displayed on the right
+				nLeft -= pPage->szBitmap.cx + 2*m_nPageBorder + m_nFacingGap + m_nPageShadow;
+			}
+		}
+	}
+
+	CPoint ptScroll = GetScrollPosition();
+	CSize szViewport = GetViewportSize();
+	if (nWidth < szViewport.cx)
+		ptScroll.x = nLeft - (szViewport.cx - nWidth)/2;
+	else if (ptScroll.x < nLeft)
+		ptScroll.x = nLeft;
+	else if (ptScroll.x + szViewport.cx > nLeft + nWidth)
+		ptScroll.x = nLeft + nWidth - szViewport.cx;
+
+	ScrollToPosition(ptScroll, bRepaint);
 }
 
 BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
@@ -2653,7 +2669,13 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	if (m_bPanning)
 		return true;
 
-	if (nHitTest != HTCLIENT)
+	CPoint ptCursor;
+	::GetCursorPos(&ptCursor);
+	ScreenToClient(&ptCursor);
+
+	CRect rcViewport(CPoint(0, 0), GetViewportSize());
+
+	if (nHitTest != HTCLIENT || !rcViewport.PtInRect(ptCursor))
 		return CMyScrollView::OnSetCursor(pWnd, nHitTest, message);
 
 	if (hCursorHand == NULL)
@@ -2672,10 +2694,6 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		hCursorCross = ::LoadCursor(0, IDC_CROSS);
 	if (hCursorZoomRect == NULL)
 		hCursorZoomRect = theApp.LoadCursor(IDC_CURSOR_ZOOM_RECT);
-
-	CPoint ptCursor;
-	::GetCursorPos(&ptCursor);
-	ScreenToClient(&ptCursor);
 
 	int nPage = GetPageFromPoint(ptCursor);
 
@@ -2717,13 +2735,6 @@ BOOL CDjVuView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	}
 
 	return CMyScrollView::OnSetCursor(pWnd, nHitTest, message);
-}
-
-bool CDjVuView::HasScrollBars() const
-{
-	bool bHasHorzBar, bHasVertBar;
-	CheckScrollBars(bHasHorzBar, bHasVertBar);
-	return bHasHorzBar || bHasVertBar;
 }
 
 void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
@@ -3027,7 +3038,7 @@ void CDjVuView::StopDragging()
 				CPoint ptScroll = GetScrollPosition();
 				CRect rcDisplay = TranslatePageRect(m_nSelectionPage, m_rcSelection) - ptScroll;
 				rcDisplay.InflateRect(0, 0, 1, 1);
-				InvalidateRect(rcDisplay);
+				InvalidateRect(rcDisplay, false);
 
 				m_nSelectionPage = -1;
 			}
@@ -3119,8 +3130,7 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 
 		if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
 		{
-			int y = GetScrollPos(SB_VERT);
-			UpdatePageSizes(y, ptScrollBy.y);
+			UpdatePageSizes(GetScrollPosition().y, ptScrollBy.y);
 
 			ptStartPos = m_pages[m_nStartPage].ptOffset + m_ptStartPos;
 			ptScrollBy = ptStartPos + m_ptStart - ptCursor - GetScrollPosition();
@@ -3227,10 +3237,7 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 		UpdateSelectionStatus();
 
 		if (bInfoLoaded)
-		{
 			UpdateLayout();
-			Invalidate();
-		}
 
 		if (pWaitCursor != NULL)
 			delete pWaitCursor;
@@ -3244,7 +3251,7 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 
 		CRect rcDisplay = TranslatePageRect(m_nSelectionPage, m_rcSelection) - ptScroll;
 		rcDisplay.InflateRect(0, 0, 1, 1);
-		InvalidateRect(rcDisplay);
+		InvalidateRect(rcDisplay, false);
 
 		m_rcSelection.xmin = min(ptCurrent.x, m_ptStartSel.x);
 		m_rcSelection.xmax = max(ptCurrent.x, m_ptStartSel.x) + 1;
@@ -3253,7 +3260,7 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 
 		rcDisplay = TranslatePageRect(m_nSelectionPage, m_rcSelection) - ptScroll;
 		rcDisplay.InflateRect(0, 0, 1, 1);
-		InvalidateRect(rcDisplay);
+		InvalidateRect(rcDisplay, false);
 
 		UpdateWindow();
 	}
@@ -3393,10 +3400,10 @@ int CDjVuView::GetPageFromPoint(CPoint point) const
 
 int CDjVuView::GetPageNearPoint(CPoint point) const
 {
-	CSize szClient = ::GetClientSize(this);
+	CSize szViewport = GetViewportSize();
 
-	point.x = max(0, min(szClient.cx - 1, point.x));
-	point.y = max(0, min(szClient.cy - 1, point.y));
+	point.x = max(0, min(point.x, szViewport.cx - 1));
+	point.y = max(0, min(point.y, szViewport.cy - 1));
 	point += GetScrollPosition();
 
 	if (m_nLayout == SinglePage || m_nLayout == Facing)
@@ -3467,8 +3474,8 @@ void CDjVuView::OnContextMenu()
 	ScreenToClient(&point);
 	m_nClickedPage = GetPageFromPoint(point);
 
-	CRect rcClient = ::GetClientRect(this);
-	if (!rcClient.PtInRect(point) || m_nClickedPage == -1)
+	CRect rcViewport(CPoint(0, 0), GetViewportSize());
+	if (!rcViewport.PtInRect(point) || m_nClickedPage == -1)
 		return;
 
 	m_pClickedAnno = m_pHoverAnno;
@@ -3876,10 +3883,7 @@ LRESULT CDjVuView::OnPageDecoded(WPARAM wParam, LPARAM lParam)
 	if (!bHadInfo)
 	{
 		if ((lParam || m_nTimerID == 0) && (m_nLayout == Continuous || m_nLayout == ContinuousFacing))
-		{
 			UpdateLayout();
-			Invalidate();
-		}
 		else
 			m_bNeedUpdate = true;
 	}
@@ -3889,17 +3893,27 @@ LRESULT CDjVuView::OnPageDecoded(WPARAM wParam, LPARAM lParam)
 
 void CDjVuView::ScrollToPosition(CPoint pt, bool bRepaint)
 {
-	if (!bRepaint || m_nPageCount == 0)
+	if (m_nPageCount == 0)
 	{
 		CMyScrollView::ScrollToPosition(pt, bRepaint);
 		return;
 	}
 
-	if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
+	// We do not want to read missing page info during UpdateLayout()
+	if (!m_bInsideUpdateLayout && (m_nLayout == Continuous || m_nLayout == ContinuousFacing))
 		UpdatePageSizes(pt.y, 0, RECALC);
 
 	CMyScrollView::ScrollToPosition(pt, bRepaint);
-	UpdateView(false, true);
+
+	// ScrollToPosition will be called from inside SetScrollSizes(),
+	// when scroll position has not yet been updated to properly
+	// retain the current page onscreen.  So if we call UpdateView(),
+	// it will case a wrong page change notification to be sent out,
+	// and thumbnails view will jump back and forward. Additionally,
+	// page cache will be screwed up by UpdateVisiblePages(). Hence
+	// the if statement.
+	if (!m_bInsideUpdateLayout)
+		UpdateView(false, true);
 }
 
 bool CDjVuView::OnScroll(UINT nScrollCode, UINT nPos, bool bDoScroll)
@@ -3911,10 +3925,10 @@ bool CDjVuView::OnScroll(UINT nScrollCode, UINT nPos, bool bDoScroll)
 		SCROLLINFO si;
 		ZeroMemory(&si, sizeof(si));
 		si.cbSize = sizeof(si);
-		if (!GetScrollInfo(SB_VERT, &si, SIF_TRACKPOS))
-			return false;
+		si.fMask = SIF_TRACKPOS;
+		::GetScrollInfo(m_vertScrollBar.m_hWnd, SB_CTL, &si);
 
-		ScrollToPosition(CPoint(GetScrollPos(SB_HORZ), si.nTrackPos));
+		ScrollToPosition(CPoint(GetScrollPosition().x, si.nTrackPos));
 		UpdateWindow();
 		return true;
 	}
@@ -3929,17 +3943,16 @@ bool CDjVuView::OnScrollBy(CSize szScrollBy, bool bDoScroll)
 
 	bool bUpdateVisible = false;
 
-	bool bHasHorzBar, bHasVertBar;
-	CheckScrollBars(bHasHorzBar, bHasVertBar);
-	if (bHasVertBar && (m_nLayout == Continuous || m_nLayout == ContinuousFacing))
+	if (HasVertScrollBar()
+			&& (m_nLayout == Continuous || m_nLayout == ContinuousFacing))
 	{
-		int yOrig = GetScrollPos(SB_VERT);
-		int yMax = GetScrollLimit(SB_VERT);
-		int y = max(0, min(yMax, yOrig + szScrollBy.cy));
+		int yOrig = GetScrollPosition().y;
+		int yMax = GetScrollLimit().cy;
+		int y = max(0, min(yOrig + szScrollBy.cy, yMax));
 
 		if (y != yOrig)
 		{
-			UpdatePageSizes(GetScrollPos(SB_VERT), y - yOrig);
+			UpdatePageSizes(yOrig, y - yOrig);
 			bUpdateVisible = true;
 		}
 	}
@@ -3956,24 +3969,24 @@ void CDjVuView::UpdatePageSizes(int nTop, int nScroll, int nUpdateType)
 {
 	ASSERT(m_nLayout == Continuous || m_nLayout == ContinuousFacing);
 
-	CSize szClient = ::GetClientSize(this);
+	CSize szViewport = GetViewportSize();
 	if (nScroll < 0)
 	{
-		UpdatePagesFromBottom(nTop + nScroll, nTop + szClient.cy, nUpdateType);
+		UpdatePagesFromBottom(nTop + nScroll, nTop + szViewport.cy, nUpdateType);
 	}
 	else
 	{
-		if (!UpdatePagesFromTop(nTop, nTop + szClient.cy + nScroll, nUpdateType))
+		if (!UpdatePagesFromTop(nTop, nTop + szViewport.cy + nScroll, nUpdateType))
 		{
 			int nBottom = m_szDisplay.cy;
-			UpdatePagesFromBottom(nBottom - szClient.cy - nScroll, nBottom, nUpdateType);
+			UpdatePagesFromBottom(nBottom - szViewport.cy - nScroll, nBottom, nUpdateType);
 		}
 	}
 }
 
 void CDjVuView::UpdatePagesFromBottom(int nTop, int nBottom, int nUpdateType)
 {
-	CSize szClient = ::GetClientSize(this);
+	CSize szViewport = GetViewportSize();
 
 	// Check that the pages which become visible as a result
 	// of this operation have their szPage filled in
@@ -3985,13 +3998,13 @@ void CDjVuView::UpdatePagesFromBottom(int nTop, int nBottom, int nUpdateType)
 
 	if (m_nLayout == Continuous)
 	{
-		UpdatePageSize(szClient, nPage);
+		UpdatePageSize(szViewport, nPage);
 		int nPageTop = m_pages[nPage].rcDisplay.top;
 
 		while (nPage > 0 && nTop < nPageTop)
 		{
 			--nPage;
-			UpdatePageSize(szClient, nPage);
+			UpdatePageSize(szViewport, nPage);
 
 			nPageTop -= m_pages[nPage].szBitmap.cy + 2*m_nPageBorder + m_nPageGap + m_nPageShadow;
 		}
@@ -3999,13 +4012,13 @@ void CDjVuView::UpdatePagesFromBottom(int nTop, int nBottom, int nUpdateType)
 	else
 	{
 		nPage = FixPageNumber(nPage);
-		UpdatePageSizeFacing(szClient, nPage);
+		UpdatePageSizeFacing(szViewport, nPage);
 		int nPageTop = m_pages[nPage].rcDisplay.top;
 
 		while (nPage > 0 && nTop < nPageTop)
 		{
 			nPage = max(0, nPage - 2);
-			UpdatePageSizeFacing(szClient, nPage);
+			UpdatePageSizeFacing(szViewport, nPage);
 
 			int nHeight = m_pages[nPage].szBitmap.cy;
 			if (HasFacingPage(nPage))
@@ -4017,13 +4030,13 @@ void CDjVuView::UpdatePagesFromBottom(int nTop, int nBottom, int nUpdateType)
 	if (m_bNeedUpdate)
 	{
 		UpdateLayout(nUpdateType != -1 ? static_cast<UpdateType>(nUpdateType) : BOTTOM);
-		Invalidate();
+		InvalidateViewport();
 	}
 }
 
 bool CDjVuView::UpdatePagesFromTop(int nTop, int nBottom, int nUpdateType)
 {
-	CSize szClient = ::GetClientSize(this);
+	CSize szViewport = GetViewportSize();
 
 	int nPage = 0;
 	while (nPage < m_nPageCount - 1 &&
@@ -4034,13 +4047,13 @@ bool CDjVuView::UpdatePagesFromTop(int nTop, int nBottom, int nUpdateType)
 
 	if (m_nLayout == Continuous)
 	{
-		UpdatePageSize(szClient, nPage);
+		UpdatePageSize(szViewport, nPage);
 		nPageBottom = m_pages[nPage].rcDisplay.top + m_pages[nPage].szBitmap.cy
 				+ m_nPageBorder + m_nPageShadow + m_nPageGap;
 
 		while (++nPage < m_nPageCount && nBottom > nPageBottom)
 		{
-			UpdatePageSize(szClient, nPage);
+			UpdatePageSize(szViewport, nPage);
 			nPageBottom += m_pages[nPage].szBitmap.cy + 2*m_nPageBorder
 					+ m_nPageShadow + m_nPageGap;
 		}
@@ -4048,7 +4061,7 @@ bool CDjVuView::UpdatePagesFromTop(int nTop, int nBottom, int nUpdateType)
 	else
 	{
 		nPage = FixPageNumber(nPage);
-		UpdatePageSizeFacing(szClient, nPage);
+		UpdatePageSizeFacing(szViewport, nPage);
 
 		int nHeight = m_pages[nPage].szBitmap.cy;
 		if (HasFacingPage(nPage))
@@ -4057,7 +4070,7 @@ bool CDjVuView::UpdatePagesFromTop(int nTop, int nBottom, int nUpdateType)
 
 		while ((nPage = GetNextPage(nPage)) < m_nPageCount && nBottom > nPageBottom)
 		{
-			UpdatePageSizeFacing(szClient, nPage);
+			UpdatePageSizeFacing(szViewport, nPage);
 
 			int nHeight = m_pages[nPage].szBitmap.cy;
 			if (HasFacingPage(nPage))
@@ -4073,7 +4086,7 @@ bool CDjVuView::UpdatePagesFromTop(int nTop, int nBottom, int nUpdateType)
 	if (m_bNeedUpdate)
 	{
 		UpdateLayout(nUpdateType != -1 ? static_cast<UpdateType>(nUpdateType) : TOP);
-		Invalidate();
+		InvalidateViewport();
 	}
 
 	return !bNeedScrollUp;
@@ -4138,9 +4151,10 @@ void CDjVuView::UpdatePageSizeFacing(const CSize& szBounds, int nPage)
 
 int CDjVuView::CalcTopPage() const
 {
-	ASSERT(m_nLayout == Continuous || m_nLayout == ContinuousFacing);
+	if (m_nLayout == SinglePage || m_nLayout == Facing)
+		return m_nPage;
 
-	int nTop = GetScrollPos(SB_VERT);
+	int nTop = GetScrollPosition().y;
 
 	int nPage = max(0, min(m_nPageCount - 1, m_nPage));
 	while (nPage > 0 && nTop < m_pages[nPage].rcDisplay.top)
@@ -4159,10 +4173,10 @@ int CDjVuView::CalcCurrentPage() const
 	int nPage = CalcTopPage();
 	const Page& page = m_pages[nPage];
 
-	CSize szClient = ::GetClientSize(this);
-	int nHeight = min(page.szBitmap.cy, szClient.cy);
+	CSize szViewport = GetViewportSize();
+	int nHeight = min(page.szBitmap.cy, szViewport.cy);
 
-	if (page.rcDisplay.bottom - GetScrollPos(SB_VERT) < 0.3*nHeight
+	if (page.rcDisplay.bottom - GetScrollPosition().y < 0.3*nHeight
 			&& GetNextPage(nPage) < m_nPageCount)
 		nPage = GetNextPage(nPage);
 
@@ -4171,12 +4185,12 @@ int CDjVuView::CalcCurrentPage() const
 
 int CDjVuView::CalcBottomPage(int nTopPage) const
 {
-	CSize szClient = ::GetClientSize(this);
-	int nTop = GetScrollPos(SB_VERT);
+	CSize szViewport = GetViewportSize();
+	int nTop = GetScrollPosition().y;
 
 	int nBottomPage = GetNextPage(nTopPage);
 	while (nBottomPage < m_nPageCount
-			&& m_pages[nBottomPage].rcDisplay.top < nTop + szClient.cy)
+			&& m_pages[nBottomPage].rcDisplay.top < nTop + szViewport.cy)
 		nBottomPage = GetNextPage(nBottomPage);
 
 	--nBottomPage;
@@ -4197,10 +4211,7 @@ BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 		return true;
 
 	if (CMyScrollView::OnMouseWheel(nFlags, zDelta, point))
-	{
-		UpdateWindow();
 		return true;
-	}
 
 	if ((nFlags & MK_CONTROL) != 0)
 	{
@@ -4213,10 +4224,7 @@ BOOL CDjVuView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 		return true;
 	}
 
-	bool bHasHorzBar, bHasVertBar;
-	CheckScrollBars(bHasHorzBar, bHasVertBar);
-	if (!bHasVertBar && !bHasHorzBar &&
-			(m_nLayout == SinglePage || m_nLayout == Facing))
+	if (!HasScrollBars() && (m_nLayout == SinglePage || m_nLayout == Facing))
 	{
 		if (zDelta < 0 && IsViewNextpageEnabled())
 		{
@@ -4243,12 +4251,11 @@ bool CDjVuView::InvalidatePage(int nPage)
 			(m_nLayout == Facing && nPage != m_nPage && (!HasFacingPage(m_nPage) || nPage != m_nPage + 1)))
 		return false;
 
+	CRect rect(CPoint(0, 0), GetViewportSize());
 	CPoint ptScroll = GetScrollPosition();
-	CRect rcClient = ::GetClientRect(this) + ptScroll;
-	CRect rcIntersect;
-	if (rcIntersect.IntersectRect(rcClient, m_pages[nPage].rcDisplay))
+	if (rect.IntersectRect(CRect(rect), m_pages[nPage].rcDisplay - ptScroll))
 	{
-		InvalidateRect(rcIntersect - ptScroll);
+		InvalidateRect(rect, false);
 		return true;
 	}
 
@@ -4262,15 +4269,14 @@ bool CDjVuView::InvalidateAnno(Annotation* pAnno, int nPage)
 			(m_nLayout == Facing && nPage != m_nPage && (!HasFacingPage(m_nPage) || nPage != m_nPage + 1)))
 		return false;
 
-	CRect rect = TranslatePageRect(nPage, pAnno->rectBounds);
-	rect.InflateRect(1, 1);
-
 	CPoint ptScroll = GetScrollPosition();
-	CRect rcClient = ::GetClientRect(this) + ptScroll;
-	CRect rcIntersect;
-	if (rcIntersect.IntersectRect(rcClient, rect))
+
+	CRect rect = TranslatePageRect(nPage, pAnno->rectBounds) - ptScroll;
+	rect.InflateRect(1, 1);
+	CRect rcViewport(CPoint(0, 0), GetViewportSize());
+	if (rect.IntersectRect(CRect(rect), rcViewport))
 	{
-		InvalidateRect(rcIntersect - ptScroll);
+		InvalidateRect(rect, false);
 		return true;
 	}
 
@@ -4435,10 +4441,7 @@ void CDjVuView::OnFindString()
 			if (nPos != -1)
 			{
 				if (m_bNeedUpdate)
-				{
 					UpdateLayout();
-					Invalidate();
-				}
 
 				int nSelEnd = nPos + strFind.length();
 				DjVuSelection selection;
@@ -4491,10 +4494,7 @@ void CDjVuView::OnFindString()
 	}
 
 	if (m_bNeedUpdate)
-	{
 		UpdateLayout();
-		Invalidate();
-	}
 
 	GetMainFrame()->HilightStatusMessage(LoadString(IDS_STRING_NOT_FOUND));
 	::MessageBeep(MB_OK);
@@ -4569,10 +4569,7 @@ void CDjVuView::OnFindAll()
 	}
 
 	if (m_bNeedUpdate)
-	{
 		UpdateLayout();
-		Invalidate();
-	}
 
 	if (nResultCount > 0)
 	{
@@ -4674,12 +4671,10 @@ bool CDjVuView::IsSelectionVisible(int nPage, const DjVuSelection& selection)
 		return false;
 
 	CPoint ptScroll = GetScrollPosition();
-	CRect rcClient = ::GetClientRect(this) + ptScroll;
+	CRect rcViewport(ptScroll, GetViewportSize());
 
 	CRect rcSel = GetSelectionRect(nPage, selection);
-	rcClient.IntersectRect(CRect(rcClient), rcSel);
-
-	if (rcClient != rcSel)
+	if (!rcViewport.IntersectRect(CRect(rcViewport), rcSel) || rcViewport != rcSel)
 		return false;
 
 	CFindDlg* pDlg = theApp.GetFindDlg(false);
@@ -4709,45 +4704,45 @@ void CDjVuView::EnsureSelectionVisible(int nPage,
 	}
 
 	CPoint ptScroll = GetScrollPosition();
-	CRect rcClient = ::GetClientRect(this) + ptScroll;
+	CRect rcViewport(ptScroll, GetViewportSize());
 
 	const Page& page = m_pages[nPage];
-	int nHeight = min(page.szBitmap.cy, rcClient.Height());
-	int nWidth = min(page.szBitmap.cx, rcClient.Width());
+	int nHeight = min(page.szBitmap.cy, rcViewport.Height());
+	int nWidth = min(page.szBitmap.cx, rcViewport.Width());
 
 	CRect rcSel = GetSelectionRect(nPage, selection);
 
 	// Scroll horizontally
-	int nLeftPos = rcClient.left;
-	if (rcSel.left < rcClient.left)
+	int nLeftPos = rcViewport.left;
+	if (rcSel.left < rcViewport.left)
 	{
 		nLeftPos = max(page.rcDisplay.left, static_cast<int>(rcSel.left - 0.2*nWidth));
-		if (nLeftPos + rcClient.Width() < rcSel.right)
-			nLeftPos = rcSel.right - rcClient.Width();
+		if (nLeftPos + rcViewport.Width() < rcSel.right)
+			nLeftPos = rcSel.right - rcViewport.Width();
 		nLeftPos = min(rcSel.left, nLeftPos);
 	}
-	else if (rcSel.right > rcClient.right)
+	else if (rcSel.right > rcViewport.right)
 	{
 		int nRight = min(page.rcDisplay.right, static_cast<int>(rcSel.right + 0.2*nWidth));
-		nLeftPos = min(rcSel.left, nRight - rcClient.Width());
+		nLeftPos = min(rcSel.left, nRight - rcViewport.Width());
 	}
 
 	// Scroll vertically
-	int nTopPos = rcClient.top;
-	if (rcSel.top < rcClient.top)
+	int nTopPos = rcViewport.top;
+	if (rcSel.top < rcViewport.top)
 	{
 		nTopPos = max(page.rcDisplay.top, static_cast<int>(rcSel.top - 0.3*nHeight));
-		if (nTopPos + rcClient.Height() < rcSel.bottom)
-			nTopPos = rcSel.bottom - rcClient.Height();
+		if (nTopPos + rcViewport.Height() < rcSel.bottom)
+			nTopPos = rcSel.bottom - rcViewport.Height();
 		nTopPos = min(rcSel.top, nTopPos);
 	}
-	else if (rcSel.bottom > rcClient.bottom)
+	else if (rcSel.bottom > rcViewport.bottom)
 	{
 		int nBottom = min(m_szDisplay.cy, static_cast<int>(rcSel.bottom + 0.3*nHeight));
-		nTopPos = min(rcSel.top, nBottom - rcClient.Height());
+		nTopPos = min(rcSel.top, nBottom - rcViewport.Height());
 	}
 
-	rcClient.OffsetRect(0, nTopPos - ptScroll.y);
+	rcViewport.OffsetRect(0, nTopPos - ptScroll.y);
 
 	// Further scroll the document if selection is obscured by the Find dialog
 	CFindDlg* pDlg = theApp.GetFindDlg(false);
@@ -4760,9 +4755,9 @@ void CDjVuView::EnsureSelectionVisible(int nPage,
 
 		if (rcSel.bottom > rcFindDlg.top && rcSel.top < rcFindDlg.bottom)
 		{
-			int nTopSpace = rcFindDlg.top - rcClient.top;
-			int nBottomSpace = rcClient.bottom - rcFindDlg.bottom;
-			if (nTopPos < m_szDisplay.cy - rcClient.Height() - (rcSel.bottom - rcFindDlg.top)
+			int nTopSpace = rcFindDlg.top - rcViewport.top;
+			int nBottomSpace = rcViewport.bottom - rcFindDlg.bottom;
+			if (nTopPos < m_szDisplay.cy - rcViewport.Height() - (rcSel.bottom - rcFindDlg.top)
 					&& nTopSpace >= rcSel.Height())
 			{
 				// Enough space on top, and it is possible to scroll the content
@@ -4773,7 +4768,7 @@ void CDjVuView::EnsureSelectionVisible(int nPage,
 			{
 				// Enough space on bottom, and it is possible to scroll the content
 				int nBottom = rcSel.bottom + (nBottomSpace - rcSel.Height())/2;
-				nTopPos = min(rcSel.top - (rcFindDlg.bottom - rcClient.top), nBottom - rcClient.Height());
+				nTopPos = min(rcSel.top - (rcFindDlg.bottom - rcViewport.top), nBottom - rcViewport.Height());
 			}
 			else
 			{
@@ -4801,9 +4796,6 @@ void CDjVuView::EnsureSelectionVisible(int nPage,
 	}
 
 	ScrollToPosition(CPoint(nLeftPos, nTopPos), false);
-	UpdateView(false, true);
-
-	Invalidate();
 	UpdateWindow();
 }
 
@@ -4988,8 +4980,8 @@ void CDjVuView::UpdateCursor()
 		return;
 
 	ScreenToClient(&ptCursor);
-	CRect rcClient = ::GetClientRect(this);
-	if (rcClient.PtInRect(ptCursor))
+	CRect rcViewport(CPoint(0, 0), GetViewportSize());
+	if (rcViewport.PtInRect(ptCursor))
 		SendMessage(WM_SETCURSOR, (WPARAM) m_hWnd, MAKELPARAM(HTCLIENT, WM_MOUSEMOVE));
 }
 
@@ -4998,8 +4990,8 @@ Annotation* CDjVuView::GetAnnotationFromPoint(const CPoint& point, int& nPage, b
 	bCustom = false;
 	nPage = -1;
 
-	CRect rcClient = ::GetClientRect(this);
-	if (!rcClient.PtInRect(point))
+	CRect rcViewport(CPoint(0, 0), GetViewportSize());
+	if (!rcViewport.PtInRect(point))
 		return NULL;
 
 	nPage = GetPageFromPoint(point);
@@ -5116,13 +5108,13 @@ void CDjVuView::GoToBookmark(const Bookmark& bookmark, int nAddToHistory)
 	}
 	else if (bookmark.nLinkType == Bookmark::View)
 	{
-		int nPage = max(min(bookmark.nPage, m_nPageCount - 1), 0);
+		int nPage = max(0, min(bookmark.nPage, m_nPageCount - 1));
 
 		if ((nAddToHistory & AddSource) != 0)
 			GetMainFrame()->AddToHistory(this);
 
 		if (bookmark.bZoom)
-			ZoomTo(bookmark.nZoomType, bookmark.fZoom);
+			ZoomTo(bookmark.nZoomType, bookmark.fZoom, false);
 
 		if (bookmark.nPage == nPage)
 			ScrollToPage(nPage, bookmark.ptOffset, bookmark.bMargin);
@@ -5598,10 +5590,7 @@ void CDjVuView::GetNormalizedText(wstring& text, bool bSelected, int nMaxLength)
 	}
 
 	if (m_bNeedUpdate)
-	{
 		UpdateLayout();
-		Invalidate();
-	}
 }
 
 void CDjVuView::SettingsChanged()
@@ -5691,10 +5680,7 @@ void CDjVuView::GoToSelection(int nPage, int nStartPos, int nEndPos, int nAddToH
 	SelectTextRange(nPage, nStartPos, nEndPos, bInfoLoaded, pWaitCursor);
 
 	if (bInfoLoaded)
-	{
 		UpdateLayout();
-		Invalidate();
-	}
 
 	if (!IsSelectionVisible(nPage, page.selection))
 	{
@@ -5750,10 +5736,7 @@ void CDjVuView::OnViewFullscreen()
 		pView->m_nLayout = (m_nLayout == Facing || m_nLayout == ContinuousFacing ? Facing : SinglePage);
 
 	if (theApp.GetAppSettings()->bFullscreenHideScroll)
-	{
-		pView->ShowScrollBar(SB_BOTH, FALSE);
-		pView->CreateScrollbars();
-	}
+		pView->ShowScrollBars(false);
 
 	pView->OnInitialUpdate();
 
@@ -5865,10 +5848,7 @@ void CDjVuView::OnLButtonDblClk(UINT nFlags, CPoint point)
 		SelectTextRange(nPage, nPos, nPos + 1, bInfoLoaded, pWaitCursor);
 
 		if (bInfoLoaded)
-		{
 			UpdateLayout();
-			Invalidate();
-		}
 
 		if (pWaitCursor != NULL)
 			delete pWaitCursor;
@@ -5895,7 +5875,7 @@ void CDjVuView::UpdateKeyboard(UINT nKey, bool bDown)
 
 	if (bUpdateWindow)
 	{
-		Invalidate();
+		InvalidateViewport();
 		UpdateWindow();
 
 		// Notify the magnify window, because it will not repaint
@@ -5927,10 +5907,7 @@ void CDjVuView::OnTimer(UINT nIDEvent)
 	}
 
 	if (m_bNeedUpdate)
-	{
 		UpdateLayout();
-		Invalidate();
-	}
 
 	if (m_nType == Fullscreen && !m_bCursorHidden)
 	{
@@ -5955,18 +5932,18 @@ void CDjVuView::OnTimer(UINT nIDEvent)
 		CPoint ptCursor;
 		::GetCursorPos(&ptCursor);
 
-		CRect rcClient = ::GetClientRect(this);
-		ClientToScreen(rcClient);
+		CRect rcViewport(CPoint(0, 0), GetViewportSize());
+		ClientToScreen(rcViewport);
 
 		CSize szOffset(0, 0);
-		if (ptCursor.x < rcClient.left)
+		if (ptCursor.x < rcViewport.left)
 			szOffset.cx = -50;
-		if (ptCursor.x >= rcClient.right)
+		if (ptCursor.x >= rcViewport.right)
 			szOffset.cx = 50;
 
-		if (ptCursor.y < rcClient.top)
+		if (ptCursor.y < rcViewport.top)
 			szOffset.cy = -50;
-		if (ptCursor.y >= rcClient.bottom)
+		if (ptCursor.y >= rcViewport.bottom)
 			szOffset.cy = 50;
 
 		OnScrollBy(szOffset);
@@ -5987,7 +5964,7 @@ void CDjVuView::ShowCursor()
 void CDjVuView::OnFirstPageAlone()
 {
 	int nAnchorPage = m_nPage;
-	int nOffset = GetScrollPos(SB_VERT) - m_pages[nAnchorPage].ptOffset.y;
+	CPoint ptOffset = GetScrollPosition() - m_pages[nAnchorPage].ptOffset;
 
 	m_bFirstPageAlone = !m_bFirstPageAlone;
 
@@ -5995,13 +5972,13 @@ void CDjVuView::OnFirstPageAlone()
 		m_pSource->GetSettings()->bFirstPageAlone = m_bFirstPageAlone;
 
 	if (m_nLayout == Facing || m_nLayout == ContinuousFacing)
-		SetLayout(m_nLayout, nAnchorPage, nOffset);
+		SetLayout(m_nLayout, nAnchorPage, ptOffset);
 }
 
 void CDjVuView::OnRightToLeftOrder()
 {
 	int nAnchorPage = m_nPage;
-	int nOffset = GetScrollPos(SB_VERT) - m_pages[nAnchorPage].ptOffset.y;
+	CPoint ptOffset = GetScrollPosition() - m_pages[nAnchorPage].ptOffset;
 
 	m_bRightToLeft = !m_bRightToLeft;
 
@@ -6009,7 +5986,7 @@ void CDjVuView::OnRightToLeftOrder()
 		m_pSource->GetSettings()->bRightToLeft = m_bRightToLeft;
 
 	if (m_nLayout == Facing || m_nLayout == ContinuousFacing)
-		SetLayout(m_nLayout, nAnchorPage, nOffset);
+		SetLayout(m_nLayout, nAnchorPage, ptOffset);
 }
 
 void CDjVuView::OnUpdateFirstPageAlone(CCmdUI* pCmdUI)
@@ -6084,7 +6061,7 @@ int CDjVuView::GetNextPage(int nPage) const
 		return (nPage + 2);
 }
 
-void CDjVuView::SetLayout(int nLayout, int nPage, int nOffset)
+void CDjVuView::SetLayout(int nLayout, int nPage, const CPoint& ptOffset)
 {
 	m_nLayout = nLayout;
 
@@ -6095,14 +6072,11 @@ void CDjVuView::SetLayout(int nLayout, int nPage, int nOffset)
 	else
 	{
 		UpdateLayout(RECALC);
-		UpdatePageSizes(m_pages[nPage].ptOffset.y, nOffset, RECALC);
+		UpdatePageSizes(m_pages[nPage].ptOffset.y, ptOffset.y, RECALC);
 	}
 
-	int nTop = m_pages[nPage].ptOffset.y + nOffset;
-	ScrollToPosition(CPoint(GetScrollPos(SB_HORZ), nTop), false);
-	UpdateView(false, true);
-
-	Invalidate();
+	CPoint ptTop = m_pages[nPage].ptOffset + ptOffset;
+	ScrollToPosition(ptTop, false);
 	UpdateWindow();
 }
 
@@ -6118,23 +6092,6 @@ void CDjVuView::UpdateDragAction()
 
 		OnMouseMove(MK_LBUTTON, ptCursor);
 	}
-}
-
-CScrollBar* CDjVuView::GetScrollBarCtrl(int nBar) const
-{
-	if (m_nType == Magnify || m_nType == Fullscreen && theApp.GetAppSettings()->bFullscreenHideScroll)
-		return (nBar == SB_HORZ ? m_pHScrollBar : m_pVScrollBar);
-
-	return NULL;
-}
-
-void CDjVuView::CreateScrollbars()
-{
-	m_pHScrollBar = new CScrollBar();
-	m_pHScrollBar->Create(SBS_HORZ | WS_CHILD, CRect(0, 0, 0, 0), this, 1);
-
-	m_pVScrollBar = new CScrollBar();
-	m_pVScrollBar->Create(SBS_VERT | WS_CHILD, CRect(0, 0, 0, 0), this, 2);
 }
 
 void CDjVuView::StartMagnify()
@@ -6186,8 +6143,7 @@ void CDjVuView::StartMagnify()
 		pView->m_fZoom = fZoom;
 	}
 
-	pView->ShowScrollBar(SB_BOTH, FALSE);
-	pView->CreateScrollbars();
+	pView->ShowScrollBars(false);
 
 	pView->OnInitialUpdate();
 
@@ -6334,7 +6290,7 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 	}
 	else if (message->code == ANNOTATIONS_CHANGED)
 	{
-		Invalidate();
+		InvalidateViewport();
 		if (!m_bDragging && !m_bPanning)
 			UpdateHoverAnnotation();
 	}
@@ -6659,30 +6615,30 @@ void CDjVuView::OnZoomToSelection()
 	int nPrevZoomType = m_nZoomType;
 	double fPrevZoom = GetZoom();
 
-	CSize szClient, szScrollBars;
-	GetTrueClientSize(szClient, szScrollBars);
-	if (szClient.cx > szScrollBars.cx)
-		szClient.cx -= szScrollBars.cx;
-	if (szClient.cy > szScrollBars.cy)
-		szClient.cy -= szScrollBars.cy;
+	CSize szViewport = ::GetClientSize(this);
+	if (szViewport.cx > m_szScrollBars.cx && szViewport.cy > m_szScrollBars.cy)
+	{
+		szViewport.cx -= m_szScrollBars.cx;
+		szViewport.cy -= m_szScrollBars.cy;
+	}
 
 	const Page& page = m_pages[m_nSelectionPage];
 	CSize szPage = page.GetSize(m_nRotate);
 
-	double fScale = min(1.0*szClient.cx/m_rcSelection.width(),
-			1.0*szClient.cy/m_rcSelection.height());
+	double fScale = min(1.0*szViewport.cx/m_rcSelection.width(),
+			1.0*szViewport.cy/m_rcSelection.height());
 	double fZoom = 100.0*fScale*page.info.nDPI/m_nScreenDPI;
 
-	ZoomTo(ZoomPercent, fZoom);
-	szClient = ::GetClientSize(this);
+	ZoomTo(ZoomPercent, fZoom, false);
+	szViewport = GetViewportSize();
 
 	CRect rcSel = TranslatePageRect(m_nSelectionPage, m_rcSelection);
 	CPoint ptOffset = rcSel.TopLeft() - page.ptOffset;
 
-	if (rcSel.Width() < szClient.cx)
-		ptOffset.x -= (szClient.cx - rcSel.Width()) / 2;
-	if (rcSel.Height() < szClient.cy)
-		ptOffset.y -= (szClient.cy - rcSel.Height()) / 2;
+	if (rcSel.Width() < szViewport.cx)
+		ptOffset.x -= (szViewport.cx - rcSel.Width()) / 2;
+	if (rcSel.Height() < szViewport.cy)
+		ptOffset.y -= (szViewport.cy - rcSel.Height()) / 2;
 
 	ScrollToPage(m_nSelectionPage, ScreenToDjVu(m_nSelectionPage, ptOffset));
 

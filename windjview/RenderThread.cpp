@@ -303,6 +303,10 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 	{
 		return NULL;
 	}
+	catch (CMemoryException*)
+	{
+		return NULL;
+	}
 	catch (...)
 	{
 		theApp.ReportFatalError();

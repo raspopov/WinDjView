@@ -21,7 +21,6 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 
-#include "DjVuDoc.h"
 #include "ThumbnailsView.h"
 #include "Drawing.h"
 #include "ThumbnailsThread.h"
@@ -320,7 +319,7 @@ void CThumbnailsView::UpdateAllThumbnails()
 
 	UpdateLayout();
 
-	Invalidate();
+	InvalidateViewport();
 	UpdateWindow();
 }
 
@@ -404,7 +403,7 @@ void CThumbnailsView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		break;
 
 	case VK_END:
-		szScrollBy.cy = GetScrollLimit(SB_VERT);
+		szScrollBy.cy = GetScrollLimit().cy;
 		break;
 	}
 
@@ -566,10 +565,7 @@ BOOL CThumbnailsView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 		return true;
 
 	if (CMyScrollView::OnMouseWheel(nFlags, zDelta, point))
-	{
-		UpdateWindow();
 		return true;
-	}
 
 	if ((nFlags & MK_CONTROL) != 0)
 	{
@@ -589,11 +585,11 @@ bool CThumbnailsView::InvalidatePage(int nPage)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
 
-	CRect rect = ::GetClientRect(this);
+	CRect rect(CPoint(0, 0), GetViewportSize());
 	CPoint ptScroll = GetScrollPosition();
 	if (rect.IntersectRect(CRect(rect), m_pages[nPage].rcDisplay - ptScroll))
 	{
-		InvalidateRect(rect);
+		InvalidateRect(rect, false);
 		return true;
 	}
 
@@ -646,22 +642,20 @@ void CThumbnailsView::UpdateLayout(UpdateType updateType)
 			+ nNumberSkip + nNumberHeight;
 
 	// Get the full client rect without the scrollbars.
-	CSize szTrueClient, szScrollBars;
-	GetTrueClientSize(szTrueClient, szScrollBars);
-
-	CSize szClient = szTrueClient;
+	CSize szClient = ::GetClientSize(this);
+	CSize szViewport = szClient;
 	bool bHScroll = false, bVScroll = false;
 
 	for (int i = 0; i < 2; ++i)
 	{
-		m_nPagesInRow = max(1, (szClient.cx - 2*nPadding) / nThumbnailWidth);
+		m_nPagesInRow = max(1, (szViewport.cx - 2*nPadding) / nThumbnailWidth);
 		m_nPagesInRow = min(m_nPagesInRow, m_nPageCount);
 		int nRowCount = (m_nPageCount - 1) / m_nPagesInRow + 1;
 
-		m_szDisplay = CSize(max(szClient.cx, m_nPagesInRow*nThumbnailWidth + 2*nPadding),
-				max(szClient.cy, nThumbnailHeight*nRowCount + 2*nPadding));
+		m_szDisplay = CSize(max(szViewport.cx, m_nPagesInRow*nThumbnailWidth + 2*nPadding),
+				max(szViewport.cy, nThumbnailHeight*nRowCount + 2*nPadding));
 
-		double nOffsetX = (szClient.cx - 2*nPadding - nThumbnailWidth*m_nPagesInRow) / (2.0*m_nPagesInRow);
+		double nOffsetX = (szViewport.cx - 2*nPadding - nThumbnailWidth*m_nPagesInRow) / (2.0*m_nPagesInRow);
 		if (nOffsetX < 0)
 			nOffsetX = 0;
 
@@ -698,11 +692,11 @@ void CThumbnailsView::UpdateLayout(UpdateType updateType)
 			RecalcPageRects(nPage);
 		}
 
-		if (!AdjustClientSize(m_szDisplay, szClient, bHScroll, bVScroll))
+		if (!AdjustViewportSize(m_szDisplay, szViewport, bHScroll, bVScroll))
 			break;
 	}
 
-	CSize szDevPage(szClient.cx*9/10, szClient.cy*9/10);
+	CSize szDevPage(szViewport.cx*9/10, szViewport.cy*9/10);
 	CSize szDevLine(15, 15);
 	SetScrollSizes(m_szDisplay, szDevPage, szDevLine, false);
 
@@ -745,8 +739,8 @@ void CThumbnailsView::UpdateVisiblePages()
 		m_pThread->PauseJobs();
 		m_pIdleThread->PauseJobs();
 
-		CSize szClient = ::GetClientSize(this);
-		int nTop = GetScrollPos(SB_VERT);
+		CSize szViewport = GetViewportSize();
+		int nTop = GetScrollPosition().y;
 
 		int nTopPage = 0;
 		while (nTopPage < m_nPageCount - 1 &&
@@ -755,7 +749,7 @@ void CThumbnailsView::UpdateVisiblePages()
 
 		int nBottomPage = nTopPage + 1;
 		while (nBottomPage < m_nPageCount &&
-				m_pages[nBottomPage].rcDisplay.top < nTop + szClient.cy)
+				m_pages[nBottomPage].rcDisplay.top < nTop + szViewport.cy)
 			++nBottomPage;
 
 		if (theApp.GetAppSettings()->bGenAllThumbnails)
@@ -919,15 +913,15 @@ void CThumbnailsView::EnsureVisible(int nPage)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
 
-	CSize szClient = ::GetClientSize(this);
+	CSize szViewport = GetViewportSize();
 	CPoint ptScroll = GetScrollPosition();
 	Page& page = m_pages[nPage];
 
 	int nScrollBy = 0;
 	if (page.rcDisplay.top <= ptScroll.y)
 		nScrollBy = page.rcDisplay.top - ptScroll.y;
-	else if (page.rcDisplay.bottom > ptScroll.y + szClient.cy)
-		nScrollBy = page.rcDisplay.bottom - ptScroll.y - szClient.cy;
+	else if (page.rcDisplay.bottom > ptScroll.y + szViewport.cy)
+		nScrollBy = page.rcDisplay.bottom - ptScroll.y - szViewport.cy;
 
 	OnScrollBy(CSize(0, nScrollBy));
 }

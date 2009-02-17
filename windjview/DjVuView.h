@@ -72,7 +72,7 @@ public:
 	int GetCurrentPage() const { return m_nPage; }
 	int GetZoomType() const { return m_nZoomType; }
 	double GetZoom() const;
-	void ZoomTo(int nZoomType, double fZoom = 100.0);
+	void ZoomTo(int nZoomType, double fZoom = 100.0, bool bRedraw = true);
 	int GetLayout() const { return m_nLayout; }
 	int GetRotate() const { return m_nRotate; }
 
@@ -147,9 +147,7 @@ public:
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual void OnInitialUpdate();
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	virtual CScrollBar* GetScrollBarCtrl(int nBar) const;
 
 	virtual void ScrollToPosition(CPoint pt, bool bRepaint = true);
 	virtual bool OnScroll(UINT nScrollCode, UINT nPos, bool bDoScroll = true);
@@ -277,16 +275,16 @@ protected:
 			int* pnLeftOrSingle = NULL, int* pnOther = NULL);
 	int FixPageNumber(int nPage) const;
 	int GetNextPage(int nPage) const;
-	void SetLayout(int nLayout, int nPage, int nOffset);
+	void SetLayout(int nLayout, int nPage, const CPoint& ptOffset);
 	void PageRendered(int nPage, CDIB* pDIB);
 	void PageDecoded(int nPage);
 	void SettingsChanged();
 	void UpdateCursor();
-	bool HasScrollBars() const;
 
 	void UpdateDragAction();
 	void UpdatePageNumber();
 	void UpdateView(bool bUpdateSizes, bool bUpdatePages);
+	void AlignTopPage(bool bRepaint = true, int nPage = -1);
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -297,14 +295,14 @@ protected:
 		RECALC = 2
 	};
 	void UpdateLayout(UpdateType updateType = TOP);
-	CSize UpdateLayoutSinglePage(const CSize& szTrueClient);
-	CSize UpdateLayoutFacing(const CSize& szTrueClient);
-	CSize UpdateLayoutContinuous(const CSize& szTrueClient);
-	CSize UpdateLayoutContinuousFacing(const CSize& szTrueClient);
+	CSize UpdateLayoutSinglePage(const CSize& szClient);
+	CSize UpdateLayoutFacing(const CSize& szClient);
+	CSize UpdateLayoutContinuous(const CSize& szClient);
+	CSize UpdateLayoutContinuousFacing(const CSize& szClient);
 	void UpdatePagesCacheSingle(bool bUpdateImages, vector<int>& add, vector<int>& remove);
 	void UpdatePagesCacheFacing(bool bUpdateImages, vector<int>& add, vector<int>& remove);
 	void UpdatePagesCacheContinuous(bool bUpdateImages, vector<int>& add, vector<int>& remove);
-	void UpdatePageCache(const CSize& szClient, int nPage, bool bUpdateImages, vector<int>& add, vector<int>& remove);
+	void UpdatePageCache(const CSize& szViewport, int nPage, bool bUpdateImages, vector<int>& add, vector<int>& remove);
 	void UpdatePageCacheSingle(int nPage, bool bUpdateImages, vector<int>& add, vector<int>& remove);
 	void UpdatePageCacheFacing(int nPage, bool bUpdateImages, vector<int>& add, vector<int>& remove);
 	bool IsViewNextpageEnabled();
@@ -370,11 +368,6 @@ protected:
 	static HCURSOR hCursorZoomRect;
 	CImageList m_hourglass;
 
-	// Dummy invisible scrollbars
-	CScrollBar* m_pHScrollBar;
-	CScrollBar* m_pVScrollBar;
-	void CreateScrollbars();
-
 	bool m_bDraggingMagnify;
 	void StartMagnify();
 	void UpdateMagnifyWnd(bool bInitial = false);
@@ -395,7 +388,6 @@ protected:
 	afx_msg void OnUpdateViewPreviouspage(CCmdUI *pCmdUI);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-	afx_msg LRESULT OnPrintClient(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnViewRotate(UINT nID);
 	afx_msg void OnViewFirstpage();
 	afx_msg void OnViewLastpage();

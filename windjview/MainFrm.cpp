@@ -1431,6 +1431,8 @@ void CMainFrame::LanguageChanged()
 	CDjVuView* pView = (CDjVuView*) GetActiveView();
 	if (pView != NULL)
 		UpdateZoomCombo(pView);
+
+	SetMessageText(AFX_IDS_IDLEMESSAGE);
 }
 
 void CMainFrame::OnClose()

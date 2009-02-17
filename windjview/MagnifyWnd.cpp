@@ -125,7 +125,7 @@ void CMagnifyWnd::RepaintContents()
 	BLENDFUNCTION bf;
 	bf.BlendOp = AC_SRC_OVER;
 	bf.BlendFlags = 0;
-	bf.SourceConstantAlpha = 220;
+	bf.SourceConstantAlpha = 225;
 	bf.AlphaFormat = 0;
 
 	m_pUpdateLayeredWindow(m_hWnd, NULL, &m_rcPos.TopLeft(), &m_rcPos.Size(),
