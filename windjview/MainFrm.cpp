@@ -1092,7 +1092,7 @@ void CMainFrame::GoToHistoryPos(const HistoryPos& pos, const HistoryPos* pCurPos
 	ActivateDocument(pDoc);
 
 	if (pCurPos != NULL && pCurPos->bookmark.bZoom)
-		pView->ZoomTo(pCurPos->bookmark.nPrevZoomType, pCurPos->bookmark.fPrevZoom);
+		pView->ZoomTo(pCurPos->bookmark.nPrevZoomType, pCurPos->bookmark.fPrevZoom, false);
 
 	pView->GoToBookmark(pos.bookmark, CDjVuView::DoNotAdd);
 }
