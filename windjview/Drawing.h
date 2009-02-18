@@ -144,5 +144,22 @@ enum ArrowType
 
 void DrawArrow(CDC* pDC, int nArrowType, const CRect& rect, COLORREF color);
 
-COLORREF ChangeBrightness(COLORREF color, double fFactor);
-COLORREF AlphaCombine(COLORREF crFirst, COLORREF crSecond, BYTE nAlpha);
+inline COLORREF ChangeBrightness(COLORREF color, double fFactor)
+{
+	int nRed = min(static_cast<int>(GetRValue(color)*fFactor + 0.5), 255);
+	int nGreen = min(static_cast<int>(GetGValue(color)*fFactor + 0.5), 255);
+	int nBlue = min(static_cast<int>(GetBValue(color)*fFactor + 0.5), 255);
+	return RGB(nRed, nGreen, nBlue);
+}
+
+inline COLORREF AlphaCombine(COLORREF crFirst, COLORREF crSecond, BYTE nAlpha)
+{
+	return RGB((GetRValue(crFirst) * (255L - nAlpha) + GetRValue(crSecond) * (0L + nAlpha)) >> 8,
+			(GetGValue(crFirst) * (255L - nAlpha) + GetGValue(crSecond) * (0L + nAlpha)) >> 8,
+			(GetBValue(crFirst) * (255L - nAlpha) + GetBValue(crSecond) * (0L + nAlpha)) >> 8);
+}
+
+inline COLORREF InvertColor(COLORREF color)
+{
+	return RGB(255 - GetRValue(color), 255 - GetGValue(color), 255 - GetBValue(color));
+}

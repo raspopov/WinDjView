@@ -634,8 +634,11 @@ void CDjVuView::DrawPage(CDC* pDC, int nPage)
 
 	COLORREF clrFrame = ::GetSysColor(COLOR_WINDOWFRAME);
 	COLORREF clrBtnshadow = ::GetSysColor(COLOR_BTNSHADOW);
-	COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
 	COLORREF clrBtnface = ::GetSysColor(COLOR_BTNFACE);
+
+	COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
+	if (m_displaySettings.bInvertColors)
+		clrWindow = InvertColor(clrWindow);
 
 	COLORREF clrShadow = ChangeBrightness(clrBtnshadow, 0.75);
 	COLORREF clrBackground = ChangeBrightness(clrBtnshadow, 1.2);
@@ -669,7 +672,8 @@ void CDjVuView::DrawPage(CDC* pDC, int nPage)
 		{
 			// Draw hourglass
 			CPoint pt((page.szBitmap.cx - c_nHourglassWidth) / 2, (page.szBitmap.cy - c_nHourglassHeight) / 2);
-			m_hourglass.Draw(pDC, 0, CPoint(pt + page.ptOffset - ptScroll), ILD_NORMAL);
+			m_hourglass.Draw(pDC, m_displaySettings.bInvertColors ? 1 : 0,
+					CPoint(pt + page.ptOffset - ptScroll), ILD_NORMAL);
 		}
 	}
 	else if (page.pBitmap->GetSize() == page.szBitmap)
