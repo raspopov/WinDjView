@@ -161,11 +161,12 @@ public:
 
 	struct MessageBoxOptions
 	{
-		MessageBoxOptions() : pCheckValue(NULL) {}
+		MessageBoxOptions() : pCheckValue(NULL), bVerbatim(false) {}
 
 		CString strCaptions;
 		CString strCheckBox;
 		bool* pCheckValue;
+		bool bVerbatim;
 	};
 
 	virtual int DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDHelp, const MessageBoxOptions& mbo);

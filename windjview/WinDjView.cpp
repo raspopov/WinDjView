@@ -2443,7 +2443,7 @@ int CDjViewApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDHelp, const
 	m_mbo = mbo;
 
 	m_strMBPrompt = lpszPrompt;
-	if (IsWinVistaOrLater())
+	if (IsWinVistaOrLater() && !m_mbo.bVerbatim)
 	{
 		// Replace single \n characters with a space on Vista (it has a more
 		// sane maximum width of a message box than earlier versions)

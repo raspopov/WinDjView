@@ -1039,7 +1039,7 @@ BEGIN
     IDS_NO_UPDATES_AVAILABLE 
                             "Вы используете самую новую версию. Пожалуйста, проверьте обновления позже."
     IDS_NEW_VERSION_AVAILABLE 
-                            "Вышла новая версия: %s. Перейти на страницу программы в интернете?"
+                            "Вышла новая версия: %s. Открыть веб-страницу с обновлениями?"
     IDS_VERSION_URL         "http://windjview.sourceforge.net/version.txt"
     IDS_WEBSITE_URL         "http://windjview.sourceforge.net/ru/"
     IDS_DJVULIBRE_URL       "http://djvu.sourceforge.net"

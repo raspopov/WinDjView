@@ -3787,7 +3787,9 @@ void CDjVuView::OnPageInformation()
 		strInfo += (!strInfo.IsEmpty() ? _T("\n") : _T("")) + strFormatted;
 	}
 
-	AfxMessageBox(strInfo, MB_ICONINFORMATION | MB_OK);
+	CDjViewApp::MessageBoxOptions mbo;
+	mbo.bVerbatim = true;
+	theApp.DoMessageBox(strInfo, MB_ICONINFORMATION | MB_OK, 0, mbo);
 }
 
 LRESULT CDjVuView::OnPageRendered(WPARAM wParam, LPARAM lParam)
