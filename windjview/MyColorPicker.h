@@ -159,16 +159,6 @@ public:
 	// Returns the state of the 'Track Selection' option.
 	virtual bool IsTrackSelection() const;
 
-	// Sets the 3 letters used to display the RGB-value.
-	virtual void SetRGBText(LPCTSTR tszRGB = _T("RGB"));
-
-	// If this is set to true, the RGB-value of the color will
-	// be shown even if the color is a base color.
-	virtual void SetAlwaysShowRGB(bool bShow);
-
-	// Returns true if the RGB-value is always shown.
-	virtual bool IsAlwaysShowRGB() const;
-
 public:
 	virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
 
