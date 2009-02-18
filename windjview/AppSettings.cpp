@@ -69,7 +69,7 @@ CAppSettings::CAppSettings()
 	bWrapLongBookmarks = true;
 	bRestoreView = true;
 
-	bCheckUpdates = false;
+	bCheckUpdates = true;
 	nLastUpdateTime = 0;
 
 	nLanguage = 0x409;
