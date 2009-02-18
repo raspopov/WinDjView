@@ -71,7 +71,7 @@ OUT = libdjvu.lib
 !IFDEF DEBUG
 OPTS = /MTd /EHsc /Zi /GR-
 !ELSE
-OPTS = /MT /EHsc /GR- /O2 /Ob2 /Oi /Ot /GL
+OPTS = /MT /EHsc /GR- /O2 /GL
 OUTOPT = /ltcg $(OUTOPT)
 !ENDIF
 !ENDIF
