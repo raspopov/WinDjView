@@ -2440,14 +2440,27 @@ int CDjViewApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDHelp, const
 	m_hMBHook = SetWindowsHookEx(WH_CBT, &MBHookProc, NULL, GetCurrentThreadId());
 	m_nMBType = nType;
 	m_pMBWnd = NULL;
-	m_strMBPrompt = lpszPrompt;
 	m_mbo = mbo;
 
-	CString strNewPrompt = lpszPrompt;
+	m_strMBPrompt = lpszPrompt;
+	if (IsWinVistaOrLater())
+	{
+		// Replace single \n characters with a space on Vista (it has a more
+		// sane maximum width of a message box than earlier versions)
+		for (int i = 0; i < m_strMBPrompt.GetLength(); ++i)
+		{
+			if (m_strMBPrompt[i] == '\n' && m_strMBPrompt[i + 1] != '\n')
+			{
+				m_strMBPrompt.SetAt(i, ' ');
+				++i;
+			}
+		}
+	}
 
 	// Add the check box text to make Windows calculate dialog size for us.
 	// The prompt will be replaced by the original prompt, and the check
 	// box will be positioned at the bottom of the prompt area.
+	CString strNewPrompt = m_strMBPrompt;
 	if (mbo.pCheckValue != NULL)
 		strNewPrompt += _T("\n\n") + m_mbo.strCheckBox;
 

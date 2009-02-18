@@ -1163,7 +1163,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_NOT_VALID_DOCUMENT  "\nThis is not a valid DjVu document."
+    IDS_NOT_VALID_DOCUMENT  "\n\nThis is not a valid DjVu document."
     IDS_PRINTING_FAILED     "Failed to print the document. There could be a problem\nwith the printer or with the printer driver."
     IDS_PAPER_SIZE          "%s x %s %s"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
@@ -1306,7 +1306,7 @@ BEGIN
     IDS_CONTRAST_TEXT_ZERO  "&Contrast: %d"
     IDS_CONTRAST_TEXT       "&Contrast: %+d"
     IDS_GAMMA_TEXT          "&Gamma: %1.1f"
-    IDS_FAILED_TO_OPEN      "Failed to open document\n"
+    IDS_FAILED_TO_OPEN      "Failed to open document\n\n"
     IDS_TOOLBAR_TITLE       "Toolbar"
     IDS_TOOLTIP_HIDE        "Hide"
 END

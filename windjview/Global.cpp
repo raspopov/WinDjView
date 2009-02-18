@@ -122,49 +122,56 @@ void Observable::UpdateObservers(const Message& message)
 	}
 }
 
-bool IsWin2kOrLater()
+
+// Version
+
+struct VersionInfo
 {
-	static int nResult = -1;
+	VersionInfo();
 
-	if (nResult == -1)
-	{
-		OSVERSIONINFO vi;
-		vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-		nResult = (::GetVersionEx(&vi) != 0 && vi.dwPlatformId == VER_PLATFORM_WIN32_NT
-				&& vi.dwMajorVersion >= 5);
-	}
+	bool bNT, b2kPlus, bXPPlus, bVistaPlus;
+};
+static VersionInfo theVersionInfo;
 
-	return !!nResult;
-}
-
-bool IsWinXPOrLater()
+VersionInfo::VersionInfo()
+	: bNT(false), b2kPlus(false), bXPPlus(false), bVistaPlus(false)
 {
-	static int nResult = -1;
-
-	if (nResult == -1)
+	OSVERSIONINFO vi;
+	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	if (::GetVersionEx(&vi))
 	{
-		OSVERSIONINFO vi;
-		vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-		nResult = (::GetVersionEx(&vi) != 0 && vi.dwPlatformId == VER_PLATFORM_WIN32_NT
-				&& (vi.dwMajorVersion > 5 || vi.dwMajorVersion == 5 && vi.dwMinorVersion >= 1));
+		bNT = (vi.dwPlatformId == VER_PLATFORM_WIN32_NT);
+		if (bNT)
+		{
+			b2kPlus = (vi.dwMajorVersion >= 5);
+			bXPPlus = (vi.dwMajorVersion > 5 || vi.dwMajorVersion == 5 && vi.dwMinorVersion >= 1);
+			bVistaPlus = (vi.dwMajorVersion >= 6);
+		}
 	}
-
-	return !!nResult;
 }
 
 bool IsWinNT()
 {
-	static int nResult = -1;
-
-	if (nResult == -1)
-	{
-		OSVERSIONINFO vi;
-		vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-		nResult = (::GetVersionEx(&vi) != 0 && vi.dwPlatformId == VER_PLATFORM_WIN32_NT);
-	}
-
-	return !!nResult;
+	return theVersionInfo.bNT;
 }
+
+bool IsWin2kOrLater()
+{
+	return theVersionInfo.b2kPlus;
+}
+
+bool IsWinXPOrLater()
+{
+	return theVersionInfo.bXPPlus;
+}
+
+bool IsWinVistaOrLater()
+{
+	return theVersionInfo.bVistaPlus;
+}
+
+
+// File functions
 
 bool MoveToTrash(LPCTSTR lpszFileName)
 {
@@ -187,6 +194,8 @@ bool MoveToTrash(LPCTSTR lpszFileName)
 	return (SHFileOperation(&fo) == 0);
 }
 
+
+// String conversion
 
 GUTF8String MakeUTF8String(const CString& strText)
 {
@@ -463,6 +472,9 @@ void MakeANSIString(const CString& strText, string& result)
 	result = (LPCSTR)strText;
 #endif
 }
+
+
+// System fonts
 
 void CreateSystemDialogFont(CFont& font)
 {

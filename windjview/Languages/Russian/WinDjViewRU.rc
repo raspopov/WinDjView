@@ -1167,8 +1167,8 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_NOT_VALID_DOCUMENT  "\nВозможно, файл повреждён или имеет неправильный формат."
-    IDS_PRINTING_FAILED     "Невозможно напечатать документ.\n Проверьте настройки принтера и драйвера."
+    IDS_NOT_VALID_DOCUMENT  "\n\nВозможно, файл повреждён или имеет неправильный формат."
+    IDS_PRINTING_FAILED     "Невозможно напечатать документ. Проверьте настройки принтера и драйвера."
     IDS_PAPER_SIZE          "%s x %s %s"
     IDS_VERSION_INFO        "WinDjView %s\n(C) Андрей Жежерун"
     IDS_VERSION_ABOUT       "WinDjView %s"
@@ -1310,7 +1310,7 @@ BEGIN
     IDS_CONTRAST_TEXT_ZERO  "&Контраст: %d"
     IDS_CONTRAST_TEXT       "&Контраст: %+d"
     IDS_GAMMA_TEXT          "&Гамма: %1.1f"
-    IDS_FAILED_TO_OPEN      "Невозможно открыть документ\n"
+    IDS_FAILED_TO_OPEN      "Невозможно открыть документ\n\n"
     IDS_TOOLBAR_TITLE       "Панель инструментов"
     IDS_TOOLTIP_HIDE        "Скрыть"
 END
