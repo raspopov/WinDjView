@@ -1037,7 +1037,8 @@ void CDjViewApp::UpdateSearchHistory(CComboBoxEx& cboFind)
 
 	list<CString>::iterator it = find(m_appSettings.searchHistory.begin(),
 			m_appSettings.searchHistory.end(), strText);
-	if (it != m_appSettings.searchHistory.begin())
+	if (it == m_appSettings.searchHistory.end()
+			|| it != m_appSettings.searchHistory.begin())
 	{
 		if (it != m_appSettings.searchHistory.end())
 			m_appSettings.searchHistory.erase(it);
