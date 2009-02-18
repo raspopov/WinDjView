@@ -2533,7 +2533,7 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 					hwndMessageBox, (HMENU) 0xFFF0, NULL, NULL);
 
 				::SendMessage(hwndCheckBox, WM_SETFONT, (WPARAM) hFont, 1);
-				::MoveWindow(hwndEdit, pt.x, pt.y, rcClient.right - pt.x,
+				::MoveWindow(hwndEdit, pt.x, pt.y, rc.Width() + 5,
 						rc.Height() - rcCheckBox.Height(), true);
 
 				::SendMessage(hwndCheckBox, BM_SETCHECK, *theApp.m_mbo.pCheckValue, 0);
