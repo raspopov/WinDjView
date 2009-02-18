@@ -420,6 +420,15 @@ void CMDIChild::StopDragging()
 
 BOOL CMDIChild::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 {
+	if (s_hCursorSplitter == NULL)
+		s_hCursorSplitter = theApp.LoadCursor(IDC_CURSOR_SPLIT_HORZ);
+
+	if (m_bDragging)
+	{
+		SetCursor(s_hCursorSplitter);
+		return true;
+	}
+
 	if (nHitTest == HTCLIENT)
 	{
 		CPoint ptCursor;
@@ -428,8 +437,6 @@ BOOL CMDIChild::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 
 		if (!m_bNavHidden && m_rcSplitter.PtInRect(ptCursor))
 		{
-			if (s_hCursorSplitter == NULL)
-				s_hCursorSplitter = theApp.LoadCursor(IDC_CURSOR_SPLIT_HORZ);
 			SetCursor(s_hCursorSplitter);
 			return true;
 		}

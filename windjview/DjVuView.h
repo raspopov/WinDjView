@@ -283,7 +283,7 @@ protected:
 
 	void UpdateDragAction();
 	void UpdatePageNumber();
-	void UpdateView(bool bUpdateSizes, bool bUpdatePages);
+	void UpdateView(bool bUpdateSizes = false, bool bUpdatePages = true, bool bUpdateCursor = true);
 	void AlignTopPage(bool bRepaint = true, int nPage = -1);
 
 	virtual void OnUpdate(const Observable* source, const Message* message);

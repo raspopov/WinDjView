@@ -2060,7 +2060,7 @@ void CDjVuView::OnSize(UINT nType, int cx, int cy)
 	if (cx > 0 && cy > 0 && m_nPageCount > 0 && !m_bInsideUpdateLayout)
 	{
 		UpdateLayout();
-		UpdateView(true, false);
+		UpdateView(true, false, false);
 		UpdateWindow();
 
 		CView::OnSize(nType, cx, cy);
@@ -2070,7 +2070,7 @@ void CDjVuView::OnSize(UINT nType, int cx, int cy)
 	CMyScrollView::OnSize(nType, cx, cy);
 }
 
-void CDjVuView::UpdateView(bool bUpdateSizes, bool bUpdatePages)
+void CDjVuView::UpdateView(bool bUpdateSizes, bool bUpdatePages, bool bUpdateCursor)
 {
 	UpdatePageNumber();
 
@@ -2087,7 +2087,9 @@ void CDjVuView::UpdateView(bool bUpdateSizes, bool bUpdatePages)
 		UpdateHoverAnnotation();
 
 	UpdateDragAction();
-	UpdateCursor();
+
+	if (bUpdateCursor)
+		UpdateCursor();
 }
 
 void CDjVuView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)

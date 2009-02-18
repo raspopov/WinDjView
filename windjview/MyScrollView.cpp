@@ -252,6 +252,12 @@ void CMyScrollView::RepositionScrollBars(bool bHorzScroll, bool bVertScroll)
 
 			m_szViewport.cx -= m_szScrollBars.cx;
 		}
+
+		if (bHorzScroll && bVertScroll)
+		{
+			CRect rect(CPoint(m_szViewport), m_szScrollBars);
+			InvalidateRect(rect, false);
+		}
 	}
 	else
 	{
@@ -509,6 +515,13 @@ bool CMyScrollView::AdjustViewportSize(const CSize& szContent, CSize& szViewport
 	{
 		bHScroll = true;
 		szViewport.cy -= m_szScrollBars.cy;
+
+		if (bVScroll && szViewport.cy <= m_szScrollBars.cy)
+		{
+			bVScroll = false;
+			szViewport.cx += m_szScrollBars.cx;
+		}
+
 		return true;
 	}
 
@@ -520,34 +533,24 @@ void CMyScrollView::CalcScrollBarState(bool& bNeedHorz, bool& bNeedVert,
 {
 	CSize szClient = ::GetClientSize(this);
 
-	szRange = m_szContent - szClient;  // > 0 => need to scroll
+	szRange = m_szContent - szClient;
 	bNeedHorz = bNeedVert = false;
 	ptMove = GetScrollPosition();
 
-	if (szClient.cx > m_szScrollBars.cx && szClient.cy > m_szScrollBars.cy)
+	if (m_bShowScrollBars)
 	{
-		if (m_bShowScrollBars)
-		{
-			bNeedHorz = (szRange.cx > 0);
-			if (bNeedHorz)
-				szRange.cy += m_szScrollBars.cy;
+		while (AdjustViewportSize(m_szContent, szClient, bNeedHorz, bNeedVert))
+			EMPTY_LOOP;
 
-			bNeedVert = (szRange.cy > 0);
-			if (bNeedVert)
-				szRange.cx += m_szScrollBars.cx;
-
-			if (bNeedVert && !bNeedHorz && szRange.cx > 0)
-			{
-				// need a horizontal scrollbar after all
-				bNeedHorz = true;
-				szRange.cy += m_szScrollBars.cy;
-			}
-		}
-		else
-		{
-			bNeedHorz = (szRange.cx > 0);
-			bNeedVert = (szRange.cy > 0);
-		}
+		if (bNeedHorz)
+			szRange.cy += m_szScrollBars.cy;
+		if (bNeedVert)
+			szRange.cx += m_szScrollBars.cx;
+	}
+	else
+	{
+		bNeedHorz = (szRange.cx > 0);
+		bNeedVert = (szRange.cy > 0);
 	}
 
 	szRange.cx = max(0, szRange.cx);

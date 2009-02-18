@@ -646,7 +646,7 @@ void CThumbnailsView::UpdateLayout(UpdateType updateType)
 	CSize szViewport = szClient;
 	bool bHScroll = false, bVScroll = false;
 
-	for (int i = 0; i < 2; ++i)
+	do
 	{
 		m_nPagesInRow = max(1, (szViewport.cx - 2*nPadding) / nThumbnailWidth);
 		m_nPagesInRow = min(m_nPagesInRow, m_nPageCount);
@@ -691,10 +691,7 @@ void CThumbnailsView::UpdateLayout(UpdateType updateType)
 
 			RecalcPageRects(nPage);
 		}
-
-		if (!AdjustViewportSize(m_szDisplay, szViewport, bHScroll, bVScroll))
-			break;
-	}
+	} while (AdjustViewportSize(m_szDisplay, szViewport, bHScroll, bVScroll));
 
 	CSize szDevPage(szViewport.cx*9/10, szViewport.cy*9/10);
 	CSize szDevLine(15, 15);
