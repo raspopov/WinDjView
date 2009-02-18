@@ -135,11 +135,10 @@ void AFXAPI DDX_Color(CDataExchange *pDX, int nIDC, COLORREF& color)
 IMPLEMENT_DYNCREATE(CMyColorPicker, CButton)
 
 CMyColorPicker::CMyColorPicker()
-	: CButton(), m_color(CLR_DEFAULT), m_colorDefault(::GetSysColor(COLOR_APPWORKSPACE)),
+	: CButton(), m_color(CLR_DEFAULT),
+	  m_colorDefault(::GetSysColor(COLOR_APPWORKSPACE)),
 	  m_bPopupActive(false), m_bTrackSelection(false), m_bMouseOver(false),
-	  m_bComboBoxMode(false), m_strRGBText(_T("RGB")), m_bAlwaysShowRGB(false),
-	  m_bFlatMenus(false), m_hThemeButton(NULL), m_hThemeEdit(NULL), m_hThemeCombo(NULL),
-	  m_bIsDefault(false)
+	  m_bFlatMenus(false), m_hThemeButton(NULL), m_bIsDefault(false)
 {
 	if (IsWinXPOrLater())
 	{
@@ -187,9 +186,6 @@ void CMyColorPicker::SetDefaultText(LPCTSTR pszText)
 {
 	m_popup.SetDefaultText(pszText);
 	m_strDefaultText = pszText;
-
-	if (m_bComboBoxMode && m_color == CLR_DEFAULT && ::IsWindow(m_hWnd))
-		Invalidate(false);
 }
 
 void CMyColorPicker::SetColorNames(UINT nID)
@@ -210,57 +206,6 @@ void CMyColorPicker::SetTrackSelection(bool bTrack)
 bool CMyColorPicker::IsTrackSelection() const
 {
 	return m_bTrackSelection;
-}
-
-void CMyColorPicker::SetComboBoxMode(bool bComboBoxMode)
-{
-	m_bComboBoxMode = bComboBoxMode;
-	if (bComboBoxMode)
-	{
-		CRect rc;
-		GetWindowRect(rc);
-
-		CDC* pDC = GetDC();
-		CFont* pOldFont = pDC->SelectObject(GetFont());
-
-		TEXTMETRIC tm;
-		pDC->GetTextMetrics(&tm);
-
-		pDC->SelectObject(pOldFont);
-		ReleaseDC(pDC);
-
-		SetWindowPos(NULL, 0, 0, rc.Width(), tm.tmHeight + 8,
-				SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREDRAW);
-	}
-
-	Invalidate(false);
-}
-
-bool CMyColorPicker::IsComboBoxMode() const
-{
-	return m_bComboBoxMode;
-}
-
-void CMyColorPicker::SetRGBText(LPCTSTR pszRGB)
-{
-	m_strRGBText = pszRGB;
-	while (m_strRGBText.GetLength() < 3)
-		m_strRGBText += _T(" ");
-
-	if (m_bComboBoxMode && m_color != CLR_DEFAULT && ::IsWindow(m_hWnd))
-		Invalidate(false);
-}
-
-void CMyColorPicker::SetAlwaysShowRGB(bool bShow)
-{
-	m_bAlwaysShowRGB = bShow;
-	if (m_bComboBoxMode && m_color != CLR_DEFAULT && ::IsWindow(m_hWnd))
-		Invalidate(false);
-}
-
-bool CMyColorPicker::IsAlwaysShowRGB() const
-{
-	return m_bAlwaysShowRGB;
 }
 
 
@@ -342,14 +287,8 @@ void CMyColorPicker::OnDestroy()
 {
 	if (m_hThemeButton != NULL)
 		XPCloseThemeData(m_hThemeButton);
-	if (m_hThemeEdit != NULL)
-		XPCloseThemeData(m_hThemeEdit);
-	if (m_hThemeCombo != NULL)
-		XPCloseThemeData(m_hThemeCombo);
 
 	m_hThemeButton = NULL;
-	m_hThemeEdit = NULL;
-	m_hThemeCombo = NULL;
 
 	CButton::OnDestroy();
 }
@@ -383,21 +322,11 @@ void CMyColorPicker::OnThemeChanged()
 {
 	if (m_hThemeButton != NULL)
 		XPCloseThemeData(m_hThemeButton);
-	if (m_hThemeEdit != NULL)
-		XPCloseThemeData(m_hThemeEdit);
-	if (m_hThemeCombo != NULL)
-		XPCloseThemeData(m_hThemeCombo);
 
 	m_hThemeButton = NULL;
-	m_hThemeEdit = NULL;
-	m_hThemeCombo = NULL;
 
 	if (IsThemed())
-	{
 		m_hThemeButton = XPOpenThemeData(m_hWnd, L"BUTTON");
-		m_hThemeEdit = XPOpenThemeData(m_hWnd, L"EDIT");
-		m_hThemeCombo = XPOpenThemeData(m_hWnd, L"COMBOBOX");
-	}
 
 	Invalidate(false);
 }
@@ -442,15 +371,11 @@ void CMyColorPicker::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	{
 		if (m_hThemeButton == NULL)
 			m_hThemeButton = XPOpenThemeData(m_hWnd, L"BUTTON");
-		if (m_hThemeEdit == NULL)
-			m_hThemeEdit = XPOpenThemeData(m_hWnd, L"EDIT");
-		if (m_hThemeCombo == NULL)
-			m_hThemeCombo = XPOpenThemeData(m_hWnd, L"COMBOBOX");
 	}
 
 	UINT nState = lpDrawItemStruct->itemState;
 
-	if (m_bPopupActive && !m_bComboBoxMode)
+	if (m_bPopupActive)
 		nState |= ODS_SELECTED;
 
 	if ((nState & ODS_FOCUS) != NULL)
@@ -469,208 +394,78 @@ void CMyColorPicker::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 	SendMessage(WM_ERASEBKGND, (WPARAM) m_offscreenDC.m_hDC);
 
-	if (m_bComboBoxMode)
+	if (m_hThemeButton != NULL)
 	{
-		if (m_hThemeEdit != NULL && m_hThemeCombo != NULL)
-		{
-			int nFrameState = ETS_NORMAL;
-			if (bDisabled)
-				nFrameState = ETS_DISABLED;
-			else if (bSelected || m_bPopupActive)
-				nFrameState = ETS_SELECTED;
-			else if ((nState & ODS_HOTLIGHT) != 0 || m_bMouseOver)
-				nFrameState = ETS_HOT;
+		int nFrameState = PBS_NORMAL;
+		if (bDisabled)
+			nFrameState = PBS_DISABLED;
+		else if (bSelected || m_bPopupActive)
+			nFrameState = PBS_PRESSED;
+		else if ((nState & ODS_HOTLIGHT) != 0 || m_bMouseOver)
+			nFrameState = PBS_HOT;
+		else if (bDefault)
+			nFrameState = PBS_DEFAULTED;
 
-			// Draw outer edge
-			if (bDisabled)
-			{
-				m_offscreenDC.Draw3dRect(rcDraw, COMBOBOX_DISABLED_COLOR_OUT, COMBOBOX_DISABLED_COLOR_OUT);
-				rcDraw.DeflateRect(1, 1);
-			}
-			else
-			{
-				XPDrawThemeBackground(m_hThemeEdit, m_offscreenDC.m_hDC, EP_EDITTEXT, nFrameState, rcDraw, NULL);
-				XPGetThemeBackgroundContentRect(m_hThemeEdit, m_offscreenDC.m_hDC, EP_EDITTEXT, nFrameState, rcDraw, rcDraw);
-			}
-
-			// Draw arrow
-			int nArrowState = CBXS_NORMAL;
-			if (bSelected)
-				nArrowState = CBXS_PRESSED;
-			else if (bDisabled)
-				nArrowState = CBXS_DISABLED;
-			else if ((nState & ODS_HOTLIGHT) != 0 || m_bMouseOver)
-				nArrowState = CBXS_HOT;
-
-			CRect rcArrow(rcDraw);
-			rcArrow.left = rcDraw.right - (rcDraw.Height() - 2);
-
-			XPDrawThemeBackground(m_hThemeCombo, m_offscreenDC.GetSafeHdc(), CP_DROPDOWNBUTTON, nArrowState, rcArrow, NULL);
-			rcDraw.DeflateRect(0, 0, rcArrow.Width(), 0);
-
-			// Draw inner edge
-			if (bDisabled)
-				m_offscreenDC.Draw3dRect(rcDraw, COMBOBOX_DISABLED_COLOR_IN, COMBOBOX_DISABLED_COLOR_IN);
-
-			rcDraw.DeflateRect(2, 2, 1, 2);
-		}
-		else
-		{
-			// Draw outer edge
-			if (!bDisabled)
-				m_offscreenDC.FillSolidRect(rcDraw, ::GetSysColor(COLOR_WINDOW));
-
-			m_offscreenDC.DrawEdge(rcDraw, EDGE_SUNKEN, BF_RECT);
-			rcDraw.DeflateRect(::GetSystemMetrics(SM_CXEDGE), ::GetSystemMetrics(SM_CYEDGE));
-
-			// Draw arrow
-			CRect rcArrow(rcDraw);
-			rcArrow.left = rcDraw.right - rcDraw.Height();
-
-			m_offscreenDC.DrawFrameControl(rcArrow, DFC_SCROLL, DFCS_SCROLLDOWN  | 
-						(bSelected ? DFCS_FLAT | DFCS_PUSHED : 0) | (bDisabled ? DFCS_INACTIVE : 0));
-
-			rcDraw.DeflateRect(1, 1, rcArrow.Width(), 1);
-		}
+		// Draw outer edge
+		XPDrawThemeBackground(m_hThemeButton, m_offscreenDC.m_hDC, BP_PUSHBUTTON, nFrameState, rcDraw, NULL);
+		XPGetThemeBackgroundContentRect(m_hThemeButton, m_offscreenDC.m_hDC, BP_PUSHBUTTON, nFrameState, rcDraw, rcDraw);
 
 		if (bFocus)
-		{
-			CRect rcFocus(rcDraw);
-			rcFocus.DeflateRect(0, 0, 1, 0);
-
-			COLORREF clrFocus = ::GetSysColor(COLOR_HIGHLIGHT);
-			COLORREF clrInvert = RGB(255 - GetRValue(clrFocus), 255 - GetGValue(clrFocus), 255 - GetBValue(clrFocus));
-
-			rcFocus.DeflateRect(1, 1);
-			m_offscreenDC.FillSolidRect(rcFocus, clrFocus);
-			rcFocus.InflateRect(1, 1);
-
-			m_offscreenDC.Draw3dRect(rcFocus, clrInvert, clrInvert);
-			m_offscreenDC.DrawFocusRect(rcFocus);
-		}
-
-		rcDraw.DeflateRect(::GetSystemMetrics(SM_CXEDGE), ::GetSystemMetrics(SM_CYEDGE));
-		rcDraw.DeflateRect(0, 0, 1, 0);
-
-		// Draw color
-		if (!bDisabled)
-		{
-			CRect rcColor(rcDraw);
-			rcColor.right = rcDraw.left + rcDraw.Height();
-
-			m_offscreenDC.FillSolidRect(rcColor, m_color == CLR_DEFAULT ? m_colorDefault : m_color);
-			FrameRect(&m_offscreenDC, rcColor, ::GetSysColor(bFocus ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
-
-			rcDraw.DeflateRect(rcColor.Width() + 2, -1, 0, -1);
-
-			CString strTemp = m_strDefaultText;
-			if (m_color != CLR_DEFAULT)
-			{
-				strTemp.Format(_T("%s:%d %s:%d %s:%d"), m_strRGBText.Left(1), GetRValue(m_color),
-					m_strRGBText.Mid(1, 1), GetGValue(m_color), m_strRGBText.Mid(2, 1), GetBValue(m_color));
-
-				for (size_t i = 0; i < m_popup.GetColorCount(); ++i)
-				{
-					if (m_popup.GetColor(i) == m_color)
-					{
-						if (m_bAlwaysShowRGB)
-						{
-							CString strRGB = strTemp;
-							strTemp.Format(_T("%s (%s)"), m_popup.GetColorName(i), strRGB);
-						}
-						else
-							strTemp = m_popup.GetColorName(i);
-
-						break;
-					}
-				}
-			}
-
-			CFont* pOldFont = m_offscreenDC.SelectObject(GetFont());
-			m_offscreenDC.SetBkMode(TRANSPARENT);
-			
-			if (bFocus)
-				m_offscreenDC.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
-
-			m_offscreenDC.DrawText(strTemp, rcDraw, DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS | DT_NOPREFIX);
-			m_offscreenDC.SelectObject(pOldFont);
-		}
+			m_offscreenDC.DrawFocusRect(rcDraw);
 	}
 	else
 	{
-		if (m_hThemeButton != NULL)
+		if (bDefault)
 		{
-			int nFrameState = PBS_NORMAL;
-			if (bDisabled)
-				nFrameState = PBS_DISABLED;
-			else if (bSelected || m_bPopupActive)
-				nFrameState = PBS_PRESSED;
-			else if ((nState & ODS_HOTLIGHT) != 0 || m_bMouseOver)
-				nFrameState = PBS_HOT;
-			else if (bDefault)
-				nFrameState = PBS_DEFAULTED;
+			FrameRect(&m_offscreenDC, rcDraw, ::GetSysColor(COLOR_WINDOWFRAME));
+			rcDraw.DeflateRect(1, 1);
+		}
 
-			// Draw outer edge
-			XPDrawThemeBackground(m_hThemeButton, m_offscreenDC.m_hDC, BP_PUSHBUTTON, nFrameState, rcDraw, NULL);
-			XPGetThemeBackgroundContentRect(m_hThemeButton, m_offscreenDC.m_hDC, BP_PUSHBUTTON, nFrameState, rcDraw, rcDraw);
-
-			if (bFocus)
-				m_offscreenDC.DrawFocusRect(rcDraw);
+		// Draw outer edge
+		if (bSelected)
+		{
+			FrameRect(&m_offscreenDC, rcDraw, ::GetSysColor(COLOR_BTNSHADOW));
 		}
 		else
 		{
-			if (bDefault)
-			{
-				FrameRect(&m_offscreenDC, rcDraw, ::GetSysColor(COLOR_WINDOWFRAME));
-				rcDraw.DeflateRect(1, 1);
-			}
-
-			// Draw outer edge
-			if (bSelected)
-			{
-				FrameRect(&m_offscreenDC, rcDraw, ::GetSysColor(COLOR_BTNSHADOW));
-			}
-			else
-			{
-				UINT nFrameState = DFCS_BUTTONPUSH | (bDisabled ? DFCS_INACTIVE : 0);
-				m_offscreenDC.DrawFrameControl(rcDraw, DFC_BUTTON, nFrameState);
-			}
-
-			rcDraw.DeflateRect(2, 2);
-			if (!bDefault)
-				rcDraw.DeflateRect(1, 1);
-
-			if (bFocus)
-				DrawDottedRect(&m_offscreenDC, rcDraw, RGB(0, 0, 0));
-
-			rcDraw.DeflateRect(0, 0, 1, 1);
-			if (bSelected)
-				rcDraw.OffsetRect(1, 1);
+			UINT nFrameState = DFCS_BUTTONPUSH | (bDisabled ? DFCS_INACTIVE : 0);
+			m_offscreenDC.DrawFrameControl(rcDraw, DFC_BUTTON, nFrameState);
 		}
 
 		rcDraw.DeflateRect(2, 2);
+		if (!bDefault)
+			rcDraw.DeflateRect(1, 1);
 
-		// Draw arrow
-		CRect rcArrow;
-		rcArrow.left = rcDraw.right - c_nArrowSizeX - ::GetSystemMetrics(SM_CXEDGE) / 2;
-		rcArrow.right = rcArrow.left + c_nArrowSizeX;
-		rcArrow.top = rcDraw.CenterPoint().y - c_nArrowSizeY / 2;
-		rcArrow.bottom = rcDraw.CenterPoint().y + c_nArrowSizeY / 2;
+		if (bFocus)
+			DrawDottedRect(&m_offscreenDC, rcDraw, RGB(0, 0, 0));
 
-		DrawArrow(&m_offscreenDC, ARR_DOWN, rcArrow, ::GetSysColor(bDisabled ? COLOR_GRAYTEXT : COLOR_WINDOWTEXT));
+		rcDraw.DeflateRect(0, 0, 1, 1);
+		if (bSelected)
+			rcDraw.OffsetRect(1, 1);
+	}
 
-		rcDraw.right = rcArrow.left - ::GetSystemMetrics(SM_CXEDGE) / 2 - 2;
+	rcDraw.DeflateRect(2, 2);
 
-		// Draw separator
-		m_offscreenDC.DrawEdge(rcDraw, EDGE_ETCHED, BF_RIGHT | (m_bFlatMenus ? BF_FLAT : 0));
-		rcDraw.right -= ::GetSystemMetrics(SM_CXEDGE) * 2 + 1;
+	// Draw arrow
+	CRect rcArrow;
+	rcArrow.left = rcDraw.right - c_nArrowSizeX - ::GetSystemMetrics(SM_CXEDGE) / 2;
+	rcArrow.right = rcArrow.left + c_nArrowSizeX;
+	rcArrow.top = rcDraw.CenterPoint().y - c_nArrowSizeY / 2;
+	rcArrow.bottom = rcDraw.CenterPoint().y + c_nArrowSizeY / 2;
 
-		// Draw color
-		if (!bDisabled)
-		{
-			m_offscreenDC.FillSolidRect(rcDraw, m_color == CLR_DEFAULT ? m_colorDefault : m_color);
-			FrameRect(&m_offscreenDC, rcDraw, ::GetSysColor(COLOR_WINDOWTEXT));
-		}
+	DrawArrow(&m_offscreenDC, ARR_DOWN, rcArrow, ::GetSysColor(bDisabled ? COLOR_GRAYTEXT : COLOR_WINDOWTEXT));
+
+	rcDraw.right = rcArrow.left - ::GetSystemMetrics(SM_CXEDGE) / 2 - 2;
+
+	// Draw separator
+	m_offscreenDC.DrawEdge(rcDraw, EDGE_ETCHED, BF_RIGHT | (m_bFlatMenus ? BF_FLAT : 0));
+	rcDraw.right -= ::GetSystemMetrics(SM_CXEDGE) * 2 + 1;
+
+	// Draw color
+	if (!bDisabled)
+	{
+		m_offscreenDC.FillSolidRect(rcDraw, m_color == CLR_DEFAULT ? m_colorDefault : m_color);
+		FrameRect(&m_offscreenDC, rcDraw, ::GetSysColor(COLOR_WINDOWTEXT));
 	}
 
 	rcDraw = lpDrawItemStruct->rcItem;

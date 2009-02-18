@@ -26,7 +26,7 @@ PCH = "$(INTDIR)\WinDjView.pch"
 CPP_PCH = /Yu"stdafx.h"
 CPP_PCH_CREATE = /Yc"stdafx.h"
 
-CPP_FLAGS = $(CPP_FLAGS) /nologo /c /MT /W3 /EHsc /O2 /Ob2 /Oi /Ot /GL /GR- \
+CPP_FLAGS = $(CPP_FLAGS) /nologo /c /MT /W3 /EHsc /O2 /GL /GR- \
             /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Fp$(PCH) /Fo"$(INTDIR)/"
 
 LINK_FLAGS = $(LINK_FLAGS) "libdjvu\$(LIBDJVU)" msimg32.lib version.lib shlwapi.lib \

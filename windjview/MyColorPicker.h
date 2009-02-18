@@ -159,13 +159,6 @@ public:
 	// Returns the state of the 'Track Selection' option.
 	virtual bool IsTrackSelection() const;
 
-	// Sets the style of control to show.
-	virtual void SetComboBoxMode(bool bComboBoxMode);
-
-	// Returns true if the mode is set on ComboBox and false if
-	// it is set on Button.
-	virtual bool IsComboBoxMode() const;
-
 	// Sets the 3 letters used to display the RGB-value.
 	virtual void SetRGBText(LPCTSTR tszRGB = _T("RGB"));
 
@@ -193,14 +186,10 @@ protected:
 	bool m_bMouseOver;
 	bool m_bFlatMenus;
 
-	bool m_bComboBoxMode;
-	bool m_bAlwaysShowRGB;
-	CString	m_strRGBText;
-
 	CMyColorPopup m_popup;
 
 	COffscreenDC m_offscreenDC;
-	HTHEME m_hThemeButton, m_hThemeEdit, m_hThemeCombo;
+	HTHEME m_hThemeButton;
 	bool m_bIsDefault;
 
 	// Message map functions
