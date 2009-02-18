@@ -195,7 +195,7 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&Check for update...",        ID_CHECK_FOR_UPDATE
+        MENUITEM "&Check for updates...",       ID_CHECK_FOR_UPDATE
         MENUITEM "&About WinDjView...",         ID_APP_ABOUT
     END
 END
@@ -316,7 +316,7 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&Check for update...",        ID_CHECK_FOR_UPDATE
+        MENUITEM "&Check for updates...",       ID_CHECK_FOR_UPDATE
         MENUITEM "&About WinDjView...",         ID_APP_ABOUT
     END
 END
@@ -600,7 +600,7 @@ IDD_UPDATE DIALOGEX 0, 0, 167, 34
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    LTEXT           "Checking for update. Please wait...",IDC_STATIC,39,10,118,11
+    LTEXT           "Checking for updates. Please wait...",IDC_STATIC,39,10,118,11
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
 END
 
@@ -1228,7 +1228,7 @@ BEGIN
     ID_MODE_SELECT_RECT     "Activate rectangle selection tool\nRectangle Tool"
     ID_MODE_ZOOM_RECT       "Activate marquee zoom\nMarquee Zoom"
     ID_FILE_EXPORT_TEXT     "Extract text from the active document and save it into a file\nExport Text"
-    ID_CHECK_FOR_UPDATE     "Check program website for available updates\nCheck for update"
+    ID_CHECK_FOR_UPDATE     "Check program website for available updates\nCheck for updates"
     ID_DISPLAY_COLOR        "Display document in original color"
     ID_DISPLAY_BW           "Display document in black and white"
     ID_DISPLAY_BACKGROUND   "Display document background"

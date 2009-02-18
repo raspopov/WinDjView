@@ -2,7 +2,9 @@ WinDjView version history
 Copyright (C) 2004-2009 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 0.6 (2009-??-??):
+Changes in version 1.0 (2009-02-??):
+# Finally, version number starts with one! This means that the program
+  is officially considered stable after years of development.
 ! Added multiple top-level documents mode.
 ! Added a tab bar to the single-window mode.
 + Added an option to enable continuous scrolling in fullscreen mode.
