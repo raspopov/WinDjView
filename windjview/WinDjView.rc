@@ -1035,7 +1035,7 @@ BEGIN
     IDS_NO_UPDATES_AVAILABLE 
                             "No updates are available at this time. Please check again later."
     IDS_NEW_VERSION_AVAILABLE 
-                            "A new version %s is available. Do you want to go to program website now?"
+                            "A new version %s is available. Do you want to open the downloads page?"
     IDS_VERSION_URL         "http://windjview.sourceforge.net/version.txt"
     IDS_WEBSITE_URL         "http://windjview.sourceforge.net"
     IDS_DJVULIBRE_URL       "http://djvu.sourceforge.net"
