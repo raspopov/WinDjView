@@ -150,11 +150,11 @@ void CMagnifyWnd::CenterOnPoint(const CPoint& pt)
 	}
 	else
 	{
+		Invalidate();
 		MoveWindow(m_rcPos.left, m_rcPos.top, m_rcPos.Width(), m_rcPos.Height());
 		m_pOwner->GetTopLevelParent()->UpdateWindow();
 
 		m_pView->Invalidate();
-		Invalidate();
 		UpdateWindow();
 	}
 
