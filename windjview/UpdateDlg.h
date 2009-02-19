@@ -38,7 +38,7 @@ public:
 
 protected:
 	bool m_bOk;
-	CString m_strVersion;
+	CString m_strNewVersion;
 
 	HANDLE m_hThread;
 	static unsigned int __stdcall UpdateThreadProc(void* pvData);

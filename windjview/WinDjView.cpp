@@ -2726,8 +2726,8 @@ unsigned int __stdcall CDjViewApp::CheckUpdateThreadProc(void* pvData)
 	theApp.m_mainWndLock.Lock();
 
 	theApp.m_strNewVersion = DownloadLastVersionString();
-	if (theApp.m_pMainWnd != NULL && !theApp.m_strNewVersion.IsEmpty() 
-			&& theApp.m_strNewVersion != CURRENT_VERSION)
+	if (theApp.m_pMainWnd != NULL && !theApp.m_strNewVersion.IsEmpty()
+			&& CompareVersions(theApp.m_strNewVersion, CURRENT_VERSION) > 0)
 	{
 		theApp.m_pMainWnd->PostMessage(WM_NOTIFY_NEW_VERSION);
 	}

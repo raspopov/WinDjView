@@ -82,9 +82,9 @@ unsigned int __stdcall CUpdateDlg::UpdateThreadProc(void* pvData)
 
 	CUpdateDlg* pDlg = reinterpret_cast<CUpdateDlg*>(pvData);
 
-	CString strVersion = CDjViewApp::DownloadLastVersionString();
-	pDlg->m_bOk = !strVersion.IsEmpty();
-	pDlg->m_strVersion = strVersion;
+	CString strNewVersion = CDjViewApp::DownloadLastVersionString();
+	pDlg->m_bOk = !strNewVersion.IsEmpty();
+	pDlg->m_strNewVersion = strNewVersion;
 
 	pDlg->SendMessage(WM_ENDDIALOG);
 
@@ -94,15 +94,11 @@ unsigned int __stdcall CUpdateDlg::UpdateThreadProc(void* pvData)
 
 void CUpdateDlg::OnEndDialog()
 {
-	if (m_bOk)
+	if (m_bOk && m_strNewVersion.GetLength() < 16)
 	{
-		if (m_strVersion == CURRENT_VERSION)
+		if (CompareVersions(m_strNewVersion, CURRENT_VERSION) > 0)
 		{
-			AfxMessageBox(IDS_NO_UPDATES_AVAILABLE, MB_ICONINFORMATION | MB_OK);
-		}
-		else if (m_strVersion.GetLength() < 16)
-		{
-			if (AfxMessageBox(FormatString(IDS_NEW_VERSION_AVAILABLE, m_strVersion),
+			if (AfxMessageBox(FormatString(IDS_NEW_VERSION_AVAILABLE, m_strNewVersion),
 					MB_ICONQUESTION | MB_YESNO) == IDYES)
 			{
 				::ShellExecute(NULL, _T("open"), LoadString(IDS_WEBSITE_URL),
@@ -111,7 +107,7 @@ void CUpdateDlg::OnEndDialog()
 		}
 		else
 		{
-			AfxMessageBox(IDS_CONNECT_ERROR, MB_ICONINFORMATION | MB_OK);
+			AfxMessageBox(IDS_NO_UPDATES_AVAILABLE, MB_ICONINFORMATION | MB_OK);
 		}
 	}
 	else

@@ -460,7 +460,7 @@ BEGIN
     LTEXT           "http://windjview.sourceforge.net/ru/",IDC_STATIC_LINK,111,35,139,8
     LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,113,45,131,8
     LTEXT           "License",IDC_STATIC_LICENSE,40,62,240,42
-    LTEXT           "Вы можете оказать финансовую помощь проекту, сделав перевод через PayPal.",IDC_STATIC,40,110,174,17
+    LTEXT           "Вы можете оказать финансовую поддержку проекту, сделав перевод через PayPal.",IDC_STATIC,40,110,174,17
     CONTROL         "Donate",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | WS_TABSTOP,217,109,63,21
 END
 

@@ -743,6 +743,50 @@ bool IsFromCurrentProcess(CWnd* pWnd)
 	return (dwProcessId == ::GetCurrentProcessId());
 }
 
+void ParseVersion(const CString& strVersion, vector<int>& result)
+{
+	result.clear();
+	int num = 0;
+	for (int i = 0; i < strVersion.GetLength(); ++i)
+	{
+		TCHAR c = strVersion[i];
+		if (c >= '0' && c <= '9')
+		{
+			num = num*10 + (c - '0');
+		}
+		else if (c == '.')
+		{
+			result.push_back(num);
+			num = 0;
+		}
+		else
+			break;
+	}
+	if (num != 0)
+		result.push_back(num);
+	while (!result.empty() && result.back() == 0)
+		result.pop_back();
+}
+
+int CompareVersions(const CString& strFirst, const CString& strSecond)
+{
+	vector<int> v1, v2;
+	ParseVersion(strFirst, v1);
+	ParseVersion(strSecond, v2);
+	for (size_t i = 0; i < v1.size() || i < v2.size(); ++i)
+	{
+		if (i >= v1.size())
+			return -1;
+		else if (i >= v2.size())
+			return 1;
+		else if (v1[i] < v2[i])
+			return -1;
+		else if (v1[i] > v2[i])
+			return 1;
+	}
+	return 0;
+}
+
 CString FormatDouble(double fValue)
 {
 	char nDecimalPoint = localeconv()->decimal_point[0];
