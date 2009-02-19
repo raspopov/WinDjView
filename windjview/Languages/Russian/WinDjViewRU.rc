@@ -449,7 +449,7 @@ END
 IDD_ABOUTBOX DIALOGEX 0, 0, 287, 137
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "О программе WinDjView"
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,9,9,21,20
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
@@ -467,7 +467,7 @@ END
 IDD_PRINT DIALOGEX 0, 0, 456, 316
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Печать"
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     LTEXT           "&Имя:",IDC_STATIC,174,21,37,9,SS_CENTERIMAGE
     COMBOBOX        IDC_COMBO_PRINTER,223,19,161,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -536,7 +536,7 @@ END
 
 IDD_PROGRESS DIALOGEX 0, 0, 171, 61
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     DEFPUSHBUTTON   "Отмена",IDOK,60,40,50,14
     CTEXT           "Печать страницы 1 из 3...",IDC_STATIC_TEXT,7,7,157,9
@@ -546,7 +546,7 @@ END
 IDD_ZOOM DIALOGEX 0, 0, 119, 47
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Выбор масштаба"
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     LTEXT           "&Масштаб:",IDC_STATIC,13,7,35,12,SS_CENTERIMAGE
     EDITTEXT        IDC_ZOOM,51,7,55,12,ES_AUTOHSCROLL
@@ -557,7 +557,7 @@ END
 IDD_SETTINGS_GENERAL DIALOGEX 0, 0, 255, 171
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Основные"
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     CONTROL         "&Открывать каждый документ в отдельном окне",IDC_TOP_LEVEL_DOCUMENTS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,180,10
@@ -586,7 +586,7 @@ END
 IDD_FIND DIALOGEX 0, 0, 287, 64
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Поиск"
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     LTEXT           "&Текст:",IDC_STATIC,7,10,35,9,SS_CENTERIMAGE
     CONTROL         "",IDC_FIND,"ComboBoxEx32",CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP,47,7,173,95
@@ -599,7 +599,7 @@ END
 
 IDD_UPDATE DIALOGEX 0, 0, 210, 34
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     LTEXT           "Поиск обновлений. Пожалуйста, подождите...",IDC_STATIC,39,10,164,11
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,21,20
@@ -608,7 +608,7 @@ END
 IDD_GOTO_PAGE DIALOGEX 0, 0, 127, 48
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Переход на страницу"
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     LTEXT           "&Страница:",IDC_STATIC,7,7,38,12,SS_CENTERIMAGE
     EDITTEXT        IDC_PAGE,47,7,42,12,ES_AUTOHSCROLL
@@ -621,7 +621,7 @@ END
 IDD_SETTINGS_DISPLAY DIALOGEX 0, 0, 255, 171
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Отображение"
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     CONTROL         "&Инвертировать цвета",IDC_INVERT_COLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,91,10
     CONTROL         "&Применить коррекцию изображения",IDC_ADJUST_DISPLAY,
@@ -644,7 +644,7 @@ END
 IDD_ANNOTATION DIALOGEX 0, 0, 210, 290
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Параметры аннотации"
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     LTEXT           "&Граница",IDC_STATIC,7,7,30,9
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,40,11,163,1,WS_EX_STATICEDGE
@@ -682,7 +682,7 @@ END
 IDD_RENAME_BOOKMARK DIALOGEX 0, 0, 206, 90
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Переименовать закладку"
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     LTEXT           "&Имя:",IDC_STATIC,7,7,20,13,SS_CENTERIMAGE
     EDITTEXT        IDC_BOOKMARK_TITLE,28,7,171,53,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
@@ -693,7 +693,7 @@ END
 IDD_INSTALL_DIC DIALOGEX 0, 0, 190, 138
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Установить словарь"
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     CONTROL         "Установить для текущего пользователя",IDC_CURRENT_USER,
                     "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,7,7,176,11
@@ -712,7 +712,7 @@ END
 IDD_INSTALL_DIC_REPLACE DIALOGEX 0, 0, 190, 91
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Установить словарь"
-FONT 8, "MS ", 0, 0, 0xcc
+FONT 8, "MS ", 0, 0, 0xCC
 BEGIN
     LTEXT           "Чтобы переместить исходный файл в корзину после установки, отмените следующую опцию:",IDC_STATIC,7,35,176,18
     CONTROL         "Не удалять исходный файл",IDC_KEEP_ORIGINAL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,54,106,11
@@ -724,7 +724,7 @@ END
 IDD_SETTINGS_ADVANCED DIALOGEX 0, 0, 255, 171
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Дополнительно"
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     LTEXT           "Связь с файлами DjVu",IDC_STATIC,7,7,79,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,86,11,162,1
@@ -734,8 +734,8 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,42,164,10
     LTEXT           "Закладки и аннотации",IDC_STATIC,7,60,82,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,90,65,158,1
-    LTEXT           "Вы можете сохранить резервную копию всех ваших закладок и аннотаций. Эта копия также может быть использована для переноса закладок на другой компьютер.",IDC_STATIC,23,74,225,28
-    PUSHBUTTON      "&Сохранить копию",IDC_CREATE_BACKUP,23,103,70,14
+    LTEXT           "Вы можете сохранить резервную копию всех ваших закладок и аннотаций. Эта копия также может быть использована для переноса закладок на другой компьютер.",IDC_STATIC,21,74,227,28
+    PUSHBUTTON      "&Сохранить копию",IDC_CREATE_BACKUP,21,103,70,14
     LTEXT           "Разное",IDC_STATIC,7,125,27,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,36,130,212,1
     CONTROL         "&Запоминать открытую страницу и настройки каждого файла",IDC_RESTORE_VIEW,
@@ -747,7 +747,7 @@ END
 IDD_SETTINGS_DICT DIALOGEX 0, 0, 255, 171
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Словари"
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     LTEXT           "Установленные словари:",IDC_STATIC,7,31,91,9
     CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_TABSTOP,7,42,241,104,WS_EX_CLIENTEDGE
@@ -760,7 +760,7 @@ END
 IDD_DOC_PROPERTIES DIALOGEX 0, 0, 339, 231
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Информация о документе"
-FONT 8, "MS Shell Dlg", 0, 0, 0xcc
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     DEFPUSHBUTTON   "Закрыть",IDOK,145,210,50,14
     LTEXT           "Имя документа:",IDC_STATIC,7,7,62,9
@@ -1375,8 +1375,7 @@ BEGIN
     IDS_DEFAULT_VIEWER      "WinDjView зарегистрирован как основная программа для просмотра файлов DjVu."
     IDS_NOT_DEFAULT_VIEWER  "WinDjView не зарегистрирован как основная программа для просмотра файлов DjVu."
     IDS_TAB_BAR_MENU        "Панель &вкладок"
-    IDS_CHECK_CLOSE_MULTIPLE 
-                            "Предупреждать о закрытии нескольких документов"
+    IDS_CHECK_CLOSE_MULTIPLE "Предупреждать о закрытии нескольких документов"
 END
 
 STRINGTABLE 

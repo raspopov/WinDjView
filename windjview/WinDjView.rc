@@ -731,8 +731,8 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,42,176,10
     LTEXT           "Bookmarks && Annotations",IDC_STATIC,7,60,86,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,94,65,121,1
-    LTEXT           "You can back up all your bookmarks and annotations for DjVu files. The backup file can also be used to transfer the bookmarks to another computer.",IDC_STATIC,23,74,192,28
-    PUSHBUTTON      "&Create a backup",IDC_CREATE_BACKUP,23,103,70,14
+    LTEXT           "You can back up all your bookmarks and annotations for DjVu files. The backup file can also be used to transfer the bookmarks to another computer.",IDC_STATIC,21,74,194,28
+    PUSHBUTTON      "&Create a backup",IDC_CREATE_BACKUP,21,103,70,14
     LTEXT           "Miscellaneous",IDC_STATIC,7,125,47,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,55,130,160,1
     CONTROL         "&Restore open page and view settings when opening files",IDC_RESTORE_VIEW,
