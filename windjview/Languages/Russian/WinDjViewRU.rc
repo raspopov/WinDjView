@@ -712,7 +712,7 @@ END
 IDD_INSTALL_DIC_REPLACE DIALOGEX 0, 0, 190, 91
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Установить словарь"
-FONT 8, "MS ", 0, 0, 0xCC
+FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
     LTEXT           "Чтобы переместить исходный файл в корзину после установки, отмените следующую опцию:",IDC_STATIC,7,35,176,18
     CONTROL         "Не удалять исходный файл",IDC_KEEP_ORIGINAL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,54,106,11
