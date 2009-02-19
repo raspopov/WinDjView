@@ -2,7 +2,7 @@ WinDjView version history
 Copyright (C) 2004-2009 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 1.0 (2009-02-??):
+Changes in version 1.0 (2009-02-19):
 # Finally, version number starts with one! This means that the program
   is officially considered stable after years of development.
 ! Added multiple top-level documents mode.
