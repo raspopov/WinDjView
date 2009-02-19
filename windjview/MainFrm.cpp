@@ -1893,6 +1893,8 @@ void CMainFrame::OnMouseWheelPage(NMHDR* pNMHDR, LRESULT* pResult)
 void CMainFrame::OnNewVersion()
 {
 	theApp.GetAppSettings()->nLastUpdateTime = time(NULL);
+	if (CompareVersions(theApp.m_strNewVersion, CURRENT_VERSION) <= 0)
+		return;
 
 	CPushRoutingFrame* pPushFrame = NULL;
 	if (IsFullscreenMode())

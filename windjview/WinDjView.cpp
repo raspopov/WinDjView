@@ -2723,16 +2723,13 @@ unsigned int __stdcall CDjViewApp::CheckUpdateThreadProc(void* pvData)
 {
 	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 
-	theApp.m_mainWndLock.Lock();
-
 	theApp.m_strNewVersion = DownloadLastVersionString();
-	if (theApp.m_pMainWnd != NULL && !theApp.m_strNewVersion.IsEmpty()
-			&& CompareVersions(theApp.m_strNewVersion, CURRENT_VERSION) > 0)
-	{
-		theApp.m_pMainWnd->PostMessage(WM_NOTIFY_NEW_VERSION);
-	}
 
+	theApp.m_mainWndLock.Lock();
+	if (theApp.m_pMainWnd != NULL && !theApp.m_strNewVersion.IsEmpty())
+		theApp.m_pMainWnd->PostMessage(WM_NOTIFY_NEW_VERSION);
 	theApp.m_mainWndLock.Unlock();
+
 	theApp.ThreadTerminated();
 	return 0;
 }
