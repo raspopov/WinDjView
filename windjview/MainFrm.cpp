@@ -1892,10 +1892,6 @@ void CMainFrame::OnMouseWheelPage(NMHDR* pNMHDR, LRESULT* pResult)
 
 void CMainFrame::OnNewVersion()
 {
-	theApp.GetAppSettings()->nLastUpdateTime = time(NULL);
-	if (CompareVersions(theApp.m_strNewVersion, CURRENT_VERSION) <= 0)
-		return;
-
 	CPushRoutingFrame* pPushFrame = NULL;
 	if (IsFullscreenMode())
 		pPushFrame = new CPushRoutingFrame((CFrameWnd*) m_pFullscreenWnd);
@@ -1907,7 +1903,7 @@ void CMainFrame::OnNewVersion()
 			MB_ICONQUESTION | MB_YESNO, 0, mbo) == IDYES)
 	{
 		::ShellExecute(NULL, _T("open"), LoadString(IDS_WEBSITE_URL),
-			NULL, NULL, SW_SHOWNORMAL);
+				NULL, NULL, SW_SHOW);
 	}
 
 	if (pPushFrame != NULL)

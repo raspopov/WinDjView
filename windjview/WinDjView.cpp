@@ -536,7 +536,7 @@ void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 	if (rcWeblink.PtInRect(point))
 	{
 		::ShellExecute(NULL, _T("open"), LoadString(IDS_WEBSITE_URL),
-			NULL, NULL, SW_SHOWNORMAL);
+				NULL, NULL, SW_SHOW);
 		return;
 	}
 
@@ -547,7 +547,7 @@ void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 	if (rcWeblinkLibrary.PtInRect(point))
 	{
 		::ShellExecute(NULL, _T("open"), LoadString(IDS_DJVULIBRE_URL),
-			NULL, NULL, SW_SHOWNORMAL);
+				NULL, NULL, SW_SHOW);
 		return;
 	}
 
@@ -557,7 +557,7 @@ void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
 void CAboutDlg::OnDonate()
 {
 	::ShellExecute(NULL, _T("open"), LoadString(IDS_DONATE_URL),
-		NULL, NULL, SW_SHOWNORMAL);
+			NULL, NULL, SW_SHOW);
 }
 
 BOOL CAboutDlg::OnInitDialog()
@@ -2713,7 +2713,7 @@ CString CDjViewApp::DownloadLastVersionString()
 	if (pFile != NULL)
 		delete pFile;
 
-	if (strVersion.Find('<') != -1)
+	if (strVersion.Find('<') != -1 || strVersion.GetLength() > 16)
 		strVersion.Empty();
 
 	return strVersion;
@@ -2726,8 +2726,15 @@ unsigned int __stdcall CDjViewApp::CheckUpdateThreadProc(void* pvData)
 	theApp.m_strNewVersion = DownloadLastVersionString();
 
 	theApp.m_mainWndLock.Lock();
-	if (theApp.m_pMainWnd != NULL && !theApp.m_strNewVersion.IsEmpty())
-		theApp.m_pMainWnd->PostMessage(WM_NOTIFY_NEW_VERSION);
+	if (theApp.m_pMainWnd != NULL)
+	{
+		theApp.GetAppSettings()->nLastUpdateTime = time(NULL);
+		if (!theApp.m_strNewVersion.IsEmpty()
+				&& CompareVersions(theApp.m_strNewVersion, CURRENT_VERSION) > 0)
+		{
+			theApp.m_pMainWnd->PostMessage(WM_NOTIFY_NEW_VERSION);
+		}
+	}
 	theApp.m_mainWndLock.Unlock();
 
 	theApp.ThreadTerminated();

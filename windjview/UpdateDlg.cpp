@@ -94,7 +94,7 @@ unsigned int __stdcall CUpdateDlg::UpdateThreadProc(void* pvData)
 
 void CUpdateDlg::OnEndDialog()
 {
-	if (m_bOk && m_strNewVersion.GetLength() < 16)
+	if (m_bOk)
 	{
 		if (CompareVersions(m_strNewVersion, CURRENT_VERSION) > 0)
 		{
@@ -102,18 +102,14 @@ void CUpdateDlg::OnEndDialog()
 					MB_ICONQUESTION | MB_YESNO) == IDYES)
 			{
 				::ShellExecute(NULL, _T("open"), LoadString(IDS_WEBSITE_URL),
-					NULL, NULL, SW_SHOWNORMAL);
+						NULL, NULL, SW_SHOW);
 			}
 		}
 		else
-		{
 			AfxMessageBox(IDS_NO_UPDATES_AVAILABLE, MB_ICONINFORMATION | MB_OK);
-		}
 	}
 	else
-	{
 		AfxMessageBox(IDS_CONNECT_ERROR, MB_ICONEXCLAMATION | MB_OK);
-	}
 
 	EndDialog(IDOK);
 }

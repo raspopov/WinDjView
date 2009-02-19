@@ -5247,7 +5247,7 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nAddToHistory)
 	}
 
 	// Open a web link
-	DWORD dwResult = (DWORD)::ShellExecute(NULL, _T("open"), MakeCString(url), NULL, NULL, SW_SHOWNORMAL);
+	DWORD dwResult = (DWORD)::ShellExecute(NULL, _T("open"), MakeCString(url), NULL, NULL, SW_SHOW);
 	if (dwResult <= 32) // Failure
 	{
 		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + MakeCString(url));
