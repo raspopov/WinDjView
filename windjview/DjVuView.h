@@ -319,7 +319,6 @@ protected:
 	Annotation* m_pClickedAnno;
 	bool m_bHoverIsCustom, m_bClickedCustom;
 	int m_nHoverPage;
-	bool m_bIgnoreMouseLeave;
 	Annotation* GetAnnotationFromPoint(const CPoint& point, int& nPage, bool& bCustom);
 	bool PtInAnnotation(const Annotation& anno, int nPage, const CPoint& point);
 	void UpdateHoverAnnotation(const CPoint& point);
@@ -347,7 +346,6 @@ protected:
 	int m_nClickedPage;
 	bool m_bDragging, m_bDraggingRight;
 	bool m_bDraggingPage, m_bDraggingText, m_bDraggingRect, m_bDraggingLink;
-	bool m_bPanning;
 	bool m_bPopupMenu;
 	void StopDragging();
 	void OnContextMenu();

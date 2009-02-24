@@ -77,6 +77,7 @@ protected:
 	CScrollBar m_horzScrollBar, m_vertScrollBar;
 	bool m_bHorzScroll, m_bVertScroll;
 	bool m_bShowScrollBars;
+	bool m_bPanning;
 	CMyAnchorWnd* m_pAnchorWnd;
 
 	void UpdateBars(bool bRepaint = true);
@@ -98,4 +99,6 @@ protected:
 	afx_msg LRESULT OnMButtonDown(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnCancelMode();
 	DECLARE_MESSAGE_MAP()
+
+	friend class CMyAnchorWnd;
 };

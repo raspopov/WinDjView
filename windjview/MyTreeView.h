@@ -61,6 +61,7 @@ public:
 public:
 	virtual void OnDraw(CDC* pDC);
 	virtual bool OnScrollBy(CSize szScrollBy, bool bDoScroll = true);
+	virtual bool OnStartPan();
 
 // Implementation
 protected:
@@ -134,6 +135,7 @@ protected:
 	CFont m_font, m_fontHover;
 	CSize m_szDisplay;
 	bool m_bBatchUpdate;
+	bool m_bInsideOnSize;
 
 	COffscreenDC m_offscreenDC;
 

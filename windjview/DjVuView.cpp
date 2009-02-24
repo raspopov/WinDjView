@@ -263,10 +263,9 @@ CDjVuView::CDjVuView()
 	  m_bNeedUpdate(false), m_bCursorHidden(false), m_bDraggingPage(false),
 	  m_bDraggingText(false), m_bFirstPageAlone(false), m_bRightToLeft(false),
 	  m_bDraggingMagnify(false), m_bControlDown(false), m_nType(Normal),
-	  m_bPanning(false), m_bHoverIsCustom(false), m_bDraggingRect(false),
-	  m_nSelectionPage(-1), m_pHoverAnno(NULL), m_bIgnoreMouseLeave(false),
-	  m_pClickedAnno(NULL), m_bDraggingLink(false), m_bPopupMenu(false),
-	  m_bClickedCustom(false), m_bUpdateBitmaps(false)
+	  m_bHoverIsCustom(false), m_bDraggingRect(false), m_nSelectionPage(-1),
+	  m_pHoverAnno(NULL), m_pClickedAnno(NULL), m_bDraggingLink(false),
+	  m_bPopupMenu(false), m_bClickedCustom(false), m_bUpdateBitmaps(false)
 {
 	m_nMargin = c_nDefaultMargin;
 	m_nShadowMargin = c_nDefaultShadowMargin;
@@ -3282,8 +3281,7 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 
 void CDjVuView::OnMouseLeave()
 {
-	if (!m_bIgnoreMouseLeave)
-		UpdateHoverAnnotation(CPoint(-1, -1));
+	UpdateHoverAnnotation(CPoint(-1, -1));
 }
 
 void CDjVuView::SelectTextRange(int nPage, int nStart, int nEnd,
@@ -3527,7 +3525,14 @@ void CDjVuView::OnContextMenu()
 		}
 	}
 
-	m_bIgnoreMouseLeave = true;
+	TRACKMOUSEEVENT tme;
+	ZeroMemory(&tme, sizeof(tme));
+	tme.cbSize = sizeof(tme);
+	tme.dwFlags = TME_LEAVE | TME_CANCEL;
+	tme.hwndTrack = m_hWnd;
+	tme.dwHoverTime = HOVER_DEFAULT;
+	TrackMouseEvent(&tme);
+
 	m_bPopupMenu = true;
 	ShowCursor();
 
@@ -3543,6 +3548,7 @@ void CDjVuView::OnContextMenu()
 	m_pClickedAnno = NULL;
 	m_nClickedPage = -1;
 
+	UpdateHoverAnnotation(CPoint(-1, -1));
 	UpdateHoverAnnotation();
 	UpdateCursor();
 }
@@ -4962,18 +4968,15 @@ void CDjVuView::UpdateHoverAnnotation(const CPoint& point)
 
 			if (m_nType == Normal)
 				GetMainFrame()->SetMessageText(MakeCString(m_pHoverAnno->strURL));
-
-			TRACKMOUSEEVENT tme;
-
-			ZeroMemory(&tme, sizeof(tme));
-			tme.cbSize = sizeof(tme);
-			tme.dwFlags = TME_LEAVE;
-			tme.hwndTrack = m_hWnd;
-			tme.dwHoverTime = HOVER_DEFAULT;
-
-			m_bIgnoreMouseLeave = false;
-			TrackMouseEvent(&tme);
 		}
+
+		TRACKMOUSEEVENT tme;
+		ZeroMemory(&tme, sizeof(tme));
+		tme.cbSize = sizeof(tme);
+		tme.dwFlags = TME_LEAVE | (m_pHoverAnno == NULL ? TME_CANCEL : 0);
+		tme.hwndTrack = m_hWnd;
+		tme.dwHoverTime = HOVER_DEFAULT;
+		TrackMouseEvent(&tme);
 
 		UpdateCursor();
 	}
@@ -6227,14 +6230,12 @@ bool CDjVuView::OnStartPan()
 		return false;
 
 	ShowCursor();
-	m_bPanning = true;
 	return true;
 }
 
 void CDjVuView::OnEndPan()
 {
 	ShowCursor();
-	m_bPanning = false;
 }
 
 void CDjVuView::OnUpdate(const Observable* source, const Message* message)

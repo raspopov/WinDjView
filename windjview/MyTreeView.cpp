@@ -43,7 +43,8 @@ CMyTreeView::CMyTreeView()
 	: m_nItemHeight(20), m_pImageList(NULL), m_bWrapLabels(true), m_hTheme(NULL),
 	  m_pSelection(NULL), m_pHoverNode(NULL), m_szDisplay(0, 0),
 	  m_bMouseInTooltip(false), m_bRedirectWheel(true), m_bLinesAtRoot(false),
-	  m_bHasLines(false), m_bHasGlyphs(false), m_bBatchUpdate(false)
+	  m_bHasLines(false), m_bHasGlyphs(false), m_bBatchUpdate(false),
+	  m_bInsideOnSize(false)
 {
 	m_pRoot = new TreeNode(NULL, -1, -1, NULL);
 	m_pRoot->bCollapsed = false;
@@ -571,7 +572,8 @@ void CMyTreeView::RecalcLayout()
 	dc.SelectObject(pOldFont);
 
 	SetHoverNode(NULL);
-	UpdateHoverNode();
+	if (!m_bInsideOnSize)
+		UpdateHoverNode();
 
 	Invalidate();
 	UpdateWindow();
@@ -610,7 +612,11 @@ void CMyTreeView::OnDestroy()
 void CMyTreeView::OnSize(UINT nType, int cx, int cy) 
 {
 	if (cx > 0 && cy > 0)
+	{
+		m_bInsideOnSize = true;
 		RecalcLayout();
+		m_bInsideOnSize = false;
+	}
 
 	CMyScrollView::OnSize(nType, cx, cy);
 }
@@ -651,6 +657,7 @@ void CMyTreeView::OnSysColorChange()
 void CMyTreeView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	SetFocus();
+	UpdateHoverNode(point);
 
 	int nArea;
 	TreeNode* pNode = HitTest(point, &nArea);
@@ -674,6 +681,7 @@ void CMyTreeView::OnLButtonDown(UINT nFlags, CPoint point)
 void CMyTreeView::OnRButtonDown(UINT nFlags, CPoint point)
 {
 	SetFocus();
+	UpdateHoverNode(point);
 
 	int nArea;
 	TreeNode* pNode = HitTest(point, &nArea);
@@ -733,7 +741,7 @@ void CMyTreeView::InvalidateNode(TreeNode* pNode)
 
 void CMyTreeView::OnMouseMove(UINT nFlags, CPoint point)
 {
-	bool bDragging = (nFlags & (MK_MBUTTON | MK_LBUTTON | MK_RBUTTON)) != 0;
+	bool bDragging = (nFlags & (MK_LBUTTON | MK_RBUTTON)) != 0;
 	if (bDragging)
 		return;
 
@@ -771,68 +779,65 @@ void CMyTreeView::UpdateHoverNode(const CPoint& point)
 	if (pNode != NULL && nArea != HT_IMAGE && nArea != HT_LABEL)
 		pNode = NULL;
 
-	TreeNode* pOldHoverNode = m_pHoverNode;
 	SetHoverNode(pNode);
-
-	if (pNode != NULL && pOldHoverNode != pNode)
-	{
-		TRACKMOUSEEVENT tme;
-
-		ZeroMemory(&tme, sizeof(tme));
-		tme.cbSize = sizeof(tme);
-		tme.dwFlags = TME_LEAVE;
-		tme.hwndTrack = m_hWnd;
-		tme.dwHoverTime = HOVER_DEFAULT;
-
-		::TrackMouseEvent(&tme);
-	}
+	SendMessage(WM_SETCURSOR, (WPARAM) m_hWnd, MAKELPARAM(HTCLIENT, WM_MOUSEMOVE));
 }
 
 void CMyTreeView::SetHoverNode(TreeNode* pNode)
 {
-	if (pNode != m_pHoverNode)
+	if (pNode == m_pHoverNode)
+		return;
+
+	if (m_pHoverNode != NULL)
 	{
-		if (m_pHoverNode != NULL)
-		{
-			InvalidateNode(m_pHoverNode);
-			m_toolTip.Hide();
+		InvalidateNode(m_pHoverNode);
+		m_toolTip.Hide();
 
-			m_bMouseInTooltip = false;
-			++m_toolTip.m_nNextCode;
-		}
-
-		m_pHoverNode = pNode;
-
-		if (pNode != NULL)
-		{
-			InvalidateNode(pNode);
-
-			CPoint ptScroll = GetScrollPosition();
-			CRect rcLabel = pNode->rcLabel - ptScroll;
-
-			CRect rcViewport(CPoint(0, 0), GetViewportSize());
-			CRect rcIntersect;
-			if (rcIntersect.IntersectRect(rcLabel, rcViewport) && rcIntersect != rcLabel)
-			{
-				CPoint ptTooltip = pNode->rcLabel.TopLeft() + (-ptScroll);
-				ptTooltip.Offset(s_nTextOffset - 3, 0);
-
-				CRect rcTooltip(pNode->rcLabel);
-				rcTooltip.DeflateRect(s_nTextOffset - 3, 0, 0, 0);
-
-				CRect rcTooltipText(pNode->rcText - rcTooltip.TopLeft());
-				rcTooltip -= ptScroll;
-				ClientToScreen(rcTooltip);
-
-				m_bMouseInTooltip = true;
-				++m_toolTip.m_nNextCode;
-
-				m_toolTip.Show(pNode->strLabel, m_bWrapLabels, rcTooltip, rcTooltipText);
-			}
-		}
-
-		GetTopLevelParent()->UpdateWindow();
+		m_bMouseInTooltip = false;
+		++m_toolTip.m_nNextCode;
 	}
+
+	m_pHoverNode = pNode;
+
+	if (pNode != NULL)
+	{
+		InvalidateNode(pNode);
+
+		CPoint ptScroll = GetScrollPosition();
+		CRect rcLabel = pNode->rcLabel - ptScroll;
+
+		CRect rcViewport(CPoint(0, 0), GetViewportSize());
+		CRect rcIntersect;
+		if (rcIntersect.IntersectRect(rcLabel, rcViewport) && rcIntersect != rcLabel)
+		{
+			CPoint ptTooltip = pNode->rcLabel.TopLeft() + (-ptScroll);
+			ptTooltip.Offset(s_nTextOffset - 3, 0);
+
+			CRect rcTooltip(pNode->rcLabel);
+			rcTooltip.DeflateRect(s_nTextOffset - 3, 0, 0, 0);
+
+			CRect rcTooltipText(pNode->rcText - rcTooltip.TopLeft());
+			rcTooltip -= ptScroll;
+			ClientToScreen(rcTooltip);
+
+			m_bMouseInTooltip = true;
+			++m_toolTip.m_nNextCode;
+
+			m_toolTip.Show(pNode->strLabel, m_bWrapLabels, rcTooltip, rcTooltipText);
+		}
+	}
+
+	GetTopLevelParent()->UpdateWindow();
+
+	TRACKMOUSEEVENT tme;
+
+	ZeroMemory(&tme, sizeof(tme));
+	tme.cbSize = sizeof(tme);
+	tme.dwFlags = TME_LEAVE | (m_pHoverNode == NULL || m_toolTip.IsWindowVisible() ? TME_CANCEL : 0);
+	tme.hwndTrack = m_hWnd;
+	tme.dwHoverTime = HOVER_DEFAULT;
+
+	::TrackMouseEvent(&tme);
 }
 
 void CMyTreeView::OnSetFocus(CWnd* pOldWnd)
@@ -861,6 +866,9 @@ void CMyTreeView::OnKillFocus(CWnd* pNewWnd)
 
 BOOL CMyTreeView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 {
+	if (m_bPanning)
+		return true;
+
 	if (hCursorLink == NULL)
 		hCursorLink = ::LoadCursor(0, IDC_HAND);
 	if (hCursorLink == NULL)
@@ -881,9 +889,16 @@ bool CMyTreeView::OnScrollBy(CSize szScrollBy, bool bDoScroll)
 		return false;
 
 	SetHoverNode(NULL);
-	UpdateHoverNode();
-	UpdateWindow();
+	if (!m_bPanning)
+		UpdateHoverNode();
 
+	UpdateWindow();
+	return true;
+}
+
+bool CMyTreeView::OnStartPan()
+{
+	SetHoverNode(NULL);
 	return true;
 }
 
@@ -1321,7 +1336,11 @@ void CMyTreeView::CTreeToolTip::Show(const CString& strText,
 
 void CMyTreeView::CTreeToolTip::Hide()
 {
-	ShowWindow(SW_HIDE);
+	if (IsWindowVisible())
+	{
+		ShowWindow(SW_HIDE);
+		m_pTree->UpdateHoverNode();
+	}
 }
 
 BOOL CMyTreeView::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
@@ -1394,6 +1413,22 @@ BOOL CMyTreeView::CTreeToolTip::OnWndMsg(UINT message, WPARAM wParam, LPARAM lPa
 			ClientToScreen(&point);
 			m_pTree->ScreenToClient(&point);
 			m_pTree->SendMessage(message, wParam, MAKELPARAM(point.x, point.y));
+		}
+		return true;
+
+	case WM_MBUTTONDOWN:
+		{
+			m_pTree->m_bMouseInTooltip = false;
+			Hide();
+
+			CPoint point((DWORD) lParam);
+			ClientToScreen(&point);
+			CWnd* pWnd = WindowFromPoint(point);
+			if (pWnd == m_pTree)
+			{
+				m_pTree->ScreenToClient(&point);
+				m_pTree->SendMessage(message, wParam, MAKELPARAM(point.x, point.y));
+			}
 		}
 		return true;
 

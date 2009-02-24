@@ -79,7 +79,8 @@ IMPLEMENT_DYNAMIC(CMyScrollView, CView)
 CMyScrollView::CMyScrollView()
 	: m_szContent(0, 0), m_szPage(0, 0), m_szLine(0, 0), m_szViewport(0, 0),
 	  m_szScrollLimit(0, 0), m_ptScrollPos(0, 0), m_bHorzScroll(false),
-	  m_bVertScroll(false), m_bShowScrollBars(true), m_pAnchorWnd(NULL)
+	  m_bVertScroll(false), m_bShowScrollBars(true), m_bPanning(false),
+	  m_pAnchorWnd(NULL)
 {
 	m_szScrollBars.cx = ::GetSystemMetrics(SM_CXVSCROLL);
 	m_szScrollBars.cy = ::GetSystemMetrics(SM_CYHSCROLL);
@@ -627,6 +628,9 @@ LRESULT CMyScrollView::OnMButtonDown(WPARAM wParam, LPARAM lParam)
 	if (nFlags & (MK_SHIFT | MK_CONTROL))
 		return Default();
 
+	if (!m_bHorzScroll && !m_bVertScroll)
+		return Default();
+
 	if (!OnStartPan())
 		return false;
 
@@ -637,14 +641,9 @@ LRESULT CMyScrollView::OnMButtonDown(WPARAM wParam, LPARAM lParam)
 	}
 
 	if (!m_pAnchorWnd->IsWindowVisible())
-	{
-		if (m_bHorzScroll || m_bVertScroll)
-			m_pAnchorWnd->Show(point, m_bHorzScroll, m_bVertScroll);
-	}
+		m_pAnchorWnd->Show(point, m_bHorzScroll, m_bVertScroll);
 	else
-	{
 		m_pAnchorWnd->Hide();
-	}
 
 	return true;
 }
@@ -930,6 +929,7 @@ BOOL CMyAnchorWnd::Create(CMyScrollView* pView)
 void CMyAnchorWnd::Show(const CPoint& ptAnchor, bool bHorzScroll, bool bVertScroll)
 {
 	ASSERT(m_pView != NULL);
+	m_pView->m_bPanning = true;
 
 	m_ptAnchor = ptAnchor;
 	m_pView->ClientToScreen(&m_ptAnchor);
@@ -975,6 +975,7 @@ void CMyAnchorWnd::Hide()
 
 	m_pView->GetTopLevelParent()->UpdateWindow();
 
+	m_pView->m_bPanning = false;
 	m_pView->OnEndPan();
 }
 
