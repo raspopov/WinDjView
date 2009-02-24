@@ -20,7 +20,7 @@
 
 #include "stdafx.h"
 #include "WinDjView.h"
-#include "BookmarksWnd.h"
+#include "BookmarksView.h"
 
 #include "DjVuSource.h"
 #include "BookmarkDlg.h"
@@ -28,11 +28,11 @@
 #include "NavPane.h"
 
 
-// CBookmarksWnd
+// CBookmarksView
 
-IMPLEMENT_DYNAMIC(CBookmarksWnd, CMyTreeCtrl)
+IMPLEMENT_DYNAMIC(CBookmarksView, CMyTreeView)
 
-BEGIN_MESSAGE_MAP(CBookmarksWnd, CMyTreeCtrl)
+BEGIN_MESSAGE_MAP(CBookmarksView, CMyTreeView)
 	ON_NOTIFY_REFLECT(TVN_SELCHANGED, OnSelChanged)
 	ON_NOTIFY_REFLECT(TVN_ITEMCLICKED, OnItemClicked)
 	ON_NOTIFY_REFLECT(TVN_KEYDOWN, OnKeyDown)
@@ -42,23 +42,24 @@ BEGIN_MESSAGE_MAP(CBookmarksWnd, CMyTreeCtrl)
 	ON_WM_MENUSELECT()
 	ON_WM_ENTERIDLE()
 	ON_MESSAGE(WM_SHOW_SETTINGS, OnShowSettings)
+	ON_WM_MOUSEACTIVATE()
 END_MESSAGE_MAP()
 
-CBookmarksWnd::CBookmarksWnd(DjVuSource* pSource)
+CBookmarksView::CBookmarksView(DjVuSource* pSource)
 	: m_bEnableEditing(false), m_pSource(pSource)
 {
 }
 
-CBookmarksWnd::~CBookmarksWnd()
+CBookmarksView::~CBookmarksView()
 {
 }
 
 
-// CBookmarksWnd message handlers
+// CBookmarksView message handlers
 
-int CBookmarksWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) 
+int CBookmarksView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-	if (CMyTreeCtrl::OnCreate(lpCreateStruct) == -1)
+	if (CMyTreeView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
 	m_imageList.Create(16, 16, ILC_COLOR24 | ILC_MASK, 0, 1);
@@ -75,14 +76,14 @@ int CBookmarksWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-void CBookmarksWnd::OnDestroy()
+void CBookmarksView::OnDestroy()
 {
 	theApp.RemoveObserver(this);
 
-	CMyTreeCtrl::OnDestroy();
+	CMyTreeView::OnDestroy();
 }
 
-void CBookmarksWnd::LoadContents()
+void CBookmarksView::LoadContents()
 {
 	BeginBatchUpdate();
 	DeleteAllItems();
@@ -95,7 +96,7 @@ void CBookmarksWnd::LoadContents()
 	EndBatchUpdate();
 }
 
-void CBookmarksWnd::LoadUserBookmarks()
+void CBookmarksView::LoadUserBookmarks()
 {
 	BeginBatchUpdate();
 	DeleteAllItems();
@@ -110,7 +111,7 @@ void CBookmarksWnd::LoadUserBookmarks()
 	EndBatchUpdate();
 }
 
-void CBookmarksWnd::AddBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks,
+void CBookmarksView::AddBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks,
 	HTREEITEM hParent, GPosition& pos, int nCount)
 {
 	for (int i = 0; i < nCount && !!pos; ++i)
@@ -131,13 +132,13 @@ void CBookmarksWnd::AddBookmarks(const GPList<DjVmNav::DjVuBookMark>& bookmarks,
 	}
 }
 
-void CBookmarksWnd::AddBookmark(Bookmark& bookmark)
+void CBookmarksView::AddBookmark(Bookmark& bookmark)
 {
 	HTREEITEM hItem = AddBookmark(bookmark, TVI_ROOT);
 	SelectItem(hItem);
 }
 
-HTREEITEM CBookmarksWnd::AddBookmark(Bookmark& bookmark, HTREEITEM hParent)
+HTREEITEM CBookmarksView::AddBookmark(Bookmark& bookmark, HTREEITEM hParent)
 {
 	CString strTitle = MakeCString(bookmark.strTitle);
 	HTREEITEM hItem = InsertItem(strTitle, 0, 1, hParent);
@@ -156,7 +157,7 @@ HTREEITEM CBookmarksWnd::AddBookmark(Bookmark& bookmark, HTREEITEM hParent)
 	return hItem;
 }
 
-void CBookmarksWnd::GoToBookmark(HTREEITEM hItem)
+void CBookmarksView::GoToBookmark(HTREEITEM hItem)
 {
 	BookmarkInfo* pInfo = (BookmarkInfo*) GetItemData(hItem);
 	if (pInfo->pBookmark != NULL)
@@ -171,7 +172,7 @@ void CBookmarksWnd::GoToBookmark(HTREEITEM hItem)
 	}
 }
 
-void CBookmarksWnd::OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
+void CBookmarksView::OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
 
@@ -185,7 +186,7 @@ void CBookmarksWnd::OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
 	*pResult = 0;
 }
 
-void CBookmarksWnd::OnItemClicked(NMHDR* pNMHDR, LRESULT* pResult)
+void CBookmarksView::OnItemClicked(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
 
@@ -199,7 +200,7 @@ void CBookmarksWnd::OnItemClicked(NMHDR* pNMHDR, LRESULT* pResult)
 	*pResult = 0;
 }
 
-void CBookmarksWnd::OnKeyDown(NMHDR* pNMHDR, LRESULT* pResult)
+void CBookmarksView::OnKeyDown(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	LPNMTVKEYDOWN pTVKeyDown = reinterpret_cast<LPNMTVKEYDOWN>(pNMHDR);
 
@@ -215,13 +216,7 @@ void CBookmarksWnd::OnKeyDown(NMHDR* pNMHDR, LRESULT* pResult)
 		*pResult = 1;
 }
 
-void CBookmarksWnd::PostNcDestroy()
-{
-	// Should be created on heap
-	delete this;
-}
-
-void CBookmarksWnd::OnUpdate(const Observable* source, const Message* message)
+void CBookmarksView::OnUpdate(const Observable* source, const Message* message)
 {
 	if (message->code == APP_SETTINGS_CHANGED)
 	{
@@ -229,7 +224,7 @@ void CBookmarksWnd::OnUpdate(const Observable* source, const Message* message)
 	}
 }
 
-void CBookmarksWnd::OnContextMenu(CWnd* pWnd, CPoint point)
+void CBookmarksView::OnContextMenu(CWnd* pWnd, CPoint point)
 {
 	TreeNode* pNode = m_pSelection;
 	if (!m_bEnableEditing || pNode == NULL || pNode == m_pRoot)
@@ -279,7 +274,7 @@ void CBookmarksWnd::OnContextMenu(CWnd* pWnd, CPoint point)
 	}
 }
 
-LRESULT CBookmarksWnd::OnShowSettings(WPARAM wParam, LPARAM lParam)
+LRESULT CBookmarksView::OnShowSettings(WPARAM wParam, LPARAM lParam)
 {
 	CMenu menu;
 	menu.LoadMenu(IDR_POPUP);
@@ -332,7 +327,7 @@ LRESULT CBookmarksWnd::OnShowSettings(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-void CBookmarksWnd::DeleteBookmark(TreeNode* pNode)
+void CBookmarksView::DeleteBookmark(TreeNode* pNode)
 {
 	if (pNode == NULL)
 		return;
@@ -353,7 +348,7 @@ void CBookmarksWnd::DeleteBookmark(TreeNode* pNode)
 	SetFocus();
 }
 
-void CBookmarksWnd::RenameBookmark(TreeNode* pNode)
+void CBookmarksView::RenameBookmark(TreeNode* pNode)
 {
 	if (pNode == NULL)
 		return;
@@ -375,7 +370,7 @@ void CBookmarksWnd::RenameBookmark(TreeNode* pNode)
 	SetFocus();
 }
 
-void CBookmarksWnd::SetBookmarkDestination(TreeNode* pNode)
+void CBookmarksView::SetBookmarkDestination(TreeNode* pNode)
 {
 	if (pNode == NULL)
 		return;
@@ -394,22 +389,22 @@ void CBookmarksWnd::SetBookmarkDestination(TreeNode* pNode)
 	SetFocus();
 }
 
-void CBookmarksWnd::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)
+void CBookmarksView::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)
 {
-	CMyTreeCtrl::OnMenuSelect(nItemID, nFlags, hSysMenu);
+	CMyTreeView::OnMenuSelect(nItemID, nFlags, hSysMenu);
 
 	GetTopLevelFrame()->SendMessage(WM_MENUSELECT, MAKEWPARAM(nItemID, nFlags),
 			(LPARAM) hSysMenu);
 }
 
-void CBookmarksWnd::OnEnterIdle(UINT nWhy, CWnd* pWho)
+void CBookmarksView::OnEnterIdle(UINT nWhy, CWnd* pWho)
 {
-	CMyTreeCtrl::OnEnterIdle(nWhy, pWho);
+	CMyTreeView::OnEnterIdle(nWhy, pWho);
 
 	GetTopLevelFrame()->SendMessage(WM_ENTERIDLE, nWhy, (LPARAM) pWho->GetSafeHwnd());
 }
 
-void CBookmarksWnd::MoveBookmark(TreeNode* pNode, bool bUp)
+void CBookmarksView::MoveBookmark(TreeNode* pNode, bool bUp)
 {
 	if (pNode == m_pRoot)
 		return;
@@ -432,4 +427,22 @@ void CBookmarksWnd::MoveBookmark(TreeNode* pNode, bool bUp)
 
 	RecalcLayout();
 	SelectNode(pSwapNode);
+}
+
+int CBookmarksView::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
+{
+	// From MFC: CView::OnMouseActivate
+	// Don't call CFrameWnd::SetActiveView
+
+	int nResult = CWnd::OnMouseActivate(pDesktopWnd, nHitTest, message);
+	if (nResult == MA_NOACTIVATE || nResult == MA_NOACTIVATEANDEAT)
+		return nResult;
+
+	if (message == WM_LBUTTONDOWN)
+	{
+		// set focus to this view, but don't notify the parent frame
+		OnActivateView(true, this, this);
+	}
+
+	return nResult;
 }

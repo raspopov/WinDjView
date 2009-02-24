@@ -20,19 +20,20 @@
 
 #pragma once
 
+#include "MyScrollView.h"
 #include "MyTheme.h"
 #include "Drawing.h"
 
 #define TVN_ITEMCLICKED (WM_USER + 30)
 
 
-class CMyTreeCtrl : public CWnd
+class CMyTreeView : public CMyScrollView
 {
-	DECLARE_DYNAMIC(CMyTreeCtrl)
+	DECLARE_DYNAMIC(CMyTreeView)
 
 public:
-	CMyTreeCtrl();
-	virtual ~CMyTreeCtrl();
+	CMyTreeView();
+	virtual ~CMyTreeView();
 
 // Attributes
 public:
@@ -57,8 +58,9 @@ public:
 	void EndBatchUpdate();
 
 // Overrides
-protected:
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+public:
+	virtual void OnDraw(CDC* pDC);
+	virtual bool OnScrollBy(CSize szScrollBy, bool bDoScroll = true);
 
 // Implementation
 protected:
@@ -66,11 +68,11 @@ protected:
 	{
 	public:
 		CTreeToolTip() : m_pTree(NULL), m_nNextCode(0), m_nMouseLeaveCode(0) {}
-		BOOL Create(CMyTreeCtrl* pTree);
+		BOOL Create(CMyTreeView* pTree);
 		void Show(const CString& strText, bool bWrap, const CRect& rcWindow, const CRect& rcText);
 		void Hide();
 
-		CMyTreeCtrl* m_pTree;
+		CMyTreeView* m_pTree;
 		CString m_strText;
 		CRect m_rcText;
 		int m_nNextCode, m_nMouseLeaveCode;
@@ -138,9 +140,6 @@ protected:
 	TreeNode* m_pSelection;
 	TreeNode* m_pHoverNode;
 
-	CPoint m_ptScrollOffset;
-	CSize m_szLine, m_szPage;
-
 	void SetHoverNode(TreeNode* pNode);
 	void UpdateHoverNode();
 	void UpdateHoverNode(const CPoint& point);
@@ -158,16 +157,10 @@ protected:
 	void InvalidateNode(TreeNode* pNode);
 	void EnsureVisible(TreeNode* pNode);
 
-	CPoint GetScrollPosition();
-	bool OnScroll(UINT nScrollCode, UINT nPos);
-	bool OnScrollBy(CSize sz);
-	void CheckScrollBars(bool& bHasHorzBar, bool& bHasVertBar) const;
 	bool UpdateParameters();
 	void InitNotification(NMTREEVIEW& nmtv, UINT nCode);
 
 	// Generated message map functions
-	afx_msg void OnPaint();
-	afx_msg void OnEditAddnode();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
@@ -179,8 +172,6 @@ protected:
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnKillFocus(CWnd* pNewWnd);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
-	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnMouseLeave();
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint point);

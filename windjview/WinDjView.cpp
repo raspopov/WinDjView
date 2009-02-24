@@ -31,7 +31,7 @@
 #include "SettingsDlg.h"
 #include "UpdateDlg.h"
 #include "ThumbnailsView.h"
-#include "BookmarksWnd.h"
+#include "BookmarksView.h"
 #include "PageIndexWnd.h"
 #include "NavPane.h"
 #include "FullscreenWnd.h"

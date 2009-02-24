@@ -24,7 +24,7 @@
 #include "NavPane.h"
 
 class CThumbnailsView;
-class CBookmarksWnd;
+class CBookmarksView;
 class CSearchResultsView;
 class CPageIndexWnd;
 class CDjVuDoc;
@@ -51,10 +51,10 @@ public:
 	bool IsNavPaneCollapsed() const { return m_bNavCollapsed; }
 
 	CThumbnailsView* GetThumbnailsView() { return m_pThumbnailsView; }
-	CBookmarksWnd* GetContentsTree() { return m_pContentsTree; }
+	CBookmarksView* GetContentsTree() { return m_pContentsTree; }
 	CPageIndexWnd* GetPageIndex() { return m_pPageIndexWnd; }
 	bool HasBookmarksTree() const { return m_pBookmarksTree != NULL; }
-	CBookmarksWnd* GetBookmarksTree(bool bActivate = true);
+	CBookmarksView* GetBookmarksTree(bool bActivate = true);
 	CSearchResultsView* GetSearchResults(bool bActivate = true);
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
@@ -66,8 +66,8 @@ protected:
 	CDjVuDoc* m_pDocument;
 
 	CThumbnailsView* m_pThumbnailsView;
-	CBookmarksWnd* m_pContentsTree;
-	CBookmarksWnd* m_pBookmarksTree;
+	CBookmarksView* m_pContentsTree;
+	CBookmarksView* m_pBookmarksTree;
 	CSearchResultsView* m_pResultsView;
 	CPageIndexWnd* m_pPageIndexWnd;
 

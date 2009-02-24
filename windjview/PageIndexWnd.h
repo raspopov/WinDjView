@@ -20,8 +20,7 @@
 
 #pragma once
 
-#include "BookmarksWnd.h"
-#include "MyTreeCtrl.h"
+#include "MyTreeView.h"
 #include "MyComboBox.h"
 class DjVuSource;
 struct XMLNode;
@@ -47,7 +46,7 @@ protected:
 	CRect m_rcText, m_rcGap, m_rcList;
 	bool m_bChangeInternal;
 
-	CMyTreeCtrl m_list;
+	CMyTreeView* m_pList;
 	CMyComboBoxEx m_cboLookup;
 
 	enum

@@ -58,7 +58,7 @@ LINK_OBJS = \
 	"$(INTDIR)\AnnotationDlg.obj" \
 	"$(INTDIR)\AppSettings.obj" \
 	"$(INTDIR)\BookmarkDlg.obj" \
-	"$(INTDIR)\BookmarksWnd.obj" \
+	"$(INTDIR)\BookmarksView.obj" \
 	"$(INTDIR)\DjVuDoc.obj" \
 	"$(INTDIR)\DjVuSource.obj" \
 	"$(INTDIR)\DjVuView.obj" \
@@ -84,7 +84,7 @@ LINK_OBJS = \
 	"$(INTDIR)\MyStatusBar.obj" \
 	"$(INTDIR)\MyTheme.obj" \
 	"$(INTDIR)\MyToolBar.obj" \
-	"$(INTDIR)\MyTreeCtrl.obj" \
+	"$(INTDIR)\MyTreeView.obj" \
 	"$(INTDIR)\NavPane.obj" \
 	"$(INTDIR)\PageIndexWnd.obj" \
 	"$(INTDIR)\PrintDlg.obj" \
@@ -113,7 +113,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\AnnotationDlg.obj" : AnnotationDlg.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\AppSettings.obj" : AppSettings.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\BookmarkDlg.obj" : BookmarkDlg.cpp "$(INTDIR)" $(PCH)
-"$(INTDIR)\BookmarksWnd.obj" : BookmarksWnd.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\BookmarksView.obj" : BookmarksView.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DjVuDoc.obj" : DjVuDoc.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DjVuSource.obj" : DjVuSource.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\DjVuView.obj" : DjVuView.cpp "$(INTDIR)" $(PCH)
@@ -139,7 +139,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\MyStatusBar.obj" : MyStatusBar.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyTheme.obj" : MyTheme.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyToolBar.obj" : MyToolBar.cpp "$(INTDIR)" $(PCH)
-"$(INTDIR)\MyTreeCtrl.obj" : MyTreeCtrl.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MyTreeView.obj" : MyTreeView.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\NavPane.obj" : NavPane.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\PageIndexWnd.obj" : PageIndexWnd.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\PrintDlg.obj" : PrintDlg.cpp "$(INTDIR)" $(PCH)

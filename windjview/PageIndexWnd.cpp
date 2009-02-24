@@ -52,6 +52,7 @@ END_MESSAGE_MAP()
 CPageIndexWnd::CPageIndexWnd()
 	: m_bChangeInternal(false)
 {
+	m_pList = new CMyTreeView();
 }
 
 CPageIndexWnd::~CPageIndexWnd()
@@ -89,18 +90,18 @@ int CPageIndexWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_cboLookup.SetFont(&m_font);
 	m_cboLookup.SetItemHeight(-1, 16);
 
-	m_list.Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
-		| TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_TRACKSELECT,
-		CRect(), this, ID_LIST);
+	m_pList->Create(NULL, NULL, WS_VISIBLE | WS_TABSTOP | WS_CHILD
+			| TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_TRACKSELECT,
+			CRect(), this, ID_LIST);
 
 	m_imageList.Create(16, 16, ILC_COLOR24 | ILC_MASK, 0, 1);
 	CBitmap bitmap;
 	bitmap.LoadBitmap(IDB_BOOKMARKS);
 	m_imageList.Add(&bitmap, RGB(192, 64, 32));
-	m_list.SetImageList(&m_imageList, TVSIL_NORMAL);
+	m_pList->SetImageList(&m_imageList, TVSIL_NORMAL);
 
-	m_list.SetItemHeight(20);
-	m_list.SetWrapLabels(false);
+	m_pList->SetItemHeight(20);
+	m_pList->SetWrapLabels(false);
 
 	UpdateControls();
 	Invalidate();
@@ -167,15 +168,15 @@ int CPageIndexWnd::AddEntries(const XMLNode& parent, HTREEITEM hParent)
 		}
 
 		++nCount;
-		HTREEITEM hItem = m_list.InsertItem(strTitle, 0, 1, hParent);
-		m_list.SetItemData(hItem, m_entries.size() - 1);
+		HTREEITEM hItem = m_pList->InsertItem(strTitle, 0, 1, hParent);
+		m_pList->SetItemData(hItem, m_entries.size() - 1);
 		entry.hItem = hItem;
 
 		entry.strFirst = MapCharacters(tolower(entry.strFirst));
 		entry.strLast = MapCharacters(tolower(entry.strLast));
 
 		if (AddEntries(node, hItem) > 0)
-			m_list.Expand(hItem, TVE_EXPAND);
+			m_pList->Expand(hItem, TVE_EXPAND);
 	}
 
 	return nCount;
@@ -194,7 +195,7 @@ bool CPageIndexWnd::InitPageIndex(DjVuSource* pSource)
 
 	InitCharacterMap(pSource->GetDictionaryInfo()->strCharMap);
 
-	m_list.BeginBatchUpdate();
+	m_pList->BeginBatchUpdate();
 
 	AddEntries(*parser.GetRoot(), TVI_ROOT);
 
@@ -209,7 +210,7 @@ bool CPageIndexWnd::InitPageIndex(DjVuSource* pSource)
 
 	stable_sort(m_sorted.begin(), m_sorted.end(), CompareEntries);
 
-	m_list.EndBatchUpdate();
+	m_pList->EndBatchUpdate();
 
 	return !m_entries.empty();
 }
@@ -304,7 +305,7 @@ wstring& CPageIndexWnd::MapCharacters(wstring& str)
 
 void CPageIndexWnd::GoToItem(HTREEITEM hItem)
 {
-	size_t nEntry = m_list.GetItemData(hItem);
+	size_t nEntry = m_pList->GetItemData(hItem);
 	IndexEntry& entry = m_entries[nEntry];
 
 	if (!entry.strLink.empty())
@@ -324,7 +325,7 @@ void CPageIndexWnd::OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
 		{
 			m_bChangeInternal = true;
 
-			size_t nEntry = m_list.GetItemData(hItem);
+			size_t nEntry = m_pList->GetItemData(hItem);
 			IndexEntry& entry = m_entries[nEntry];
 			m_cboLookup.SetWindowText(entry.strText);
 			m_cboLookup.GetEditCtrl()->SetSel(entry.strText.GetLength(), -1);
@@ -358,7 +359,7 @@ void CPageIndexWnd::OnKeyDownList(NMHDR* pNMHDR, LRESULT* pResult)
 
 	if (pTVKeyDown->wVKey == VK_RETURN || pTVKeyDown->wVKey == VK_SPACE)
 	{
-		HTREEITEM hItem = m_list.GetSelectedItem();
+		HTREEITEM hItem = m_pList->GetSelectedItem();
 		if (hItem != NULL)
 			GoToItem(hItem);
 
@@ -375,7 +376,7 @@ void CPageIndexWnd::OnFinishEditText()
 	m_cboLookup.GetEditCtrl()->SetSel(-1, -1);
 	m_bChangeInternal = false;
 
-	HTREEITEM hItem = m_list.GetSelectedItem();
+	HTREEITEM hItem = m_pList->GetSelectedItem();
 	if (hItem != NULL)
 		GoToItem(hItem);
 }
@@ -413,9 +414,9 @@ void CPageIndexWnd::OnChangeText()
 
 	m_bChangeInternal = true;
 	if (left >= 0 && left < static_cast<int>(m_sorted.size()))
-		m_list.SelectItem(m_sorted[left]->hItem);
+		m_pList->SelectItem(m_sorted[left]->hItem);
 	else
-		m_list.SelectItem(NULL);
+		m_pList->SelectItem(NULL);
 	m_bChangeInternal = false;
 }
 
@@ -427,7 +428,7 @@ void CPageIndexWnd::Lookup(const CString& strLookup)
 
 	OnChangeText();
 
-	HTREEITEM hItem = m_list.GetSelectedItem();
+	HTREEITEM hItem = m_pList->GetSelectedItem();
 	if (hItem != NULL)
 		GoToItem(hItem);
 }
@@ -464,7 +465,7 @@ void CPageIndexWnd::UpdateControls()
 	CSize szList(max(s_nMinTextWidth, szClient.cx - 1), max(s_nMinListHeight, szClient.cy - ptList.y));
 
 	m_cboLookup.SetWindowPos(NULL, ptText.x, ptText.y, szText.cx, szText.cy, SWP_NOACTIVATE);
-	m_list.SetWindowPos(NULL, ptList.x, ptList.y, szList.cx, szList.cy, SWP_NOACTIVATE);
+	m_pList->SetWindowPos(NULL, ptList.x, ptList.y, szList.cx, szList.cy, SWP_NOACTIVATE);
 
 	m_rcText = CRect(ptText, szText);
 	m_rcList = CRect(ptList, szList);
@@ -500,7 +501,7 @@ BOOL CPageIndexWnd::PreTranslateMessage(MSG* pMsg)
 	{
 		if (pMsg->wParam == VK_RETURN)
 		{
-			HTREEITEM hItem = m_list.GetSelectedItem();
+			HTREEITEM hItem = m_pList->GetSelectedItem();
 			if (hItem != NULL)
 				GoToItem(hItem);
 
@@ -509,7 +510,7 @@ BOOL CPageIndexWnd::PreTranslateMessage(MSG* pMsg)
 		if (pMsg->wParam == VK_UP || pMsg->wParam == VK_DOWN ||
 			pMsg->wParam == VK_PRIOR || pMsg->wParam == VK_NEXT)
 		{
-			m_list.SendMessage(WM_KEYDOWN, pMsg->wParam, pMsg->lParam);
+			m_pList->SendMessage(WM_KEYDOWN, pMsg->wParam, pMsg->lParam);
 			return true;
 		}
 	}
@@ -533,5 +534,9 @@ void CPageIndexWnd::OnSetFocus(CWnd* pOldWnd)
 
 int CPageIndexWnd::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
 {
+	int nResult = CWnd::OnMouseActivate(pDesktopWnd, nHitTest, message);
+	if (nResult == MA_NOACTIVATE || nResult == MA_NOACTIVATEANDEAT)
+		return nResult;
+
 	return MA_NOACTIVATE;
 }

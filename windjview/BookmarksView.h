@@ -21,20 +21,20 @@
 #pragma once
 
 #include "Global.h"
-#include "MyTreeCtrl.h"
+#include "MyTreeView.h"
 class DjVuSource;
 struct Bookmark;
 
 
-// CBookmarksWnd window
+// CBookmarksView window
 
-class CBookmarksWnd : public CMyTreeCtrl, public Observer, public Observable
+class CBookmarksView : public CMyTreeView, public Observer, public Observable
 {
-	DECLARE_DYNAMIC(CBookmarksWnd)
+	DECLARE_DYNAMIC(CBookmarksView)
 
 public:
-	CBookmarksWnd(DjVuSource* pSource);
-	virtual ~CBookmarksWnd();
+	CBookmarksView(DjVuSource* pSource);
+	virtual ~CBookmarksView();
 
 	void LoadContents();
 	void LoadUserBookmarks();
@@ -75,6 +75,6 @@ protected:
 	afx_msg void OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu);
 	afx_msg void OnEnterIdle(UINT nWhy, CWnd* pWho);
 	afx_msg LRESULT OnShowSettings(WPARAM wParam, LPARAM lParam);
-	virtual void PostNcDestroy();
+	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
 	DECLARE_MESSAGE_MAP()
 };

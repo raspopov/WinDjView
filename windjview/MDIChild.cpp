@@ -24,7 +24,7 @@
 
 #include "DjVuDoc.h"
 #include "DjVuSource.h"
-#include "BookmarksWnd.h"
+#include "BookmarksView.h"
 #include "ThumbnailsView.h"
 #include "PageIndexWnd.h"
 #include "SearchResultsView.h"
@@ -134,7 +134,7 @@ void CMDIChild::OnInitialUpdate()
 
 	if (pSource->GetContents() != NULL)
 	{
-		m_pContentsTree = new CBookmarksWnd(pSource);
+		m_pContentsTree = new CBookmarksView(pSource);
 		m_pContentsTree->Create(NULL, NULL, WS_CHILD | WS_TABSTOP | TVS_HASLINES
 			| TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP
 			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(0, 0, 0, 0), &m_navPane, 1);
@@ -161,14 +161,14 @@ void CMDIChild::OnInitialUpdate()
 	}
 
 	m_pThumbnailsView = new CThumbnailsView(pSource);
-	m_pThumbnailsView->Create(NULL, NULL, WS_CHILD | WS_TABSTOP | WS_HSCROLL | WS_VSCROLL,
+	m_pThumbnailsView->Create(NULL, NULL, WS_CHILD | WS_TABSTOP,
 			CRect(0, 0, 0, 0), &m_navPane, 3);
 	m_navPane.AddTab(LoadString(IDS_THUMBNAILS_TAB), m_pThumbnailsView);
 	m_navPane.SetTabSettings(m_pThumbnailsView, true);
 
 	if (!pSource->GetSettings()->bookmarks.empty())
 	{
-		CBookmarksWnd* pBookmarks = GetBookmarksTree(false);
+		CBookmarksView* pBookmarks = GetBookmarksTree(false);
 		pBookmarks->LoadUserBookmarks();
 	}
 
@@ -207,13 +207,13 @@ CSearchResultsView* CMDIChild::GetSearchResults(bool bActivate)
 	return m_pResultsView;
 }
 
-CBookmarksWnd* CMDIChild::GetBookmarksTree(bool bActivate)
+CBookmarksView* CMDIChild::GetBookmarksTree(bool bActivate)
 {
 	if (m_pBookmarksTree == NULL)
 	{
 		DjVuSource* pSource = m_pDocument->GetSource();
 
-		m_pBookmarksTree = new CBookmarksWnd(pSource);
+		m_pBookmarksTree = new CBookmarksView(pSource);
 		m_pBookmarksTree->Create(NULL, NULL, WS_CHILD | WS_TABSTOP | TVS_HASLINES
 			| TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP
 			| TVS_SHOWSELALWAYS | TVS_TRACKSELECT, CRect(0, 0, 0, 0), &m_navPane, 5);

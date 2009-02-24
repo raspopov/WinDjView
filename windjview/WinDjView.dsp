@@ -162,7 +162,7 @@ SOURCE=.\BookmarkDlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\BookmarksWnd.cpp
+SOURCE=.\BookmarksView.cpp
 # End Source File
 # Begin Source File
 
@@ -266,7 +266,7 @@ SOURCE=.\MyToolBar.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\MyTreeCtrl.cpp
+SOURCE=.\MyTreeView.cpp
 # End Source File
 # Begin Source File
 
@@ -367,7 +367,7 @@ SOURCE=.\BookmarkDlg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\BookmarksWnd.h
+SOURCE=.\BookmarksView.h
 # End Source File
 # Begin Source File
 
@@ -475,7 +475,7 @@ SOURCE=.\MyToolBar.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\MyTreeCtrl.h
+SOURCE=.\MyTreeView.h
 # End Source File
 # Begin Source File
 

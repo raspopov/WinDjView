@@ -33,7 +33,7 @@
 #include "ZoomDlg.h"
 #include "GotoPageDlg.h"
 #include "FindDlg.h"
-#include "BookmarksWnd.h"
+#include "BookmarksView.h"
 #include "SearchResultsView.h"
 #include "FullscreenWnd.h"
 #include "ThumbnailsView.h"
@@ -6306,7 +6306,7 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 	{
 		if (m_nType == Normal)
 		{
-			CBookmarksWnd* pBookmarks = GetMDIChild()->GetBookmarksTree(true);
+			CBookmarksView* pBookmarks = GetMDIChild()->GetBookmarksTree(true);
 			pBookmarks->AddObserver(this);
 			pBookmarks->LoadUserBookmarks();
 		}
@@ -6417,7 +6417,7 @@ void CDjVuView::OnHighlight(UINT nID)
 		m_pSource->GetSettings()->bookmarks.push_back(bookmark);
 		Bookmark& bmNew = m_pSource->GetSettings()->bookmarks.back();
 
-		CBookmarksWnd* pBookmarks = GetMDIChild()->GetBookmarksTree();
+		CBookmarksView* pBookmarks = GetMDIChild()->GetBookmarksTree();
 		pBookmarks->AddObserver(this);
 		pBookmarks->AddBookmark(bmNew);
 	}
@@ -6514,7 +6514,7 @@ void CDjVuView::OnAddBookmark()
 		m_pSource->GetSettings()->bookmarks.push_back(bookmark);
 		Bookmark& bmNew = m_pSource->GetSettings()->bookmarks.back();
 
-		CBookmarksWnd* pBookmarks = GetMDIChild()->GetBookmarksTree();
+		CBookmarksView* pBookmarks = GetMDIChild()->GetBookmarksTree();
 		pBookmarks->AddObserver(this);
 		pBookmarks->AddBookmark(bmNew);
 	}
