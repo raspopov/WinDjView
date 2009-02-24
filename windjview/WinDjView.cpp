@@ -2491,6 +2491,11 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 	if (nCode == HCBT_ACTIVATE)
 	{
 		HWND hwndMessageBox = (HWND) wParam;
+
+		ASSERT(theApp.m_pMBWnd == NULL);
+		theApp.m_pMBWnd = new CMyMessageBox();
+		theApp.m_pMBWnd->SubclassWindow(hwndMessageBox);
+
 		HWND hwndMessage = GetDlgItem(hwndMessageBox, 0xFFFF);
 		if (hwndMessage != NULL)
 		{
@@ -2510,6 +2515,7 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 					ES_READONLY | ES_MULTILINE | WS_CHILD,
 					pt.x, pt.y, rc.Width() + 6, rc.Height(),
 					hwndMessageBox, (HMENU) 0xFFFE, NULL, NULL);
+			theApp.m_pMBWnd->m_hwndEdit = hwndEdit;
 
 			HFONT hFont = (HFONT) ::SendMessage(hwndMessage, WM_GETFONT, 0, 0);
 			::SendMessage(hwndEdit, WM_SETFONT, (WPARAM) hFont, 1);
@@ -2528,6 +2534,7 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 					pt.x, pt.y + rc.Height() - rcCheckBox.Height(),
 					rc.Width() + 6, rcCheckBox.Height(),
 					hwndMessageBox, (HMENU) 0xFFF0, NULL, NULL);
+				theApp.m_pMBWnd->m_hwndCheck = hwndCheckBox;
 
 				::SendMessage(hwndCheckBox, WM_SETFONT, (WPARAM) hFont, 1);
 				::MoveWindow(hwndEdit, pt.x, pt.y, rc.Width() + 6,
@@ -2591,13 +2598,6 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 		if (!strNo.IsEmpty() && GetDlgItem(hwndMessageBox, IDNO) != NULL)
 			SetDlgItemText(hwndMessageBox, IDNO, strNo);
 
-		if (theApp.m_mbo.pCheckValue != NULL)
-		{
-			ASSERT(theApp.m_pMBWnd == NULL);
-			theApp.m_pMBWnd = new CMyMessageBox();
-			theApp.m_pMBWnd->SubclassWindow(hwndMessageBox);
-		}
-
 		::UnhookWindowsHookEx(theApp.m_hMBHook);
 		theApp.m_hMBHook = NULL;
 	}
@@ -2607,14 +2607,28 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 BOOL CDjViewApp::CMyMessageBox::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 {
-	UINT nID = LOWORD(wParam);
-	HWND hWndCtrl = (HWND) lParam;
-	int nCode = HIWORD(wParam);
-
-	if (message == WM_COMMAND && nCode == BN_CLICKED && nID == 0xFFF0 && hWndCtrl != NULL)
+	if (message == WM_COMMAND)
 	{
-		ASSERT(theApp.m_mbo.pCheckValue != NULL);
-		*theApp.m_mbo.pCheckValue = (::SendMessage(hWndCtrl, BM_GETCHECK, 0, 0) != 0);
+		int nCode = HIWORD(wParam);
+		UINT nID = LOWORD(wParam);
+		HWND hWndCtrl = (HWND) lParam;
+		if (nCode == BN_CLICKED && nID == 0xFFF0 && hWndCtrl == m_hwndCheck)
+		{
+			ASSERT(theApp.m_mbo.pCheckValue != NULL);
+			*theApp.m_mbo.pCheckValue = (::SendMessage(hWndCtrl, BM_GETCHECK, 0, 0) != 0);
+		}
+	}
+	else if (message == WM_SETCURSOR)
+	{
+		UINT nHitTest = LOWORD(lParam);
+		HWND hWndCtrl = (HWND) wParam;
+		if (nHitTest == HTCLIENT && hWndCtrl == m_hwndEdit)
+		{
+			::SetCursor(::LoadCursor(NULL, IDC_ARROW));
+			if (pResult != NULL)
+				*pResult = 1;
+			return true;
+		}
 	}
 
 	return CWnd::OnWndMsg(message, wParam, lParam, pResult);

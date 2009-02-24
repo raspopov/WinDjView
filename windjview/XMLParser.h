@@ -89,7 +89,7 @@ private:
 	void pushBack(int c);
 	vector<int> pushed;
 
-	void skipWhitespace();
+	bool skipWhitespace();
 	void readName(wstring& name);
 	void readAttrValue(wstring& text);
 	void readTag(XMLNode& node);

@@ -123,6 +123,8 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + lpszPathName + LoadString(IDS_NOT_VALID_DOCUMENT));
 		return false;
 	}
+
+	::SHAddToRecentDocs(SHARD_PATH, lpszPathName);
 /*
 	if (m_pSource->IsDictionary() && !m_pSource->GetDictionaryInfo()->bInstalled)
 	{

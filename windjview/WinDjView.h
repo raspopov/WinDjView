@@ -199,7 +199,6 @@ protected:
 
 	HHOOK m_hMBHook;
 	UINT m_nMBType;
-	CWnd* m_pMBWnd;
 	CString m_strMBPrompt;
 	MessageBoxOptions m_mbo;
 	static LRESULT CALLBACK MBHookProc(int nCode, WPARAM wParam, LPARAM lParam);
@@ -207,9 +206,12 @@ protected:
 	class CMyMessageBox : public CWnd
 	{
 	public:
+		CMyMessageBox() : m_hwndEdit(NULL), m_hwndCheck(NULL) {}
 		virtual ~CMyMessageBox() {}
 		virtual BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
+		HWND m_hwndEdit, m_hwndCheck;
 	};
+	CMyMessageBox* m_pMBWnd;
 
 	struct LanguageInfo
 	{

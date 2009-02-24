@@ -343,10 +343,15 @@ int XMLParser::nextChar()
 	throw errIllegalCharacter;
 }
 
-void XMLParser::skipWhitespace()
+bool XMLParser::skipWhitespace()
 {
+	bool skipped = false;
 	while (cur == 0x9 || cur == 0xA || cur == 0x20)
+	{
+		skipped = true;
 		nextChar();
+	}
+	return skipped;
 }
 
 void XMLParser::readName(wstring& name)
@@ -545,10 +550,13 @@ void XMLParser::readTag(XMLNode& node)
 
 	nextChar();
 	readName(node.tagName);
-	skipWhitespace();
+	bool whitespace = skipWhitespace();
 
 	while (cur != EOF && cur != '/' && cur != '>')
 	{
+		if (!whitespace)
+			throw errInvalidTag;
+
 		wstring attr;
 		readName(attr);
 		skipWhitespace();
@@ -557,7 +565,8 @@ void XMLParser::readTag(XMLNode& node)
 		nextChar();
 		skipWhitespace();
 		readAttrValue(node.attributes[attr]);
-		skipWhitespace();
+
+		whitespace = skipWhitespace();
 	}
 
 	if (cur == '>')
