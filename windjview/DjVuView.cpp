@@ -6302,6 +6302,15 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 		if (!m_bDragging && !m_bPanning)
 			UpdateHoverAnnotation();
 	}
+	else if (message->code == BOOKMARKS_CHANGED)
+	{
+		if (m_nType == Normal)
+		{
+			CBookmarksWnd* pBookmarks = GetMDIChild()->GetBookmarksTree(true);
+			pBookmarks->AddObserver(this);
+			pBookmarks->LoadUserBookmarks();
+		}
+	}
 }
 
 void CDjVuView::UpdatePageNumber()

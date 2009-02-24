@@ -485,6 +485,11 @@ void Bookmark::swap(Bookmark& bm)
 		std::swap(nPage, bm.nPage);
 		std::swap(ptOffset, bm.ptOffset);
 		std::swap(bMargin, bm.bMargin);
+		std::swap(bZoom, bm.bZoom);
+		std::swap(nZoomType, bm.nZoomType);
+		std::swap(fZoom, bm.fZoom);
+		std::swap(nPrevZoomType, bm.nPrevZoomType);
+		std::swap(fPrevZoom, bm.fPrevZoom);
 	}
 }
 

@@ -515,14 +515,6 @@ void CMDIChild::OnUpdate(const Observable* source, const Message* message)
 		else
 			pSettings->nOpenSidebarTab = -1;
 	}
-	else if (message->code == BOOKMARKS_CHANGED)
-	{
-		if (!m_pDocument->GetSource()->GetSettings()->bookmarks.empty())
-		{
-			CBookmarksWnd* pBookmarks = GetBookmarksTree(true);
-			pBookmarks->LoadUserBookmarks();
-		}
-	}
 }
 
 void CMDIChild::OnShowWindow(BOOL bShow, UINT nStatus)

@@ -484,6 +484,9 @@ void CDjVuDoc::OnFileImportBookmarks()
 	for (it = settings.pageSettings.begin(); it != settings.pageSettings.end(); ++it)
 	{
 		int nPage = it->first;
+		if (nPage < 0 || nPage >= m_pSource->GetPageCount())
+			continue;
+
 		PageSettings& page = m_pSource->GetSettings()->pageSettings[nPage];
 		PageSettings& rhsPage = it->second;
 		page.anno.insert(page.anno.end(), rhsPage.anno.begin(), rhsPage.anno.end());

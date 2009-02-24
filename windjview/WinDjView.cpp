@@ -1422,7 +1422,10 @@ bool CDjViewApp::RegisterShellFileTypesElevate(CWnd* pWnd)
 	execinfo.lpParameters = _T("/RegisterFileTypes");
 	execinfo.nShow = SW_HIDE;
 	if (!ShellExecuteEx(&execinfo) || execinfo.hProcess == NULL)
+	{
+		::FreeLibrary(hKernel32);
 		return false;
+	}
 
 	bool bSuccess = false;
 	if (::WaitForSingleObject(execinfo.hProcess, INFINITE) == WAIT_OBJECT_0)
@@ -1636,12 +1639,6 @@ void CDjViewApp::SetLanguage(UINT nLangIndex)
 
 	if (nLangIndex == m_nLangIndex)
 		return;
-
-	if (m_nLangIndex != 0 && m_languages[m_nLangIndex].hInstance != NULL)
-	{
-		if (::FreeLibrary(m_languages[m_nLangIndex].hInstance))
-			m_languages[m_nLangIndex].hInstance = NULL;
-	}
 
 	m_nLangIndex = nLangIndex;
 	AfxSetResourceHandle(info.hInstance);
@@ -2511,7 +2508,7 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 			// Create the alternate EDIT window
 			HWND hwndEdit = ::CreateWindowEx(0, _T("edit"), strMessage,
 					ES_READONLY | ES_MULTILINE | WS_CHILD,
-					pt.x, pt.y, rc.Width() + 5, rc.Height(),
+					pt.x, pt.y, rc.Width() + 6, rc.Height(),
 					hwndMessageBox, (HMENU) 0xFFFE, NULL, NULL);
 
 			HFONT hFont = (HFONT) ::SendMessage(hwndMessage, WM_GETFONT, 0, 0);
@@ -2529,11 +2526,11 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 				HWND hwndCheckBox = ::CreateWindowEx(0, _T("button"),
 					theApp.m_mbo.strCheckBox, WS_CHILD | WS_TABSTOP | BS_AUTOCHECKBOX,
 					pt.x, pt.y + rc.Height() - rcCheckBox.Height(),
-					rc.Width() + 5, rcCheckBox.Height(),
+					rc.Width() + 6, rcCheckBox.Height(),
 					hwndMessageBox, (HMENU) 0xFFF0, NULL, NULL);
 
 				::SendMessage(hwndCheckBox, WM_SETFONT, (WPARAM) hFont, 1);
-				::MoveWindow(hwndEdit, pt.x, pt.y, rc.Width() + 5,
+				::MoveWindow(hwndEdit, pt.x, pt.y, rc.Width() + 6,
 						rc.Height() - rcCheckBox.Height(), true);
 
 				::SendMessage(hwndCheckBox, BM_SETCHECK, *theApp.m_mbo.pCheckValue, 0);

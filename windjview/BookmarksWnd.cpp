@@ -86,6 +86,7 @@ void CBookmarksWnd::LoadContents()
 {
 	BeginBatchUpdate();
 	DeleteAllItems();
+	m_links.clear();
 
 	const GPList<DjVmNav::DjVuBookMark>& bookmarks = m_pSource->GetContents()->getBookMarkList();
 	GPosition pos = bookmarks;
@@ -98,6 +99,7 @@ void CBookmarksWnd::LoadUserBookmarks()
 {
 	BeginBatchUpdate();
 	DeleteAllItems();
+	m_links.clear();
 
 	DocSettings* pSettings = m_pSource->GetSettings();
 
@@ -343,6 +345,9 @@ void CBookmarksWnd::DeleteBookmark(TreeNode* pNode)
 	{
 		m_pSource->GetSettings()->DeleteBookmark(pInfo->pBookmark);
 		DeleteItem((HTREEITEM) pNode);
+
+		pInfo->pBookmark = NULL;
+		pInfo->strURL.empty();
 	}
 
 	SetFocus();
