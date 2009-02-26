@@ -2433,10 +2433,15 @@ int CDjViewApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDHelp)
 
 int CDjViewApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDHelp, const MessageBoxOptions& mbo)
 {
+	set<CWnd*> disabled;
+	DisableTopLevelWindows(disabled);
+
+	ASSERT(m_pMBWnd == NULL);
+	m_pMBWnd = new CMyMessageBox();
+
 	ASSERT(m_hMBHook == NULL);
 	m_hMBHook = SetWindowsHookEx(WH_CBT, &MBHookProc, NULL, GetCurrentThreadId());
 	m_nMBType = nType;
-	m_pMBWnd = NULL;
 	m_mbo = mbo;
 
 	m_strMBPrompt = lpszPrompt;
@@ -2461,39 +2466,27 @@ int CDjViewApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDHelp, const
 	if (mbo.pCheckValue != NULL)
 		strNewPrompt += _T("\n\n") + m_mbo.strCheckBox;
 
-	set<CWnd*> disabled;
-	DisableTopLevelWindows(disabled);
-
 	int nResult = CWinApp::DoMessageBox(strNewPrompt, nType, nIDHelp);
 
-	EnableWindows(disabled);
+	::UnhookWindowsHookEx(m_hMBHook);
+	m_hMBHook = NULL;
 
-	if (m_hMBHook != NULL)
-	{
-		::UnhookWindowsHookEx(m_hMBHook);
-		m_hMBHook = NULL;
-	}
-
-	if (m_pMBWnd != NULL)
-	{
-		delete m_pMBWnd;
-		m_pMBWnd = NULL;
-	}
+	delete m_pMBWnd;
+	m_pMBWnd = NULL;
 
 	m_mbo.pCheckValue = NULL;
 
+	EnableWindows(disabled);
 	return nResult;
 }
 
 LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-	LRESULT lResult = 0;
-	if (nCode == HCBT_ACTIVATE)
+	ASSERT(theApp.m_pMBWnd != NULL);
+	if (nCode == HCBT_ACTIVATE && theApp.m_pMBWnd->m_hWnd == NULL)
 	{
 		HWND hwndMessageBox = (HWND) wParam;
-
-		ASSERT(theApp.m_pMBWnd == NULL);
-		theApp.m_pMBWnd = new CMyMessageBox();
+		ASSERT(hwndMessageBox != NULL);
 		theApp.m_pMBWnd->SubclassWindow(hwndMessageBox);
 
 		HWND hwndMessage = GetDlgItem(hwndMessageBox, 0xFFFF);
@@ -2597,9 +2590,6 @@ LRESULT CALLBACK CDjViewApp::MBHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 			SetDlgItemText(hwndMessageBox, IDYES, strYes);
 		if (!strNo.IsEmpty() && GetDlgItem(hwndMessageBox, IDNO) != NULL)
 			SetDlgItemText(hwndMessageBox, IDNO, strNo);
-
-		::UnhookWindowsHookEx(theApp.m_hMBHook);
-		theApp.m_hMBHook = NULL;
 	}
 
 	return ::CallNextHookEx(theApp.m_hMBHook, nCode, wParam, lParam);

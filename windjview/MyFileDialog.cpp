@@ -27,6 +27,14 @@
 #define new DEBUG_NEW
 #endif
 
+struct MyFileDialogData : public CNoTrackObject
+{
+	MyFileDialogData() : hHook(NULL) {}
+	virtual ~MyFileDialogData() {}
+	HHOOK hHook;
+};
+THREAD_LOCAL(MyFileDialogData, _myFileDlgData)
+
 
 // CMyFileDialog
 
@@ -36,6 +44,9 @@ CMyFileDialog::CMyFileDialog(BOOL bOpenFileDialog, LPCTSTR lpszDefExt,
 		LPCTSTR lpszFileName, DWORD dwFlags, LPCTSTR lpszFilter, CWnd* pParentWnd)
 	: CFileDialog(bOpenFileDialog, lpszDefExt, lpszFileName, dwFlags, lpszFilter, pParentWnd)
 {
+	m_ofn.Flags |= OFN_EXPLORER | OFN_ENABLESIZING;
+	m_ofn.Flags &= ~OFN_ENABLEHOOK;
+	m_ofn.lpfnHook = NULL;
 }
 
 
@@ -52,8 +63,9 @@ int CMyFileDialog::DoModal()
 	theApp.DisableTopLevelWindows(disabled);
 
 	ASSERT_VALID(this);
-	ASSERT(m_ofn.Flags & OFN_ENABLEHOOK);
-	ASSERT(m_ofn.lpfnHook != NULL); // can still be a user hook
+	ASSERT((m_ofn.Flags & OFN_EXPLORER) != 0);
+	ASSERT((m_ofn.Flags & OFN_ENABLEHOOK) == 0);
+	ASSERT(m_ofn.lpfnHook == NULL);  // Not using hooks
 
 	// zero out the file buffer for consistent parsing later
 	ASSERT(AfxIsValidAddress(m_ofn.lpstrFile, m_ofn.nMaxFile));
@@ -67,20 +79,22 @@ int CMyFileDialog::DoModal()
 	HWND hWndFocus = ::GetFocus();
 	BOOL bEnableParent = FALSE;
 	m_ofn.hwndOwner = PreModal();
-	AfxUnhookWindowCreate();
 	if (m_ofn.hwndOwner != NULL && ::IsWindowEnabled(m_ofn.hwndOwner))
 	{
 		bEnableParent = TRUE;
 		::EnableWindow(m_ofn.hwndOwner, FALSE);
 	}
 
+	AfxUnhookWindowCreate();
+
 	_AFX_THREAD_STATE* pThreadState = AfxGetThreadState();
 	ASSERT(pThreadState->m_pAlternateWndInit == NULL);
+	pThreadState->m_pAlternateWndInit = this;
 
-	if (m_ofn.Flags & OFN_EXPLORER)
-		pThreadState->m_pAlternateWndInit = this;
-	else
-		AfxHookWindowCreate(this);
+	// Install our own hook to subclass the file dialog
+	MyFileDialogData* pMyData = _myFileDlgData.GetData();
+	ASSERT(pMyData->hHook == NULL);
+	pMyData->hHook = ::SetWindowsHookEx(WH_CBT, &HookProc, NULL, ::GetCurrentThreadId());
 
 	ZeroMemory(&m_ofnEx, sizeof(m_ofnEx));
 	if (IsWin2kOrLater())
@@ -111,6 +125,9 @@ int CMyFileDialog::DoModal()
 		ASSERT(pThreadState->m_pAlternateWndInit == NULL);
 	pThreadState->m_pAlternateWndInit = NULL;
 
+	::UnhookWindowsHookEx(pMyData->hHook);
+	pMyData->hHook = NULL;
+
 	// WINBUG: Second part of special case for file open/save dialog.
 	if (bEnableParent)
 		::EnableWindow(m_ofnEx.hwndOwner, TRUE);
@@ -121,6 +138,28 @@ int CMyFileDialog::DoModal()
 
 	theApp.EnableWindows(disabled);
 	return nResult ? nResult : IDCANCEL;
+}
+
+LRESULT CALLBACK CMyFileDialog::HookProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	_AFX_THREAD_STATE* pThreadState = AfxGetThreadState();
+	if (nCode == HCBT_ACTIVATE)
+	{
+		HWND hWnd = (HWND) wParam;
+		ASSERT(hWnd != NULL);
+
+		if (pThreadState->m_pAlternateWndInit != NULL && CWnd::FromHandlePermanent(hWnd) == NULL)
+		{
+			ASSERT_KINDOF(CFileDialog, pThreadState->m_pAlternateWndInit);
+			pThreadState->m_pAlternateWndInit->SubclassWindow(hWnd);
+
+			pThreadState->m_pAlternateWndInit->CenterWindow();
+			pThreadState->m_pAlternateWndInit = NULL;
+		}
+	}
+
+	MyFileDialogData* pMyData = _myFileDlgData.GetData();
+	return ::CallNextHookEx(pMyData->hHook, nCode, wParam, lParam);
 }
 
 BOOL CMyFileDialog::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)

@@ -52,6 +52,8 @@ public:
 protected:
 	OpenFileNameEx m_ofnEx; // Windows 2000/XP version of OPENFILENAME
 
+	static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
+
 	virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
 };
