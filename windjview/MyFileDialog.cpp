@@ -38,19 +38,61 @@ THREAD_LOCAL(MyFileDialogData, _myFileDlgData)
 
 // CMyFileDialog
 
-IMPLEMENT_DYNAMIC(CMyFileDialog, CFileDialog)
+IMPLEMENT_DYNAMIC(CMyFileDialog, CDialog)
 
-CMyFileDialog::CMyFileDialog(BOOL bOpenFileDialog, LPCTSTR lpszDefExt,
+CMyFileDialog::CMyFileDialog(bool bOpenFileDialog, LPCTSTR lpszDefExt,
 		LPCTSTR lpszFileName, DWORD dwFlags, LPCTSTR lpszFilter, CWnd* pParentWnd)
-	: CFileDialog(bOpenFileDialog, lpszDefExt, lpszFileName, dwFlags, lpszFilter, pParentWnd)
+	: CCommonDialog(pParentWnd)
 {
-	m_ofn.Flags |= OFN_EXPLORER | OFN_ENABLESIZING;
-	m_ofn.Flags &= ~OFN_ENABLEHOOK;
-	m_ofn.lpfnHook = NULL;
+	ASSERT((dwFlags & (OFN_ENABLETEMPLATE | OFN_ENABLEHOOK)) == 0);
+
+	ZeroMemory(&m_ofn, sizeof(m_ofn));
+	ZeroMemory(m_szFileName, sizeof(m_szFileName));
+	ZeroMemory(m_szFileTitle, sizeof(m_szFileTitle));
+
+	if (IsWin2kOrLater())
+	{
+		m_ofn.lStructSize = sizeof(m_ofn);
+	}
+	else
+	{
+#if defined(OPENFILENAME_SIZE_VERSION_400)
+		m_ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+#else
+		m_ofn.lStructSize = sizeof(OPENFILENAME);
+#endif
+	}
+
+	m_bOpenFileDialog = bOpenFileDialog;
+	m_nIDHelp = bOpenFileDialog ? AFX_IDD_FILEOPEN : AFX_IDD_FILESAVE;
+
+	m_ofn.lpstrFile = m_szFileName;
+	m_ofn.nMaxFile = _MAX_PATH + 1;
+	m_ofn.lpstrDefExt = lpszDefExt;
+	m_ofn.lpstrFileTitle = m_szFileTitle;
+	m_ofn.nMaxFileTitle = _MAX_PATH + 1;
+	m_ofn.Flags |= dwFlags | OFN_EXPLORER | OFN_ENABLESIZING;
+	m_ofn.hInstance = AfxGetResourceHandle();
+
+	// setup initial file name
+	if (lpszFileName != NULL)
+		_tcsncpy(m_szFileName, lpszFileName, _MAX_PATH);
+
+	// Translate filter into commdlg format (lots of \0)
+	if (lpszFilter != NULL)
+	{
+		m_strFilter = lpszFilter;
+		LPTSTR pch = m_strFilter.GetBuffer(0); // modify the buffer in place
+		// MFC delimits with '|' not '\0'
+		while ((pch = _tcschr(pch, '|')) != NULL)
+			*pch++ = '\0';
+		m_ofn.lpstrFilter = m_strFilter;
+		// do not call ReleaseBuffer() since the string contains '\0' characters
+	}
 }
 
 
-BEGIN_MESSAGE_MAP(CMyFileDialog, CFileDialog)
+BEGIN_MESSAGE_MAP(CMyFileDialog, CCommonDialog)
 END_MESSAGE_MAP()
 
 
@@ -96,30 +138,11 @@ int CMyFileDialog::DoModal()
 	ASSERT(pMyData->hHook == NULL);
 	pMyData->hHook = ::SetWindowsHookEx(WH_CBT, &HookProc, NULL, ::GetCurrentThreadId());
 
-	ZeroMemory(&m_ofnEx, sizeof(m_ofnEx));
-	if (IsWin2kOrLater())
-	{
-		m_ofnEx.lStructSize = sizeof(m_ofnEx);
-	}
-	else
-	{
-#if defined(OPENFILENAME_SIZE_VERSION_400)
-		m_ofnEx.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-#else
-		m_ofnEx.lStructSize = sizeof(OPENFILENAME);
-#endif
-	}
-
-	ASSERT(m_ofnEx.lStructSize >= m_ofn.lStructSize);
-	memcpy(&m_ofnEx.hwndOwner, &m_ofn.hwndOwner, m_ofn.lStructSize - sizeof(DWORD));
-
 	int nResult;
 	if (m_bOpenFileDialog)
-		nResult = ::GetOpenFileName(&m_ofnEx);
+		nResult = ::GetOpenFileName(&m_ofn);
 	else
-		nResult = ::GetSaveFileName(&m_ofnEx);
-
-	memcpy(&m_ofn.hwndOwner, &m_ofnEx.hwndOwner, m_ofn.lStructSize - sizeof(DWORD));
+		nResult = ::GetSaveFileName(&m_ofn);
 
 	if (nResult)
 		ASSERT(pThreadState->m_pAlternateWndInit == NULL);
@@ -130,7 +153,7 @@ int CMyFileDialog::DoModal()
 
 	// WINBUG: Second part of special case for file open/save dialog.
 	if (bEnableParent)
-		::EnableWindow(m_ofnEx.hwndOwner, TRUE);
+		::EnableWindow(m_ofn.hwndOwner, TRUE);
 	if (::IsWindow(hWndFocus))
 		::SetFocus(hWndFocus);
 
@@ -150,7 +173,7 @@ LRESULT CALLBACK CMyFileDialog::HookProc(int nCode, WPARAM wParam, LPARAM lParam
 
 		if (pThreadState->m_pAlternateWndInit != NULL && CWnd::FromHandlePermanent(hWnd) == NULL)
 		{
-			ASSERT_KINDOF(CFileDialog, pThreadState->m_pAlternateWndInit);
+			ASSERT_KINDOF(CMyFileDialog, pThreadState->m_pAlternateWndInit);
 			pThreadState->m_pAlternateWndInit->SubclassWindow(hWnd);
 
 			pThreadState->m_pAlternateWndInit->CenterWindow();
@@ -164,7 +187,41 @@ LRESULT CALLBACK CMyFileDialog::HookProc(int nCode, WPARAM wParam, LPARAM lParam
 
 BOOL CMyFileDialog::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 {
-	memcpy(&m_ofn.hwndOwner, &m_ofnEx.hwndOwner, m_ofn.lStructSize - sizeof(DWORD));
+	return CCommonDialog::OnNotify(wParam, lParam, pResult);
+}
 
-	return CFileDialog::OnNotify(wParam, lParam, pResult);
+CString CMyFileDialog::GetPathName() const
+{
+	ASSERT(m_hWnd == NULL);
+	return m_ofn.lpstrFile;
+}
+
+CString CMyFileDialog::GetFileName() const
+{
+	ASSERT(m_hWnd == NULL);
+	return m_ofn.lpstrFileTitle;
+}
+
+CString CMyFileDialog::GetFileExt() const
+{
+	ASSERT(m_hWnd == NULL);
+	if (m_ofn.nFileExtension == 0)
+		return _T("");
+	else
+		return m_ofn.lpstrFile + m_ofn.nFileExtension;
+}
+
+CString CMyFileDialog::GetFileTitle() const
+{
+	CString strResult = GetFileName();
+	LPTSTR pszBuffer = strResult.GetBuffer();
+	::PathRemoveExtension(pszBuffer);
+	strResult.ReleaseBuffer();
+	return strResult;
+}
+
+bool CMyFileDialog::GetReadOnlyPref() const
+{
+	ASSERT(m_hWnd == NULL);
+	return (m_ofn.Flags & OFN_READONLY) != 0;
 }

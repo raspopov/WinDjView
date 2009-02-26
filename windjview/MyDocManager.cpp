@@ -100,7 +100,7 @@ BOOL CMyDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle,
 {
 	// From MFC: CDocManager::DoPromptFileName
 
-	CMyFileDialog dlgFile(bOpenFileDialog);
+	CMyFileDialog dlgFile(!!bOpenFileDialog);
 
 	CString title;
 	VERIFY(title.LoadString(nIDSTitle == AFX_IDS_OPENFILE ? IDS_OPENFILE : nIDSTitle));
@@ -143,7 +143,7 @@ BOOL CMyDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle,
 
 	int nResult = dlgFile.DoModal();
 	fileName.ReleaseBuffer();
-	return nResult == IDOK;
+	return (nResult == IDOK);
 }
 
 CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName)

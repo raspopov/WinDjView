@@ -34,23 +34,37 @@ struct OpenFileNameEx : public OPENFILENAME
 
 // CMyFileDialog
 
-class CMyFileDialog : public CFileDialog
+class CMyFileDialog : public CCommonDialog
 {
 	DECLARE_DYNAMIC(CMyFileDialog)
 
 public:
-	CMyFileDialog(BOOL bOpenFileDialog, // TRUE for open, FALSE for FileSaveAs
+	explicit CMyFileDialog(bool bOpenFileDialog,  // true for open, false for FileSaveAs
 		LPCTSTR lpszDefExt = NULL,
 		LPCTSTR lpszFileName = NULL,
 		DWORD dwFlags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
 		LPCTSTR lpszFilter = NULL,
 		CWnd* pParentWnd = NULL);
 
-	// Override
+// Operations
+public:
+	CString GetPathName() const;  // Return full path and filename
+	CString GetFileName() const;  // Return only filename
+	CString GetFileExt() const;   // Return only ext
+	CString GetFileTitle() const; // Return file title
+	bool GetReadOnlyPref() const; // Return true if readonly checked
+
+	OpenFileNameEx m_ofn;  // Windows 2000/XP version of OPENFILENAME
+
+// Overrides
+public:
 	virtual int DoModal();
 
 protected:
-	OpenFileNameEx m_ofnEx; // Windows 2000/XP version of OPENFILENAME
+	bool m_bOpenFileDialog;
+	CString m_strFilter;  // Separate fields with '|', terminate with '||\0'
+	TCHAR m_szFileTitle[_MAX_PATH + 1];  // Contains file title after return
+	TCHAR m_szFileName[_MAX_PATH + 1];  // Contains full path name after return
 
 	static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
 
