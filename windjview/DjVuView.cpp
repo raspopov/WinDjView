@@ -765,6 +765,10 @@ void CDjVuView::DrawTransparentText(CDC* pDC, int nPage)
 
 	// Hide the displayed text by using raster operations.
 	pDC->SetROP2(R2_NOP);
+	pDC->SetBkMode(TRANSPARENT);
+	CPen penNull(PS_NULL, 0, RGB(0, 0, 0));
+	CPen* pOldPen = pDC->SelectObject(&penNull);
+
 	pDC->BeginPath();
 
 	CPoint ptTopLeft = ScreenToDjVu(nPage, rcClip.TopLeft() - page.ptOffset, true);
@@ -816,9 +820,10 @@ void CDjVuView::DrawTransparentText(CDC* pDC, int nPage)
 
 	pDC->EndPath();
 
-	// StrokePath will apply the NOP raster operation selected earlier, thus
-	// making the text invisible.
-	pDC->StrokePath();
+	// No need to do anything with the path: ExtTextOut has already been called.
+	// pDC->StrokePath();
+
+	pDC->SelectObject(pOldPen);
 }
 
 // CDjVuView printing

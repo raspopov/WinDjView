@@ -3,6 +3,7 @@ Copyright (C) 2004-2009 Andrew Zhezherun
 ----------------------------------------
 
 Changes in version 1.0.1 (2009-??-??):
++ Use new style file dialogs on Vista.
 + File open and save dialogs can be resized.
 * Fixed a problem with bookmarks not working immediately after import.
 * Several minor fixes.
