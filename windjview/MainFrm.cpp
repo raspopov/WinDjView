@@ -970,12 +970,12 @@ void CMainFrame::OnUpdateWindowList(CCmdUI* pCmdUI)
 	// Remove all window menu items
 	CDocument* pActiveDoc = GetActiveDocument();
 
-	const int nMaxWindows = 16;
+	const int nMaxWindows = ID_WINDOW_ACTIVATE_LAST - ID_WINDOW_ACTIVATE_FIRST + 1;
 	for (int i = 0; i < nMaxWindows; ++i)
 		pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + i, MF_BYCOMMAND);
 
 	int nDoc = 0;
-	for (CDjViewApp::DocIterator it; it; ++it, ++nDoc)
+	for (CDjViewApp::DocIterator it; it && nDoc < nMaxWindows; ++it, ++nDoc)
 	{
 		CDocument* pDoc = *it;
 

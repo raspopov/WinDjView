@@ -542,7 +542,7 @@ void CDjVuView::DrawAnnotation(CDC* pDC, const Annotation& anno, int nPage, bool
 					CPoint(rcBounds.left + nBorderWidth - 1, rcBounds.top + nBorderWidth - 1),
 					CPoint(rcBounds.left + nBorderWidth - 1, rcBounds.bottom - nBorderWidth),
 					CPoint(rcBounds.left, rcBounds.bottom - 1) };
-					HighlightPolygon(pDC, points1, 6, bShadowIn ? crBlack : crWhite, bShadowIn ? 0.85 : 0.65);
+			HighlightPolygon(pDC, points1, 6, bShadowIn ? crBlack : crWhite, bShadowIn ? 0.85 : 0.65);
 
 			CPoint points2[] = {
 					CPoint(rcBounds.right - 1, rcBounds.bottom - 1),
@@ -551,7 +551,7 @@ void CDjVuView::DrawAnnotation(CDC* pDC, const Annotation& anno, int nPage, bool
 					CPoint(rcBounds.right - nBorderWidth, rcBounds.bottom - nBorderWidth),
 					CPoint(rcBounds.right - nBorderWidth, rcBounds.top + nBorderWidth),
 					CPoint(rcBounds.right - 1, rcBounds.top + 1) };
-					HighlightPolygon(pDC, points2, 6, bShadowIn ? crWhite : crBlack, bShadowIn ? 0.65 : 0.85);
+			HighlightPolygon(pDC, points2, 6, bShadowIn ? crWhite : crBlack, bShadowIn ? 0.65 : 0.85);
 		}
 		else if (anno.nBorderType == Annotation::BorderEtchedIn
 				|| anno.nBorderType == Annotation::BorderEtchedOut)
