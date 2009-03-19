@@ -29,6 +29,39 @@
 #define new DEBUG_NEW
 #endif
 
+struct PrinterAPI
+{
+	PrinterAPI();
+	~PrinterAPI();
+
+	typedef BOOL (WINAPI* pfnGetDefaultPrinter)(LPTSTR pszBuffer, LPDWORD pcchBuffer);
+
+	pfnGetDefaultPrinter pGetDefaultPrinter;
+	HINSTANCE hWinSpool;
+};
+
+static PrinterAPI thePrinterAPI;
+
+PrinterAPI::PrinterAPI()
+	: pGetDefaultPrinter(NULL)
+{
+	hWinSpool = ::LoadLibrary(_T("winspool.drv"));
+	if (hWinSpool != NULL)
+	{
+#ifdef UNICODE
+		pGetDefaultPrinter = (pfnGetDefaultPrinter) ::GetProcAddress(hWinSpool, "GetDefaultPrinterW");
+#else
+		pGetDefaultPrinter = (pfnGetDefaultPrinter) ::GetProcAddress(hWinSpool, "GetDefaultPrinterA");
+#endif
+	}
+}
+
+PrinterAPI::~PrinterAPI()
+{
+	if (hWinSpool != NULL)
+		::FreeLibrary(hWinSpool);
+}
+
 
 // CPrintDlg dialog
 
@@ -182,11 +215,26 @@ BOOL CPrintDlg::OnInitDialog()
 	ScreenToClient(m_rcPreview);
 
 	// Get default printer
-	CString strDefault, strTemp;
-	::GetProfileString(_T("windows"), _T("device"), strTemp.GetBufferSetLength(1),
-		strDefault.GetBufferSetLength(1000), 1000);
-	strTemp.ReleaseBuffer();
-	strDefault.ReleaseBuffer();
+	CString strDefault;
+
+	if (thePrinterAPI.pGetDefaultPrinter != NULL)
+	{
+		DWORD dwCount = 0;
+		if (!thePrinterAPI.pGetDefaultPrinter(NULL, &dwCount) 
+				&& GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+		{
+			thePrinterAPI.pGetDefaultPrinter(strDefault.GetBufferSetLength(dwCount), &dwCount);
+			strDefault.ReleaseBuffer();
+		}
+	}
+	else
+	{
+		CString strTemp;
+		::GetProfileString(_T("windows"), _T("device"), strTemp.GetBufferSetLength(1),
+			strDefault.GetBufferSetLength(1000), 1000);
+		strTemp.ReleaseBuffer();
+		strDefault.ReleaseBuffer();
+	}
 
 	// Quick enum all printers
 	DWORD cbNeeded, nPrinters;

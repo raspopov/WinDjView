@@ -69,7 +69,7 @@ protected:
 	bool m_bShowArrows;
 	CRect m_rcLeftArrow, m_rcRightArrow;
 	bool m_bHoverLeft, m_bHoverRight, m_bHoverClose;
-	int m_nClosePressedTab;
+	int m_nClosePressedTab, m_nMButtonPressedTab;
 	bool m_bTabBarHidden;
 	CImageList m_imgClose;
 	bool m_bIgnoreMouseLeave;
@@ -106,6 +106,8 @@ protected:
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnMouseLeave();
+	afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnMButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint pos);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();

@@ -82,7 +82,8 @@ public:
 
 	CSize GetPageSize(int nPage) const { return m_pages[nPage].GetSize(m_nRotate); }
 	int GetPageDPI(int nPage) const { return m_pages[nPage].info.nDPI; }
-	void GetNormalizedText(wstring& text, bool bSelected = false, int nMaxLength = -1);
+	void GetNormalizedText(wstring& text, bool bSelected = false,
+			int nMaxLength = -1, bool bKeepHyphens = true);
 
 	void UpdateKeyboard(UINT nKey, bool bDown);
 	void UpdateVisiblePages();

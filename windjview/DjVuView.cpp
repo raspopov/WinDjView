@@ -5511,7 +5511,7 @@ void CDjVuView::OnUpdateEditCopy(CCmdUI* pCmdUI)
 	pCmdUI->Enable(m_bHasSelection || m_nSelectionPage != -1);
 }
 
-void CDjVuView::GetNormalizedText(wstring& text, bool bSelected, int nMaxLength)
+void CDjVuView::GetNormalizedText(wstring& text, bool bSelected, int nMaxLength, bool bKeepHyphens)
 {
 	text.resize(0);
 	int nLastHyphen = -1;
@@ -5592,7 +5592,19 @@ void CDjVuView::GetNormalizedText(wstring& text, bool bSelected, int nMaxLength)
 				}
 
 				if (text.substr(nWordPos, strPrev.length()) == strPrev)
-					text.erase(nWordPos, strPrev.length());
+				{
+					if (bKeepHyphens)
+					{
+						// Cut the repeated part from the second line and keep the hyphen.
+						text.erase(nWordPos, strPrev.length());
+					}
+					else
+					{
+						// Remove the first part together with the hyphen
+						// (but keep the line feed).
+						text.erase(nPos + 1, strPrev.length() + 1);
+					}
+				}
 			}
 
 			nHyphen = text.find(L'-', nHyphen + 1);
@@ -6547,9 +6559,14 @@ void MakeBookmarkTitle(const wstring& strText, wstring& result)
 		}
 	}
 
+	while (!result.empty() && result[result.length() - 1] <= 0x20)
+		result.resize(result.length() - 1);
+
 	if (result.length() > 100)
 	{
 		result.erase(100);
+		while (!result.empty() && result[result.length() - 1] <= 0x20)
+			result.resize(result.length() - 1);
 		result += L"...";
 	}
 }
@@ -6581,7 +6598,7 @@ bool CDjVuView::CreateBookmarkFromSelection(Bookmark& bookmark)
 				bookmark.bMargin = true;
 
 				wstring strText, strTitle;
-				GetNormalizedText(strText, true, 200);
+				GetNormalizedText(strText, true, 200, false);
 				MakeBookmarkTitle(strText, strTitle);
 				bookmark.strTitle = MakeUTF8String(strTitle);
 

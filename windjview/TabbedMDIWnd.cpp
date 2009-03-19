@@ -49,7 +49,7 @@ IMPLEMENT_DYNCREATE(CTabbedMDIWnd, CWnd)
 CTabbedMDIWnd::CTabbedMDIWnd()
 	: m_nActiveTab(-1), m_nHoverTab(-1), m_nScrollPos(0), m_bShowArrows(false),
 	  m_bHoverLeft(false), m_bHoverRight(false), m_bHoverClose(false),
-	  m_nClosePressedTab(-1), m_bIgnoreMouseLeave(false)
+	  m_nClosePressedTab(-1), m_nMButtonPressedTab(-1), m_bIgnoreMouseLeave(false)
 {
 	UpdateMetrics();
 	m_rcContent.SetRectEmpty();
@@ -72,6 +72,8 @@ BEGIN_MESSAGE_MAP(CTabbedMDIWnd, CWnd)
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_MOUSEMOVE()
 	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+	ON_WM_MBUTTONDOWN()
+	ON_WM_MBUTTONUP()
 	ON_WM_CONTEXTMENU()
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
@@ -469,6 +471,16 @@ void CTabbedMDIWnd::CloseTab(int nTab, bool bRedraw)
 	if (m_nActiveTab == -1)
 		Invalidate();
 
+	if (m_nClosePressedTab == nTab)
+		m_nClosePressedTab = -1;
+	else if (m_nClosePressedTab > nTab)
+		--m_nClosePressedTab;
+
+	if (m_nMButtonPressedTab == nTab)
+		m_nMButtonPressedTab = -1;
+	else if (m_nMButtonPressedTab > nTab)
+		--m_nMButtonPressedTab;
+
 	UpdateObservers(TabMsg(TAB_CLOSED, pWnd));
 	pWnd->DestroyWindow();
 
@@ -710,6 +722,36 @@ void CTabbedMDIWnd::OnMouseLeave()
 		m_bHoverRight = false;
 		InvalidateTabs();
 	}
+}
+
+void CTabbedMDIWnd::OnMButtonDown(UINT nFlags, CPoint point)
+{
+	int nTabClicked = TabFromPoint(point);
+	if (nTabClicked != -1)
+	{
+		m_nMButtonPressedTab = nTabClicked;
+		SetCapture();
+		return;
+	}
+
+	CWnd::OnMButtonDown(nFlags, point);
+}
+
+void CTabbedMDIWnd::OnMButtonUp(UINT nFlags, CPoint point)
+{
+	if (m_nMButtonPressedTab != -1)
+	{
+		int nTab = TabFromPoint(point);
+		if (nTab == m_nMButtonPressedTab)
+			CloseTab(nTab);
+
+		ReleaseCapture();
+		m_nMButtonPressedTab = -1;
+
+		UpdateHoverTab();
+	}
+
+	CWnd::OnMButtonUp(nFlags, point);
 }
 
 void CTabbedMDIWnd::OnContextMenu(CWnd* pWnd, CPoint pos)
