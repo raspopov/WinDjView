@@ -237,13 +237,13 @@ BOOL CPrintDlg::OnInitDialog()
 	}
 
 	// Quick enum all printers
-	DWORD cbNeeded, nPrinters;
+	DWORD cbNeeded = 0, nPrinters = 0;
 
 	if (IsWinNT())
 	{
 		// use PRINTER_INFO_4
 		::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
-			NULL, 4, NULL, 0, &cbNeeded, &nPrinters);
+					NULL, 4, NULL, 0, &cbNeeded, &nPrinters);
 
 		vector<BYTE> buf(cbNeeded + 1);
 		::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
@@ -257,7 +257,7 @@ BOOL CPrintDlg::OnInitDialog()
 	{
 		// use PRINTER_INFO_5
 		::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
-			NULL, 5, NULL, 0, &cbNeeded, &nPrinters);
+				NULL, 5, NULL, 0, &cbNeeded, &nPrinters);
 
 		vector<BYTE> buf(cbNeeded + 1);
 		::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,

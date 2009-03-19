@@ -349,6 +349,9 @@ void CTabbedMDIWnd::UpdateMetrics()
 	LOGFONT lf;
 	m_font.GetLogFont(&lf);
 	lf.lfWeight = FW_BOLD;
+
+	if (m_fontActive.m_hObject != NULL)
+		m_fontActive.DeleteObject();
 	m_fontActive.CreateFontIndirect(&lf);
 
 	CScreenDC dcScreen;
