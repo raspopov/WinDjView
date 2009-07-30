@@ -318,7 +318,7 @@ void CMyScrollView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	if (pScrollBar != NULL && pScrollBar->SendChildNotifyLastMsg())
 		return;
 
-	if (pScrollBar != &m_horzScrollBar)
+	if (pScrollBar != NULL && pScrollBar != &m_horzScrollBar)
 		return;
 
 	OnScroll(MAKEWORD(nSBCode, 0xff), nPos);
@@ -329,7 +329,7 @@ void CMyScrollView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	if (pScrollBar != NULL && pScrollBar->SendChildNotifyLastMsg())
 		return;
 
-	if (pScrollBar != &m_vertScrollBar)
+	if (pScrollBar != NULL && pScrollBar != &m_vertScrollBar)
 		return;
 
 	OnScroll(MAKEWORD(0xff, nSBCode), nPos);

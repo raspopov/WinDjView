@@ -214,7 +214,7 @@ CString CMyFileDialog::GetFileExt() const
 CString CMyFileDialog::GetFileTitle() const
 {
 	CString strResult = GetFileName();
-	LPTSTR pszBuffer = strResult.GetBuffer();
+	LPTSTR pszBuffer = strResult.GetBuffer(0);
 	::PathRemoveExtension(pszBuffer);
 	strResult.ReleaseBuffer();
 	return strResult;

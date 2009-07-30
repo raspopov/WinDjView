@@ -545,8 +545,8 @@ void CTabbedMDIWnd::UpdateToolTips()
 
 	m_toolTip.Activate(false);
 
-	for (int i = m_toolTip.GetToolCount() - 1; i >= 0; --i)
-		m_toolTip.DelTool(this, i + 1);
+	for (int nTool = m_toolTip.GetToolCount() - 1; nTool >= 0; --nTool)
+		m_toolTip.DelTool(this, nTool + 1);
 
 	CRect rcContents(CPoint(0, 0), m_szTabBar);
 	if (m_bShowArrows)

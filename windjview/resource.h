@@ -171,6 +171,7 @@
 #define IDS_BACKUP_BOOKMARKS            322
 #define IDS_CHECK_UPDATES               323
 #define IDS_ABOUT_LICENSE               324
+#define IDS_IMAGE_FILTER                325
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002

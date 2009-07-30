@@ -1216,10 +1216,10 @@ void DjVuSource::ChangeObservedPages(Observer* observer,
 		ASSERT(add[i] >= 0 && add[i] < m_nPageCount);
 		m_pages[add[i]].AddObserver(observer);
 	}
-	for (size_t i = 0; i < remove.size(); ++i)
+	for (size_t j = 0; j < remove.size(); ++j)
 	{
-		ASSERT(remove[i] >= 0 && remove[i] < m_nPageCount);
-		m_pages[remove[i]].RemoveObserver(observer);
+		ASSERT(remove[j] >= 0 && remove[j] < m_nPageCount);
+		m_pages[remove[j]].RemoveObserver(observer);
 	}
 	m_lock.Unlock();
 }

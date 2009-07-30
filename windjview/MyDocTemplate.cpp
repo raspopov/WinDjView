@@ -131,14 +131,14 @@ CWnd* CMyDocTemplate::CreateNewMDIChild(CDocument* pDoc)
 	CWnd* pMDIChild = (CWnd*) m_pMDIChildClass->CreateObject();
 	if (pMDIChild == NULL)
 	{
-		TRACE(traceAppMsg, 0, "Warning: Dynamic create of MDI child %hs failed.\n",
-			m_pMDIChildClass->m_lpszClassName);
+		TRACE(_T("Warning: Dynamic create of MDI child %hs failed.\n"),
+				m_pMDIChildClass->m_lpszClassName);
 		return NULL;
 	}
 
 	if (!pMDIChild->Create(NULL, NULL, WS_CHILD, CRect(0, 0, 0, 0), pMainFrame, AFX_IDW_PANE_FIRST, &context))
 	{
-		TRACE(traceAppMsg, 0, "Warning: could not create MDI child.\n");
+		TRACE(_T("Warning: could not create MDI child.\n"));
 		return NULL;
 	}
 
@@ -149,7 +149,7 @@ CDocument* CMyDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, BOOL bMakeVisi
 {
 	if (lpszPathName == NULL)
 	{
-		TRACE(traceAppMsg, 0, "Creating new documents is disabled.\n");
+		TRACE(_T("Creating new documents is disabled.\n"));
 		return NULL;
 	}
 
@@ -158,7 +158,7 @@ CDocument* CMyDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, BOOL bMakeVisi
 	CDocument* pDocument = CreateNewDocument();
 	if (pDocument == NULL)
 	{
-		TRACE(traceAppMsg, 0, "CDocTemplate::CreateNewDocument returned NULL.\n");
+		TRACE(_T("CDocTemplate::CreateNewDocument returned NULL.\n"));
 		AfxMessageBox(AFX_IDP_FAILED_TO_CREATE_DOC);
 		return NULL;
 	}
@@ -182,7 +182,7 @@ CDocument* CMyDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, BOOL bMakeVisi
 	if (!pDocument->OnOpenDocument(lpszPathName))
 	{
 		// user has be alerted to what failed in OnOpenDocument
-		TRACE(traceAppMsg, 0, "CDocument::OnOpenDocument returned FALSE.\n");
+		TRACE(_T("CDocument::OnOpenDocument returned FALSE.\n"));
 		pMDIChild->DestroyWindow();
 		return NULL;
 	}

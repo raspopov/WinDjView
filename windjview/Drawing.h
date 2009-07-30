@@ -41,6 +41,7 @@ public:
 	int GetColorCount() const { return m_pBMI->bmiHeader.biClrUsed; }
 	RGBQUAD* GetPalette() { return &m_pBMI->bmiColors[0]; }
 	bool IsValid() const { return m_hObject != NULL; }
+	const BITMAPINFO* GetBitmapInfo() const { return m_pBMI; }
 
 	static CDIB* CreateDIB(const BITMAPINFO* pBMI);
 	static CDIB* CreateDIB(CDIB* pSource, int nBitCount = -1);

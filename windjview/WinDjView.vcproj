@@ -533,6 +533,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MyGdiPlus.cpp"
+				>
+			</File>
+			<File
 				RelativePath="MyScrollView.cpp"
 				>
 			</File>
@@ -773,6 +777,10 @@
 			</File>
 			<File
 				RelativePath="MyFileDialog.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MyGdiPlus.h"
 				>
 			</File>
 			<File

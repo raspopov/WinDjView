@@ -505,8 +505,8 @@ LRESULT CThumbnailsView::OnShowSettings(WPARAM wParam, LPARAM lParam)
 	if (m_nThumbnailSize == CAppSettings::ThumbnailSizes - 1)
 		pPopup->EnableMenuItem(ID_THUMBNAILS_ENLARGE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
-	int nID = pPopup->TrackPopupMenuEx(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
-			rcButton.left, rcButton.bottom, this, &tpm);
+	int nID = ::TrackPopupMenuEx(pPopup->m_hMenu, TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
+			rcButton.left, rcButton.bottom, m_hWnd, &tpm);
 
 	if (nID == ID_THUMBNAILS_REDUCE)
 		ResizeThumbnails(m_nThumbnailSize - 1);

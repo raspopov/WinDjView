@@ -250,6 +250,10 @@ SOURCE=.\MyFileDialog.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MyGdiPlus.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MyScrollView.cpp
 # End Source File
 # Begin Source File
@@ -452,6 +456,10 @@ SOURCE=.\MyEdit.h
 # Begin Source File
 
 SOURCE=.\MyFileDialog.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MyGdiPlus.h
 # End Source File
 # Begin Source File
 

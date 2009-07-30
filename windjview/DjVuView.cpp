@@ -43,6 +43,7 @@
 #include "BookmarkDlg.h"
 #include "MyFileDialog.h"
 #include "NavPane.h"
+#include "MyGdiPlus.h"
 
 #include "RenderThread.h"
 
@@ -4309,16 +4310,17 @@ void CDjVuView::OnExportPage(UINT nID)
 
 	int nPage = (nID == ID_EXPORT_SELECTION ? m_nSelectionPage : m_nClickedPage);
 
-	CString strFileName = FormatString(_T("p%04d%s.bmp"), nPage + 1,
+	CString strFileName = FormatString(_T("p%04d%s"), nPage + 1,
 		nID == ID_EXPORT_SELECTION ? _T("-sel") : _T(""));
 
-	CMyFileDialog dlg(false, _T("bmp"), strFileName, OFN_OVERWRITEPROMPT |
-		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
-		LoadString(IDS_BMP_FILTER));
+	CString strFilter = LoadString(Gdip::IsLoaded() ? IDS_IMAGE_FILTER : IDS_BMP_FILTER);
+	CMyFileDialog dlg(false, _T("png"), strFileName, OFN_OVERWRITEPROMPT |
+		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST, strFilter);
 
 	CString strTitle;
 	strTitle.LoadString(IDS_EXPORT_PAGE);
 	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
+	dlg.m_ofn.nFilterIndex = (Gdip::IsLoaded() ? theApp.GetAppSettings()->nImageFormat : 1);
 
 	UINT nResult = dlg.DoModal();
 	SetFocus();
@@ -4327,6 +4329,7 @@ void CDjVuView::OnExportPage(UINT nID)
 
 	CWaitCursor wait;
 	strFileName = dlg.GetPathName();
+	theApp.GetAppSettings()->nImageFormat = dlg.m_ofn.nFilterIndex;
 
 	Page& page = m_pages[nPage];
 	if (!page.info.bDecoded)
@@ -4364,7 +4367,101 @@ void CDjVuView::OnExportPage(UINT nID)
 		}
 
 		pBitmap->SetDPI(page.info.nDPI);
-		pBitmap->Save(strFileName);
+
+		if (dlg.m_ofn.nFilterIndex >= 2 && Gdip::IsLoaded())
+		{
+			wstring wstrFileName;
+			MakeWString(strFileName, wstrFileName);
+
+			Gdip::Bitmap* pGdipBitmap = NULL;
+			if (Gdip::CreateBitmapFromGdiDib(pBitmap->GetBitmapInfo(), pBitmap->GetBits(), &pGdipBitmap) == Gdip::Ok)
+			{
+				Gdip::BitmapSetResolution(pGdipBitmap, (float) pImage->get_dpi(), (float) pImage->get_dpi());
+
+				const wchar_t* szEncoder = L"image/bmp";
+				switch (dlg.m_ofn.nFilterIndex)
+				{
+				case 2:
+					szEncoder = L"image/png";
+					break;
+				case 3:
+					szEncoder = L"image/gif";
+					break;
+				case 4:
+					szEncoder = L"image/tiff";
+					break;
+				case 5:
+					szEncoder = L"image/jpeg";
+					break;
+				}
+
+				CLSID clsid;
+				if (Gdip::GetEncoderClsid(szEncoder, &clsid))
+				{
+					vector<char> buf(sizeof(Gdip::EncoderParameters) + 2*sizeof(Gdip::EncoderParameter));
+					Gdip::EncoderParameters* parameters = (Gdip::EncoderParameters*) &buf[0];
+					parameters->Count = 0;
+
+					LONG nTiffEncoding = Gdip::EncoderValueCompressionLZW;
+					LONG nTiffColorDepth = 24;
+					LONG nJpegQuality = 80;
+					switch (dlg.m_ofn.nFilterIndex)
+					{
+					case 4:  // tiff
+						parameters->Count = 2;
+						parameters->Parameter[0].Guid = Gdip::EncoderCompression;
+						parameters->Parameter[0].NumberOfValues = 1;
+						parameters->Parameter[0].Type = Gdip::EncoderParameterValueTypeLong;
+						parameters->Parameter[0].Value = &nTiffEncoding;
+						parameters->Parameter[1].Guid = Gdip::EncoderColorDepth;
+						parameters->Parameter[1].NumberOfValues = 1;
+						parameters->Parameter[1].Type = Gdip::EncoderParameterValueTypeLong;
+						parameters->Parameter[1].Value = &nTiffColorDepth;
+
+						if (pBitmap->GetBitsPerPixel() <= 8)
+						{
+							if (pBitmap->GetColorCount() <= 2)
+							{
+								nTiffEncoding = Gdip::EncoderValueCompressionCCITT4;
+								nTiffColorDepth = 1;
+
+								// Invert image
+								DWORD nLineLength = static_cast<DWORD>(
+										(pBitmap->GetWidth()*pBitmap->GetBitsPerPixel() - 1)/8 + 1);
+								while ((nLineLength % 4) != 0)
+									++nLineLength;
+
+								BYTE* pBits = pBitmap->GetBits();
+								for (DWORD* pData = (DWORD*)pBits;
+									 pData < (DWORD*)pBits + pBitmap->GetHeight()*nLineLength/4;
+									 ++pData)
+								{
+									*pData = ~*pData;
+								}
+							}
+							else
+								nTiffColorDepth = 8;
+						}
+						break;
+
+					case 5:  // jpeg
+						parameters->Count = 1;
+						parameters->Parameter[0].Guid = Gdip::EncoderQuality;
+						parameters->Parameter[0].NumberOfValues = 1;
+						parameters->Parameter[0].Type = Gdip::EncoderParameterValueTypeLong;
+						parameters->Parameter[0].Value = &nJpegQuality;
+					}
+
+					Gdip::SaveImageToFile(pGdipBitmap, wstrFileName.c_str(), &clsid, parameters);
+				}
+
+				Gdip::DisposeImage(pGdipBitmap);
+			}
+		}
+		else
+		{
+			pBitmap->Save(strFileName);
+		}
 	}
 	else
 	{

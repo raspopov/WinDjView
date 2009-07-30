@@ -90,4 +90,5 @@ CAppSettings::CAppSettings()
 	nDictChoice = 0;
 
 	nActiveSettingsTab = 0;
+	nImageFormat = 2;  // png
 }

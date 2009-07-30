@@ -177,4 +177,5 @@ struct CAppSettings
 	int nDictChoice;
 
 	int nActiveSettingsTab;
+	int nImageFormat;
 };

@@ -308,8 +308,8 @@ LRESULT CBookmarksView::OnShowSettings(WPARAM wParam, LPARAM lParam)
 	if (theApp.GetAppSettings()->bWrapLongBookmarks)
 		pPopup->CheckMenuItem(ID_BOOKMARK_WRAP, MF_BYCOMMAND | MF_CHECKED);
 
-	int nID = pPopup->TrackPopupMenuEx(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
-			rcButton.left, rcButton.bottom, this, &tpm);
+	int nID = ::TrackPopupMenuEx(pPopup->m_hMenu, TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
+			rcButton.left, rcButton.bottom, m_hWnd, &tpm);
 
 	if (nID == ID_BOOKMARK_WRAP)
 	{

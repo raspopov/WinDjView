@@ -692,7 +692,7 @@ void FramePoly(CDC* pDC, const POINT* points, int nCount, COLORREF color)
 	CPen penSolid(PS_SOLID, 1, color);
 	CPen* pOldPen = pDC->SelectObject(&penSolid);
 
-	pDC->Polyline(points, nCount);
+	pDC->Polyline((POINT*) points, nCount);
 
 	pDC->SelectObject(pOldPen);
 }
@@ -819,8 +819,8 @@ void HighlightPolygon(CDC* pDC, const POINT* points, int nCount, COLORREF color,
 		return;
 
 	CRect rcBounds = CRect(points[0], CSize(1, 1));
-	for (int i = 0; i < nCount; ++i)
-		rcBounds.UnionRect(CRect(rcBounds), CRect(points[i], CSize(1, 1)));
+	for (int nPoint = 0; nPoint < nCount; ++nPoint)
+		rcBounds.UnionRect(CRect(rcBounds), CRect(points[nPoint], CSize(1, 1)));
 
 	CRect rcClip;
 	pDC->GetClipBox(rcClip);
@@ -854,7 +854,7 @@ void HighlightPolygon(CDC* pDC, const POINT* points, int nCount, COLORREF color,
 	CPen* pOldPen = maskDC.SelectObject(&penBlack);
 	maskDC.SetPolyFillMode(WINDING);
 
-	maskDC.Polygon(points, nCount);
+	maskDC.Polygon((POINT*) points, nCount);
 
 	maskDC.SelectObject(pOldPen);
 	maskDC.SelectObject(pOldBrush);
