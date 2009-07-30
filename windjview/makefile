@@ -80,6 +80,7 @@ LINK_OBJS = \
 	"$(INTDIR)\MyDocTemplate.obj" \
 	"$(INTDIR)\MyEdit.obj" \
 	"$(INTDIR)\MyFileDialog.obj" \
+	"$(INTDIR)\MyGdiPlus.obj" \
 	"$(INTDIR)\MyScrollView.obj" \
 	"$(INTDIR)\MyStatusBar.obj" \
 	"$(INTDIR)\MyTheme.obj" \
@@ -135,6 +136,7 @@ $(OUT) : "$(INTDIR)" $(LINK_OBJS)
 "$(INTDIR)\MyDocTemplate.obj" : MyDocTemplate.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyEdit.obj" : MyEdit.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyFileDialog.obj" : MyFileDialog.cpp "$(INTDIR)" $(PCH)
+"$(INTDIR)\MyGdiPlus.obj" : MyGdiPlus.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyScrollView.obj" : MyScrollView.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyStatusBar.obj" : MyStatusBar.cpp "$(INTDIR)" $(PCH)
 "$(INTDIR)\MyTheme.obj" : MyTheme.cpp "$(INTDIR)" $(PCH)
