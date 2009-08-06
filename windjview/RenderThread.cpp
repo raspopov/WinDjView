@@ -339,6 +339,9 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 		pBitmap = RenderEmpty(size, displaySettings);
 	}
 
+	if (pBitmap != NULL)
+		pBitmap->SetDPI(pImage->get_dpi());
+
 	return pBitmap;
 }
 

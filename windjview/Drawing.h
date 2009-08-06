@@ -47,10 +47,19 @@ public:
 	static CDIB* CreateDIB(CDIB* pSource, int nBitCount = -1);
 	static CDIB* CreateDIB(int nWidth, int nHeight, int nBitCount);
 
+	enum ImageFormat
+	{
+		FormatBMP = 1,
+		FormatPNG = 2,
+		FormatGIF = 3,
+		FormatTIF = 4,
+		FormatJPG = 5
+	};
+
 	CDIB* ReduceColors();
 	CDIB* Crop(const CRect& rcCrop);
 	void SetDPI(int nDPI);
-	void Save(LPCTSTR pszPathName) const;
+	bool Save(LPCTSTR pszPathName, ImageFormat nFormat = FormatBMP) const;
 	HGLOBAL SaveToMemory() const;
 
 protected:

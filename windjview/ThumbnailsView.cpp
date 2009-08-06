@@ -70,7 +70,7 @@ END_MESSAGE_MAP()
 
 CThumbnailsView::CThumbnailsView(DjVuSource* pSource)
 	: m_bInsideUpdateLayout(false), m_nPageCount(0), m_bVisible(false),
-	  m_pThread(NULL), m_pIdleThread(NULL), m_nSelectedPage(-1), m_pSource(pSource),
+	  m_pThread(NULL), m_pIdleThread(NULL), m_nActivePage(-1), m_pSource(pSource),
 	  m_nCurrentPage(-1), m_nRotate(0), m_nPagesInRow(1), m_bInitialized(false)
 {
 	m_pSource->AddRef();
@@ -182,7 +182,7 @@ void CThumbnailsView::DrawPage(CDC* pDC, int nPage)
 	// Page border and shadow
 	CRect rcBorder(page.rcBitmap);
 
-	if (nPage == m_nSelectedPage && GetFocus() == this)
+	if (page.bSelected && GetFocus() == this)
 	{
 		for (int i = 0; i < 4; i++)
 		{
@@ -206,7 +206,7 @@ void CThumbnailsView::DrawPage(CDC* pDC, int nPage)
 			pDC->RestoreDC(nSaveDC);
 		}
 
-		if (nPage == m_nSelectedPage)
+		if (page.bSelected)
 		{
 			CRect rcInactiveBorder = rcBorder;
 			for (int i = 0; i < 3; i++)
@@ -229,7 +229,7 @@ void CThumbnailsView::DrawPage(CDC* pDC, int nPage)
 		pDC->FillSolidRect(rcShadow - ptScroll, clrShadow);
 
 		rcBorder.InflateRect(0, 0, 1, 1);
-		if (nPage == m_nSelectedPage)
+		if (page.bSelected)
 			rcBorder.InflateRect(3, 3, 2, 2);
 	}
 
@@ -251,7 +251,7 @@ void CThumbnailsView::DrawPage(CDC* pDC, int nPage)
 		DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 	pDC->SelectObject(pOldFont);
 
-	if (nPage == m_nSelectedPage)
+	if (page.bSelected)
 	{
 		COLORREF color = (bFocus ? clrHilight : clrBtnface);
 
@@ -342,50 +342,38 @@ void CThumbnailsView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	switch (nChar)
 	{
 	case VK_RIGHT:
-		if (m_nSelectedPage != -1)
-		{
-			if (m_nSelectedPage < m_nPageCount - 1)
-				SetSelectedPage(m_nSelectedPage + 1);
-		}
-		else
-			SetSelectedPage(0);
+		if (m_nActivePage == -1)
+			SetActivePage(0);
+		else if (m_nActivePage < m_nPageCount - 1)
+			SetActivePage(m_nActivePage + 1);
 		return;
 
 	case VK_LEFT:
-		if (m_nSelectedPage != -1)
-		{
-			if (m_nSelectedPage >= 1)
-				SetSelectedPage(m_nSelectedPage - 1);
-		}
-		else
-			SetSelectedPage(m_nPageCount - 1);
+		if (m_nActivePage == -1)
+			SetActivePage(m_nPageCount - 1);
+		else if (m_nActivePage >= 1)
+			SetActivePage(m_nActivePage - 1);
 		return;
 
 	case VK_DOWN:
-		if (m_nSelectedPage != -1)
-		{
-			if (m_nSelectedPage < m_nPageCount - m_nPagesInRow)
-				SetSelectedPage(m_nSelectedPage + m_nPagesInRow);
-		}
-		else
-			SetSelectedPage(0);
+		if (m_nActivePage == -1)
+			SetActivePage(0);
+		else if (m_nActivePage < m_nPageCount - m_nPagesInRow)
+			SetActivePage(m_nActivePage + m_nPagesInRow);
 		return;
 
 	case VK_UP:
-		if (m_nSelectedPage != -1)
-		{
-			if (m_nSelectedPage >= m_nPagesInRow)
-				SetSelectedPage(m_nSelectedPage - m_nPagesInRow);
-		}
-		else
-			SetSelectedPage(m_nPageCount - 1);
+		if (m_nActivePage == -1)
+			SetActivePage(m_nPageCount - 1);
+		else if (m_nActivePage >= m_nPagesInRow)
+			SetActivePage(m_nActivePage - m_nPagesInRow);
 		return;
 
 	case VK_RETURN:
 	case VK_SPACE:
-		if (m_nSelectedPage != -1)
+		if (m_nActivePage != -1)
 		{
-			UpdateObservers(PageMsg(THUMBNAIL_CLICKED, m_nSelectedPage));
+			UpdateObservers(PageMsg(THUMBNAIL_CLICKED, m_nActivePage));
 		}
 		return;
 
@@ -414,36 +402,61 @@ void CThumbnailsView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 void CThumbnailsView::OnSetFocus(CWnd* pOldWnd)
 {
-	if (m_nSelectedPage != -1)
-		InvalidatePage(m_nSelectedPage);
+	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+		if (m_pages[nPage].bSelected)
+			InvalidatePage(nPage);
 
 	CMyScrollView::OnSetFocus(pOldWnd);
 }
 
 void CThumbnailsView::OnKillFocus(CWnd* pNewWnd)
 {
-	if (m_nSelectedPage != -1)
-		InvalidatePage(m_nSelectedPage);
+	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+		if (m_pages[nPage].bSelected)
+			InvalidatePage(nPage);
 
 	CMyScrollView::OnKillFocus(pNewWnd);
 }
 
-void CThumbnailsView::SetSelectedPage(int nPage)
+void CThumbnailsView::SelectPage(int nPage, bool bSelect)
 {
-	if (nPage == m_nSelectedPage)
+	Page& page = m_pages[nPage];
+	if (page.bSelected == bSelect)
 		return;
 
-	if (m_nSelectedPage != -1)
-		InvalidatePage(m_nSelectedPage);
+	page.bSelected = bSelect;
+	InvalidatePage(nPage);
+	UpdateWindow();
+}
 
-	m_nSelectedPage = nPage;
-
-	if (m_nSelectedPage != -1)
+void CThumbnailsView::ClearSelection()
+{
+	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
 	{
-		InvalidatePage(m_nSelectedPage);
-		EnsureVisible(m_nSelectedPage);
+		Page& page = m_pages[nPage];
+		if (page.bSelected)
+		{
+			page.bSelected = false;
+			InvalidatePage(nPage);
+		}
 	}
 
+	UpdateWindow();
+}
+
+void CThumbnailsView::SetActivePage(int nPage, bool bSetSelection)
+{
+	if (m_nActivePage != nPage && m_nActivePage != -1)
+		InvalidatePage(m_nActivePage);
+
+	m_nActivePage = nPage;
+	if (bSetSelection)
+	{
+		ClearSelection();
+		SelectPage(m_nActivePage);
+	}
+
+	EnsureVisible(m_nActivePage);
 	UpdateWindow();
 }
 
@@ -469,11 +482,55 @@ void CThumbnailsView::SetCurrentPage(int nPage)
 void CThumbnailsView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	int nPage = GetPageFromPoint(point);
-	SetSelectedPage(nPage);
 
-	if (nPage != -1)
+	if ((nFlags & MK_CONTROL) != 0)
 	{
-		UpdateObservers(PageMsg(THUMBNAIL_CLICKED, nPage));
+		if (nPage != -1 && m_nActivePage == -1)
+		{
+			SetActivePage(nPage);
+		}
+		else if (nPage != -1)
+		{
+			SetActivePage(nPage, false);
+			SelectPage(nPage, !m_pages[nPage].bSelected);
+		}
+	}
+	else if ((nFlags & MK_SHIFT) != 0)
+	{
+		if (nPage != -1 && m_nActivePage == -1)
+		{
+			SetActivePage(nPage);
+		}
+		else if (nPage != -1)
+		{
+			if (nPage > m_nActivePage)
+			{
+				int i = m_nActivePage;
+				while (i < nPage && m_pages[i].bSelected && m_pages[i + 1].bSelected)
+					SelectPage(i++, false);
+				while (i <= nPage)
+					SelectPage(i++);
+			}
+			else if (nPage < m_nActivePage)
+			{
+				int i = m_nActivePage;
+				while (i > nPage && m_pages[i].bSelected && m_pages[i - 1].bSelected)
+					SelectPage(i--, false);
+				while (i >= nPage)
+					SelectPage(i--);
+			}
+			SetActivePage(nPage, false);
+		}
+	}
+	else
+	{
+		if (nPage != -1)
+		{
+			SetActivePage(nPage);
+			UpdateObservers(PageMsg(THUMBNAIL_CLICKED, nPage));
+		}
+		else if (m_nActivePage != -1)
+			ClearSelection();
 	}
 
 	CMyScrollView::OnLButtonDown(nFlags, point);
@@ -482,7 +539,18 @@ void CThumbnailsView::OnLButtonDown(UINT nFlags, CPoint point)
 void CThumbnailsView::OnRButtonDown(UINT nFlags, CPoint point)
 {
 	int nPage = GetPageFromPoint(point);
-	SetSelectedPage(nPage);
+
+	if (nPage == -1)
+		ClearSelection();
+	else if (!m_pages[nPage].bSelected)
+	{
+		ClearSelection();
+		SetActivePage(nPage);
+	}
+
+	CRect rect(point, CSize(0, 0));
+	ClientToScreen(rect);
+	OnShowSettings(0, (LPARAM)(LPRECT) rect);
 
 	CMyScrollView::OnRButtonDown(nFlags, point);
 }
@@ -504,6 +572,11 @@ LRESULT CThumbnailsView::OnShowSettings(WPARAM wParam, LPARAM lParam)
 		pPopup->EnableMenuItem(ID_THUMBNAILS_REDUCE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	if (m_nThumbnailSize == CAppSettings::ThumbnailSizes - 1)
 		pPopup->EnableMenuItem(ID_THUMBNAILS_ENLARGE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+	if (!HasSelection())
+	{
+		pPopup->EnableMenuItem(ID_THUMBNAILS_PRINT, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+		pPopup->EnableMenuItem(ID_THUMBNAILS_EXPORT, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+	}
 
 	int nID = ::TrackPopupMenuEx(pPopup->m_hMenu, TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
 			rcButton.left, rcButton.bottom, m_hWnd, &tpm);
@@ -512,6 +585,10 @@ LRESULT CThumbnailsView::OnShowSettings(WPARAM wParam, LPARAM lParam)
 		ResizeThumbnails(m_nThumbnailSize - 1);
 	else if (nID == ID_THUMBNAILS_ENLARGE)
 		ResizeThumbnails(m_nThumbnailSize + 1);
+	else if (nID == ID_THUMBNAILS_PRINT)
+		PrintSelectedPages();
+	else if (nID == ID_THUMBNAILS_EXPORT)
+		ExportSelectedPages();
 
 	return 0;
 }
@@ -605,7 +682,7 @@ int CThumbnailsView::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT mess
 	if (nResult == MA_NOACTIVATE || nResult == MA_NOACTIVATEANDEAT)
 		return nResult;
 
-	if (message == WM_LBUTTONDOWN)
+	if (message == WM_LBUTTONDOWN || message == WM_RBUTTONDOWN)
 	{
 		// set focus to this view, but don't notify the parent frame
 		OnActivateView(true, this, this);
@@ -971,4 +1048,33 @@ void CThumbnailsView::OnEnterIdle(UINT nWhy, CWnd* pWho)
 	CMyScrollView::OnEnterIdle(nWhy, pWho);
 
 	GetTopLevelFrame()->SendMessage(WM_ENTERIDLE, nWhy, (LPARAM) pWho->GetSafeHwnd());
+}
+
+bool CThumbnailsView::HasSelection() const
+{
+	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+		if (m_pages[nPage].bSelected)
+			return true;
+
+	return false;
+}
+
+void CThumbnailsView::PrintSelectedPages()
+{
+	set<int> selection;
+	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+		if (m_pages[nPage].bSelected)
+			selection.insert(nPage);
+
+	UpdateObservers(PageRangeMsg(PRINT_PAGES, selection));
+}
+
+void CThumbnailsView::ExportSelectedPages()
+{
+	set<int> selection;
+	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+		if (m_pages[nPage].bSelected)
+			selection.insert(nPage);
+
+	UpdateObservers(PageRangeMsg(EXPORT_PAGES, selection));
 }

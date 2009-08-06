@@ -3350,12 +3350,20 @@ void CDjVuView::SelectTextRange(int nPage, int nStart, int nEnd,
 
 void CDjVuView::OnFilePrint()
 {
-	CPrintDlg dlg(GetDocument(), m_nPage, m_nRotate, m_nDisplayMode);
+	DoPrint();
+}
+
+void CDjVuView::DoPrint(const CString& strRange)
+{
+	CPrintDlg dlg(GetDocument()->GetSource(), m_nPage, m_nRotate, m_nDisplayMode);
 	if (m_nSelectionPage != -1)
 	{
 		dlg.m_bHasSelection = true;
 		dlg.m_rcSelection = m_rcSelection;
 	}
+
+	if (!strRange.IsEmpty())
+		dlg.SetCustomRange(strRange);
 
 	if (dlg.DoModal() == IDOK)
 	{
@@ -4308,10 +4316,14 @@ void CDjVuView::OnExportPage(UINT nID)
 	if (m_nSelectionPage == -1 && nID == ID_EXPORT_SELECTION)
 		return;
 
-	int nPage = (nID == ID_EXPORT_SELECTION ? m_nSelectionPage : m_nClickedPage);
+	bool bCrop = (nID == ID_EXPORT_SELECTION);
+	int nPage = (bCrop ? m_nSelectionPage : m_nClickedPage);
+	DoExportPage(nPage, bCrop, m_rcSelection);
+}
 
-	CString strFileName = FormatString(_T("p%04d%s"), nPage + 1,
-		nID == ID_EXPORT_SELECTION ? _T("-sel") : _T(""));
+void CDjVuView::DoExportPage(int nPage, bool bCrop, GRect rect)
+{
+	CString strFileName = FormatString(_T("p%04d%s"), nPage + 1, bCrop ? _T("-sel") : _T(""));
 
 	CString strFilter = LoadString(Gdip::IsLoaded() ? IDS_IMAGE_FILTER : IDS_BMP_FILTER);
 	CMyFileDialog dlg(false, _T("png"), strFileName, OFN_OVERWRITEPROMPT |
@@ -4328,8 +4340,10 @@ void CDjVuView::OnExportPage(UINT nID)
 		return;
 
 	CWaitCursor wait;
-	strFileName = dlg.GetPathName();
-	theApp.GetAppSettings()->nImageFormat = dlg.m_ofn.nFilterIndex;
+
+	CString strPathName = dlg.GetPathName();
+	CDIB::ImageFormat nFormat = (CDIB::ImageFormat) dlg.m_ofn.nFilterIndex;
+	theApp.GetAppSettings()->nImageFormat = nFormat;
 
 	Page& page = m_pages[nPage];
 	if (!page.info.bDecoded)
@@ -4345,9 +4359,9 @@ void CDjVuView::OnExportPage(UINT nID)
 	CSize size = page.GetSize(m_nRotate);
 	CDIB* pBitmap = CRenderThread::Render(pImage, size, m_displaySettings, m_nDisplayMode, m_nRotate);
 
-	if (nID == ID_EXPORT_SELECTION)
+	if (bCrop && pBitmap != NULL && pBitmap->m_hObject != NULL)
 	{
-		CRect rcCrop = TranslatePageRect(nPage, m_rcSelection, false);
+		CRect rcCrop = TranslatePageRect(nPage, rect, false);
 		CDIB* pCropped = pBitmap->Crop(rcCrop);
 		delete pBitmap;
 		pBitmap = pCropped;
@@ -4355,113 +4369,17 @@ void CDjVuView::OnExportPage(UINT nID)
 
 	if (pBitmap != NULL && pBitmap->m_hObject != NULL)
 	{
+		bool bResult = false;
+
 		CDIB* pNewBitmap = pBitmap->ReduceColors();
 		if (pNewBitmap != NULL && pNewBitmap->m_hObject != NULL)
-		{
-			delete pBitmap;
-			pBitmap = pNewBitmap;
-		}
+			bResult = pNewBitmap->Save(strPathName, nFormat);
 		else
-		{
-			delete pNewBitmap;
-		}
+			bResult = pBitmap->Save(strPathName, nFormat);
+		delete pNewBitmap;
 
-		pBitmap->SetDPI(page.info.nDPI);
-
-		if (dlg.m_ofn.nFilterIndex >= 2 && Gdip::IsLoaded())
-		{
-			wstring wstrFileName;
-			MakeWString(strFileName, wstrFileName);
-
-			Gdip::Bitmap* pGdipBitmap = NULL;
-			if (Gdip::CreateBitmapFromGdiDib(pBitmap->GetBitmapInfo(), pBitmap->GetBits(), &pGdipBitmap) == Gdip::Ok)
-			{
-				Gdip::BitmapSetResolution(pGdipBitmap, (float) pImage->get_dpi(), (float) pImage->get_dpi());
-
-				const wchar_t* szEncoder = L"image/bmp";
-				switch (dlg.m_ofn.nFilterIndex)
-				{
-				case 2:
-					szEncoder = L"image/png";
-					break;
-				case 3:
-					szEncoder = L"image/gif";
-					break;
-				case 4:
-					szEncoder = L"image/tiff";
-					break;
-				case 5:
-					szEncoder = L"image/jpeg";
-					break;
-				}
-
-				CLSID clsid;
-				if (Gdip::GetEncoderClsid(szEncoder, &clsid))
-				{
-					vector<char> buf(sizeof(Gdip::EncoderParameters) + 2*sizeof(Gdip::EncoderParameter));
-					Gdip::EncoderParameters* parameters = (Gdip::EncoderParameters*) &buf[0];
-					parameters->Count = 0;
-
-					LONG nTiffEncoding = Gdip::EncoderValueCompressionLZW;
-					LONG nTiffColorDepth = 24;
-					LONG nJpegQuality = 80;
-					switch (dlg.m_ofn.nFilterIndex)
-					{
-					case 4:  // tiff
-						parameters->Count = 2;
-						parameters->Parameter[0].Guid = Gdip::EncoderCompression;
-						parameters->Parameter[0].NumberOfValues = 1;
-						parameters->Parameter[0].Type = Gdip::EncoderParameterValueTypeLong;
-						parameters->Parameter[0].Value = &nTiffEncoding;
-						parameters->Parameter[1].Guid = Gdip::EncoderColorDepth;
-						parameters->Parameter[1].NumberOfValues = 1;
-						parameters->Parameter[1].Type = Gdip::EncoderParameterValueTypeLong;
-						parameters->Parameter[1].Value = &nTiffColorDepth;
-
-						if (pBitmap->GetBitsPerPixel() <= 8)
-						{
-							if (pBitmap->GetColorCount() <= 2)
-							{
-								nTiffEncoding = Gdip::EncoderValueCompressionCCITT4;
-								nTiffColorDepth = 1;
-
-								// Invert image
-								DWORD nLineLength = static_cast<DWORD>(
-										(pBitmap->GetWidth()*pBitmap->GetBitsPerPixel() - 1)/8 + 1);
-								while ((nLineLength % 4) != 0)
-									++nLineLength;
-
-								BYTE* pBits = pBitmap->GetBits();
-								for (DWORD* pData = (DWORD*)pBits;
-									 pData < (DWORD*)pBits + pBitmap->GetHeight()*nLineLength/4;
-									 ++pData)
-								{
-									*pData = ~*pData;
-								}
-							}
-							else
-								nTiffColorDepth = 8;
-						}
-						break;
-
-					case 5:  // jpeg
-						parameters->Count = 1;
-						parameters->Parameter[0].Guid = Gdip::EncoderQuality;
-						parameters->Parameter[0].NumberOfValues = 1;
-						parameters->Parameter[0].Type = Gdip::EncoderParameterValueTypeLong;
-						parameters->Parameter[0].Value = &nJpegQuality;
-					}
-
-					Gdip::SaveImageToFile(pGdipBitmap, wstrFileName.c_str(), &clsid, parameters);
-				}
-
-				Gdip::DisposeImage(pGdipBitmap);
-			}
-		}
-		else
-		{
-			pBitmap->Save(strFileName);
-		}
+		if (!bResult)
+			AfxMessageBox(IDS_ERROR_EXPORTING_PAGE, MB_ICONERROR | MB_OK);
 	}
 	else
 	{
@@ -4469,6 +4387,194 @@ void CDjVuView::OnExportPage(UINT nID)
 	}
 
 	delete pBitmap;
+}
+
+int ParseFileTemplate(CString strPathName, CString& strPrefix, CString& strSuffix)
+{
+	// Extract prefix, suffix and integer format width from the
+	// file name in the form c:\path\to\file\prefix####suffix.ext
+	// Only the last block of ####'s before the extension counts.
+	LPTSTR pszPathName = strPathName.GetBuffer(0);
+	LPTSTR pszExt = PathFindExtension(pszPathName);
+	CString strExtension = pszExt;
+	*pszExt = '\0';
+
+	LPTSTR pszName = PathFindFileName(pszPathName);
+	LPTSTR pszBlock;
+	for (pszBlock = pszExt; pszBlock > pszName; --pszBlock)
+		if (*pszBlock == '#' && *(pszBlock - 1) != '#')
+			break;
+
+	LPTSTR pszSuffix;
+	int nFormatWidth = 4;
+	if (*pszBlock != '#')
+	{
+		pszSuffix = pszExt;
+	}
+	else
+	{
+		pszSuffix = pszBlock;
+		*pszSuffix++ = '\0';
+		while (pszSuffix < pszExt && *pszSuffix == '#')
+			++pszSuffix;
+		nFormatWidth = pszSuffix - pszBlock;
+	}
+
+	strPrefix = pszPathName;
+	strSuffix = pszSuffix + strExtension;
+
+	strPathName.ReleaseBuffer();
+	return nFormatWidth;
+}
+
+int PromptOverwrite(const CString& strPrefix, const CString& strSuffix,
+		int nFormatWidth, const set<int>& numbers)
+{
+	CString strMask = strPrefix;
+	for (int i = 0; i < nFormatWidth; ++i)
+		strMask += '?';
+	strMask += strSuffix;
+
+	WIN32_FIND_DATA fd;
+	HANDLE hFind = FindFirstFile(strMask, &fd);
+	if (hFind == INVALID_HANDLE_VALUE)
+		return true;
+
+	do
+	{
+		CString strNumber = fd.cFileName;
+		if (strNumber.GetLength() >= strSuffix.GetLength() + nFormatWidth)
+		{
+			strNumber = strNumber.Mid(strNumber.GetLength() - strSuffix.GetLength() - nFormatWidth,
+					nFormatWidth);
+			TCHAR* pEndPtr = NULL;
+			int nPage = _tcstol(strNumber.GetBuffer(0), &pEndPtr, 10);
+			if (pEndPtr != NULL && *pEndPtr == '\0'
+					&& numbers.find(nPage - 1) != numbers.end())
+			{
+				FindClose(hFind);
+				return AfxMessageBox(IDS_EXPORT_PROMPT_OVERWRITE, MB_ICONEXCLAMATION | MB_YESNOCANCEL);
+			}
+		}
+	} while (FindNextFile(hFind, &fd) != 0);
+
+	FindClose(hFind);
+	return IDYES;
+}
+
+unsigned int __stdcall CDjVuView::ExportThreadProc(void* pvData)
+{
+	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+
+	IProgressInfo* pProgress = reinterpret_cast<IProgressInfo*>(pvData);
+	ExportData& data = *reinterpret_cast<ExportData*>(pProgress->GetUserData());
+	CDjVuView* pView = data.pView;
+
+	pProgress->SetRange(0, data.pages.size());
+
+	bool bSuccess = true;
+	int i = 0;
+	for (set<int>::const_iterator it = data.pages.begin(); it != data.pages.end(); ++it, ++i)
+	{
+		if (pProgress->IsCancelled())
+			break;
+
+		int nPage = *it;
+		pProgress->SetStatus(FormatString(IDS_EXPORTING_PAGE, nPage + 1, i + 1, data.pages.size()));
+		pProgress->SetPos(i);
+
+		CString strPathName;
+		strPathName.Format(_T("%s%0*d%s"), data.strPrefix, data.nFormatWidth, nPage + 1, data.strSuffix);
+		if (!data.bOverwrite && PathFileExists(strPathName))
+			continue;
+
+		Page& page = pView->m_pages[nPage];
+		if (!page.info.bDecoded)
+			page.Init(pView->m_pSource, nPage);
+
+		GP<DjVuImage> pImage = pView->m_pSource->GetPage(nPage, NULL);
+		if (pImage == NULL)
+		{
+			bSuccess = false;
+			continue;
+		}
+
+		CSize size = page.GetSize(pView->m_nRotate);
+		CDIB* pBitmap = CRenderThread::Render(pImage, size,
+				pView->m_displaySettings, pView->m_nDisplayMode, pView->m_nRotate);
+
+		if (pBitmap != NULL && pBitmap->m_hObject != NULL)
+		{
+			CDIB* pNewBitmap = pBitmap->ReduceColors();
+			if (pNewBitmap != NULL && pNewBitmap->m_hObject != NULL)
+				bSuccess = pNewBitmap->Save(strPathName, data.nFormat);
+			else
+				bSuccess = pBitmap->Save(strPathName, data.nFormat);
+			delete pNewBitmap;
+		}
+		else
+			bSuccess = false;
+
+		delete pBitmap;
+	}
+
+	pProgress->StopProgress(bSuccess ? 0 : 1);
+
+	::CoUninitialize();
+	return 0;
+}
+
+void CDjVuView::ExportPages(const set<int>& pages)
+{
+	if (pages.empty())
+		return;
+
+	if (pages.size() == 1)
+	{
+		int nPage = *pages.begin();
+		DoExportPage(nPage);
+		return;
+	}
+
+	CString strFileName = _T("p####");
+
+	CString strFilter = LoadString(Gdip::IsLoaded() ? IDS_IMAGE_FILTER : IDS_BMP_FILTER);
+	CMyFileDialog dlg(false, _T("png"), strFileName,
+		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST, strFilter);
+
+	CString strTitle;
+	strTitle.LoadString(IDS_EXPORT_PAGES);
+	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
+	dlg.m_ofn.nFilterIndex = (Gdip::IsLoaded() ? theApp.GetAppSettings()->nImageFormat : 1);
+
+	UINT nResult = dlg.DoModal();
+	SetFocus();
+	if (nResult != IDOK)
+		return;
+
+	ExportData data(pages);
+	data.pView = this;
+	data.nFormat = (CDIB::ImageFormat) dlg.m_ofn.nFilterIndex;
+	data.nFormatWidth = ParseFileTemplate(dlg.GetPathName(), data.strPrefix, data.strSuffix);
+
+	// Check if any of these files exist
+	int nOverwrite = PromptOverwrite(data.strPrefix, data.strSuffix, data.nFormatWidth, pages);
+	if (nOverwrite == IDCANCEL)
+		return;
+	data.bOverwrite = (nOverwrite == IDYES);
+
+	// Do export in a separate thread
+	CWaitCursor wait;
+	theApp.GetAppSettings()->nImageFormat = dlg.m_ofn.nFilterIndex;
+
+	CProgressDlg progress_dlg(ExportThreadProc);
+	progress_dlg.SetUserData(reinterpret_cast<DWORD_PTR>(&data));
+
+	if (progress_dlg.DoModal() == IDOK)
+	{
+		if (progress_dlg.GetResultCode() > 0)
+			AfxMessageBox(IDS_EXPORT_ERRORS);
+	}
 }
 
 void CDjVuView::OnUpdateExportSelection(CCmdUI* pCmdUI)
@@ -6352,6 +6458,38 @@ void CDjVuView::OnEndPan()
 	ShowCursor();
 }
 
+CString FormatRange(const set<int>& pages)
+{
+	if (pages.empty())
+		return _T("");
+
+	CString strRange;
+	set<int>::const_iterator it = pages.begin();
+	int nStart = *it, nEnd = *it;
+	++it;
+	for (;;)
+	{
+		if (it == pages.end() || *it > nEnd + 1)
+		{
+			strRange += (strRange.IsEmpty() ? _T("") : _T(","));
+			if (nStart == nEnd)
+				strRange += FormatString(_T("%d"), nStart + 1);
+			else
+				strRange += FormatString(_T("%d-%d"), nStart + 1, nEnd + 1);
+
+			if (it != pages.end())
+				nStart = *it;
+		}
+
+		if (it != pages.end())
+			nEnd = *it++;
+		else
+			break;
+	}
+
+	return strRange;
+}
+
 void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 {
 	if (message->code == PAGE_RENDERED)
@@ -6425,6 +6563,17 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 			pBookmarks->AddObserver(this);
 			pBookmarks->LoadUserBookmarks();
 		}
+	}
+	else if (message->code == PRINT_PAGES)
+	{
+		const PageRangeMsg* msg = (const PageRangeMsg*) message;
+		CString strRange = FormatRange(msg->pages);
+		DoPrint(strRange);
+	}
+	else if (message->code == EXPORT_PAGES)
+	{
+		const PageRangeMsg* msg = (const PageRangeMsg*) message;
+		ExportPages(msg->pages);
 	}
 }
 

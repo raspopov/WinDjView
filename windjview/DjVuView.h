@@ -281,6 +281,7 @@ protected:
 	void PageDecoded(int nPage);
 	void SettingsChanged();
 	void UpdateCursor();
+	void DoPrint(const CString& strRange = _T(""));
 
 	void UpdateDragAction();
 	void UpdatePageNumber();
@@ -325,6 +326,22 @@ protected:
 	void UpdateHoverAnnotation(const CPoint& point);
 	void UpdateHoverAnnotation();
 	bool InvalidateAnno(Annotation* pAnno, int nPage);
+
+	struct ExportData
+	{
+		ExportData(const set<int>& pages_) : pages(pages_) {}
+
+		const set<int>& pages;
+		CDIB::ImageFormat nFormat;
+		CString strPrefix;
+		CString strSuffix;
+		int nFormatWidth;
+		bool bOverwrite;
+		CDjVuView* pView;
+	};
+	static unsigned int __stdcall ExportThreadProc(void* pvData);
+	void ExportPages(const set<int>& pages);
+	void DoExportPage(int nPage, bool bCrop = false, GRect rect = GRect());
 
 	int m_nMode, m_nType;
 	int m_nSelStartPos;

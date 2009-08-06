@@ -22,7 +22,6 @@
 #include "WinDjView.h"
 #include "PrintDlg.h"
 
-#include "DjVuDoc.h"
 #include "DjVuView.h"
 
 #ifdef _DEBUG
@@ -69,11 +68,11 @@ map<CString, vector<byte> > CPrintDlg::s_devModes;
 
 IMPLEMENT_DYNAMIC(CPrintDlg, CMyDialog)
 
-CPrintDlg::CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, int nMode, CWnd* pParent)
+CPrintDlg::CPrintDlg(DjVuSource* pSource, int nPage, int nRotate, int nMode, CWnd* pParent)
 	: CMyDialog(CPrintDlg::IDD, pParent),
-	  m_pSource(pDoc->GetSource()), m_strPages(_T("")), m_bPrintToFile(false),
+	  m_pSource(pSource), m_strPages(_T("")), m_bPrintToFile(false),
 	  m_nRangeType(AllPages), m_pPrinter(NULL), m_hPrinter(NULL), m_pPaper(NULL),
-	  m_bReverse(false), m_pDoc(pDoc), m_nCurPage(nPage), m_nRotate(nRotate),
+	  m_bReverse(false), m_nCurPage(nPage), m_nRotate(nRotate),
 	  m_nMode(nMode), m_bHasSelection(false), m_bDrawPreview(true)
 {
 }
@@ -1014,4 +1013,10 @@ void CPrintDlg::UpdateDevModeCache(const CString& strPrinter, LPDEVMODE pDevMode
 
 	it->second.resize(nSize);
 	memcpy(&(it->second[0]), pDevMode, it->second.size());
+}
+
+void CPrintDlg::SetCustomRange(const CString& strRange)
+{
+	m_nRangeType = CustomRange;
+	m_strPages = strRange;
 }

@@ -350,6 +350,9 @@ BEGIN
     END
     POPUP "Thumbnails Settings"
     BEGIN
+        MENUITEM "&Print Pages...",             ID_THUMBNAILS_PRINT
+        MENUITEM "E&xport Pages...",            33136
+        MENUITEM SEPARATOR
         MENUITEM "&Enlarge Thumbnails",         ID_THUMBNAILS_ENLARGE
         MENUITEM "&Reduce Thumbnails",          ID_THUMBNAILS_REDUCE
     END
@@ -1381,6 +1384,12 @@ BEGIN
     IDS_CHECK_UPDATES       "Check for updates automatically"
     IDS_ABOUT_LICENSE       "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version."
     IDS_IMAGE_FILTER        "Bitmap Files (*.bmp)|*.bmp|PNG Files (*.png)|*.png|GIF Files (*.gif)|*.gif|TIFF Files (*.tif;*.tiff)|*.tif;*.tiff|JPEG Files (*.jpg;*.jpeg)|*.jpg;*.jpeg||"
+    IDS_ERROR_EXPORTING_PAGE "Error saving page to file"
+    IDS_EXPORT_PROMPT_OVERWRITE 
+                            "One or more of the specified files already exist. Do you want to overwrite the existing files?"
+    IDS_EXPORTING_PAGE      "Exporting page %d (%d of %d), please wait..."
+    IDS_EXPORT_PAGES        "Export Pages"
+    IDS_EXPORT_ERRORS       "One or more pages could not be exported"
 END
 
 #endif    // English (U.S.) resources

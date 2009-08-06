@@ -203,8 +203,7 @@ GUTF8String Annotation::GetXML() const
 	GUTF8String strURLAttr;
 	if (strURL.length() > 0)
 	{
-		strURLAttr = GUTF8String(reinterpret_cast<const unsigned short*>(pszAttrURL))
-				+ "=\"" + strURL.toEscaped() + "\" ";
+		strURLAttr = MakeUTF8String(CString(pszAttrURL)) + "=\"" + strURL.toEscaped() + "\" ";
 	}
 
 	return MakeUTF8String(strBegin) + strComment.toEscaped() + "\" "

@@ -156,6 +156,8 @@ inline CSize GetClientSize(const CWnd& wnd)
 #define TAB_CLOSED 25
 #define ANNOTATIONS_CHANGED 26
 #define BOOKMARKS_CHANGED 27
+#define PRINT_PAGES 28
+#define EXPORT_PAGES 29
 
 class CDIB;
 struct Bookmark;
@@ -234,6 +236,14 @@ struct TabMsg : public Message
 		: Message(msg), pWnd(pWnd_) {}
 
 	CWnd* pWnd;
+};
+
+struct PageRangeMsg : public Message
+{
+	PageRangeMsg(int msg, const set<int>& pages_)
+		: Message(msg), pages(pages_) {}
+
+	const set<int>& pages;
 };
 
 

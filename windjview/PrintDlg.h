@@ -32,7 +32,7 @@ class CPrintDlg : public CMyDialog
 	DECLARE_DYNAMIC(CPrintDlg)
 
 public:
-	CPrintDlg(CDjVuDoc* pDoc, int nPage, int nRotate, int nMode, CWnd* pParent = NULL);
+	CPrintDlg(DjVuSource* pSource, int nPage, int nRotate, int nMode, CWnd* pParent = NULL);
 	virtual ~CPrintDlg();
 
 // Dialog Data
@@ -80,8 +80,9 @@ public:
 	bool m_bHasSelection;
 	GRect m_rcSelection;
 	bool IsPrintSelection() const { return m_bHasSelection && m_nRangeType == CurrentSelection; }
+	void SetCustomRange(const CString& strRange);
 
-	CDjVuDoc* GetDocument() const { return m_pDoc; }
+	DjVuSource* GetSource() const { return m_pSource; }
 	int GetRotate() const { return m_nRotate; }
 	int GetMode() const { return m_nMode; }
 
@@ -130,7 +131,6 @@ protected:
 	CRect m_rcPreview;
 	COffscreenDC m_offscreenDC;
 
-	CDjVuDoc* m_pDoc;
 	DjVuSource* m_pSource;
 	GP<DjVuImage> m_pCurPage, m_pNextPage;
 	bool m_bDrawPreview;

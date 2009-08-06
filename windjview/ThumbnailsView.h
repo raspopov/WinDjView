@@ -44,8 +44,11 @@ public:
 	int GetCurrentPage() const { return m_nCurrentPage; }
 
 	void SetCurrentPage(int nPage);
-	void SetSelectedPage(int nPage);
+	void SetActivePage(int nPage, bool bSetSelection = true);
 	void EnsureVisible(int nPage);
+	void SelectPage(int nPage, bool bSelect = true);
+	void ClearSelection();
+	bool HasSelection() const;
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -71,7 +74,7 @@ protected:
 	DjVuSource* m_pSource;
 	bool m_bInsideUpdateLayout;
 	CFont m_font;
-	int m_nSelectedPage, m_nCurrentPage;
+	int m_nActivePage, m_nCurrentPage;
 	bool m_bVisible, m_bInitialized;
 	int m_nRotate;
 	int m_nPagesInRow;
@@ -98,16 +101,19 @@ protected:
 	int GetPageFromPoint(CPoint point);
 	void ResizeThumbnails(int nThumbnailSize);
 	void UpdateAllThumbnails();
+	void PrintSelectedPages();
+	void ExportSelectedPages();
 
 	struct Page
 	{
-		Page() : pBitmap(NULL), bRendered(false) {}
+		Page() : pBitmap(NULL), bRendered(false), bSelected(false) {}
 		~Page() { delete pBitmap; }
 
 		CRect rcDisplay, rcPage, rcBitmap, rcNumber;
 		CLightweightDIB* pBitmap;
 		CSize szBitmap, szDisplay;
 		bool bRendered;
+		bool bSelected;
 
 		void DeleteBitmap()
 		{

@@ -26,6 +26,7 @@
 #include "ProgressDlg.h"
 #include "DjVuDoc.h"
 #include "DjVuView.h"
+#include "MyGdiPlus.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -391,6 +392,8 @@ void CDIB::Create(CDIB* pSource, int nBitCount)
 	bmih.biBitCount = nBitCount;
 	bmih.biCompression = BI_RGB;
 	bmih.biClrUsed = nPaletteEntries;
+	bmih.biXPelsPerMeter = pSource->m_pBMI->bmiHeader.biXPelsPerMeter;
+	bmih.biYPelsPerMeter = pSource->m_pBMI->bmiHeader.biYPelsPerMeter;
 
 	memcpy(&pBMI->bmiColors[0], &pSource->m_pBMI->bmiColors[0], nPaletteEntries*sizeof(RGBQUAD));
 
@@ -542,30 +545,132 @@ void CDIB::SetDPI(int nDPI)
 	m_pBMI->bmiHeader.biYPelsPerMeter = static_cast<int>(nDPI/0.0254);
 }
 
-void CDIB::Save(LPCTSTR pszPathName) const
+bool CDIB::Save(LPCTSTR pszPathName, ImageFormat nFormat) const
 {
-	CFile file;
-	if (!file.Open(pszPathName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive))
-		return;
+	if (nFormat >= FormatPNG)
+	{
+		if (!Gdip::IsLoaded())
+			return false;
 
-	BITMAPFILEHEADER hdr;
-	hdr.bfType = 'MB';
-	hdr.bfReserved1 = 0;
-	hdr.bfReserved2 = 0;
+		Gdip::Bitmap* pGdipBitmap = NULL;
+		if (Gdip::CreateBitmapFromGdiDib(m_pBMI, m_pBits, &pGdipBitmap) != Gdip::Ok)
+			return false;
 
-	DWORD dwHeaderSize = sizeof(BITMAPINFOHEADER) +
-		sizeof(RGBQUAD)*m_pBMI->bmiHeader.biClrUsed;
-	DWORD dwBitCount = m_pBMI->bmiHeader.biWidth * m_pBMI->bmiHeader.biBitCount;
-	DWORD dwDataSize = (((dwBitCount + 31) / 32) * 4) * m_pBMI->bmiHeader.biHeight;
+		Gdip::BitmapSetResolution(pGdipBitmap,
+				static_cast<float>(m_pBMI->bmiHeader.biXPelsPerMeter*0.0254),
+				static_cast<float>(m_pBMI->bmiHeader.biYPelsPerMeter*0.0254));
 
-	hdr.bfOffBits = sizeof(BITMAPFILEHEADER) + dwHeaderSize;
-	hdr.bfSize = hdr.bfOffBits + dwDataSize;
+		const wchar_t* szEncoder = L"image/bmp";
+		switch (nFormat)
+		{
+		case FormatPNG:
+			szEncoder = L"image/png";
+			break;
+		case FormatGIF:
+			szEncoder = L"image/gif";
+			break;
+		case FormatTIF:
+			szEncoder = L"image/tiff";
+			break;
+		case FormatJPG:
+			szEncoder = L"image/jpeg";
+			break;
+		}
 
-	file.Write(&hdr, sizeof(hdr));
-	file.Write(m_pBMI, dwHeaderSize);
-	file.Write(m_pBits, dwDataSize);
+		CLSID clsid;
+		if (!Gdip::GetEncoderClsid(szEncoder, &clsid))
+		{
+			Gdip::DisposeImage(pGdipBitmap);
+			return false;
+		}
 
-	file.Close();
+		vector<char> buf(sizeof(Gdip::EncoderParameters) + 2*sizeof(Gdip::EncoderParameter));
+		Gdip::EncoderParameters* parameters = (Gdip::EncoderParameters*) &buf[0];
+		parameters->Count = 0;
+
+		LONG nTiffEncoding = Gdip::EncoderValueCompressionLZW;
+		LONG nTiffColorDepth = 24;
+		LONG nJpegQuality = 80;
+		switch (nFormat)
+		{
+		case FormatTIF:
+			parameters->Count = 2;
+			parameters->Parameter[0].Guid = Gdip::EncoderCompression;
+			parameters->Parameter[0].NumberOfValues = 1;
+			parameters->Parameter[0].Type = Gdip::EncoderParameterValueTypeLong;
+			parameters->Parameter[0].Value = &nTiffEncoding;
+			parameters->Parameter[1].Guid = Gdip::EncoderColorDepth;
+			parameters->Parameter[1].NumberOfValues = 1;
+			parameters->Parameter[1].Type = Gdip::EncoderParameterValueTypeLong;
+			parameters->Parameter[1].Value = &nTiffColorDepth;
+
+			if (GetBitsPerPixel() <= 8)
+			{
+				if (GetColorCount() <= 2)
+				{
+					nTiffEncoding = Gdip::EncoderValueCompressionCCITT4;
+					nTiffColorDepth = 1;
+
+					// Invert image
+					DWORD nLineLength = static_cast<DWORD>((GetWidth()*GetBitsPerPixel() - 1)/8 + 1);
+					while ((nLineLength % 4) != 0)
+						++nLineLength;
+
+					for (DWORD* pData = (DWORD*)m_pBits;
+						 pData < (DWORD*)m_pBits + GetHeight()*nLineLength/4;
+						 ++pData)
+					{
+						*pData = ~*pData;
+					}
+				}
+				else
+					nTiffColorDepth = 8;
+			}
+			break;
+
+		case FormatJPG:
+			parameters->Count = 1;
+			parameters->Parameter[0].Guid = Gdip::EncoderQuality;
+			parameters->Parameter[0].NumberOfValues = 1;
+			parameters->Parameter[0].Type = Gdip::EncoderParameterValueTypeLong;
+			parameters->Parameter[0].Value = &nJpegQuality;
+			break;
+		}
+
+		wstring wstrFileName;
+		MakeWString(pszPathName, wstrFileName);
+		bool bResult =
+				(Gdip::SaveImageToFile(pGdipBitmap, wstrFileName.c_str(), &clsid, parameters) == Gdip::Ok);
+
+		Gdip::DisposeImage(pGdipBitmap);
+		return bResult;
+	}
+	else
+	{
+		CFile file;
+		if (!file.Open(pszPathName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive))
+			return false;
+
+		BITMAPFILEHEADER hdr;
+		hdr.bfType = 'MB';
+		hdr.bfReserved1 = 0;
+		hdr.bfReserved2 = 0;
+
+		DWORD dwHeaderSize = sizeof(BITMAPINFOHEADER) +
+			sizeof(RGBQUAD)*m_pBMI->bmiHeader.biClrUsed;
+		DWORD dwBitCount = m_pBMI->bmiHeader.biWidth * m_pBMI->bmiHeader.biBitCount;
+		DWORD dwDataSize = (((dwBitCount + 31) / 32) * 4) * m_pBMI->bmiHeader.biHeight;
+
+		hdr.bfOffBits = sizeof(BITMAPFILEHEADER) + dwHeaderSize;
+		hdr.bfSize = hdr.bfOffBits + dwDataSize;
+
+		file.Write(&hdr, sizeof(hdr));
+		file.Write(m_pBMI, dwHeaderSize);
+		file.Write(m_pBits, dwDataSize);
+
+		file.Close();
+		return true;
+	}
 }
 
 HGLOBAL CDIB::SaveToMemory() const
@@ -1373,8 +1478,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 	IProgressInfo* pProgress = reinterpret_cast<IProgressInfo*>(pvData);
 	CPrintDlg& dlg = *reinterpret_cast<CPrintDlg*>(pProgress->GetUserData());
 
-	CDjVuDoc* pDoc = dlg.GetDocument();
-	DjVuSource* pSource = pDoc->GetSource();
+	DjVuSource* pSource = dlg.GetSource();
 
 	CPrintSettings& printSettings = dlg.m_settings;
 
@@ -1446,7 +1550,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 	DOCINFO di;
 	di.cbSize = sizeof(DOCINFO);
 	di.fwType = 0;
-	di.lpszDocName = dlg.GetDocument()->GetTitle();
+	di.lpszDocName = PathFindFileName(dlg.GetSource()->GetFileName());
 	di.lpszDatatype = NULL;
 	di.lpszOutput = (dlg.m_bPrintToFile ? _T("C:\\Output.prn") : NULL);
 
