@@ -67,7 +67,7 @@ void CProgressDlg::SetRange(int nStart, int nEnd)
 {
 	m_progress.SetRange32(nStart, nEnd);
 
-	Invalidate();
+	Invalidate(false);
 	UpdateWindow();
 }
 
@@ -75,7 +75,7 @@ void CProgressDlg::SetPos(int nPos)
 {
 	m_progress.SetPos(nPos);
 
-	Invalidate();
+	Invalidate(false);
 	UpdateWindow();
 }
 

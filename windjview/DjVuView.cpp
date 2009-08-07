@@ -4518,6 +4518,7 @@ unsigned int __stdcall CDjVuView::ExportThreadProc(void* pvData)
 		delete pBitmap;
 	}
 
+	pProgress->SetPos(data.pages.size());
 	pProgress->StopProgress(bSuccess ? 0 : 1);
 
 	::CoUninitialize();

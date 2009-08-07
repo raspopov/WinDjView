@@ -1619,6 +1619,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 
 	dcPrint.EndDoc();
 
+	pProgress->SetPos(nPages);
 	pProgress->StopProgress(0);
 
 	::CoUninitialize();
