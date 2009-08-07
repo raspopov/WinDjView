@@ -351,7 +351,7 @@ BEGIN
     POPUP "Thumbnails Settings"
     BEGIN
         MENUITEM "&Print Pages...",             ID_THUMBNAILS_PRINT
-        MENUITEM "E&xport Pages...",            33136
+        MENUITEM "E&xport Pages...",            ID_THUMBNAILS_EXPORT
         MENUITEM SEPARATOR
         MENUITEM "&Enlarge Thumbnails",         ID_THUMBNAILS_ENLARGE
         MENUITEM "&Reduce Thumbnails",          ID_THUMBNAILS_REDUCE
@@ -785,8 +785,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,1,0
- PRODUCTVERSION 1,0,1,0
+ FILEVERSION 1,0,2,0
+ PRODUCTVERSION 1,0,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -803,12 +803,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Andrew Zhezherun"
             VALUE "FileDescription", "WinDjView"
-            VALUE "FileVersion", "1.0.1"
+            VALUE "FileVersion", "1.0.2"
             VALUE "InternalName", "WinDjView.exe"
             VALUE "LegalCopyright", "Copyright (C) 2004-2009 Andrew Zhezherun. All rights reserved."
             VALUE "OriginalFilename", "WinDjView.exe"
             VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "1.0.1"
+            VALUE "ProductVersion", "1.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -1171,7 +1171,7 @@ BEGIN
     IDS_PAPER_SIZE          "%s x %s %s"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "1.0.1"
+    IDS_CURRENT_VERSION     "1.0.2"
     IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
     IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure\nyou want to proceed?"
     IDS_OPENFILE            "Open"
