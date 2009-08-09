@@ -55,6 +55,7 @@ protected:
 	afx_msg void OnClose();
 	afx_msg void OnDestroy();
 	afx_msg LRESULT OnAppCommand(WPARAM wParam, LPARAM lParam);
+	void OnEnable(BOOL bEnable);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()

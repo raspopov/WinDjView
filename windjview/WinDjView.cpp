@@ -1480,24 +1480,15 @@ void CDjViewApp::OnFileSettings()
 	}
 }
 
-CDjVuDoc* CDjViewApp::OpenDocument(LPCTSTR lpszPathName, const GUTF8String& strPage, bool bAddToHistory)
+CDjVuDoc* CDjViewApp::OpenDocument(LPCTSTR lpszPathName, const GUTF8String& strPage, bool bAddHistoryPoint)
 {
-	bool bAlreadyOpen = false;
-	CDjVuDoc* pDoc = (CDjVuDoc*) ((CMyDocManager*) m_pDocManager)->OpenDocumentFile(
-			lpszPathName, false, &bAlreadyOpen);
+	CDjVuDoc* pDoc = (CDjVuDoc*) m_pDocManager->OpenDocumentFile(lpszPathName);
 	if (pDoc == NULL)
 		return NULL;
 
 	CDjVuView* pView = pDoc->GetDjVuView();
-
-	int nAddToHistory = (bAddToHistory ? CDjVuView::AddTarget : 0);
-	if (bAddToHistory && bAlreadyOpen)
-		nAddToHistory |= CDjVuView::AddSource;
-
 	if (strPage.length() > 0)
-		pView->GoToURL(strPage, nAddToHistory);
-	if (bAddToHistory)
-		pView->GetMainFrame()->AddToHistory(pView);
+		pView->GoToURL(strPage, bAddHistoryPoint);
 
 	return pDoc;
 }
@@ -1716,9 +1707,6 @@ BOOL CDjViewApp::OnOpenRecentFile(UINT nID)
 	else
 	{
 		AddToRecentFileList(pDoc->GetPathName());
-
-		CDjVuView* pView = pDoc->GetDjVuView();
-		pView->GetMainFrame()->AddToHistory(pView);
 	}
 
 	return true;

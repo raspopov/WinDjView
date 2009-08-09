@@ -56,16 +56,10 @@ public:
 
 // Operations
 public:
-	enum AddToHistory
-	{
-		DoNotAdd = 0,
-		AddSource = 1,
-		AddTarget = 2
-	};
-	void GoToPage(int nPage, int nAddToHistory = AddSource | AddTarget);
-	void GoToBookmark(const Bookmark& bookmark, int nAddToHistory = AddSource | AddTarget);
-	void GoToURL(const GUTF8String& url, int nAddToHistory = AddSource | AddTarget);
-	void GoToSelection(int nPage, int nStartPos, int nEndPos, int nAddToHistory = AddSource | AddTarget);
+	void GoToPage(int nPage, bool bAddHistoryPoint = true);
+	void GoToBookmark(const Bookmark& bookmark, bool bAddHistoryPoint = true);
+	void GoToURL(const GUTF8String& url, bool bAddHistoryPoint = true);
+	void GoToSelection(int nPage, int nStartPos, int nEndPos);
 	void ScrollToPage(int nPage, const CPoint& ptOffset, bool bMargin = false);
 
 	int GetPageCount() const { return m_nPageCount; }
@@ -92,6 +86,9 @@ public:
 	void CreateBookmarkFromAnnotation(Bookmark& bookmark, const Annotation* pAnno, int nPage);
 	void CreateBookmarkFromView(Bookmark& bookmark);
 	void CreateBookmarkFromPage(Bookmark& bookmark, int nPage);
+
+	bool AddHistoryPoint();
+	bool AddHistoryPoint(const Bookmark& bookmark, bool bForce = false);
 
 	enum ZoomType
 	{
@@ -358,6 +355,25 @@ protected:
 	int m_nSelectionPage;
 	GRect m_rcSelection;
 
+	struct HistoryPoint
+	{
+		bool operator==(const HistoryPoint& rhs) const
+		{
+			ASSERT(bmView.nLinkType == Bookmark::View && rhs.bmView.nLinkType == Bookmark::View);
+			return bmView.nPage == rhs.bmView.nPage
+					&& bmView.ptOffset == rhs.bmView.ptOffset;
+		}
+		bool operator!=(const HistoryPoint& rhs) const
+			{ return !(*this == rhs); }
+
+		Bookmark bookmark;
+		Bookmark bmView;
+	};
+	list<HistoryPoint> m_history;
+	list<HistoryPoint>::iterator m_historyPoint;
+	void GoToHistoryPoint(const HistoryPoint& pt, const HistoryPoint* pCurPt = NULL);
+	bool AddHistoryPoint(const HistoryPoint& pt, bool bForce = false);
+
 	CFont m_sampleFont;
 	map<int, HFONT> m_fonts;
 
@@ -457,6 +473,10 @@ protected:
 	afx_msg void OnUpdateSwitchFocus(CCmdUI* pCmdUI);
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg LRESULT OnShowParent(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnViewBack();
+	afx_msg void OnUpdateViewBack(CCmdUI *pCmdUI);
+	afx_msg void OnViewForward();
+	afx_msg void OnUpdateViewForward(CCmdUI *pCmdUI);
 	DECLARE_MESSAGE_MAP()
 };
 

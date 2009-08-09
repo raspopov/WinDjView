@@ -70,7 +70,7 @@ pfDisposeImage pDisposeImage = NULL;
 pfBitmapSetResolution pBitmapSetResolution = NULL;
 
 HMODULE hGdiplusDLL = NULL;
-bool bGdiplusAPILoaded = false;
+bool bGdiplusAvailable = false, bGdiplusAPILoaded = false, bGdiplusLoadFailed = false;
 ULONG token = 0;
 
 //////////////////////////////////////////////////////////////////////
@@ -145,12 +145,10 @@ void LoadGdiplusAPI()
 		&& pDisposeImage != NULL
 		&& pBitmapSetResolution != NULL)
 	{
-		StartupInput input;
-		StartupOutput output;
-		bGdiplusAPILoaded = (pStartup(&token, &input, &output) == Ok);
+		bGdiplusAvailable = true;
 	}
 
-	if (!bGdiplusAPILoaded && hGdiplusDLL != NULL)
+	if (!bGdiplusAvailable && hGdiplusDLL != NULL)
 	{
 		::FreeLibrary(hGdiplusDLL);
 		hGdiplusDLL = NULL;
@@ -159,18 +157,29 @@ void LoadGdiplusAPI()
 
 void UnloadGdiplusAPI()
 {
-	if (!bGdiplusAPILoaded)
-		return;
+	if (bGdiplusAPILoaded)
+		pShutdown(token);
 
-	pShutdown(token);
+	if (bGdiplusAvailable)
+		::FreeLibrary(hGdiplusDLL);
 
-	::FreeLibrary(hGdiplusDLL);
 	hGdiplusDLL = NULL;
 	bGdiplusAPILoaded = false;
+	bGdiplusAvailable = false;
+	bGdiplusLoadFailed = false;
 }
 
 bool IsLoaded()
 {
+	if (bGdiplusAvailable && !bGdiplusAPILoaded && !bGdiplusLoadFailed)
+	{
+		StartupInput input;
+		StartupOutput output;
+		bGdiplusAPILoaded = (pStartup(&token, &input, &output) == Ok);
+		if (!bGdiplusAPILoaded)
+			bGdiplusLoadFailed = true;
+	}
+
 	return bGdiplusAPILoaded;
 }
 

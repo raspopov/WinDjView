@@ -31,8 +31,6 @@ public:
 	CMyDocManager();
 	virtual ~CMyDocManager();
 
-	virtual CDocument* OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHistory, bool* pbAlreadyOpen = NULL);
-
 // Overrides
 	virtual BOOL DoPromptFileName(CString& fileName, UINT nIDSTitle,
 			DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate);

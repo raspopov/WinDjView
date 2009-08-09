@@ -73,12 +73,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND, OnUpdateEditFind)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ACTIVATE_FIRST, OnUpdateWindowList)
 	ON_COMMAND_RANGE(ID_WINDOW_ACTIVATE_FIRST, ID_WINDOW_ACTIVATE_LAST, OnActivateWindow)
-	ON_COMMAND(ID_VIEW_BACK, OnViewBack)
-	ON_COMMAND(ID_VIEW_FORWARD, OnViewForward)
-	ON_COMMAND(ID_VIEW_BACK_SHORTCUT, OnViewBack)
-	ON_COMMAND(ID_VIEW_FORWARD_SHORTCUT, OnViewForward)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_BACK, OnUpdateViewBack)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_FORWARD, OnUpdateViewForward)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_ADJUST, OnUpdateStatusAdjust)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_MODE, OnUpdateStatusMode)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_PAGE, OnUpdateStatusPage)
@@ -127,7 +121,7 @@ const int s_nIndicatorPage = 3;
 // CMainFrame construction/destruction
 
 CMainFrame::CMainFrame()
-	: m_bDontActivate(false), m_historyPos(m_history.end()), m_pFullscreenWnd(NULL),
+	: m_bDontActivate(false), m_pFullscreenWnd(NULL),
 	  m_pMagnifyWnd(NULL), m_nCurLang(CB_ERR), m_nCurDict(CB_ERR)
 {
 	m_appMenu.LoadMenu(IDR_MAINFRAME);
@@ -1066,142 +1060,6 @@ void CMainFrame::ActivateDocument(CDocument* pDocument)
 	}
 }
 
-void CMainFrame::GoToHistoryPos(const HistoryPos& pos, const HistoryPos* pCurPos)
-{
-	CDjVuDoc* pDoc = theApp.FindOpenDocument(pos.strFileName);
-	if (pDoc == NULL)
-		pDoc = theApp.OpenDocument(pos.strFileName, "", false);
-	if (pDoc == NULL)
-		return;
-
-	CDjVuView* pView = pDoc->GetDjVuView();
-	CMainFrame* pMainFrame = pView->GetMainFrame();
-	if (pMainFrame->IsFullscreenMode())
-	{
-		if (pView == pMainFrame->m_pFullscreenWnd->GetOwner())
-		{
-			pMainFrame->m_pFullscreenWnd->GetView()->GoToBookmark(pos.bookmark, CDjVuView::DoNotAdd);
-			return;
-		}
-		else
-		{
-			pMainFrame->m_pFullscreenWnd->Hide();
-		}
-	}
-
-	ActivateDocument(pDoc);
-
-	if (pCurPos != NULL && pCurPos->bookmark.bZoom)
-		pView->ZoomTo(pCurPos->bookmark.nPrevZoomType, pCurPos->bookmark.fPrevZoom, false);
-
-	pView->GoToBookmark(pos.bookmark, CDjVuView::DoNotAdd);
-}
-
-void CMainFrame::OnViewBack()
-{
-	if (m_history.empty() || m_historyPos == m_history.begin())
-		return;
-
-	const HistoryPos* pCurPos = NULL;
-	if (m_historyPos != m_history.end())
-		pCurPos = &(*m_historyPos);
-
-	const HistoryPos& pos = *(--m_historyPos);
-	GoToHistoryPos(pos, pCurPos);
-}
-
-void CMainFrame::OnUpdateViewBack(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(!m_history.empty() && m_historyPos != m_history.begin());
-}
-
-void CMainFrame::OnViewForward()
-{
-	if (m_history.empty())
-		return;
-
-	list<HistoryPos>::iterator it = m_history.end();
-	if (m_historyPos == m_history.end() || m_historyPos == --it)
-		return;
-
-	const HistoryPos& pos = *(++m_historyPos);
-	GoToHistoryPos(pos);
-}
-
-void CMainFrame::OnUpdateViewForward(CCmdUI* pCmdUI)
-{
-	if (m_history.empty())
-	{
-		pCmdUI->Enable(false);
-	}
-	else
-	{
-		list<HistoryPos>::iterator it = m_history.end();
-		pCmdUI->Enable(m_historyPos != m_history.end() && m_historyPos != --it);
-	}
-}
-
-bool CMainFrame::AddToHistory(CDjVuView* pView, bool bAlwaysEnableBack)
-{
-	HistoryPos pos;
-	pos.strFileName = pView->GetDocument()->GetPathName();
-	pView->CreateBookmarkFromView(pos.bmView);
-	pos.bookmark = pos.bmView;
-
-	if (AddToHistory(pos))
-		return true;
-	else if (!bAlwaysEnableBack)
-		return false;
-	else
-	{
-		++m_historyPos;
-		return true;
-	}
-}
-
-bool CMainFrame::AddToHistory(CDjVuView* pView, int nPage)
-{
-	HistoryPos pos;
-	pos.strFileName = pView->GetDocument()->GetPathName();
-	pView->CreateBookmarkFromView(pos.bmView);
-	pView->CreateBookmarkFromPage(pos.bookmark, nPage);
-
-	return AddToHistory(pos);
-}
-
-bool CMainFrame::AddToHistory(CDjVuView* pView, const Bookmark& bookmark, bool bForce)
-{
-	HistoryPos pos;
-	pos.strFileName = pView->GetDocument()->GetPathName();
-	pView->CreateBookmarkFromView(pos.bmView);
-	pos.bookmark = bookmark;
-
-	return AddToHistory(pos, bForce);
-}
-
-bool CMainFrame::AddToHistory(const HistoryPos& pos, bool bForce)
-{
-	ASSERT(pos.bmView.nLinkType == Bookmark::View);
-
-	if (!m_history.empty())
-	{
-		if (m_historyPos == m_history.end())
-			--m_historyPos;
-
-		if (pos == *m_historyPos && !bForce)
-			return false;
-
-		++m_historyPos;
-		m_history.erase(m_historyPos, m_history.end());
-	}
-
-	m_history.push_back(pos);
-
-	m_historyPos = m_history.end();
-	--m_historyPos;
-	return true;
-}
-
 void CMainFrame::OnUpdateStatusAdjust(CCmdUI* pCmdUI)
 {
 	CDisplaySettings* pDisplaySettings = theApp.GetDisplaySettings();
@@ -1535,12 +1393,12 @@ LRESULT CMainFrame::OnAppCommand(WPARAM wParam, LPARAM lParam)
 	UINT nCommand = GET_APPCOMMAND_LPARAM(lParam);
 	if (nCommand == APPCOMMAND_BROWSER_BACKWARD)
 	{
-		OnViewBack();
+		SendMessage(WM_COMMAND, ID_VIEW_BACK);
 		return 1;
 	}
 	else if (nCommand == APPCOMMAND_BROWSER_FORWARD)
 	{
-		OnViewForward();
+		SendMessage(WM_COMMAND, ID_VIEW_FORWARD);
 		return 1;
 	}
 

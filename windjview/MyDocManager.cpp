@@ -148,11 +148,6 @@ BOOL CMyDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle,
 
 CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName)
 {
-	return OpenDocumentFile(lpszFileName, true);
-}
-
-CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHistory, bool* pbAlreadyOpen)
-{
 	// From MFC: CDocManager::OpenDocumentFile
 
 	CString strFileName = lpszFileName;
@@ -254,9 +249,6 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 
 	if (pOpenDocument != NULL)
 	{
-		if (pbAlreadyOpen != NULL)
-			*pbAlreadyOpen = (bestMatch == CDocTemplate::yesAlreadyOpen);
-
 		CDjVuDoc* pDoc = (CDjVuDoc*) pOpenDocument;
 		CDjVuView* pView = pDoc->GetDjVuView();
 		CMainFrame* pMainFrm = pView->GetMainFrame();
@@ -266,14 +258,8 @@ CDocument* CMyDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToHist
 		if (pOldMainFrm != NULL && pOldMainFrm != pMainFrm && pOldMainFrm->IsFullscreenMode())
 			pOldMainFrm->ShowWindow(SW_HIDE);
 
-		int nAddToHistory = (bAddToHistory ? CDjVuView::AddTarget : 0);
-		if (bAddToHistory && bestMatch == CDocTemplate::yesAlreadyOpen)
-			nAddToHistory |= CDjVuView::AddSource;
-
 		if (!strPage.IsEmpty())
-			pView->GoToURL(MakeUTF8String(_T("#") + strPage), nAddToHistory);
-		if (bAddToHistory)
-			pMainFrm->AddToHistory(pView);
+			pView->GoToURL(MakeUTF8String(_T("#") + strPage));
 	}
 
 	return pOpenDocument;
@@ -287,12 +273,5 @@ void CMyDocManager::OnFileOpen()
 			OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, TRUE, NULL))
 		return;
 
-	CDjVuDoc* pDoc = (CDjVuDoc*) AfxGetApp()->OpenDocumentFile(strPathName);
-	// if returns NULL, the user has already been alerted
-
-	if (pDoc != NULL)
-	{
-		CDjVuView* pView = pDoc->GetDjVuView();
-		pView->GetMainFrame()->AddToHistory(pView);
-	}
+	theApp.OpenDocumentFile(strPathName);
 }

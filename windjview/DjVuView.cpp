@@ -172,8 +172,8 @@ const int s_nCursorHideDelay = 3500;
 // for this second ID, so the command handler should take this into account.
 //
 // This applies to the following items: "First Page", "Previous Page",
-// "Next Page", "Last Page" (because they might become disabled), and also
-// "Previous View" and "Next View" in the CMainFrame.
+// "Next Page", "Last Page", "Previous View" and "Next View"
+// (because they might become disabled).
 
 IMPLEMENT_DYNCREATE(CDjVuView, CMyScrollView)
 
@@ -250,6 +250,12 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_NEXT_PANE, ID_PREV_PANE, OnUpdateSwitchFocus)
 	ON_WM_SHOWWINDOW()
 	ON_MESSAGE(WM_SHOWPARENT, OnShowParent)
+	ON_COMMAND(ID_VIEW_BACK, OnViewBack)
+	ON_COMMAND(ID_VIEW_FORWARD, OnViewForward)
+	ON_COMMAND(ID_VIEW_BACK_SHORTCUT, OnViewBack)
+	ON_COMMAND(ID_VIEW_FORWARD_SHORTCUT, OnViewForward)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_BACK, OnUpdateViewBack)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_FORWARD, OnUpdateViewForward)
 END_MESSAGE_MAP()
 
 // CDjVuView construction/destruction
@@ -268,6 +274,8 @@ CDjVuView::CDjVuView()
 	  m_pHoverAnno(NULL), m_pClickedAnno(NULL), m_bDraggingLink(false),
 	  m_bPopupMenu(false), m_bClickedCustom(false), m_bUpdateBitmaps(false)
 {
+	m_historyPoint = m_history.end();
+
 	m_nMargin = c_nDefaultMargin;
 	m_nShadowMargin = c_nDefaultShadowMargin;
 	m_nPageGap = c_nDefaultPageGap;
@@ -956,6 +964,7 @@ void CDjVuView::OnInitialUpdate()
 			ScrollToPage(nStartupPage, ptStartupOffset);
 		else
 			RenderPage(nStartupPage);
+		AddHistoryPoint();
 
 		pDocSettings->nZoomType = m_nZoomType;
 		pDocSettings->fZoom = m_fZoom;
@@ -1135,7 +1144,11 @@ void CDjVuView::ScrollToPage(int nPage, const CPoint& ptOffset, bool bMargin)
 		if (ptPos.x == 0)
 			ptPos.x = -m_nMargin;
 		if (ptPos.y == 0)
-			ptPos.y = -m_nPageBorder - (nPage == 0 ? m_nMargin : min(m_nMargin, m_nPageGap));
+		{
+			ptPos.y = -m_nPageBorder;
+			if (m_nType == Normal)
+				ptPos.y -= (nPage == 0 ? m_nMargin : min(m_nMargin, m_nPageGap));
+		}
 	}
 
 	if (m_nLayout == Continuous || m_nLayout == ContinuousFacing)
@@ -2530,7 +2543,7 @@ void CDjVuView::OnViewRotate(UINT nID)
 
 void CDjVuView::OnViewFirstpage()
 {
-	GetMainFrame()->AddToHistory(this);
+	AddHistoryPoint();
 
 	if (m_nLayout == SinglePage || m_nLayout == Facing)
 	{
@@ -2542,11 +2555,13 @@ void CDjVuView::OnViewFirstpage()
 		UpdateWindow();
 	}
 
-	GetMainFrame()->AddToHistory(this);
+	AddHistoryPoint();
 }
 
 void CDjVuView::OnViewLastpage()
 {
+	AddHistoryPoint();
+
 	if (m_nLayout == SinglePage || m_nLayout == Facing)
 	{
 		RenderPage(m_nPageCount - 1);
@@ -2559,6 +2574,8 @@ void CDjVuView::OnViewLastpage()
 		ScrollToPosition(CPoint(GetScrollPosition().x, GetScrollLimit().cy));
 		UpdateWindow();
 	}
+
+	AddHistoryPoint();
 }
 
 void CDjVuView::OnSetFocus(CWnd* pOldWnd)
@@ -3869,9 +3886,6 @@ void CDjVuView::PageRendered(int nPage, CDIB* pDIB)
 
 void CDjVuView::OnDestroy()
 {
-	if (m_nType == Normal && m_pSource != NULL)
-		GetMainFrame()->AddToHistory(this, true);
-
 	if (m_pRenderThread != NULL)
 	{
 		m_pRenderThread->Stop();
@@ -3989,7 +4003,6 @@ bool CDjVuView::OnScrollBy(CSize szScrollBy, bool bDoScroll)
 		return false;
 
 	UpdateView(false, bUpdateVisible);
-
 	return true;
 }
 
@@ -5316,22 +5329,22 @@ BOOL CDjVuView::PreTranslateMessage(MSG* pMsg)
 	return CMyScrollView::PreTranslateMessage(pMsg);
 }
 
-void CDjVuView::GoToBookmark(const Bookmark& bookmark, int nAddToHistory)
+void CDjVuView::GoToBookmark(const Bookmark& bookmark, bool bAddHistoryPoint)
 {
 	if (bookmark.nLinkType == Bookmark::URL)
 	{
-		GoToURL(bookmark.strURL, nAddToHistory);
+		GoToURL(bookmark.strURL, bAddHistoryPoint);
 	}
 	else if (bookmark.nLinkType == Bookmark::Page)
 	{
-		GoToPage(bookmark.nPage, nAddToHistory);
+		GoToPage(bookmark.nPage, bAddHistoryPoint);
 	}
 	else if (bookmark.nLinkType == Bookmark::View)
 	{
-		int nPage = max(0, min(bookmark.nPage, m_nPageCount - 1));
+		if (bAddHistoryPoint)
+			AddHistoryPoint();
 
-		if ((nAddToHistory & AddSource) != 0)
-			GetMainFrame()->AddToHistory(this);
+		int nPage = max(0, min(bookmark.nPage, m_nPageCount - 1));
 
 		if (bookmark.bZoom)
 			ZoomTo(bookmark.nZoomType, bookmark.fZoom, false);
@@ -5341,12 +5354,12 @@ void CDjVuView::GoToBookmark(const Bookmark& bookmark, int nAddToHistory)
 		else
 			RenderPage(nPage);
 
-		if ((nAddToHistory & AddTarget) != 0)
-			GetMainFrame()->AddToHistory(this, bookmark);
+		if (bAddHistoryPoint)
+			AddHistoryPoint(bookmark);
 	}
 }
 
-void CDjVuView::GoToURL(const GUTF8String& url, int nAddToHistory)
+void CDjVuView::GoToURL(const GUTF8String& url, bool bAddHistoryPoint)
 {
 	if (url.length() == 0)
 		return;
@@ -5391,13 +5404,13 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nAddToHistory)
 			theApp.ReportFatalError();
 		}
 
-		GoToPage(nPage, nAddToHistory);
+		GoToPage(nPage, bAddHistoryPoint);
 		return;
 	}
 
 	// Try to open a .djvu file given by a path (relative or absolute)
 
-	int nPos = url.search('#');
+	int nPos = url.rsearch('#');
 	GUTF8String strPage, strURL = url;
 	if (nPos != -1)
 	{
@@ -5406,18 +5419,25 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nAddToHistory)
 	}
 
 	CString strPathName = MakeCString(strURL);
+	bool bFile = false;
+	if (_tcsnicmp(strPathName, _T("file:///"), 8) == 0)
+	{
+		strPathName = strPathName.Mid(8);
+		bFile = true;
+	}
+	else if (_tcsnicmp(strPathName, _T("file://"), 7) == 0)
+	{
+		strPathName = strPathName.Mid(7);
+		bFile = true;
+	}
+	else
+		bFile = !PathIsURL(strPathName);
+
+	// Check if the link leads to a local DjVu file
 	LPTSTR pszExt = PathFindExtension(strPathName);
-	if (!PathIsURL(strPathName) && pszExt != NULL
+	if (bFile && pszExt != NULL
 			&& (_tcsicmp(pszExt, _T(".djvu")) == 0 || _tcsicmp(pszExt, _T(".djv")) == 0))
 	{
-		// Check if the link leads to a local DjVu file
-
-		if (_tcsnicmp(strPathName, _T("file:///"), 8) == 0)
-			strPathName = strPathName.Mid(8);
-		else if (_tcsnicmp(strPathName, _T("file://"), 7) == 0)
-			strPathName = strPathName.Mid(7);
-
-		// Try as absolute path
 		if (PathIsRelative(strPathName))
 		{
 			CString strPath = m_pSource->GetFileName();
@@ -5429,33 +5449,8 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nAddToHistory)
 			}
 		}
 
-		if (PathFileExists(strPathName))
-		{
-			if (AfxComparePath(m_pSource->GetFileName(), strPathName))
-			{
-				GoToURL(strPage, nAddToHistory);
-			}
-			else
-			{
-				if ((nAddToHistory & AddSource) != 0)
-				{
-					if (m_nType == Fullscreen)
-					{
-						CFullscreenWnd* pFullscreenWnd = (CFullscreenWnd*) GetTopLevelParent();
-						CDjVuView* pOwner = pFullscreenWnd->GetOwner();
-
-						pFullscreenWnd->Hide();
-
-						GetMainFrame()->AddToHistory(pOwner);
-					}
-					else
-						GetMainFrame()->AddToHistory(this);
-				}
-
-				theApp.OpenDocument(strPathName, strPage);
-			}
-			return;
-		}
+		theApp.OpenDocument(strPathName, strPage, bAddHistoryPoint);
+		return;
 	}
 
 	// Open a web link
@@ -5466,17 +5461,16 @@ void CDjVuView::GoToURL(const GUTF8String& url, int nAddToHistory)
 	}
 }
 
-void CDjVuView::GoToPage(int nPage, int nAddToHistory)
+void CDjVuView::GoToPage(int nPage, bool bAddHistoryPoint)
 {
+	if (bAddHistoryPoint)
+		AddHistoryPoint();
+
 	nPage = max(min(nPage, m_nPageCount - 1), 0);
-
-	if ((nAddToHistory & AddSource) != 0)
-		GetMainFrame()->AddToHistory(this);
-
 	RenderPage(nPage);
 
-	if ((nAddToHistory & AddTarget) != 0)
-		GetMainFrame()->AddToHistory(this, nPage);
+	if (bAddHistoryPoint)
+		AddHistoryPoint();
 }
 
 void CDjVuView::OnViewZoomIn()
@@ -5899,10 +5893,9 @@ void CDjVuView::OnUpdateViewDisplay(CCmdUI* pCmdUI)
 	}
 }
 
-void CDjVuView::GoToSelection(int nPage, int nStartPos, int nEndPos, int nAddToHistory)
+void CDjVuView::GoToSelection(int nPage, int nStartPos, int nEndPos)
 {
-	if ((nAddToHistory & AddSource) != 0)
-		GetMainFrame()->AddToHistory(this);
+	AddHistoryPoint();
 
 	Page& page = m_pages[nPage];
 	bool bInfoLoaded;
@@ -5925,8 +5918,7 @@ void CDjVuView::GoToSelection(int nPage, int nStartPos, int nEndPos, int nAddToH
 	if (pWaitCursor)
 		delete pWaitCursor;
 
-	if ((nAddToHistory & AddTarget) != 0)
-		GetMainFrame()->AddToHistory(this);
+	AddHistoryPoint();
 }
 
 void CDjVuView::OnViewFullscreen()
@@ -5978,6 +5970,7 @@ void CDjVuView::OnViewFullscreen()
 	if (pView->m_nLayout == Continuous || pView->m_nLayout == ContinuousFacing)
 		pView->UpdateLayout(RECALC);
 	pView->RenderPage(m_nPage);
+	pView->AddHistoryPoint();
 
 	pView->ShowWindow(SW_SHOW);
 	pView->SetFocus();
@@ -6898,7 +6891,7 @@ void CDjVuView::OnZoomToSelection()
 	if (m_nSelectionPage == -1)
 		return;
 
-	GetMainFrame()->AddToHistory(this);
+	AddHistoryPoint();
 	int nPrevZoomType = m_nZoomType;
 	double fPrevZoom = GetZoom();
 
@@ -6937,7 +6930,7 @@ void CDjVuView::OnZoomToSelection()
 	bookmark.nPrevZoomType = nPrevZoomType;
 	bookmark.fPrevZoom = fPrevZoom;
 
-	GetMainFrame()->AddToHistory(this, bookmark, true);
+	AddHistoryPoint(bookmark, true);
 }
 
 void CDjVuView::OnSwitchFocus(UINT nID)
@@ -6975,4 +6968,102 @@ LRESULT CDjVuView::OnShowParent(WPARAM wParam, LPARAM lParam)
 	UpdateVisiblePages();
 
 	return 0;
+}
+
+void CDjVuView::GoToHistoryPoint(const HistoryPoint& pt, const HistoryPoint* pCurPt)
+{
+	if (pCurPt != NULL && pCurPt->bookmark.bZoom)
+		ZoomTo(pCurPt->bookmark.nPrevZoomType, pCurPt->bookmark.fPrevZoom, false);
+
+	GoToBookmark(pt.bookmark, false);
+}
+
+void CDjVuView::OnViewBack()
+{
+	HistoryPoint pt;
+	CreateBookmarkFromView(pt.bmView);
+	pt.bookmark = pt.bmView;
+
+	if (m_history.empty() || m_historyPoint == m_history.begin() && *m_historyPoint == pt)
+		return;
+
+	ASSERT(m_historyPoint != m_history.end());
+
+	// Account for view changes not reflected in the history.
+	// If we are positioned at a history point, this will do nothing
+	// and we will proceed to the preious history entry as planned.
+	AddHistoryPoint(pt);
+
+	const HistoryPoint* pCurPt = &(*m_historyPoint);
+	const HistoryPoint& prevPt = *(--m_historyPoint);
+	GoToHistoryPoint(prevPt, pCurPt);
+}
+
+void CDjVuView::OnUpdateViewBack(CCmdUI* pCmdUI)
+{
+	HistoryPoint pt;
+	CreateBookmarkFromView(pt.bmView);
+	pt.bookmark = pt.bmView;
+
+	pCmdUI->Enable(!m_history.empty()
+		&& (m_historyPoint != m_history.begin() || *m_historyPoint != pt));
+}
+
+void CDjVuView::OnViewForward()
+{
+	if (m_history.empty())
+		return;
+
+	ASSERT(m_historyPoint != m_history.end());
+	list<HistoryPoint>::iterator it = m_history.end();
+	if (m_historyPoint == --it)
+		return;
+
+	const HistoryPoint& pt = *(++m_historyPoint);
+	GoToHistoryPoint(pt);
+}
+
+void CDjVuView::OnUpdateViewForward(CCmdUI* pCmdUI)
+{
+	list<HistoryPoint>::iterator it = m_history.end();
+	pCmdUI->Enable(!m_history.empty() && m_historyPoint != --it);
+}
+
+bool CDjVuView::AddHistoryPoint()
+{
+	HistoryPoint pt;
+	CreateBookmarkFromView(pt.bmView);
+	pt.bookmark = pt.bmView;
+
+	return AddHistoryPoint(pt);
+}
+
+bool CDjVuView::AddHistoryPoint(const Bookmark& bookmark, bool bForce)
+{
+	HistoryPoint pt;
+	CreateBookmarkFromView(pt.bmView);
+	pt.bookmark = bookmark;
+
+	return AddHistoryPoint(pt, bForce);
+}
+
+bool CDjVuView::AddHistoryPoint(const HistoryPoint& pt, bool bForce)
+{
+	ASSERT(pt.bmView.nLinkType == Bookmark::View);
+
+	if (!m_history.empty())
+	{
+		ASSERT(m_historyPoint != m_history.end());
+		if (pt == *m_historyPoint && !bForce)
+			return false;
+
+		++m_historyPoint;
+		m_history.erase(m_historyPoint, m_history.end());
+	}
+
+	m_history.push_back(pt);
+
+	m_historyPoint = m_history.end();
+	--m_historyPoint;
+	return true;
 }

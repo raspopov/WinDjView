@@ -63,7 +63,7 @@ public:
 	CPrintSettings* GetPrintSettings() { return &m_printSettings; }
 	Annotation* GetAnnoTemplate() { return &m_annoTemplate; }
 
-	CDjVuDoc* OpenDocument(LPCTSTR lpszFileName, const GUTF8String& strPage, bool bAddToHistory = true);
+	CDjVuDoc* OpenDocument(LPCTSTR lpszFileName, const GUTF8String& strPage, bool bAddHistoryPoint = true);
 	CDjVuDoc* FindOpenDocument(LPCTSTR lpszFileName);
 	int GetDocumentCount();
 

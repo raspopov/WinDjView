@@ -46,6 +46,7 @@ BEGIN_MESSAGE_MAP(CFullscreenWnd, CWnd)
 	ON_WM_SETFOCUS()
 	ON_WM_ERASEBKGND()
 	ON_MESSAGE(WM_APPCOMMAND, OnAppCommand)
+	ON_WM_ENABLE()
 END_MESSAGE_MAP()
 
 
@@ -99,7 +100,7 @@ void CFullscreenWnd::Hide()
 		m_pOwner->UpdatePageInfoFrom(m_pView);
 		m_pOwner->CopyBitmapsFrom(m_pView, true);
 
-		m_pOwner->GoToPage(nPage, CDjVuView::DoNotAdd);
+		m_pOwner->GoToPage(nPage);
 
 		// Detach view from the document before destroying
 		m_pView->SetDocument(NULL);
@@ -204,16 +205,29 @@ LRESULT CFullscreenWnd::OnAppCommand(WPARAM wParam, LPARAM lParam)
 		UINT nCommand = GET_APPCOMMAND_LPARAM(lParam);
 		if (nCommand == APPCOMMAND_BROWSER_BACKWARD)
 		{
-			m_pOwner->GetTopLevelParent()->SendMessage(WM_COMMAND, ID_VIEW_BACK);
+			SendMessage(WM_COMMAND, ID_VIEW_BACK);
 			return 1;
 		}
 		else if (nCommand == APPCOMMAND_BROWSER_FORWARD)
 		{
-			m_pOwner->GetTopLevelParent()->SendMessage(WM_COMMAND, ID_VIEW_FORWARD);
+			SendMessage(WM_COMMAND, ID_VIEW_FORWARD);
 			return 1;
 		}
 	}
 
 	Default();
 	return 0;
+}
+
+void CFullscreenWnd::OnEnable(BOOL bEnable)
+{
+	CWnd::OnEnable(bEnable);
+
+	if (bEnable)
+	{
+		// Restore focus when a modal dialog closes and re-enables
+		// the top-level window.
+		if (m_pView != NULL)
+			m_pView->SetFocus();
+	}
 }

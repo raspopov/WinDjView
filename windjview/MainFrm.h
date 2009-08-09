@@ -43,10 +43,6 @@ public:
 public:
 	void HilightStatusMessage(LPCTSTR pszMessage);
 
-	bool AddToHistory(CDjVuView* pView, bool bAlwaysEnableBack = false);
-	bool AddToHistory(CDjVuView* pView, int nPage);
-	bool AddToHistory(CDjVuView* pView, const Bookmark& bookmark, bool bForce = false);
-
 	CFullscreenWnd* GetFullscreenWnd();
 	bool IsFullscreenMode();
 	CMagnifyWnd* GetMagnifyWnd();
@@ -111,27 +107,6 @@ protected:
 
 	CFont m_font, m_boldFont;
 
-	struct HistoryPos
-	{
-		bool operator==(const HistoryPos& rhs) const
-		{
-			ASSERT(bmView.nLinkType == Bookmark::View && rhs.bmView.nLinkType == Bookmark::View);
-			return strFileName == rhs.strFileName
-					&& bmView.nPage == rhs.bmView.nPage
-					&& bmView.ptOffset == rhs.bmView.ptOffset;
-		}
-		bool operator!=(const HistoryPos& rhs) const
-			{ return !(*this == rhs); }
-
-		CString strFileName;
-		Bookmark bookmark;
-		Bookmark bmView;
-	};
-	list<HistoryPos> m_history;
-	list<HistoryPos>::iterator m_historyPos;
-	void GoToHistoryPos(const HistoryPos& pos, const HistoryPos* pCurPos = NULL);
-	bool AddToHistory(const HistoryPos& pos, bool bForce = false);
-
 protected:
 	// Generated message map functions
 	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
@@ -159,10 +134,6 @@ protected:
 	afx_msg void OnUpdateEditFind(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateWindowList(CCmdUI *pCmdUI);
 	afx_msg void OnActivateWindow(UINT nID);
-	afx_msg void OnViewBack();
-	afx_msg void OnUpdateViewBack(CCmdUI *pCmdUI);
-	afx_msg void OnViewForward();
-	afx_msg void OnUpdateViewForward(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateStatusAdjust(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateStatusMode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateStatusPage(CCmdUI* pCmdUI);
