@@ -3013,6 +3013,8 @@ void CDjVuView::OnLButtonUp(UINT nFlags, CPoint point)
 	if (m_bDraggingRight)
 		return;
 
+	GUTF8String strURL;
+
 	if (m_bDraggingLink && m_pHoverAnno != NULL)
 	{
 		Annotation* pClickedAnno = m_pHoverAnno;
@@ -3020,7 +3022,7 @@ void CDjVuView::OnLButtonUp(UINT nFlags, CPoint point)
 		UpdateHoverAnnotation(point);
 
 		if (pClickedAnno == m_pHoverAnno && pClickedAnno->strURL.length() != 0)
-			GoToURL(pClickedAnno->strURL);
+			strURL = pClickedAnno->strURL;
 	}
 
 	StopDragging();
@@ -3035,6 +3037,11 @@ void CDjVuView::OnLButtonUp(UINT nFlags, CPoint point)
 
 	UpdateHoverAnnotation(point);
 	CMyScrollView::OnLButtonUp(nFlags, point);
+
+	// GoToURL may result in destruction of this, if we are
+	// in a fullscreen view. So make it the very last call.
+	if (strURL.length() > 0)
+		GoToURL(strURL);
 }
 
 void CDjVuView::StopDragging()

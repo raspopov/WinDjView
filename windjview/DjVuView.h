@@ -79,6 +79,7 @@ public:
 	void GetNormalizedText(wstring& text, bool bSelected = false,
 			int nMaxLength = -1, bool bKeepHyphens = true);
 
+	void ShowCursor();
 	void UpdateKeyboard(UINT nKey, bool bDown);
 	void UpdateVisiblePages();
 
@@ -390,7 +391,6 @@ protected:
 	int m_nClickCount;
 	DWORD m_nCursorTime;
 	bool m_bCursorHidden;
-	void ShowCursor();
 	static HCURSOR hCursorHand;
 	static HCURSOR hCursorDrag;
 	static HCURSOR hCursorLink;

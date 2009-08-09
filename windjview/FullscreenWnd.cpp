@@ -180,16 +180,32 @@ BOOL CFullscreenWnd::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERI
 		CPushRoutingFrame push((CFrameWnd*) this);
 
 		// Send commands to the view
-		if (m_pView != NULL && ::IsWindow(m_pView->m_hWnd)
-				&& m_pView->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
-			return true;
+		if (m_pView != NULL && ::IsWindow(m_pView->m_hWnd))
+		{
+			m_pView->ShowCursor();
+			if (m_pView->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+			{
+				m_pView->ShowCursor();
+				return true;
+			}
+		}
 
 		if (CWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+		{
+			if (m_pView != NULL && ::IsWindow(m_pView->m_hWnd))
+				m_pView->ShowCursor();
 			return true;
+		}
 
 		if (theApp.OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+		{
+			if (m_pView != NULL && ::IsWindow(m_pView->m_hWnd))
+				m_pView->ShowCursor();
 			return true;
+		}
 
+		if (m_pView != NULL && ::IsWindow(m_pView->m_hWnd))
+			m_pView->ShowCursor();
 		return false;
 	}
 	else
