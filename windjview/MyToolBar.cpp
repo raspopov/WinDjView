@@ -47,8 +47,6 @@ BEGIN_MESSAGE_MAP(CMyToolBar, CControlBar)
 	ON_WM_DESTROY()
 	ON_WM_NCPAINT()
 	ON_WM_PAINT()
-	ON_WM_RBUTTONDOWN()
-	ON_WM_RBUTTONUP()
 	ON_NOTIFY(NM_CUSTOMDRAW, 1, OnCustomDraw)
 	ON_WM_WINDOWPOSCHANGING()
 END_MESSAGE_MAP()
@@ -140,18 +138,6 @@ void CMyToolBar::OnPaint()
 	// Do nothing, but we still must create a paint DC in this handler,
 	// otherwise Windows goes crazy.
 	CPaintDC paintDC(this);
-}
-
-void CMyToolBar::OnRButtonDown(UINT nFlags, CPoint point)
-{
-	// Just eat the message. Standard windows toolbar does some strange
-	// things after right-clicking.
-}
-
-void CMyToolBar::OnRButtonUp(UINT nFlags, CPoint point)
-{
-	// Just eat the message. Standard windows toolbar does some strange
-	// things after right-clicking.
 }
 
 void CMyToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
@@ -337,4 +323,18 @@ void CMyToolBar::SetControl(int nPos, UINT nID, int nWidth)
 	GetToolBarCtrl().DeleteButton(nPos);
 	GetToolBarCtrl().InsertButton(nPos, &btn);
 	GetToolBarCtrl().SetButtonInfo(nID, &info);
+}
+
+BOOL CMyToolBar::CAuxToolBar::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	if (message == WM_RBUTTONDOWN || message == WM_RBUTTONUP)
+	{
+		// Eat the message. Standard windows toolbar does some strange
+		// things after right-clicking.
+		if (pResult != NULL)
+			*pResult = 0;
+		return true;
+	}
+
+	return CToolBar::OnWndMsg(message, wParam, lParam, pResult);
 }

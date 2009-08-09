@@ -8,6 +8,7 @@ Changes in version 1.0.2 (2009-08-??):
 + Support for additional image formats: PNG, GIF, TIF, JPG
   (Windows XP or later required, or GDI+ on older versions).
 + Each document now has its own history (back/forward buttons).
+* Several bug fixes.
 
 Changes in version 1.0.1 (2009-03-20):
 + Tabs can be closed with wheel click or middle click.

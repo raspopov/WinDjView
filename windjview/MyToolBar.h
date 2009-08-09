@@ -70,14 +70,17 @@ protected:
 	vector<Label> m_labels;
 	set<UINT> m_controls;
 
-	CToolBar m_toolBar;
+	class CAuxToolBar : public CToolBar
+	{
+	public:
+		virtual BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
+	};
+	CAuxToolBar m_toolBar;
 
 	afx_msg void OnDestroy();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnNcPaint();
 	afx_msg void OnPaint();
-	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
-	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnWindowPosChanging(LPWINDOWPOS lpWndPos);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
