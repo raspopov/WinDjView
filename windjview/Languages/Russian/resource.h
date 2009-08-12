@@ -171,6 +171,12 @@
 #define IDS_BACKUP_BOOKMARKS            322
 #define IDS_CHECK_UPDATES               323
 #define IDS_ABOUT_LICENSE               324
+#define IDS_IMAGE_FILTER                325
+#define IDS_ERROR_EXPORTING_PAGE        326
+#define IDS_EXPORT_PROMPT_OVERWRITE     327
+#define IDS_EXPORTING_PAGE              328
+#define IDS_EXPORT_PAGES                329
+#define IDS_EXPORT_ERRORS               330
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
@@ -390,13 +396,15 @@
 #define ID_FILE_EXPORT_BOOKMARKS        33130
 #define ID_VIEW_TAB_BAR                 33131
 #define ID_TOGGLE_NAV_PANE              33132
+#define ID_THUMBNAILS_PRINT             33133
+#define ID_THUMBNAILS_EXPORT            33134
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        325
-#define _APS_NEXT_COMMAND_VALUE         33133
+#define _APS_NEXT_COMMAND_VALUE         33135
 #define _APS_NEXT_CONTROL_VALUE         1109
 #define _APS_NEXT_SYMED_VALUE           117
 #endif

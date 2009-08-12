@@ -1031,7 +1031,7 @@ STRINGTABLE
 BEGIN
     IDS_CANNOT_SAVE_TO_ORIG "Cannot save the document to its original location"
     IDS_SAVE_ERROR          "An error occurred while saving the document"
-    IDS_ERROR_DECODING_PAGE "Error decoding page"
+    IDS_ERROR_DECODING_PAGE "Error decoding page."
     IDS_BMP_FILTER          "Bitmap Files (*.bmp)|*.bmp||"
     IDS_EXPORT_PAGE         "Export Page"
     IDS_CONNECT_ERROR       "An error occurred while connecting to the server. Please check your internet settings."
@@ -1045,7 +1045,7 @@ BEGIN
     IDS_DONATE_URL          "https://sourceforge.net/donate/index.php?group_id=114927"
     IDS_STRING_NOT_FOUND    "Search string not found"
     IDS_PRINTING            "Printing, please wait..."
-    IDS_ERROR_RENDERING_PAGE "Error rendering page"
+    IDS_ERROR_RENDERING_PAGE "Error rendering page."
     IDS_SEARCHING_PAGE      "Searching page %d of %d"
 END
 
@@ -1156,6 +1156,7 @@ BEGIN
     ID_LAYOUT_FIRSTPAGE_ALONE 
                             "Display first page alone when showing facing pages"
     ID_HIGHLIGHT_SELECTION  "Highlight current selection"
+    ID_HIGHLIGHT_TEXT       "Highlight currently selected text"
     ID_ANNOTATION_EDIT      "Edit properties of this annotation"
     ID_ANNOTATION_DELETE    "Remove this annotation"
     ID_INDICATOR_PAGE       "  Page %d of %d  "
@@ -1195,8 +1196,8 @@ BEGIN
     ID_VIEW_LASTPAGE        "Go to last page\nLast Page"
     ID_PAGE_INFORMATION     "Display page information"
     ID_FILE_SETTINGS        "Change application settings\nSettings"
-    ID_EXPORT_PAGE          "Export current page as bmp file"
-    ID_EXPORT_SELECTION     "Export selected part of the page as bmp file"
+    ID_EXPORT_PAGE          "Export this page to an image file"
+    ID_EXPORT_SELECTION     "Export selected part of the page to an image file"
     ID_VIEW_BACK            "Go to previous view\nPrevious View"
 END
 
@@ -1352,6 +1353,8 @@ BEGIN
     ID_FILE_EXPORT_BOOKMARKS 
                             "Export bookmarks and annotations to a file\nExport Bookmarks"
     ID_VIEW_TAB_BAR         "Show or hide the tab bar\nTab Bar"
+    ID_THUMBNAILS_PRINT     "Print selected pages"
+    ID_THUMBNAILS_EXPORT    "Export selected pages to image files"
 END
 
 STRINGTABLE 
@@ -1384,7 +1387,7 @@ BEGIN
     IDS_CHECK_UPDATES       "Check for updates automatically"
     IDS_ABOUT_LICENSE       "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version."
     IDS_IMAGE_FILTER        "Bitmap Files (*.bmp)|*.bmp|PNG Files (*.png)|*.png|GIF Files (*.gif)|*.gif|TIFF Files (*.tif;*.tiff)|*.tif;*.tiff|JPEG Files (*.jpg;*.jpeg)|*.jpg;*.jpeg||"
-    IDS_ERROR_EXPORTING_PAGE "Error saving page to file"
+    IDS_ERROR_EXPORTING_PAGE "Error writing image to file."
     IDS_EXPORT_PROMPT_OVERWRITE 
                             "One or more of the specified files already exist. Do you want to overwrite the existing files?"
     IDS_EXPORTING_PAGE      "Exporting page %d (%d of %d), please wait..."

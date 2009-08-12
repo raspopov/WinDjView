@@ -350,6 +350,9 @@ BEGIN
     END
     POPUP "Настройки миниатюр"
     BEGIN
+        MENUITEM "&Печать страниц...",          ID_THUMBNAILS_PRINT
+        MENUITEM "&Экспорт страниц...",         ID_THUMBNAILS_EXPORT
+        MENUITEM SEPARATOR
         MENUITEM "&Увеличить миниатюры",        ID_THUMBNAILS_ENLARGE
         MENUITEM "У&меньшить миниатюры",        ID_THUMBNAILS_REDUCE
     END
@@ -785,8 +788,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,1,0
- PRODUCTVERSION 1,0,1,0
+ FILEVERSION 1,0,2,0
+ PRODUCTVERSION 1,0,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -804,12 +807,12 @@ BEGIN
             VALUE "Comments", "Русский"
             VALUE "CompanyName", "Andrew Zhezherun"
             VALUE "FileDescription", "WinDjView Localized Resources"
-            VALUE "FileVersion", "1.0.1"
+            VALUE "FileVersion", "1.0.2"
             VALUE "InternalName", "WinDjViewRU.dll"
             VALUE "LegalCopyright", "Copyright (C) 2004-2009 Andrew Zhezherun. All rights reserved."
             VALUE "OriginalFilename", "WinDjViewRU.dll"
             VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "1.0.1"
+            VALUE "ProductVersion", "1.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -1033,7 +1036,7 @@ BEGIN
     IDS_CANNOT_SAVE_TO_ORIG "Невозможно сохранить документ в тот же самый файл"
     IDS_SAVE_ERROR          "При сохранении документа произошла ошибка"
     IDS_ERROR_DECODING_PAGE "Невозможно прочитать страницу"
-    IDS_BMP_FILTER          "Картинки (*.bmp)|*.bmp|Все файлы (*.*)|*.*||"
+    IDS_BMP_FILTER          "BMP (*.bmp)|*.bmp|Все файлы (*.*)|*.*||"
     IDS_EXPORT_PAGE         "Сохранить страницу как"
     IDS_CONNECT_ERROR       "Произошла ошибка при обращении к серверу. Проверьте, что вы имеете доступ в интернет."
     IDS_NO_UPDATES_AVAILABLE 
@@ -1172,7 +1175,7 @@ BEGIN
     IDS_PAPER_SIZE          "%s x %s %s"
     IDS_VERSION_INFO        "WinDjView %s\n(C) Андрей Жежерун"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "1.0.1"
+    IDS_CURRENT_VERSION     "1.0.2"
     IDS_FATAL_ERROR         "Произошла серьёзная ошибка.\n\nОна могла быть вызвана повреждённым документом. После этой ошибки программа может работать\nнекорректно. Вам настоятельно рекомендуется перезапустить программу.\n\nНажмите OK, чтобы выйти из программы, или Cancel, чтобы вернуться к открытым документам."
     IDS_WARN_CLOSE_MULTIPLE "Выход из программы приведёт к закрытию %d документов. Продолжить?"
     IDS_OPENFILE            "Открыть"
@@ -1385,6 +1388,13 @@ BEGIN
     IDS_BACKUP_BOOKMARKS    "Сохранить закладки"
     IDS_CHECK_UPDATES       "Автоматически проверять наличие обновлений"
     IDS_ABOUT_LICENSE       "Эта программа является свободным программным обеспечением. Вы вправе распространять её и/или модифицировать, соблюдая условия Открытого лицензионного соглашения GNU (GPL), опубликованного Free Software Foundation; либо версии 2 Соглашения, либо (по вашему выбору) любой более поздней версии."
+    IDS_IMAGE_FILTER        "BMP (*.bmp)|*.bmp|PNG (*.png)|*.png|GIF (*.gif)|*.gif|TIFF (*.tif;*.tiff)|*.tif;*.tiff|JPEG (*.jpg;*.jpeg)|*.jpg;*.jpeg||"
+    IDS_ERROR_EXPORTING_PAGE "Ошибка при записи картинки в файл."
+    IDS_EXPORT_PROMPT_OVERWRITE 
+                            "Один или более из указанных файлов уже существует. Перезаписать существующие файлы?"
+    IDS_EXPORTING_PAGE      "Экспорт страницы %d (%d из %d)..."
+    IDS_EXPORT_PAGES        "Экспорт страниц"
+    IDS_EXPORT_ERRORS       "Не удалось экспортировать некоторые из страниц."
 END
 
 #endif    // Russian resources
