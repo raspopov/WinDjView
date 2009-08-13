@@ -1388,10 +1388,10 @@ BEGIN
     IDS_BACKUP_BOOKMARKS    "Сохранить закладки"
     IDS_CHECK_UPDATES       "Автоматически проверять наличие обновлений"
     IDS_ABOUT_LICENSE       "Эта программа является свободным программным обеспечением. Вы вправе распространять её и/или модифицировать, соблюдая условия Открытого лицензионного соглашения GNU (GPL), опубликованного Free Software Foundation; либо версии 2 Соглашения, либо (по вашему выбору) любой более поздней версии."
-    IDS_IMAGE_FILTER        "BMP (*.bmp)|*.bmp|PNG (*.png)|*.png|GIF (*.gif)|*.gif|TIFF (*.tif;*.tiff)|*.tif;*.tiff|JPEG (*.jpg;*.jpeg)|*.jpg;*.jpeg||"
+    IDS_IMAGE_FILTER        "Картинки BMP (*.bmp)|*.bmp|Картинки PNG (*.png)|*.png|Картинки GIF (*.gif)|*.gif|Картинки TIFF (*.tif;*.tiff)|*.tif;*.tiff|Картинки JPEG (*.jpg;*.jpeg)|*.jpg;*.jpeg||"
     IDS_ERROR_EXPORTING_PAGE "Ошибка при записи картинки в файл."
     IDS_EXPORT_PROMPT_OVERWRITE 
-                            "Один или более из указанных файлов уже существует. Перезаписать существующие файлы?"
+                            "Один или более из указанных файлов уже существуют. Перезаписать существующие файлы?"
     IDS_EXPORTING_PAGE      "Экспорт страницы %d (%d из %d)..."
     IDS_EXPORT_PAGES        "Экспорт страниц"
     IDS_EXPORT_ERRORS       "Не удалось экспортировать некоторые из страниц."

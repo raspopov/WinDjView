@@ -639,8 +639,8 @@ bool CDIB::Save(LPCTSTR pszPathName, ImageFormat nFormat) const
 
 		wstring wstrFileName;
 		MakeWString(CString(pszPathName), wstrFileName);
-		bool bResult =
-				(Gdip::SaveImageToFile(pGdipBitmap, wstrFileName.c_str(), &clsid, parameters) == Gdip::Ok);
+		bool bResult = (Gdip::SaveImageToFile(pGdipBitmap, wstrFileName.c_str(), &clsid,
+				parameters->Count > 0 ? parameters : NULL) == Gdip::Ok);
 
 		Gdip::DisposeImage(pGdipBitmap);
 		return bResult;
