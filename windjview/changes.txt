@@ -2,7 +2,7 @@ WinDjView version history
 Copyright (C) 2004-2009 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 1.0.2 (2009-08-??):
+Changes in version 1.0.2 (2009-08-14):
 + Export multiple pages at once via multiple selection in the
   thumbnails view.
 + Support for additional image formats: PNG, GIF, TIF, JPG
