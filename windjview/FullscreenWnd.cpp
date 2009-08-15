@@ -185,7 +185,9 @@ BOOL CFullscreenWnd::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERI
 			m_pView->ShowCursor();
 			if (m_pView->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
 			{
-				m_pView->ShowCursor();
+				// m_pView could have been destroyed by the last call.
+				if (m_pView != NULL && ::IsWindow(m_pView->m_hWnd))
+					m_pView->ShowCursor();
 				return true;
 			}
 		}
