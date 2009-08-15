@@ -409,7 +409,12 @@ void CDjVuView::OnDraw(CDC* pDC)
 	// Draw rectangle selection
 	if (m_nSelectionPage != -1 && m_rcSelection.width() > 1 && m_rcSelection.height() > 1)
 	{
-		CRect rcSel = TranslatePageRect(m_nSelectionPage, m_rcSelection);
+		// All selection corner points are inside m_rcSelection, so it
+		// needs to be adjusted so that the drawn selection precisely
+		// follows the mouse on screen. 
+		GRect rcDeflated(m_rcSelection.xmin, m_rcSelection.ymin + 1,
+				m_rcSelection.width() - 1, m_rcSelection.height() - 1);
+		CRect rcSel = TranslatePageRect(m_nSelectionPage, rcDeflated);
 		rcSel.InflateRect(0, 0, 1, 1);
 		InvertFrame(&m_offscreenDC, rcSel - ptScroll);
 	}
@@ -2877,8 +2882,8 @@ void CDjVuView::OnLButtonDown(UINT nFlags, CPoint point)
 		m_nSelectionPage = m_nStartPage;
 		m_rcSelection.xmin = m_ptStartSel.x;
 		m_rcSelection.xmax = m_ptStartSel.x + 1;
-		m_rcSelection.ymin = m_ptStartSel.y - 1;
-		m_rcSelection.ymax = m_ptStartSel.y;
+		m_rcSelection.ymin = m_ptStartSel.y;
+		m_rcSelection.ymax = m_ptStartSel.y + 1;
 
 		m_bDragging = true;
 		m_bDraggingRect = true;
@@ -2911,7 +2916,7 @@ CPoint CDjVuView::ScreenToDjVu(int nPage, const CPoint& point, bool bClip)
 	double fRatioY = szPage.cy / (1.0*page.szBitmap.cy);
 
 	CPoint ptResult(static_cast<int>(point.x*fRatioX + 0.5),
-			static_cast<int>(szPage.cy - point.y*fRatioY + 0.5));
+			static_cast<int>(szPage.cy - 1 - point.y*fRatioY + 0.5));
 
 	GRect output(0, 0, page.info.szPage.cx, page.info.szPage.cy);
 
@@ -3148,8 +3153,8 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 			m_nSelectionPage = m_nStartPage;
 			m_rcSelection.xmin = m_ptStartSel.x;
 			m_rcSelection.xmax = m_ptStartSel.x + 1;
-			m_rcSelection.ymin = m_ptStartSel.y - 1;
-			m_rcSelection.ymax = m_ptStartSel.y;
+			m_rcSelection.ymin = m_ptStartSel.y;
+			m_rcSelection.ymax = m_ptStartSel.y + 1;
 
 			UpdateCursor();
 		}
@@ -3290,8 +3295,8 @@ void CDjVuView::OnMouseMove(UINT nFlags, CPoint point)
 
 		m_rcSelection.xmin = min(ptCurrent.x, m_ptStartSel.x);
 		m_rcSelection.xmax = max(ptCurrent.x, m_ptStartSel.x) + 1;
-		m_rcSelection.ymin = min(ptCurrent.y, m_ptStartSel.y) - 1;
-		m_rcSelection.ymax = max(ptCurrent.y, m_ptStartSel.y);
+		m_rcSelection.ymin = min(ptCurrent.y, m_ptStartSel.y);
+		m_rcSelection.ymax = max(ptCurrent.y, m_ptStartSel.y) + 1;
 
 		rcDisplay = TranslatePageRect(m_nSelectionPage, m_rcSelection) - ptScroll;
 		rcDisplay.InflateRect(0, 0, 1, 1);
