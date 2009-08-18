@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="WinDjViewES"
-	ProjectGUID="{28ACA736-474E-4A39-B075-E20187327CEF}"
-	RootNamespace="WinDjViewES"
+	Name="WinDjView_wuu"
+	ProjectGUID="{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}"
+	RootNamespace="WinDjView_wuu"
 	>
 	<Platforms>
 		<Platform
@@ -40,18 +40,18 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/WinDjViewES.tlb"
+				TypeLibraryName=".\Release/WinDjView_wuu.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;WINDJVIEWES_EXPORTS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;WINDJVIEWWUU_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\Release/WinDjViewES.pch"
+				PrecompiledHeaderFile=".\Release/WinDjView_wuu.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
@@ -63,8 +63,8 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG,AFX_RESOURCE_DLL,AFX_TARG_ESP"
-				Culture="1034"
+				PreprocessorDefinitions="NDEBUG,AFX_RESOURCE_DLL,AFX_TARG_CHS"
+				Culture="2052"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -73,12 +73,12 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="odbc32.lib odbccp32.lib"
-				OutputFile=".\Release/WinDjViewES.dll"
+				OutputFile=".\Release/WinDjView_wuu.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateManifest="false"
 				ResourceOnlyDLL="true"
-				ImportLibrary=".\Release/WinDjViewES.lib"
+				ImportLibrary=".\Release/WinDjView_wuu.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -94,7 +94,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release/WinDjViewES.bsc"
+				OutputFile=".\Release/WinDjView_wuu.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -118,7 +118,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="WinDjViewES.rc"
+				RelativePath="WinDjView_wuu.rc"
 				>
 				<FileConfiguration
 					Name="Release|Win32"

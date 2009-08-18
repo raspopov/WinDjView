@@ -1,0 +1,1395 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+#ifndef VK_OEM_PLUS
+#define VK_OEM_PLUS 0xBB
+#define VK_OEM_COMMA 0xBC
+#define VK_OEM_MINUS 0xBD
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Chinese (P.R.C.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "#ifndef VK_OEM_PLUS\r\n"
+    "#define VK_OEM_PLUS 0xBB\r\n"
+    "#define VK_OEM_COMMA 0xBC\r\n"
+    "#define VK_OEM_MINUS 0xBD\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
+    "LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""..\\..\\res\\WinDjView.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#include ""afxprint.rc""       // printing/print preview resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_CURSOR_DRAG         CURSOR                  "..\\..\\res\\drag.cur"
+IDC_CURSOR_LINK         CURSOR                  "..\\..\\res\\link.cur"
+IDC_CURSOR_HAND         CURSOR                  "..\\..\\res\\hand.cur"
+IDC_CURSOR_MAGNIFY      CURSOR                  "..\\..\\res\\magnify.cur"
+IDC_CURSOR_PAN_UR       CURSOR                  "..\\..\\res\\pan_ur.cur"
+IDC_CURSOR_PAN_ALL      CURSOR                  "..\\..\\res\\pan_all.cur"
+IDC_CURSOR_PAN_D        CURSOR                  "..\\..\\res\\pan_d.cur"
+IDC_CURSOR_PAN_DL       CURSOR                  "..\\..\\res\\pan_dl.cur"
+IDC_CURSOR_PAN_DR       CURSOR                  "..\\..\\res\\pan_dr.cur"
+IDC_CURSOR_PAN_L        CURSOR                  "..\\..\\res\\pan_l.cur"
+IDC_CURSOR_PAN_LR       CURSOR                  "..\\..\\res\\pan_lr.cur"
+IDC_CURSOR_PAN_R        CURSOR                  "..\\..\\res\\pan_r.cur"
+IDC_CURSOR_PAN_U        CURSOR                  "..\\..\\res\\pan_u.cur"
+IDC_CURSOR_PAN_UD       CURSOR                  "..\\..\\res\\pan_ud.cur"
+IDC_CURSOR_PAN_UL       CURSOR                  "..\\..\\res\\pan_ul.cur"
+IDC_CURSOR_ZOOM_RECT    CURSOR                  "..\\..\\res\\zoom_rect.cur"
+IDC_CURSOR_SPLIT_HORZ   CURSOR                  "..\\..\\res\\split_h.cur"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "..\\..\\res\\WinDjView.ico"
+IDR_DjVuTYPE            ICON                    "..\\..\\res\\DjVuDoc.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP                  "..\\..\\res\\Toolbar.bmp"
+IDB_CLOSE               BITMAP                  "..\\..\\res\\close.bmp"
+IDB_CLOSE_TAB           BITMAP                  "..\\..\\res\\close_tab.bmp"
+IDB_SETTINGS            BITMAP                  "..\\..\\res\\settings.bmp"
+IDB_BOOKMARKS           BITMAP                  "..\\..\\res\\bookmarks.bmp"
+IDB_DONATE              BITMAP                  "..\\..\\res\\donate.bmp"
+IDB_PAN_ANCHOR          BITMAP                  "..\\..\\res\\pan_anchor.bmp"
+IDB_HOURGLASS           BITMAP                  "..\\..\\res\\hourglass.bmp"
+IDR_DICTIONARIES_BAR    BITMAP                  "..\\..\\res\\dictbar.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR  16, 16
+BEGIN
+    BUTTON      ID_FILE_OPEN
+    SEPARATOR
+    BUTTON      ID_FILE_PRINT
+    BUTTON      ID_EDIT_FIND
+    BUTTON      ID_APP_ABOUT
+    SEPARATOR
+    BUTTON      ID_MODE_DRAG
+    BUTTON      ID_MODE_SELECT
+    BUTTON      ID_MODE_SELECT_RECT
+    BUTTON      ID_MODE_MAGNIFY
+    BUTTON      ID_MODE_ZOOM_RECT
+    SEPARATOR
+    BUTTON      ID_VIEW_FIRSTPAGE
+    BUTTON      ID_VIEW_PREVIOUSPAGE
+    SEPARATOR
+    BUTTON      ID_VIEW_NEXTPAGE
+    BUTTON      ID_VIEW_LASTPAGE
+    SEPARATOR
+    BUTTON      ID_VIEW_BACK
+    BUTTON      ID_VIEW_FORWARD
+    SEPARATOR
+    BUTTON      ID_LAYOUT_CONTINUOUS
+    BUTTON      ID_LAYOUT_FACING
+    SEPARATOR
+    BUTTON      ID_ZOOM_OUT
+    SEPARATOR
+    BUTTON      ID_ZOOM_IN
+    BUTTON      ID_ZOOM_100
+    BUTTON      ID_ZOOM_FITPAGE
+    BUTTON      ID_ZOOM_FITWIDTH
+    SEPARATOR
+    BUTTON      ID_ROTATE_LEFT
+    BUTTON      ID_ROTATE_RIGHT
+END
+
+IDR_DICTIONARIES_BAR TOOLBAR  16, 15
+BEGIN
+    BUTTON      ID_DICTIONARY_LOOKUP
+    BUTTON      ID_DICTIONARY_PREV
+    BUTTON      ID_DICTIONARY_NEXT
+    BUTTON      ID_DICTIONARY_INFO
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU 
+BEGIN
+    POPUP "文件(&F)"
+    BEGIN
+        MENUITEM "开开(&O)…\tCtrl+O",             ID_FILE_OPEN
+        MENUITEM "设定(&S)…\tCtrl+,",             ID_FILE_SETTINGS
+        MENUITEM SEPARATOR
+        MENUITEM "近枪文件",                        ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "退出(&X)\tCtrl+Q",              ID_APP_EXIT
+    END
+    POPUP "画面(&V)"
+    BEGIN
+        MENUITEM "家生条(&T)",                     ID_VIEW_TOOLBAR
+        MENUITEM "情况条(&S)",                     ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        POPUP "&Language"
+        BEGIN
+            MENUITEM "&English",                    ID_LANGUAGE_FIRST
+        END
+    END
+    POPUP "相帮(&H)"
+    BEGIN
+        MENUITEM "更新查查看(&C)…",                  ID_CHECK_FOR_UPDATE
+        MENUITEM "话起WinDjView(&W)…",            ID_APP_ABOUT
+    END
+END
+
+IDR_DjVuTYPE MENU 
+BEGIN
+    POPUP "文件(&F)"
+    BEGIN
+        MENUITEM "开开(&O)…\tCtrl+O",             ID_FILE_OPEN
+        MENUITEM "存份抄本(&A)…\tCtrl+S",           ID_FILE_SAVE_COPY_AS
+        MENUITEM "关脱(&C)\tCtrl+W",              ID_FILE_CLOSE
+        MENUITEM SEPARATOR
+        MENUITEM "输入书签(&I)…",                   ID_FILE_IMPORT_BOOKMARKS
+        MENUITEM "输出书签(&B)…",                   ID_FILE_EXPORT_BOOKMARKS
+        MENUITEM "输出文字(&E)…",                   ID_FILE_EXPORT_TEXT
+        MENUITEM "打印(&P)…\tCtrl+P",             ID_FILE_PRINT
+        MENUITEM SEPARATOR
+        MENUITEM "文档特性(&D)…",                   ID_FILE_DOC_PROPERTIES
+        MENUITEM "设定(&S)…\tCtrl+,",             ID_FILE_SETTINGS
+        MENUITEM SEPARATOR
+        MENUITEM "近枪文件",                        ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "退出(&X)\tCtrl+Q",              ID_APP_EXIT
+    END
+    POPUP "编辑(&E)"
+    BEGIN
+        MENUITEM "拷(&C)\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "加隻书签(&B)…\tCtrl+B",           ID_BOOKMARK_ADD
+        MENUITEM SEPARATOR
+        MENUITEM "拣好个搨亮(&H)…\tCtrl+H",          ID_HIGHLIGHT_SELECTION
+        MENUITEM "拣好个输出(&S)…",                  ID_EXPORT_SELECTION
+        MENUITEM SEPARATOR
+        MENUITEM "寻找(&F)…\tCtrl+F",             ID_EDIT_FIND
+    END
+    POPUP "画面(&V)"
+    BEGIN
+        MENUITEM "家生条(&T)",                     ID_VIEW_TOOLBAR
+        MENUITEM "标襻条(&B)",                     ID_VIEW_TAB_BAR
+        MENUITEM "情况条(&S)",                     ID_VIEW_STATUS_BAR
+        MENUITEM "侧边条(&I)",                     ID_VIEW_SIDEBAR
+        MENUITEM SEPARATOR
+        MENUITEM "满屏(&F)\tCtrl+L",              ID_VIEW_FULLSCREEN
+        MENUITEM SEPARATOR
+        MENUITEM "候牢页面(&P)\tCtrl+0",            ID_ZOOM_FITPAGE
+        MENUITEM "候牢阔狭(&W)\tCtrl+2",            ID_ZOOM_FITWIDTH
+        MENUITEM "候牢窗门(&E)\tCtrl+3",            ID_ZOOM_STRETCH
+        MENUITEM "实际尺寸(&A)\tCtrl+4",            ID_ZOOM_ACTUALSIZE
+        POPUP "变焦(&Z)"
+        BEGIN
+            MENUITEM "推近(&I)\tCtrl+加",              ID_ZOOM_IN
+            MENUITEM "拉远(&O)\tCtrl+减",              ID_ZOOM_OUT
+            MENUITEM SEPARATOR
+            MENUITEM "50％(&5)",                     ID_ZOOM_50
+            MENUITEM "75％(&7)",                     ID_ZOOM_75
+            MENUITEM "100％(&1)\tCtrl+1",            ID_ZOOM_100
+            MENUITEM "200％(&2)",                    ID_ZOOM_200
+            MENUITEM "400％(&4)",                    ID_ZOOM_400
+            MENUITEM SEPARATOR
+            MENUITEM "定做(&C)…\tCtrl+M",             ID_ZOOM_CUSTOM
+        END
+        MENUITEM SEPARATOR
+        POPUP "跑到(&G)"
+        BEGIN
+            MENUITEM "头一页(&C)\tCtrl+Home",          ID_VIEW_FIRSTPAGE
+            MENUITEM "上头页(&T)\tCtrl+PgUp",          ID_VIEW_PREVIOUSPAGE
+            MENUITEM "下头页(&R)\tCtrl+PgDn",          ID_VIEW_NEXTPAGE
+            MENUITEM "压末页(&L)\tCtrl+End",           ID_VIEW_LASTPAGE
+            MENUITEM "第…页(&P)\tCtrl+G",             ID_VIEW_GOTO_PAGE
+            MENUITEM SEPARATOR
+            MENUITEM "上头隻画面(&V)\tAlt+左",            ID_VIEW_BACK
+            MENUITEM "下头隻画面(&E)\tAlt+右",            ID_VIEW_FORWARD
+        END
+        POPUP "旋转(&R)"
+        BEGIN
+            MENUITEM "逆时针(&C)\tCtrl+Shift+左",       ID_ROTATE_LEFT
+            MENUITEM "顺时针(&T)\tCtrl+Shift+右",       ID_ROTATE_RIGHT
+            MENUITEM "180°(&1)\tCtrl+Shift+下",      ID_ROTATE_180
+        END
+        POPUP "版面(&Y)"
+        BEGIN
+            MENUITEM "连续(&C)\tCtrl+Alt+2",          ID_LAYOUT_CONTINUOUS
+            MENUITEM "对页(&F)\tCtrl+Alt+2",          ID_LAYOUT_FACING
+            MENUITEM SEPARATOR
+            MENUITEM "头一页单独(&A)\tCtrl+E",           ID_LAYOUT_FIRSTPAGE_ALONE
+            MENUITEM "次序从右望左\tCtrl+R",              ID_LAYOUT_RTL_ORDER
+        END
+        POPUP "显示(&D)"
+        BEGIN
+            MENUITEM "彩色(&C)\tCrtl+Shift+1",        ID_DISPLAY_COLOR
+            MENUITEM "黑白(&W)\tCtrl+Shift+2",        ID_DISPLAY_BW
+            MENUITEM "背景(&B)\tCtrl+Shift+3",        ID_DISPLAY_BACKGROUND
+            MENUITEM "前景(&F)\tCtrl+Shift+4",        ID_DISPLAY_FOREGROUND
+        END
+        MENUITEM SEPARATOR
+        POPUP "&Language"
+        BEGIN
+            MENUITEM "&English",                    ID_LANGUAGE_FIRST
+        END
+    END
+    POPUP "家生(&T)"
+    BEGIN
+        MENUITEM "手掌家生(&H)",                    ID_MODE_DRAG
+        MENUITEM "拣字家生(&S)",                    ID_MODE_SELECT
+        MENUITEM "拣块家生(&R)",                    ID_MODE_SELECT_RECT
+        MENUITEM "放大镜(&M)",                     ID_MODE_MAGNIFY
+        MENUITEM "拣好著推近(&Z)",                   ID_MODE_ZOOM_RECT
+    END
+    POPUP "窗门(&W)"
+    BEGIN
+        MENUITEM "叠拢(&C)",                      ID_WINDOW_CASCADE
+        MENUITEM "横铺(&T)",                      ID_WINDOW_TILE_HORZ
+        MENUITEM "直铺(&V)",                      ID_WINDOW_TILE_VERT
+        MENUITEM SEPARATOR
+        MENUITEM "满屏(&U)\tCtrl+L",              ID_VIEW_FULLSCREEN
+        MENUITEM SEPARATOR
+        MENUITEM "激活箇隻文档",                      ID_WINDOW_ACTIVATE_FIRST
+    END
+    POPUP "相帮(&H)"
+    BEGIN
+        MENUITEM "查查更新(&C)…",                   ID_CHECK_FOR_UPDATE
+        MENUITEM "话起WinDjView(&W)…",            ID_APP_ABOUT
+    END
+END
+
+IDR_POPUP MENU 
+BEGIN
+    POPUP "页面"
+    BEGIN
+        MENUITEM "拷文字(&C)",                     ID_EDIT_COPY
+        MENUITEM "文字搨亮(&H)…",                   ID_HIGHLIGHT_TEXT
+        MENUITEM "拣好个搨亮(&A)…",                  ID_HIGHLIGHT_SELECTION
+        MENUITEM "拣好个输出(&S)…",                  ID_EXPORT_SELECTION
+        MENUITEM "拣好著推近(&Z)",                   ID_ZOOM_TO_SELECTION
+        MENUITEM "编辑批语(&D)…",                   ID_ANNOTATION_EDIT
+        MENUITEM "删脱批语(&A)",                    ID_ANNOTATION_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "加隻书签(&B)…",                   ID_BOOKMARK_ADD
+        MENUITEM SEPARATOR
+        MENUITEM "页面信息(&I)…",                   ID_PAGE_INFORMATION
+        MENUITEM "页面输出(&E)…",                   ID_EXPORT_PAGE
+    END
+    POPUP "书签"
+    BEGIN
+        MENUITEM "改名字(&R)…",                    ID_BOOKMARK_RENAME
+        MENUITEM "删脱(&D)",                      ID_BOOKMARK_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "摆到上头(&U)",                    ID_BOOKMARK_MOVEUP
+        MENUITEM "摆到下头(&O)",                    ID_BOOKMARK_MOVEDOWN
+        MENUITEM SEPARATOR
+        MENUITEM "定为此地(&S)",                    ID_BOOKMARK_SETDESTINATION
+    END
+    POPUP "设定节图"
+    BEGIN
+        MENUITEM "页面打印(&P)…",                   ID_THUMBNAILS_PRINT
+        MENUITEM "页面输出(&X)…",                   ID_THUMBNAILS_EXPORT
+        MENUITEM SEPARATOR
+        MENUITEM "扩大节图(&E)",                    ID_THUMBNAILS_ENLARGE
+        MENUITEM "缩小节图(&R)",                    ID_THUMBNAILS_REDUCE
+    END
+    POPUP "设定书签"
+    BEGIN
+        MENUITEM "顶层书签撑开(&E)",                  ID_BOOKMARK_TOP_LEVEL
+        MENUITEM "书签忒长就调一行(&W)",                ID_BOOKMARK_WRAP
+    END
+    POPUP "标襻"
+    BEGIN
+        MENUITEM "标襻关脱(&C)",                    ID_TAB_CLOSE
+        MENUITEM "别个标襻关脱(&O)",                  ID_TAB_CLOSE_OTHER
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS 
+BEGIN
+    VK_F1,          ID_APP_ABOUT,           VIRTKEY, NOINVERT
+    "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
+    "B",            ID_BOOKMARK_ADD,        VIRTKEY, CONTROL, NOINVERT
+    "I",            ID_DICTIONARY_INFO,     VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "L",            ID_DICTIONARY_LOOKUP,   VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_DOWN,        ID_DICTIONARY_NEXT,     VIRTKEY, ALT, NOINVERT
+    VK_UP,          ID_DICTIONARY_PREV,     VIRTKEY, ALT, NOINVERT
+    "3",            ID_DISPLAY_BACKGROUND,  VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "2",            ID_DISPLAY_BW,          VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "1",            ID_DISPLAY_COLOR,       VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "4",            ID_DISPLAY_FOREGROUND,  VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    VK_F4,          ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
+    "W",            ID_FILE_CLOSE,          VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "T",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_COMMA,   ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
+    VK_F3,          ID_FIND_STRING,         VIRTKEY, NOINVERT
+    "F",            ID_FOCUS_TO_LOOKUP,     VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "H",            ID_HIGHLIGHT_SELECTION, VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_LAYOUT_CONTINUOUS,   VIRTKEY, CONTROL, ALT, NOINVERT
+    "2",            ID_LAYOUT_FACING,       VIRTKEY, CONTROL, ALT, NOINVERT
+    "E",            ID_LAYOUT_FIRSTPAGE_ALONE, VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_LAYOUT_RTL_ORDER,    VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_TAB,         ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_TAB,         ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_DOWN,        ID_ROTATE_180,          VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_LEFT,        ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_OEM_MINUS,   ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_ROTATE_LEFT,         VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_ADD,         ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_OEM_PLUS,    ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_RIGHT,       ID_ROTATE_RIGHT,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_F4,          ID_TOGGLE_NAV_PANE,     VIRTKEY, NOINVERT
+    VK_LEFT,        ID_VIEW_BACK_SHORTCUT,  VIRTKEY, ALT, NOINVERT
+    VK_HOME,        ID_VIEW_FIRSTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
+    VK_RIGHT,       ID_VIEW_FORWARD_SHORTCUT, VIRTKEY, ALT, NOINVERT
+    "L",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
+    VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
+    "G",            ID_VIEW_GOTO_PAGE,      VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_VIEW_GOTO_PAGE,      VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_END,         ID_VIEW_LASTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
+    VK_NEXT,        ID_VIEW_NEXTPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
+    VK_PRIOR,       ID_VIEW_PREVIOUSPAGE_SHORTCUT, VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_WINDOW_NEXT,         VIRTKEY, CONTROL, NOINVERT
+    VK_TAB,         ID_WINDOW_NEXT,         VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_WINDOW_PREV,         VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_TAB,         ID_WINDOW_PREV,         VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "1",            ID_ZOOM_100,            VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_ZOOM_ACTUALSIZE,     VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_ZOOM_CUSTOM,         VIRTKEY, CONTROL, NOINVERT
+    "0",            ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
+    VK_MULTIPLY,    ID_ZOOM_FITPAGE,        VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_ZOOM_FITWIDTH,       VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_PLUS,    ID_ZOOM_IN,             VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_MINUS,   ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_ZOOM_OUT,            VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_ZOOM_STRETCH,        VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 251, 130
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "话起WinDjView"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
+    LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
+    LTEXT           "版权 (C) 2004-2009 Andrew Zhezherun",IDC_STATIC,40,17,149,8
+    DEFPUSHBUTTON   "关脱",IDOK,194,7,50,14,WS_GROUP
+    LTEXT           "计劃屋页：",IDC_STATIC,40,35,43,8
+    LTEXT           "DjVuLibre屋页：",IDC_STATIC,40,45,63,8
+    LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,83,35,161,8
+    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,103,45,141,8
+    LTEXT           "照会",IDC_STATIC_LICENSE,40,62,204,34
+    LTEXT           "侬好通过PayPal捐铜钿来支持箇隻程序进一步发展。",IDC_STATIC,40,103,137,17
+    CONTROL         "捐助",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | WS_TABSTOP,181,102,63,21
+END
+
+IDD_PRINT DIALOGEX 0, 0, 432, 316
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "打印"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    LTEXT           "名字(&N)：",IDC_STATIC,174,21,37,9,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_PRINTER,215,19,147,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "特性(&P)",IDC_PROPERTIES,368,18,50,14
+    CONTROL         "打成功文件(&F)",IDC_PRINT_TO_FILE,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,364,79,52,11
+    CONTROL         "直转来(&I)",IDC_PORTRAIT,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,174,112,53,11
+    CONTROL         "横转来(&D)",IDC_LANDSCAPE,"Button",BS_AUTORADIOBUTTON,174,128,53,11
+    LTEXT           "抄本数目(&C)：",IDC_STATIC,304,111,62,11
+    EDITTEXT        IDC_EDIT_COPIES,379,109,38,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_SPIN_COPIES,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,405,111,11,14
+    CONTROL         "一份份打",IDC_COLLATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,379,128,46,11
+    CONTROL         "和总(&A)",IDC_RANGE_ALL,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,166,37,11
+    CONTROL         "就箇页(&U)",IDC_RANGE_CURRENT,"Button",BS_AUTORADIOBUTTON,14,180,59,11
+    CONTROL         "拣好个",IDC_RANGE_SELECTION,"Button",BS_AUTORADIOBUTTON,84,180,59,11
+    CONTROL         "页码(&G)：",IDC_RANGE_PAGES,"Button",BS_AUTORADIOBUTTON,14,194,37,11
+    EDITTEXT        IDC_PAGE_RANGES,56,193,95,12,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "左(&E)：",IDC_STATIC,174,168,31,9
+    EDITTEXT        IDC_POSITION_LEFT,174,181,32,12,ES_AUTOHSCROLL
+    LTEXT           "顶(&O)：",IDC_STATIC,174,199,35,9
+    EDITTEXT        IDC_POSITION_TOP,174,211,32,12,ES_AUTOHSCROLL
+    CONTROL         "图片贴中(&M)",IDC_CENTER_IMAGE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,216,182,57,11
+    CONTROL         "自动旋转",IDC_AUTO_ROTATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,216,197,57,11
+    CONTROL         "边白覅佢",IDC_CLIP_CONTENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,216,212,55,11
+    LTEXT           "比例(&S)：",IDC_STATIC,304,168,39,9
+    EDITTEXT        IDC_SCALE,304,181,38,12,ES_AUTOHSCROLL
+    CONTROL         "尺寸候牢介质",IDC_SCALE_TO_FIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,350,182,72,11
+    CONTROL         "尺寸忒大就收(&H)",IDC_SHRINK_OVERSIZED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,350,197,72,11
+    CONTROL         "不睬打印机边距",IDC_IGNORE_MARGINS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,350,212,72,11
+    LTEXT           "左(&L)：",IDC_STATIC,14,251,29,9
+    EDITTEXT        IDC_MARGIN_LEFT,43,249,38,12,ES_AUTOHSCROLL
+    LTEXT           "顶(&T)：",IDC_STATIC,14,269,29,9
+    EDITTEXT        IDC_MARGIN_TOP,43,267,38,12,ES_AUTOHSCROLL
+    LTEXT           "右(&R)：",IDC_STATIC,86,251,31,9
+    EDITTEXT        IDC_MARGIN_RIGHT,117,249,38,12,ES_AUTOHSCROLL
+    LTEXT           "底(&B)：",IDC_STATIC,86,269,31,9
+    EDITTEXT        IDC_MARGIN_BOTTOM,117,267,38,12,ES_AUTOHSCROLL
+    LTEXT           "尺寸(&Z)：",IDC_STATIC,174,251,34,9,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_PAPER,174,267,109,81,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "打印",IDC_STATIC,304,251,17,9,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_PAGESINRANGE,326,249,92,81,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "打印",IDC_STATIC,304,269,17,9,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_PAGESPERSHEET,326,267,92,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "反序",IDC_REVERSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,297,66,11
+    DEFPUSHBUTTON   "打印",IDOK,320,295,50,14
+    PUSHBUTTON      "关脱",IDCANCEL,375,295,50,14
+    GROUPBOX        "打印机",IDC_STATIC,167,7,258,87
+    LTEXT           "式样：",IDC_STATIC,174,40,37,9
+    LTEXT           "地基：",IDC_STATIC,174,55,37,9
+    LTEXT           "注解：",IDC_STATIC,174,70,37,9
+    LTEXT           "式样",IDC_STATIC_TYPE,216,40,200,9
+    LTEXT           "地基",IDC_STATIC_LOCATION,216,55,200,9
+    LTEXT           "注解",IDC_STATIC_COMMENT,216,70,200,9
+    GROUPBOX        "打印范围",IDC_STATIC,7,154,153,78
+    GROUPBOX        "抄本",IDC_STATIC,296,98,129,51
+    CONTROL         "",IDC_PREVIEW_AREA,"Static",SS_BLACKFRAME | NOT WS_VISIBLE,14,20,138,115
+    GROUPBOX        "方向",IDC_STATIC,167,98,122,51
+    GROUPBOX        "预览",IDC_STATIC,7,7,153,142
+    GROUPBOX        "边距",IDC_STATIC,7,237,153,49
+    GROUPBOX        "纸头",IDC_STATIC,167,237,122,49
+    LTEXT           "输入页码、范围，用半阔逗号隔开。譬方：1,3,5-9",IDC_STATIC,16,210,137,17
+    GROUPBOX        "打印主张",IDC_STATIC,296,237,129,49
+    GROUPBOX        "位置",IDC_STATIC,167,154,122,78
+    GROUPBOX        "调整打印比例",IDC_STATIC,296,154,129,78
+    CTEXT           "纸头尺寸",IDC_STATIC_PAPER,14,138,138,8
+END
+
+IDD_PROGRESS DIALOGEX 0, 0, 171, 61
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "覅了",IDOK,60,40,50,14
+    CTEXT           "来拉打印三页里向头一页，等一歇…",IDC_STATIC_TEXT,7,7,157,9
+    CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,7,22,157,12
+END
+
+IDD_ZOOM DIALOGEX 0, 0, 119, 47
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "定做变焦"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    LTEXT           "变焦(&Z)：",IDC_STATIC,13,7,35,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_ZOOM,51,7,55,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "好个",IDOK,7,26,50,14
+    PUSHBUTTON      "覅了",IDCANCEL,62,26,50,14
+END
+
+IDD_SETTINGS_GENERAL DIALOGEX 0, 0, 222, 171
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "总个"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    CONTROL         "每隻文档开拉各自个顶层窗门里向(&O)",IDC_TOP_LEVEL_DOCUMENTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,154,10
+    CONTROL         "关脱多份文档个辰光关照声(&W)",IDC_WARN_CLOSE_MULTIPLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,132,10
+    CONTROL         "倘然只有一隻文档开拉，标襻就囥脱(&D)",IDC_HIDE_SINGLE_TAB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,156,10
+    CONTROL         "来拉后臺为所有页面造节图(&T)",IDC_GEN_ALL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,129,10
+    CONTROL         "Ctrl+鼠标轮个变焦方向反转来(&C)",IDC_INVERT_WHEEL_ZOOM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,144,10
+    CONTROL         "揿Esc担程序关脱(&E)",IDC_CLOSE_ON_ESC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,77,97,10
+    CONTROL         "书签忒长就调一行(&L)",IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,94,10
+    LTEXT           "满屏模式",IDC_STATIC,7,108,38,10,SS_CENTERIMAGE
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,44,112,171,1
+    CONTROL         "靠鼠标点击翻页(&M)",IDC_FULLSCREEN_CLICKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,122,88,10
+    CONTROL         "辊条总归囥脱(&H)",IDC_FULLSCREEN_HIDESCROLL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,136,81,10
+    CONTROL         "连续滚动好用(&C)",IDC_FULLSCREEN_CONTINUOUS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,150,82,10
+END
+
+IDD_FIND DIALOGEX 0, 0, 287, 64
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "寻找"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    LTEXT           "寻啥(&N)：",IDC_STATIC,7,10,41,9
+    CONTROL         "",IDC_FIND,"ComboBoxEx32",CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP,47,7,173,95
+    CONTROL         "注意大小写(&C)",IDC_MATCH_CASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,28,64,8
+    DEFPUSHBUTTON   "寻下头只(&F)",IDOK,230,7,50,14
+    PUSHBUTTON      "全寻出来(&A)",IDC_FIND_ALL,230,25,50,14
+    PUSHBUTTON      "关脱",IDCANCEL,230,43,50,14
+    LTEXT           "来拉搜寻十页里向头一页…",IDC_SEARCH_STATUS,7,48,214,9,NOT WS_VISIBLE
+END
+
+IDD_UPDATE DIALOGEX 0, 0, 167, 34
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    LTEXT           "来拉查更新。等一歇…",IDC_STATIC,39,10,118,11
+    ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
+END
+
+IDD_GOTO_PAGE DIALOGEX 0, 0, 150, 48
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "跑到箇页"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    LTEXT           "箇页(&P)：",IDC_STATIC,7,7,35,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_PAGE,46,7,51,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_SPIN_PAGE,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,77,8,11,14
+    LTEXT           "拢共9999页",IDC_PAGE_COUNT,102,7,41,12,SS_CENTERIMAGE
+    DEFPUSHBUTTON   "好个",IDOK,22,27,50,14
+    PUSHBUTTON      "覅了",IDCANCEL,77,27,50,14
+END
+
+IDD_SETTINGS_DISPLAY DIALOGEX 0, 0, 222, 171
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "显示"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    CONTROL         "颜色反相(&I)",IDC_INVERT_COLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,60,10
+    CONTROL         "设定调整(&D)：",IDC_ADJUST_DISPLAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,68,10
+    LTEXT           "光亮(&B)：-100",IDC_BRIGHTNESS_TEXT,11,36,54,9
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,65,35,150,12
+    LTEXT           "反差(&C)：-100",IDC_CONTRAST_TEXT,11,50,54,9
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,65,49,150,12
+    LTEXT           "伽马：1.0(&1)",IDC_GAMMA_TEXT,11,64,54,9
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,65,63,150,12
+    CONTROL         "用打印辰光个调整(&P)",IDC_ADJUST_PRINTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,79,95,10
+    CONTROL         "高质（慢速）还显彩页(&H)",IDC_HQ_COLOR_SCALING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,93,103,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,111,208,1
+    LTEXT           "单位(&U)：",IDC_STATIC,7,120,39,10
+    COMBOBOX        IDC_COMBO_UNITS,44,118,87,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_ANNOTATION DIALOGEX 0, 0, 210, 290
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "编辑批语"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    LTEXT           "边头(&B)",IDC_STATIC,7,7,31,9
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,30,11,173,1,WS_EX_STATICEDGE
+    LTEXT           "式样：",IDC_STATIC,18,19,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_BORDER_TYPE,43,19,89,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "颜色：",IDC_STATIC,140,19,20,12,SS_CENTERIMAGE
+    PUSHBUTTON      "",IDC_BORDER_COLOR,162,18,41,15
+    CONTROL         "鼠标悬停来许再显示(&S)",IDC_HIDE_INACTIVE_BORDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,36,129,11
+    LTEXT           "充满(&F)",IDC_STATIC,7,54,29,9
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,19,58,184,1,WS_EX_STATICEDGE
+    LTEXT           "式样：",IDC_STATIC,19,66,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_FILL_TYPE,43,66,89,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "颜色：",IDC_STATIC,140,66,20,12,SS_CENTERIMAGE
+    PUSHBUTTON      "",IDC_FILL_COLOR,162,65,41,15
+    LTEXT           "透明(&T)：",IDC_STATIC,19,84,47,12,SS_CENTERIMAGE
+    CONTROL         "滑槽1",IDC_FILL_TRANSPARENCY,"msctls_trackbar32",WS_TABSTOP,68,85,113,12
+    RTEXT           "100%",IDC_FILL_TRANSPARENCY_TEXT,182,84,20,12,SS_CENTERIMAGE
+    CONTROL         "鼠标悬停来许再显示(&H)",IDC_HIDE_INACTIVE_FILL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,100,129,11
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,7,121,196,1,WS_EX_STATICEDGE
+    LTEXT           "批语(&C)：",IDC_STATIC,7,130,33,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_COMMENT,43,130,160,47,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    CONTROL         "总归显示注解(&A)",IDC_ALWAYS_SHOW_COMMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,43,180,85,11
+    PUSHBUTTON      "书签(&M)>>",IDC_ADD_BOOKMARK,7,198,54,14
+    DEFPUSHBUTTON   "好个",IDOK,99,198,50,14
+    PUSHBUTTON      "覅了",IDCANCEL,153,198,50,14
+    CONTROL         "",IDC_STATIC_LESS,"Static",SS_GRAYFRAME,7,219,196,1,WS_EX_STATICEDGE
+    LTEXT           "名目(&I)：",IDC_STATIC,7,228,33,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_BOOKMARK_TITLE,43,228,160,47,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    CONTROL         "",IDC_STATIC_MORE,"Static",SS_GRAYFRAME,7,282,196,1,WS_EX_STATICEDGE
+END
+
+IDD_RENAME_BOOKMARK DIALOGEX 0, 0, 206, 90
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "书签改名"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    LTEXT           "名目(&I)：",IDC_STATIC,7,7,36,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_BOOKMARK_TITLE,44,7,155,53,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "好个",IDOK,95,69,50,14
+    PUSHBUTTON      "覅了",IDCANCEL,149,69,50,14
+END
+
+IDD_INSTALL_DIC DIALOGEX 0, 0, 190, 138
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "安装辞典"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    CONTROL         "为本用户装箇本辞典",IDC_CURRENT_USER,"Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,7,7,176,11
+    CONTROL         "部电脑个用户和总装箇本辞典\n（要有管理特权）",IDC_ALL_USERS,"Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,7,21,176,19
+    CONTROL         "箇本辞典装到定做个地基：",IDC_CUSTOM,"Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,7,43,157,11
+    PUSHBUTTON      "…",IDC_BROWSE_LOCATION,170,40,13,12,WS_GROUP
+    CONTROL         "（朆拣唻）",IDC_CUSTOM_LOCATION,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | SS_PATHELLIPSIS | WS_GROUP,18,56,165,9
+    LTEXT           "隻文件个抄本就要造哉。倘然装好著，侬想担原始文件掼到回收桶去，下头隻框就覅着勾：",IDC_STATIC,7,75,176,17
+    CONTROL         "保留原始文件",IDC_KEEP_ORIGINAL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,97,86,11
+    DEFPUSHBUTTON   "好个",IDOK,78,117,50,14
+    PUSHBUTTON      "覅了",IDCANCEL,133,117,50,14
+END
+
+IDD_INSTALL_DIC_REPLACE DIALOGEX 0, 0, 190, 91
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "安装辞典"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    LTEXT           "倘然装好著，侬想担眼门前隻文件掼到回收桶去，下头隻框就覅着勾：",IDC_STATIC,7,35,176,18
+    CONTROL         "保留原始文件",IDC_KEEP_ORIGINAL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,54,86,11
+    DEFPUSHBUTTON   "好个",IDOK,78,70,50,14
+    PUSHBUTTON      "覅了",IDCANCEL,133,70,50,14
+    LTEXT           "同名个辞典系统里向装过歇，再装个说话隻开开个文件会得担有拉个辞典替换脱。",IDC_STATIC,7,7,176,26
+END
+
+IDD_SETTINGS_ADVANCED DIALOGEX 0, 0, 222, 171
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "进阶"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    LTEXT           "默认DjVu查看器",IDC_STATIC,7,7,61,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,68,10,147,1
+    LTEXT           "WinDjView眼门前不是DjVu文件个默认查看器",IDC_DEFAULT_VIEWER_STATUS,21,21,118,19
+    PUSHBUTTON      "弄佢默认(&M)",IDC_MAKE_DEFAULT,145,21,70,14
+    CONTROL         "倘然WinDjView不是默认DjVu查看器就告诉我(&T)",IDC_WARN_NOT_DEFAULT_VIEWER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,42,184,10
+    LTEXT           "书签搭批语",IDC_STATIC,7,60,45,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,51,64,164,1
+    LTEXT           "DjVu文件个书签搭批语侬和总好备份。隻备份文件也好用来迁到另外臺电脑上。",IDC_STATIC,21,74,194,28
+    PUSHBUTTON      "造隻备份(&C)",IDC_CREATE_BACKUP,21,103,70,14
+    LTEXT           "杂夹咙咚",IDC_STATIC,7,125,35,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,44,129,171,1
+    CONTROL         "文件开开个辰光恢復上趟开个箇页搭著画面(&R)",IDC_RESTORE_VIEW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,139,182,10
+    CONTROL         "一个礼拜自动查一趟更新(&A)",IDC_CHECK_UPDATES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,153,120,10
+END
+
+IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 171
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "辞典"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    LTEXT           "装好个辞典：",IDC_STATIC,7,31,69,9
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_TABSTOP,7,42,208,104,WS_EX_CLIENTEDGE
+    PUSHBUTTON      "拆卸(&U)",IDC_UNINSTALL,7,150,50,14
+    LTEXT           "定做个地基：",IDC_STATIC,7,7,69,9
+    LTEXT           "（朆拣唻）",IDC_CUSTOM_LOCATION,7,18,192,9
+    PUSHBUTTON      "…",IDC_BROWSE_LOCATION,202,16,13,12
+END
+
+IDD_DOC_PROPERTIES DIALOGEX 0, 0, 339, 231
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "文档特性"
+FONT 9, "宋体", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "关脱",IDOK,145,210,50,14
+    LTEXT           "文档名字：",IDC_STATIC,7,7,62,9
+    LTEXT           "文档名字",IDC_STATIC_NAME,72,7,260,9,SS_PATHELLIPSIS
+    LTEXT           "文档格式：",IDC_STATIC,7,19,62,9
+    LTEXT           "文档格式",IDC_STATIC_TYPE,72,19,260,9
+    LTEXT           "统共尺寸：",IDC_STATIC,7,31,62,9
+    LTEXT           "统共尺寸",IDC_STATIC_SIZE,72,31,260,9
+    LTEXT           "页面数目：",IDC_STATIC,7,43,62,9
+    LTEXT           "页数",IDC_STATIC_PAGES,72,43,260,9
+    LTEXT           "文件数目：",IDC_STATIC,7,55,62,9
+    LTEXT           "文件数",IDC_STATIC_FILES,72,55,260,9
+    CONTROL         "文件和总显示(&S)",IDC_SHOW_ALL_FILES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,273,67,59,10
+    LTEXT           "页码(&P)：",IDC_STATIC,7,67,36,9
+    CONTROL         "",IDC_LIST_FILES,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | WS_TABSTOP,7,79,325,124,WS_EX_CLIENTEDGE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,3,0
+ PRODUCTVERSION 1,0,3,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "20040000"
+        BEGIN
+            VALUE "Comments", "吴语"
+            VALUE "CompanyName", "Andrew Zhezherun"
+            VALUE "FileDescription", "WinDjView Localized Resources"
+            VALUE "FileVersion", "1.0.3"
+            VALUE "InternalName", "WinDjView_wuu.dll"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2009 Andrew Zhezherun. All rights reserved."
+            VALUE "OriginalFilename", "WinDjView_wuu.dll"
+            VALUE "ProductName", "WinDjView"
+            VALUE "ProductVersion", "1.0.3"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x2004, 0
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 244
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 123
+    END
+
+    IDD_PRINT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 425
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 309
+    END
+
+    IDD_PROGRESS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 164
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 54
+    END
+
+    IDD_ZOOM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 112
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 40
+    END
+
+    IDD_SETTINGS_GENERAL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 215
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 164
+    END
+
+    IDD_FIND, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 280
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 57
+    END
+
+    IDD_UPDATE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 160
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 27
+    END
+
+    IDD_GOTO_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 143
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 41
+    END
+
+    IDD_SETTINGS_DISPLAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 215
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 164
+    END
+
+    IDD_ANNOTATION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 283
+    END
+
+    IDD_RENAME_BOOKMARK, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 199
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
+    END
+
+    IDD_INSTALL_DIC, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 183
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 131
+    END
+
+    IDD_INSTALL_DIC_REPLACE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 183
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 84
+    END
+
+    IDD_SETTINGS_ADVANCED, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 215
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 163
+    END
+
+    IDD_SETTINGS_DICT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 215
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 164
+    END
+
+    IDD_DOC_PROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 332
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 224
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDR_MAINFRAME           "WinDjView"
+    IDR_DjVuTYPE            "\nDjVu\nDjVu\nDjVu文档(*.djvu;*.djv)\n.djvu;.djv\nDjVu.Document\nDjVu Document"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_BOOKMARK_MORE       "书签(&M)>>"
+    IDS_BOOKMARK_LESS       "书签(&M)<<"
+    IDS_UNITS_FULL          "厘米,毫米,英寸"
+    IDS_UNITS_SHORT         "cm,mm,in"
+    IDS_EDIT_ANNOTATION     "编辑批语"
+    IDS_CREATE_ANNOTATION   "造条批语"
+    IDS_BOOKMARK_SELECTION  "拣好个夹隻书签"
+    IDS_BOOKMARK_ANNOTATION "条批语夹隻书签"
+    IDS_BOOKMARK_VIEW       "书签画面"
+    IDS_RENAME_BOOKMARK     "书签改名"
+    IDS_PROMPT_BOOKMARK_DESTINATION "隻拣好个书签标要定为此地，阿是啊？"
+    IDS_PROMPT_BOOKMARK_DELETE "隻拣好个书签要删脱，阿是啊？"
+    IDS_PROMPT_ANNOTATION_DELETE "隻拣好个批语要删脱，阿是啊？"
+    IDS_FILE_INSTALL        "安装…"
+    IDS_INSTALLATION_FAILED "本辞典装不上去。作兴侬呒得权利写靶地基，作兴标文件另外隻用件开拉，作兴盘片满哉。"
+    IDS_INSTALLATION_SUCCEEDED "辞典顺利装好。"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_ERROR_PARSING_RANGE "打印范围不来事。"
+    IDS_PATH_TOO_LONG       "文档开不开——条路径忒长。%s"
+    IDS_DICTBAR_TITLE       "辞典"
+    IDS_LANG_NOT_SPECIFIED  "朆指定"
+    IDS_UNINSTALL_DICT      "侬阿是要拆卸“%s”箇本辞典？本辞典会得掼回收桶个。要担佢永久删脱么，就出空回收桶。"
+    IDS_UNINSTALL_FAILED    "本辞典“%s”拆不落去。要手工拆卸佢么，离开箇隻用件之后删脱下头隻文件：“%s”"
+    IDS_PRINT_BOOKLET       "小册子"
+    IDS_DICT_LOCATION_PROMPT "搭辞典拣隻定做个地基："
+    IDS_INVALID_DIR         "文件夹打个名字不来事。请从单子里向拣隻有拉个文件夹，要么揿记“造隻新文件夹”。"
+    IDS_COPY_SELECTION      "拷拣好个(&C)"
+    IDS_RESTART_NEEDED      "重启WinDjView新个设定再有效念。"
+    IDS_TOOLTIP_SETTINGS    "设定"
+    IDS_CLOSE_TAB           "标襻关脱"
+    IDS_DOC_TYPES           "捆缚（旧）\n索引（旧）\n捆缚\n间接\n单页\n未知"
+    IDS_FILE_TYPES          "共分数据\n页面\n节图\n共分批语\n未知"
+    IDS_DOC_FILES_COLUMNS   "页面\n文件\n名字\n式样\n尺寸"
+END
+
+STRINGTABLE 
+BEGIN
+    IDR_DICTIONARIES_BAR    "辞典条(&C)"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_CONTENTS_TAB        "目录"
+    IDS_MAKE_DEFAULT_FAILED "尝试担WinDjView弄作默认查看器个辰光出错哉。\n侬个用户账户作兴呒得必要个应允。"
+    IDS_PAGE_INDEX_TAB      "索引"
+    IDS_THUMBNAILS_TAB      "节图"
+    IDS_SEARCH_RESULTS_TAB  "寻出来个结果"
+    IDS_SAVE_COPY_AS        "存份抄本"
+    IDS_DJVU_FILTER         "DjVu文档(*.djvu)|*.djvu|所有文件(*.*)|*.*||"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_CANNOT_SAVE_TO_ORIG "箇文档不好存拉佢个原始地基"
+    IDS_SAVE_ERROR          "储存文档个辰光出错哉"
+    IDS_ERROR_DECODING_PAGE "页面译码出错。"
+    IDS_BMP_FILTER          "位图文件(*.bmp)|*.bmp||"
+    IDS_EXPORT_PAGE         "页面输出"
+    IDS_CONNECT_ERROR       "连接服务器个辰光出错哉。请检查互联网个设定。"
+    IDS_NO_UPDATES_AVAILABLE "箇歇呒得待用个更新。捱脱枪再查好唻。"
+    IDS_NEW_VERSION_AVAILABLE "新版本%s有哉。下载页面侬阿想开开？"
+    IDS_VERSION_URL         "http://windjview.sourceforge.net/version.txt"
+    IDS_WEBSITE_URL         "http://windjview.sourceforge.net"
+    IDS_DJVULIBRE_URL       "http://djvu.sourceforge.net"
+    IDS_DONATE_URL          "https://sourceforge.net/donate/index.php?group_id=114927"
+    IDS_STRING_NOT_FOUND    "字符串朆寻着"
+    IDS_PRINTING            "来拉打印，等一歇…"
+    IDS_ERROR_RENDERING_PAGE "页面还显出错。"
+    IDS_SEARCHING_PAGE      "来拉搜寻第%d页（拢共%d页）"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "WinDjView"
+    AFX_IDS_IDLEMESSAGE     "好哉"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_NEW             "造隻新文档\n新造"
+    ID_FILE_OPEN            "开开隻有拉个文档\n开开"
+    ID_FILE_CLOSE           "关脱箇隻用拉个文档\n关脱"
+    ID_FILE_SAVE            "储存箇隻用拉个文档\n储存"
+    ID_FILE_SAVE_AS         "改隻名字储存箇隻用拉个文档\n存作\n"
+    ID_FILE_PAGE_SETUP      "调整纸头主张\n纸头设定"
+    ID_FILE_PRINT_SETUP     "调整打印机搭打印主张\n打印设定"
+    ID_FILE_PRINT           "打印箇隻用拉个文档\n打印"
+    ID_FILE_PRINT_PREVIEW   "显示所有页面\n打印预览"
+    ID_FILE_SAVE_COPY_AS    "改隻名字储存箇隻用拉个文档\n存抄本"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_APP_ABOUT            "显示程序信息、版号搭著版权\n话起"
+    ID_APP_EXIT             "离开箇隻用件\n出去"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "开开箇隻文档"
+    ID_FILE_MRU_FILE2       "开开箇隻文档"
+    ID_FILE_MRU_FILE3       "开开箇隻文档"
+    ID_FILE_MRU_FILE4       "开开箇隻文档"
+    ID_FILE_MRU_FILE5       "开开箇隻文档"
+    ID_FILE_MRU_FILE6       "开开箇隻文档"
+    ID_FILE_MRU_FILE7       "开开箇隻文档"
+    ID_FILE_MRU_FILE8       "开开箇隻文档"
+    ID_FILE_MRU_FILE9       "开开箇隻文档"
+    ID_FILE_MRU_FILE10      "开开箇隻文档"
+    ID_FILE_MRU_FILE11      "开开箇隻文档"
+    ID_FILE_MRU_FILE12      "开开箇隻文档"
+    ID_FILE_MRU_FILE13      "开开箇隻文档"
+    ID_FILE_MRU_FILE14      "开开箇隻文档"
+    ID_FILE_MRU_FILE15      "开开箇隻文档"
+    ID_FILE_MRU_FILE16      "开开箇隻文档"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_NEXT_PANE            "摇到下头隻窗格下头隻窗格\n"
+    ID_PREV_PANE            "摇到上头隻窗格\n上头隻窗格"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_WINDOW_NEW           "来拉另外扇窗门里向开开箇隻用拉个文档\n新窗门"
+    ID_WINDOW_CASCADE       "叠起来个摊窗门\n叠拢"
+    ID_WINDOW_TILE_HORZ     "不重叠个横铺窗门\n横铺"
+    ID_WINDOW_TILE_VERT     "不重叠个直铺窗门\n直铺"
+    ID_WINDOW_SPLIT         "箇隻用拉个窗门隔成功窗格\n隔开"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EDIT_CLEAR           "拣好个揩脱\n揩脱"
+    ID_EDIT_CLEAR_ALL       "样样全揩脱\n和总揩脱"
+    ID_EDIT_COPY            "拣好个拷到夹书板上\n拷"
+    ID_EDIT_CUT             "拣好个剪到夹书板上\n剪"
+    ID_EDIT_FIND            "来拉眼门前隻文档里向寻文字\n寻找"
+    ID_EDIT_PASTE           "担夹书板个内容插进去\n贴"
+    ID_EDIT_REPEAT          "压末隻动作重做\n重做"
+    ID_EDIT_REPLACE         "用别样文字替换特定文字\n替换"
+    ID_EDIT_SELECT_ALL      "拣好整隻文档\n和总拣好\n"
+    ID_EDIT_UNDO            "撤销压末隻动作\n撤销"
+    ID_EDIT_REDO            "再做先头撤销个动作\n再做"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "显示咾囥脱家生条\n家生条开关"
+    ID_VIEW_STATUS_BAR      "显示咾囥脱情况条\n情况条开关"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "调整窗门尺寸"
+    AFX_IDS_SCMOVE          "调整窗门位置"
+    AFX_IDS_SCMINIMIZE      "窗门缩成功图标"
+    AFX_IDS_SCMAXIMIZE      "窗门扩到顶大尺寸"
+    AFX_IDS_SCNEXTWINDOW    "摇到下头隻文档个窗门"
+    AFX_IDS_SCPREVWINDOW    "摇到上头隻文档个窗门"
+    AFX_IDS_SCCLOSE         "用拉个窗门关脱"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "窗门恢复长规尺寸"
+    AFX_IDS_SCTASKLIST      "激活任务单"
+    AFX_IDS_MDICHILD        "激活箇扇窗门"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_LAYOUT_CONTINUOUS    "连页版面开咾关\n连续版面"
+    ID_LAYOUT_FACING        "边贴边显示对页\n对页"
+    ID_LAYOUT_FIRSTPAGE_ALONE "显示对页个辰光单独显示头一页"
+    ID_HIGHLIGHT_SELECTION  "拣好拉个搨亮"
+    ID_HIGHLIGHT_TEXT       "眼门前拣好拉个搨亮"
+    ID_ANNOTATION_EDIT      "编辑箇条批语个特性"
+    ID_ANNOTATION_DELETE    "去脱箇条批语"
+    ID_INDICATOR_PAGE       "第%d页（拢共%d页）"
+    ID_INDICATOR_SIZE       " %s×%s %s "
+    ID_INDICATOR_ADJUST     "调整好哉"
+    ID_INDICATOR_MODE       "显示模式"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_NOT_VALID_DOCUMENT  "箇个不是有效个DjVu文档。"
+    IDS_PRINTING_FAILED     "箇隻文档打印不出。作兴打印机咾驱动程序有问题。"
+    IDS_PAPER_SIZE          "%s×%s %s"
+    IDS_VERSION_INFO        "Andrew Zhezherun\n做个WinDjView %s "
+    IDS_VERSION_ABOUT       "WinDjView %s"
+    IDS_CURRENT_VERSION     "1.0.3"
+    IDS_FATAL_ERROR         "闯穷祸哉。\n作兴是只畸形个djvu文档惹个。箇隻用件作兴会得运转不好，强烈建议侬重开佢。揿“好个”关脱箇隻用件，揿“覅了”回转侬开开个文档。"
+    IDS_WARN_CLOSE_MULTIPLE "侬要担%d隻开开个文档关脱，阿是啊？"
+    IDS_OPENFILE            "开开"
+    IDS_ALLFILTER           "所有文件(*.*)"
+    IDS_SETTINGS            "设定"
+    IDS_BORDER_TYPES        "呒啥,实心,反色"
+    IDS_FILL_TYPES          "呒啥,实心,反色"
+    IDS_MORE_COLORS         "别样颜色…"
+    IDS_BOOKMARKS_TAB       "书签"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_ZOOM_STRETCH         "照牢窗门拉伸页面"
+    ID_ZOOM_CUSTOM          "指定变焦"
+    ID_BOOKMARK_TOP_LEVEL   "撑开咾缩拢顶层书签"
+    ID_ROTATE_LEFT          "逆时针转90度\n逆时针"
+    ID_ROTATE_RIGHT         "顺时针转90度\n顺时针"
+    ID_ROTATE_180           "转180度\n转180"
+    ID_VIEW_FIRSTPAGE       "跑到头一页\n头一页"
+    ID_VIEW_LASTPAGE        "跑到压末页\n压末页"
+    ID_PAGE_INFORMATION     "显示页面信息"
+    ID_FILE_SETTINGS        "调整用件设定\n设定"
+    ID_EXPORT_PAGE          "箇隻页面输出成隻图像文件"
+    ID_EXPORT_SELECTION     "箇页拣好个部分输出成隻图像文件"
+    ID_VIEW_BACK            "跑到先头个画面\n先头看个"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_FORWARD         "跑到后头个画面\n后头看个"
+    ID_WINDOW_ACTIVATE_FIRST "激活箇隻文档"
+    ID_WINDOW_ACTIVATE_1    "激活箇隻文档"
+    ID_WINDOW_ACTIVATE_2    "激活箇隻文档"
+    ID_WINDOW_ACTIVATE_3    "激活箇隻文档"
+    ID_WINDOW_ACTIVATE_4    "激活箇隻文档"
+    ID_WINDOW_ACTIVATE_5    "激活箇隻文档"
+    ID_WINDOW_ACTIVATE_6    "激活箇隻文档"
+    ID_WINDOW_ACTIVATE_7    "激活箇隻文档"
+    ID_WINDOW_ACTIVATE_8    "激活箇隻文档"
+    ID_WINDOW_ACTIVATE_9    "激活箇隻文档"
+    ID_WINDOW_ACTIVATE_10   "激活箇隻文档"
+    ID_WINDOW_ACTIVATE_11   "激活箇隻文档"
+    ID_WINDOW_ACTIVATE_12   "激活箇隻文档"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_WINDOW_ACTIVATE_13   "激活箇隻文档"
+    ID_WINDOW_ACTIVATE_14   "激活箇隻文档"
+    ID_WINDOW_ACTIVATE_LAST "激活箇隻文档"
+    ID_ZOOM_IN              "镜头推上去\n推近"
+    ID_ZOOM_OUT             "镜头拉落来\n拉远"
+    ID_MODE_DRAG            "激活手掌家生\n手掌家生"
+    ID_MODE_SELECT          "激活拣字家生\n拣字家生"
+    ID_MODE_MAGNIFY         "激活放大镜\n放大镜"
+    ID_MODE_SELECT_RECT     "激活拣块家生\n拣块家生"
+    ID_MODE_ZOOM_RECT       "激活拣好著推上去\n拣好著推近"
+    ID_FILE_EXPORT_TEXT     "从用拉个文档摘段文字存到只文件里向\n文字输出"
+    ID_CHECK_FOR_UPDATE     "查查看隻程序个网站阿有更新好用\n更新查查看"
+    ID_DISPLAY_COLOR        "用原始颜色显示文档"
+    ID_DISPLAY_BW           "用黑白形式显示文档"
+    ID_DISPLAY_BACKGROUND   "显示文档背景"
+    ID_DISPLAY_FOREGROUND   "显示文档前景"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_PREVIEW_CLOSE   "打印一览模式关脱\n取消一览"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_NEXTPAGE        "跑到下头页\n下头页"
+    ID_VIEW_PREVIOUSPAGE    "跑到上头页\n上头页"
+    ID_ZOOM_50              "拉到50％"
+    ID_ZOOM_75              "拉到75％"
+    ID_ZOOM_100             "变焦100％\n100％"
+    ID_ZOOM_200             "推到200％"
+    ID_ZOOM_400             "推到400％"
+    ID_ZOOM_FITWIDTH        "页面候牢窗门阔狭\n候牢阔狭"
+    ID_ZOOM_FITHEIGHT       "页面候牢窗门长短"
+    ID_ZOOM_FITPAGE         "页面候牢窗门长阔\n候牢长阔"
+    ID_ZOOM_ACTUALSIZE      "用实际尺寸显示页面"
+END
+
+STRINGTABLE 
+BEGIN
+    IDC_PAGENUM             "拣页面\n第…页"
+    IDC_ZOOM                "拣变焦级别\n变焦"
+END
+
+STRINGTABLE 
+BEGIN
+    IDC_LOOKUP              "来拉拣拉个辞典里向查箇字\n查辞典"
+    IDC_LOOKUP_LABEL        "查："
+    IDC_DICTIONARY          "拉落单里拣本辞典\n辞典"
+    IDC_DICTIONARY_LABEL    "辞典："
+    IDC_LANGUAGE_LIST       "拣源搭著靶语言\n语言"
+    IDC_LANGUAGE_LIST_LABEL "语言："
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_NUM_OCCURRENCES     "发现%d隻光景"
+    IDS_EXPORT_TEXT         "文字输出"
+    IDS_TEXT_FILTER         "文字文档(*.txt)|*.txt|所有式样(*.*)|*.*||"
+    IDS_PRINTING_PAGE       "来拉打印第%d页（拢共%d页），等一歇…\n"
+    IDS_SEARCHING           "搜寻"
+    IDS_OF_PAGE_COUNT       "拢共%d页"
+    IDS_FIT_WIDTH           "候牢阔狭"
+    IDS_FIT_HEIGHT          "候牢长短"
+    IDS_FIT_PAGE            "候牢页面"
+    IDS_ACTUAL_SIZE         "实际尺寸"
+    IDS_STRETCH             "拉伸"
+    IDS_TOOLTIP_BRIGHTNESS  "光亮：%+d"
+    IDS_TOOLTIP_CONTRAST    "反差：%+d"
+    IDS_TOOLTIP_GAMMA       "伽马：%1.1f"
+    IDS_STATUS_BLACKANDWHITE "黑白"
+    IDS_STATUS_FOREGROUND   "前景"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STATUS_BACKGROUND   "背景"
+    IDS_PRINT_ALL_PAGES     "范围内所有页面"
+    IDS_PRINT_ODD_PAGES     "单数页"
+    IDS_PRINT_EVEN_PAGES    "双数页"
+    IDS_PRINT_ONE_PAGE      "每张纸一页"
+    IDS_PRINT_TWO_PAGES     "每张纸两页"
+    IDS_PLEASE_WAIT         "等一歇…"
+    IDS_PAGE_NO_TOOLTIP     "第%d页"
+    IDS_BRIGHTNESS_TEXT_ZERO "光亮(&B)：%d"
+    IDS_BRIGHTNESS_TEXT     "光亮(&B)：%+d"
+    IDS_CONTRAST_TEXT_ZERO  "反差(&C)：%d"
+    IDS_CONTRAST_TEXT       "反差(&C)：%+d"
+    IDS_GAMMA_TEXT          "伽马(&G)：%1.1f"
+    IDS_FAILED_TO_OPEN      "文档开不开"
+    IDS_TOOLBAR_TITLE       "家生条"
+    IDS_TOOLTIP_HIDE        "囥脱"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_FULLSCREEN      "用满屏模式开开文档\n满屏"
+    ID_VIEW_GOTO_PAGE       "指定页码"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_BOOKMARK_DELETE      "隻拣好个书签删脱"
+    ID_BOOKMARK_RENAME      "隻拣好个书签改名"
+    ID_BOOKMARK_SETDESTINATION "隻拣中个书签标定为此地"
+    ID_BOOKMARK_ADD         "搭箇隻画面、批语或者拣字夹隻书签"
+    ID_ZOOM_TO_SELECTION    "拣好著推近"
+    ID_VIEW_SIDEBAR         "显示咾囥脱侧边条\n侧边条开关"
+    ID_DICTIONARY_NEXT      "来拉下头本辞典里向查箇字\n下头本辞典"
+    ID_DICTIONARY_PREV      "来拉上头本辞典里向查箇字\n上头本辞典"
+    ID_DICTIONARY_INFO      "显示拣拉个辞典个信息\n辞典信息"
+    ID_DICTIONARY_LOOKUP    "来拉拣拉个辞典里向查箇字\n查辞典"
+    ID_VIEW_DICTBAR         "显示咾囥脱辞典条\n辞典条开关"
+    ID_BOOKMARK_MOVEUP      "隻拣好个书签摆到上头"
+    ID_BOOKMARK_MOVEDOWN    "隻拣好个书签摆到下头"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_THUMBNAILS_ENLARGE   "增大节图"
+    ID_THUMBNAILS_REDUCE    "减小节图"
+    ID_BOOKMARK_WRAP        "长书签调行开咾关"
+    ID_TAB_CLOSE            "关脱箇隻标襻"
+    ID_TAB_CLOSE_OTHER      "除脱箇隻，标襻和总关脱"
+    ID_LAYOUT_RTL_ORDER     "显示对页个辰光页面从右望左挨序"
+    ID_FILE_DOC_PROPERTIES  "显示隻用拉个文档特性\n文档特性"
+    ID_FILE_IMPORT_BOOKMARKS "从一隻文件里向输入书签搭批语\n输入书签"
+    ID_FILE_EXPORT_BOOKMARKS "担书签搭批语输到一隻文件里去\n输出书签"
+    ID_VIEW_TAB_BAR         "标襻条显示咾囥脱\n标襻条"
+    ID_THUMBNAILS_PRINT     "打印拣好个页面"
+    ID_THUMBNAILS_EXPORT    "拣好个页面输出成图像文件"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_BOOKMARKS_FILTER    "WinDjView书签(*.bookmarks)|*.bookmarks|所有文件(*.*)|*.*||"
+    IDS_EXPORT_BOOKMARKS    "输出书签"
+    IDS_IMPORT_BOOKMARKS    "输入书签"
+    IDS_CANNOT_OPEN_BOOKMARKS "要读个书签文件打不开。"
+    IDS_CANNOT_READ_BOOKMARKS "书签文件格式不来事。"
+    IDS_BOOKMARKS_EMPTY     "书签文件里向一眼书签、批语也呒得。"
+    IDS_BOOKMARKS_PROMPT    "箇隻文档书签搭批语有拉。侬要续上\n新个书签搭批语呢，还是替换有拉个？"
+    IDS_BOOKMARKS_PROMPT_CAPTIONS "续上\n替换"
+    IDS_SEARCH_WRAPPED      "翻过文档末结"
+    IDS_BOOKMARK_TOP_LEVEL  "撑开顶层书签(&E)\n缩拢顶层书签(&C)"
+    IDS_PROMPT_MAKE_DEFAULT_VIEWER 
+                            "WinDjView眼门前不是DjVu文件个默认查看器。\n侬阿要DjVu文件总归让WinDjView开开？"
+    IDS_WARN_NOT_DEFAULT_VIEWER "启动WinDjView个辰光总归做箇隻检查(&A)"
+    IDS_DEFAULT_VIEWER      "WinDjView眼门前是DjVu文件个默认查看器。"
+    IDS_NOT_DEFAULT_VIEWER  "WinDjView眼门前不是DjVu文件个默认查看器"
+    IDS_TAB_BAR_MENU        "标襻条(&B)"
+    IDS_CHECK_CLOSE_MULTIPLE "关脱多隻文档个辰光总归关照声"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_CANNOT_WRITE_TO_FILE """%s""文件不好写。"
+    IDS_REGISTRY_FILTER     "注册文件(*.reg)|*.reg|所有文件(*.*)|*.*||"
+    IDS_BACKUP_BOOKMARKS    "书签备份"
+    IDS_CHECK_UPDATES       "自动检查更新"
+    IDS_ABOUT_LICENSE       "箇隻程序是自由软件。侬好按照自由软件基金会GNU一般公共照会（第二版或者侬拣个后头版本）个条款重发、修改箇隻软件。\n软件汉化：好南儿"
+    IDS_IMAGE_FILTER        "位图文件(*.bmp)|*.bmp|PNG文件(*.png)|*.png|GIF文件(*.gif)|*.gif|TIFF文件 (*.tif;*.tiff)|*.tif;*.tiff|JPEG文件(*.jpg;*.jpeg)|*.jpg;*.jpeg||"
+    IDS_ERROR_EXPORTING_PAGE "图像写到文件出错。"
+    IDS_EXPORT_PROMPT_OVERWRITE "一隻或者多隻页面已经有拉。侬阿要冲脱有拉个文件？"
+    IDS_EXPORTING_PAGE      "来拉输出第%d页（%d/%d），等一歇…"
+    IDS_EXPORT_PAGES        "页面输出"
+    IDS_EXPORT_ERRORS       "一隻或者多隻页面输不出"
+END
+
+#endif    // Chinese (P.R.C.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#include "..\..\res\WinDjView.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#include "afxprint.rc"       // printing/print preview resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

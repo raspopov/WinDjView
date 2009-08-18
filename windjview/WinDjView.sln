@@ -29,6 +29,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjViewGR", "Languages\Gr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjViewES", "Languages\Spanish\WinDjViewES.vcproj", "{28ACA736-474E-4A39-B075-E20187327CEF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjView_wuu", "Languages\Chinese_Wu\WinDjView_wuu.vcproj", "{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Unicode|Win32 = Debug Unicode|Win32
@@ -117,6 +119,14 @@ Global
 		{28ACA736-474E-4A39-B075-E20187327CEF}.Release Unicode|Win32.Build.0 = Release|Win32
 		{28ACA736-474E-4A39-B075-E20187327CEF}.Release|Win32.ActiveCfg = Release|Win32
 		{28ACA736-474E-4A39-B075-E20187327CEF}.Release|Win32.Build.0 = Release|Win32
+		{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}.Debug Unicode|Win32.ActiveCfg = Release|Win32
+		{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}.Debug Unicode|Win32.Build.0 = Release|Win32
+		{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}.Debug|Win32.ActiveCfg = Release|Win32
+		{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}.Debug|Win32.Build.0 = Release|Win32
+		{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}.Release Unicode|Win32.ActiveCfg = Release|Win32
+		{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}.Release Unicode|Win32.Build.0 = Release|Win32
+		{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}.Release|Win32.ActiveCfg = Release|Win32
+		{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
