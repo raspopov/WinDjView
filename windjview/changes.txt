@@ -8,9 +8,10 @@ Changes in version 1.0.3 (2009-08-15):
 Changes in version 1.0.2 (2009-08-14):
 + Export multiple pages at once via multiple selection in the
   thumbnails view.
-+ Support for additional image formats: PNG, GIF, TIF, JPG
++ Support for additional image export formats: PNG, GIF, TIF, JPG
   (Windows XP or later required, or GDI+ on older versions).
 + Each document now has its own history (back/forward buttons).
+* Fixed touchpad scrolling on some laptops.
 * Several bug fixes.
 
 Changes in version 1.0.1 (2009-03-20):
