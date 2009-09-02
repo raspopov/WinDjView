@@ -921,7 +921,7 @@ void CDjVuView::OnInitialUpdate()
 
 		m_nMode = pAppSettings->nDefaultMode;
 		m_nLayout = pAppSettings->nDefaultLayout;
-		m_bFirstPageAlone = false;
+		m_bFirstPageAlone = pAppSettings->bFirstPageAlone;
 		m_bRightToLeft = false;
 		m_nZoomType = pAppSettings->nDefaultZoomType;
 		m_fZoom = pAppSettings->fDefaultZoom;
@@ -952,6 +952,7 @@ void CDjVuView::OnInitialUpdate()
 			m_bFirstPageAlone = pDocSettings->bFirstPageAlone;
 			m_bRightToLeft = pDocSettings->bRightToLeft;
 			theApp.GetAppSettings()->nDefaultLayout = m_nLayout;
+			theApp.GetAppSettings()->bFirstPageAlone = m_bFirstPageAlone;
 		}
 
 		// Restore mode
@@ -6206,7 +6207,10 @@ void CDjVuView::OnFirstPageAlone()
 	m_bFirstPageAlone = !m_bFirstPageAlone;
 
 	if (m_nType == Normal)
+	{
+		theApp.GetAppSettings()->bFirstPageAlone = m_bFirstPageAlone;
 		m_pSource->GetSettings()->bFirstPageAlone = m_bFirstPageAlone;
+	}
 
 	if (m_nLayout == Facing || m_nLayout == ContinuousFacing)
 		SetLayout(m_nLayout, nAnchorPage, ptOffset);

@@ -61,6 +61,7 @@ const TCHAR* s_pszDictBar = _T("dictbar");
 const TCHAR* s_pszZoom = _T("zoom");
 const TCHAR* s_pszZoomPercent = _T("%");
 const TCHAR* s_pszLayout = _T("layout");
+const TCHAR* s_pszFirstPage = _T("first-page");
 const TCHAR* s_pszMode = _T("mode");
 const TCHAR* s_pszNavHidden = _T("nav-hidden");
 const TCHAR* s_pszNavCollapsed = _T("nav-collapsed");
@@ -625,6 +626,7 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.nDefaultZoomType = GetProfileInt(s_pszDisplaySection, s_pszZoom, m_appSettings.nDefaultZoomType);
 	m_appSettings.fDefaultZoom = GetProfileDouble(s_pszDisplaySection, s_pszZoomPercent, m_appSettings.fDefaultZoom);
 	m_appSettings.nDefaultLayout = GetProfileInt(s_pszDisplaySection, s_pszLayout, m_appSettings.nDefaultLayout);
+	m_appSettings.bFirstPageAlone = !!GetProfileInt(s_pszDisplaySection, s_pszFirstPage, m_appSettings.bFirstPageAlone);
 	m_appSettings.nDefaultMode = GetProfileInt(s_pszDisplaySection, s_pszMode, m_appSettings.nDefaultMode);
 	m_appSettings.bNavPaneHidden = !!GetProfileInt(s_pszDisplaySection, s_pszNavHidden, m_appSettings.bNavPaneHidden);
 	m_appSettings.bNavPaneCollapsed = !!GetProfileInt(s_pszDisplaySection, s_pszNavCollapsed, m_appSettings.bNavPaneCollapsed);
@@ -796,6 +798,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszDisplaySection, s_pszZoom, m_appSettings.nDefaultZoomType);
 	WriteProfileDouble(s_pszDisplaySection, s_pszZoomPercent, m_appSettings.fDefaultZoom);
 	WriteProfileInt(s_pszDisplaySection, s_pszLayout, m_appSettings.nDefaultLayout);
+	WriteProfileInt(s_pszDisplaySection, s_pszFirstPage, m_appSettings.bFirstPageAlone);
 	WriteProfileInt(s_pszDisplaySection, s_pszMode, m_appSettings.nDefaultMode);
 	WriteProfileInt(s_pszDisplaySection, s_pszNavHidden, m_appSettings.bNavPaneHidden);
 	WriteProfileInt(s_pszDisplaySection, s_pszNavCollapsed, m_appSettings.bNavPaneCollapsed);

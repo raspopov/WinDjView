@@ -50,6 +50,7 @@ CAppSettings::CAppSettings()
 	nDefaultZoomType = -3; // Fit page
 	fDefaultZoom = 100.0;
 	nDefaultLayout = 1; // Continuous
+	bFirstPageAlone = false;
 	nDefaultMode = 0; // Drag
 
 	bNavPaneHidden = false;
