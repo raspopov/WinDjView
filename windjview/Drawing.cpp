@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -1482,7 +1480,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 
 	CPrintSettings& printSettings = dlg.m_settings;
 
-	size_t nPages = dlg.m_arrPages.size();
+	int nPages = (int)dlg.m_arrPages.size();
 	if (printSettings.nCopies > 1 && printSettings.bCollate && !dlg.m_pPrinter->bCanCollate)
 	{
 		// We will do collation ourselves
@@ -1561,7 +1559,7 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 		return 2;
 	}
 
-	for (size_t i = 0; i < nPages; ++i)
+	for (int i = 0; i < nPages; ++i)
 	{
 		pProgress->SetStatus(FormatString(IDS_PRINTING_PAGE, i + 1, nPages));
 		pProgress->SetPos(i);

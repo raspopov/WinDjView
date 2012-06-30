@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -114,7 +112,7 @@ void CSettingsAdvancedPage::OnBackup()
 	string text;
 
 	text = "REGEDIT4\r\n\r\n";
-	file.Write(text.c_str(), text.length());
+	file.Write(text.c_str(), (UINT)text.length());
 
 	vector<CString> keys;
 	theApp.EnumProfileKeys(s_pszDocumentsSection, keys);
@@ -127,14 +125,14 @@ void CSettingsAdvancedPage::OnBackup()
 				+ theApp.m_pszRegistryKey + _T("\\") + theApp.m_pszProfileName + _T("\\")
 				+ s_pszDocumentsSection + _T("\\") + keys[i];
 		MakeANSIString(_T("[") + strFullKey + _T("]\r\n"), text);
-		file.Write(text.c_str(), text.length());
+		file.Write(text.c_str(), (UINT)text.length());
 
 		if (!strFileName.IsEmpty())
 		{
 			strFileName.Replace(_T("\\"), _T("\\\\"));
 			MakeANSIString(CString(_T("\"")) + s_pszLastKnownLocation + _T("\"=\"")
 					+ strFileName + _T("\"\r\n"), text);
-			file.Write(text.c_str(), text.length());
+			file.Write(text.c_str(), (UINT)text.length());
 		}
 
 		LPBYTE pBuf;
@@ -144,7 +142,7 @@ void CSettingsAdvancedPage::OnBackup()
 			if (nSize > 0)
 			{
 				MakeANSIString(CString(_T("\"")) + s_pszSettings + _T("\"=hex:"), text);
-				int nLineLength = text.length();
+				size_t nLineLength = text.length();
 				for (size_t i = 0; i < nSize; ++i)
 				{
 					string block;
@@ -166,7 +164,7 @@ void CSettingsAdvancedPage::OnBackup()
 					nLineLength += block.length();
 				}
 				text += "\r\n\r\n";
-				file.Write(text.c_str(), text.length());
+				file.Write(text.c_str(), (UINT)text.length());
 			}
 
 			delete[] pBuf;

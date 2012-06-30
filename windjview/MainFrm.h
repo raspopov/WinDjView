@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #pragma once
 
@@ -79,7 +77,10 @@ protected:
 	CMyStatusBar m_wndStatusBar;
 	CMyToolBar m_wndToolBar;
 	CMyToolBar m_wndDictBar;
+	CImageList m_imageListBar;
+	CImageList m_imageListGrayed;
 	CImageList m_imageListDict;
+	CImageList m_imageListDictGrayed;
 
 	CTabbedMDIWnd m_tabbedMDI;
 	CMenu m_appMenu, m_docMenu;
@@ -166,6 +167,7 @@ protected:
 	afx_msg void OnMouseWheelPage(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnNewVersion();
 	afx_msg void OnNcDestroy();
+	afx_msg void OnUpdateDisable(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 };
 

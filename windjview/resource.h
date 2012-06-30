@@ -46,7 +46,11 @@
 #define IDC_CURSOR_SPLIT_HORZ           152
 #define IDB_SETTINGS                    153
 #define IDB_CLOSE_TAB                   154
-#define IDR_DICTIONARIES_BAR            155
+#define IDR_DICT_BAR                    155
+#define IDR_DICT_BAR_GRAYED             156
+#define IDR_DICT_BAR_LEGACY             157
+#define IDR_TOOLBAR_GRAYED              158
+#define IDR_TOOLBAR_LEGACY              159
 #define IDS_CONTENTS_TAB                200
 #define IDS_MAKE_DEFAULT_FAILED         202
 #define IDS_PAGE_INDEX_TAB              203
@@ -290,6 +294,7 @@
 #define IDC_HIDE_SINGLE_TAB             1106
 #define IDC_DEFAULT_VIEWER_STATUS       1107
 #define IDC_STATIC_LICENSE              1108
+#define IDC_SUBPIXEL_SCALING            1109
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_VIEW_NEXTPAGE_SHORTCUT       32773

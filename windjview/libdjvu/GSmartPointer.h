@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id$
-// $Name$
 
 #ifndef _GSMARTPOINTER_H_
 #define _GSMARTPOINTER_H_
@@ -87,8 +84,6 @@
 // Our original implementation consisted of multiple classes.
 // <http://prdownloads.sourceforge.net/djvu/DjVu2_2b-src.tgz>.
 
-    @version 
-    #$Id$# 
     @args
 */
 //@{
@@ -101,6 +96,8 @@
 
 #include "DjVuGlobal.h"
 #include "atomic.h"
+
+#include <stddef.h>
 
 #ifdef HAVE_NAMESPACES
 namespace DJVU {
@@ -500,7 +497,10 @@ public:
   void replace(void *nptr,const size_t n);
   void set(const size_t t,const char c);
   ~GPBufferBase();
-  operator int(void) const { return ptr ? num : 0; }
+//< Changed for WinDjView project
+  //operator int(void) const { return ptr ? num : 0; }
+  operator size_t(void) const { return ptr ? num : 0; }
+//>
 private:
   void *&ptr;
   size_t num;
@@ -510,11 +510,15 @@ template<class TYPE>
 class GPBuffer : public GPBufferBase
 {
 public:
-  GPBuffer(TYPE *&xptr,const size_t n=0) : GPBufferBase((void *&)xptr,n,sizeof(TYPE)) {}
+  GPBuffer(TYPE *&xptr,const size_t n=0) 
+    : GPBufferBase((void *&)xptr,n,sizeof(TYPE)) {}
   inline void resize(const size_t n) {GPBufferBase::resize(n,sizeof(TYPE));}
   inline void clear(void) {GPBufferBase::set(sizeof(TYPE),0);}
   inline void set(const char c) {GPBufferBase::set(sizeof(TYPE),c);}
-  inline operator int(void) const {return GPBufferBase::operator int();}
+//< Changed for WinDjView project
+  //inline operator int(void) const {return GPBufferBase::operator int();}
+  inline operator size_t(void) const {return GPBufferBase::operator size_t();}
+//>
 };
 
 

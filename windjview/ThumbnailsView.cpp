@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -133,8 +131,8 @@ void CThumbnailsView::DrawPage(CDC* pDC, int nPage)
 
 	COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
 	COLORREF clrWindowText = ::GetSysColor(COLOR_WINDOWTEXT);
-	COLORREF clrFrame = ::GetSysColor(COLOR_WINDOWFRAME);
 	COLORREF clrShadow = ::GetSysColor(COLOR_BTNSHADOW);
+	COLORREF clrFrame = ChangeBrightness(clrShadow, 0.6);
 	COLORREF clrBtnface = ::GetSysColor(COLOR_BTNFACE);
 	COLORREF clrHilight = ::GetSysColor(COLOR_HIGHLIGHT);
 	static CPen penFrame(PS_SOLID, 1, clrFrame);
@@ -302,6 +300,7 @@ void CThumbnailsView::OnInitialUpdate()
 
 	m_displaySettings = *theApp.GetDisplaySettings();
 	m_displaySettings.bScaleColorPnm = false;
+	m_displaySettings.bScaleSubpix = false;
 
 	m_pThread = new CThumbnailsThread(m_pSource, this);
 	m_pIdleThread = new CThumbnailsThread(m_pSource, this, true);
@@ -1004,6 +1003,7 @@ void CThumbnailsView::SettingsChanged()
 {
 	CDisplaySettings appSettings = *theApp.GetDisplaySettings();
 	appSettings.bScaleColorPnm = false;
+	appSettings.bScaleSubpix = false;
 
 	if (m_displaySettings != appSettings)
 	{

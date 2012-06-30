@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id$
-// $Name$
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -611,8 +608,6 @@ DjVuFile::process_incl_chunk(ByteStream & str, int file_num)
       // decoder to resolve all chunk dependencies, and
       // abort decoding if necessary.
       
-      // G_EXTHROW(ex); /* commented out */
-      
       get_portcaster()->notify_error(this,ex.get_cause());
       return 0;
     }
@@ -668,7 +663,7 @@ DjVuFile::report_error(const GException &ex,bool throw_errors)
   {
     if(throw_errors)
     {
-      G_EXTHROW(ex);
+      G_EMTHROW(ex);
     }else
     {
       get_portcaster()->notify_error(this,ex.get_cause());
@@ -683,7 +678,8 @@ DjVuFile::report_error(const GException &ex,bool throw_errors)
     GUTF8String msg = GUTF8String( ERR_MSG("DjVuFile.EOF") "\t") + url;
     if(throw_errors)
     {
-      G_EXTHROW(ex, msg);
+      G_EMTHROW(GException(msg, ex.get_file(), ex.get_line(), 
+                           ex.get_function() ));
     }else
     {
       get_portcaster()->notify_error(this,msg);
@@ -1220,7 +1216,7 @@ DjVuFile::decode_chunk( const GUTF8String &id, const GP<ByteStream> &gbs,
       ByteStream &achunk=*gachunk;
       achunk.copy(bs);
       achunk.seek(0);
-      GCriticalSectionLock lock(&text_lock);
+      GCriticalSectionLock lock(&meta_lock);
       if (! meta)
       {
         meta = ByteStream::create();
@@ -1239,7 +1235,7 @@ DjVuFile::decode_chunk( const GUTF8String &id, const GP<ByteStream> &gbs,
       iffout.copy(achunk);
       iffout.close_chunk();
     }
-  else if (chkid == "CELX")
+  else if (chkid == "CELX" || chkid == "SINF")
     {
       G_THROW( ERR_MSG("DjVuFile.securedjvu") );
     }

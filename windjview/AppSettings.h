@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -16,21 +16,14 @@
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
 
-// $Id$
-
 #pragma once
 
 struct CDisplaySettings
 {
-	enum ScaleMethod
-	{
-		Default,
-		PnmScaleFixed
-	};
-
 	CDisplaySettings() :
 			bAdjustDisplay(false), nBrightness(0), nContrast(0),
-			fGamma(1.0), bScaleColorPnm(false), bInvertColors(false) {}
+			fGamma(1.0), bScaleColorPnm(false), bScaleSubpix(false),
+			bInvertColors(false) {}
 
 	int GetBrightness() const { return bAdjustDisplay ? nBrightness : 0; }
 	int GetContrast() const { return bAdjustDisplay ? nContrast : 0; }
@@ -48,7 +41,7 @@ struct CDisplaySettings
 	{
 		return GetBrightness() == rhs.GetBrightness() && GetContrast() == rhs.GetContrast()
 				&& GetGamma() == rhs.GetGamma() && bScaleColorPnm == rhs.bScaleColorPnm
-				&& bInvertColors == rhs.bInvertColors;
+				&& bScaleSubpix == rhs.bScaleSubpix && bInvertColors == rhs.bInvertColors;
 	}
 
 	bool IsAdjusted() const
@@ -62,6 +55,7 @@ struct CDisplaySettings
 	int nContrast;
 
 	bool bScaleColorPnm;
+	bool bScaleSubpix;
 	bool bInvertColors;
 };
 

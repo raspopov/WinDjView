@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id$
-// $Name$
 
 #ifndef _IFFBYTESTREAM_H_
 #define _IFFBYTESTREAM_H_
@@ -122,12 +119,12 @@
 // This has been changed by Lizardtech to fit better 
 // with their re-implementation of ByteStreams.
 
-    @version
-    #$Id$# */
+*/
 //@{
 
 
 #include "DjVuGlobal.h"
+#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

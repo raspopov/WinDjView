@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id$
-// $Name$
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -179,6 +176,7 @@ DjVuDocument::start_init(
       // Initialize
    cache=xcache;
    doc_type=UNKNOWN_TYPE;
+   DataPool::close_all();
    DjVuPortcaster * pcaster=get_portcaster();
    if (!xport)
      xport=simple_port=new DjVuSimplePort();
@@ -1802,10 +1800,20 @@ DjVuDocument::write(const GP<ByteStream> &gstr, bool force_djvm)
    
   GP<DjVmDoc> doc=get_djvm_doc();
   GP<DjVmDir> dir=doc->get_djvm_dir();
-  if (force_djvm || dir->get_files_num()>1)
+
+  bool singlepage = (dir->get_files_num()==1 && !djvm_nav && !force_djvm);
+  if (singlepage)
+  {
+    // maybe save as single page
+    DjVmDir::File *file = dir->page_to_file(0);
+    if (file->get_title() != file->get_load_name())
+      singlepage = false;
+  }
+  if (! singlepage)
   {
     doc->write(gstr);
-  }else
+  }
+  else
   {
     GPList<DjVmDir::File> files_list=dir->resolve_duplicates(false);
     GP<DataPool> pool=doc->get_data(files_list[files_list]->get_load_name());
@@ -1827,10 +1835,7 @@ DjVuDocument::expand(const GURL &codebase, const GUTF8String &idx_name)
 }
 
 void
-//< Changed for WinDjView project
-//DjVuDocument::save_as(const GURL &where, const bool bundled)
 DjVuDocument::save_as(const GURL &where, bool bundled)
-//>
 {
    DEBUG_MSG("DjVuDocument::save_as(): where='" << where <<
 	     "', bundled=" << bundled << "\n");
@@ -1858,18 +1863,21 @@ DjVuDocument::save_as(const GURL &where, bool bundled)
    }
 }
 
-static const char prolog[]="<?xml version=\"1.0\" ?>\n<!DOCTYPE DjVuXML PUBLIC \"-//W3C//DTD DjVuXML 1.1//EN\" \"pubtext/DjVuXML-s.dtd\">\n<DjVuXML>\n<HEAD>";
+static const char prolog[]="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE DjVuXML PUBLIC \"-//W3C//DTD DjVuXML 1.1//EN\" \"pubtext/DjVuXML-s.dtd\">\n<DjVuXML>\n<HEAD>";
 static const char start_xml[]="</HEAD>\n<BODY>\n";
 static const char end_xml[]="</BODY>\n</DjVuXML>\n";
 
 void
-DjVuDocument::writeDjVuXML(const GP<ByteStream> &gstr_out,int flags) const
+DjVuDocument::writeDjVuXML(const GP<ByteStream> &gstr_out,
+                           int flags, int page) const
 {
   ByteStream &str_out=*gstr_out;
   str_out.writestring(
     prolog+get_init_url().get_string().toEscaped()+start_xml);
   const int pages=wait_get_pages_num();
-  for(int page_num=0;page_num<pages;++page_num)
+  int pstart = (page < 0) ? 0 : page;
+  int pend = (page < 0) ? pages : page+1;
+  for(int page_num=pstart; page_num<pend; ++page_num)
   {
     const GP<DjVuImage> dimg(get_page(page_num,true));
     if(!dimg)

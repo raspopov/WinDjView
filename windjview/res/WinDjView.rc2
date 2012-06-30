@@ -18,6 +18,10 @@
 // RT_MANIFEST
 //
 
+#ifdef WIN64
+IDR_MANIFEST   RT_MANIFEST   MOVEABLE PURE   "res\\WinDjView_x64.manifest"
+#else
 IDR_MANIFEST   RT_MANIFEST   MOVEABLE PURE   "res\\WinDjView.manifest"
+#endif
 
 #endif // AFX_RESOURCE_DLL

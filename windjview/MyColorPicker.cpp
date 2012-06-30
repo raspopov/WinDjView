@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 //
 //	Based on ColourPickerXP from CodeProject
 //	Copyright (C) 2002-2003 Zorglab
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -522,7 +520,7 @@ UINT CMyColorPicker::OnGetDlgCode()
 
 LRESULT CMyColorPicker::OnSetStyle(WPARAM wParam, LPARAM lParam)
 {
-	UINT nNewType = (wParam & BS_TYPEMASK);
+	WPARAM nNewType = (wParam & BS_TYPEMASK);
 
 	// Update our state and restore owner draw flag
 	if (nNewType == BS_DEFPUSHBUTTON)
@@ -674,7 +672,7 @@ void CMyColorPopup::InitLayout()
 	}
 
 	m_nColumns = 8;
-	m_nRows = (m_colors.size() + m_nColumns - 1) / m_nColumns;
+	m_nRows = ((int)m_colors.size() + m_nColumns - 1) / m_nColumns;
 
 	// Get the current window position, and set the new size
 	m_size.cx = m_nColumns*m_nBoxSize + 2*m_nMargin;
@@ -879,7 +877,7 @@ void CMyColorPopup::SetOrigColor(COLORREF color)
 	{
 		if (m_colors[i].color == color)
 		{
-			m_nOrigSel = i;
+			m_nOrigSel = (int)i;
 			return;
 		}
 	}

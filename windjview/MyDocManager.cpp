@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -141,7 +139,7 @@ BOOL CMyDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle,
 	dlgFile.m_ofn.lpstrTitle = title;
 	dlgFile.m_ofn.lpstrFile = fileName.GetBuffer(_MAX_PATH);
 
-	int nResult = dlgFile.DoModal();
+	INT_PTR nResult = dlgFile.DoModal();
 	fileName.ReleaseBuffer();
 	return (nResult == IDOK);
 }

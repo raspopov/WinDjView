@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -39,6 +37,7 @@ CSettingsDisplayPage::CSettingsDisplayPage()
 
 	m_bAdjustDisplay = m_displaySettings.bAdjustDisplay;
 	m_bHQColorScaling = m_displaySettings.bScaleColorPnm;
+	m_bSubpixelScaling = m_displaySettings.bScaleSubpix;
 	m_bInvertColors = m_displaySettings.bInvertColors;
 
 	m_nBrightness = m_displaySettings.nBrightness + 100;
@@ -58,6 +57,7 @@ void CSettingsDisplayPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_ADJUST_DISPLAY, m_bAdjustDisplay);
 	DDX_Check(pDX, IDC_HQ_COLOR_SCALING, m_bHQColorScaling);
+	DDX_Check(pDX, IDC_SUBPIXEL_SCALING, m_bSubpixelScaling);
 	DDX_Check(pDX, IDC_INVERT_COLORS, m_bInvertColors);
 	DDX_Check(pDX, IDC_ADJUST_PRINTING, m_bAdjustPrinting);
 
@@ -169,6 +169,7 @@ BOOL CSettingsDisplayPage::OnKillActive()
 
 	m_displaySettings.bAdjustDisplay = !!m_bAdjustDisplay;
 	m_displaySettings.bScaleColorPnm = !!m_bHQColorScaling;
+	m_displaySettings.bScaleSubpix = !!m_bSubpixelScaling;
 	m_displaySettings.bInvertColors = !!m_bInvertColors;
 
 	m_displaySettings.nBrightness = m_nBrightness - 100;

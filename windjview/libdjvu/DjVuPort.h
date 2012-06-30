@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id$
-// $Name$
 
 #ifndef _DJVUPORT_H
 #define _DJVUPORT_H
@@ -68,6 +65,7 @@
 
 #include "GThreads.h"
 #include "GURL.h"
+#include "stddef.h"
 
 #ifdef HAVE_NAMESPACES
 namespace DJVU {
@@ -121,7 +119,7 @@ class DataPool;
     @memo DjVu decoder communication mechanism.
     @author Andrei Erofeev <eaf@geocities.com>\\
             L\'eon Bottou <leonb@research.att.com>
-    @version #$Id$# */
+*/
 //@{
 
 class DjVuPort;

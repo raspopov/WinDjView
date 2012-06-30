@@ -107,6 +107,8 @@ IDR_DjVuTYPE            ICON                    "res\\DjVuDoc.ico"
 //
 
 IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+IDR_TOOLBAR_GRAYED      BITMAP                  "res\\Toolbar_grayed.bmp"
+IDR_TOOLBAR_LEGACY      BITMAP                  "res\\Toolbar_legacy.bmp"
 IDB_CLOSE               BITMAP                  "res\\close.bmp"
 IDB_CLOSE_TAB           BITMAP                  "res\\close_tab.bmp"
 IDB_SETTINGS            BITMAP                  "res\\settings.bmp"
@@ -114,7 +116,9 @@ IDB_BOOKMARKS           BITMAP                  "res\\bookmarks.bmp"
 IDB_DONATE              BITMAP                  "res\\donate.bmp"
 IDB_PAN_ANCHOR          BITMAP                  "res\\pan_anchor.bmp"
 IDB_HOURGLASS           BITMAP                  "res\\hourglass.bmp"
-IDR_DICTIONARIES_BAR    BITMAP                  "res\\dictbar.bmp"
+IDR_DICT_BAR            BITMAP                  "res\\dictbar.bmp"
+IDR_DICT_BAR_GRAYED     BITMAP                  "res\\dictbar_grayed.bmp"
+IDR_DICT_BAR_LEGACY     BITMAP                  "res\\dictbar_legacy.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -158,7 +162,7 @@ BEGIN
     BUTTON      ID_ROTATE_RIGHT
 END
 
-IDR_DICTIONARIES_BAR TOOLBAR  16, 15
+IDR_DICT_BAR TOOLBAR  16, 15
 BEGIN
     BUTTON      ID_DICTIONARY_LOOKUP
     BUTTON      ID_DICTIONARY_PREV
@@ -449,22 +453,23 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 251, 130
+IDD_ABOUTBOX DIALOGEX 0, 0, 251, 140
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2004-2009 Andrew Zhezherun",IDC_STATIC,40,17,149,8
+    LTEXT           "Copyright (C) 2004-2012 Andrew Zhezherun",IDC_STATIC,40,17,149,8
+    LTEXT           "Copyright (C) 2012 Leonid Zhezherun",IDC_STATIC,40,27,149,8
     DEFPUSHBUTTON   "Close",IDOK,194,7,50,14,WS_GROUP
-    LTEXT           "Project homepage:",IDC_STATIC,40,35,64,8
-    LTEXT           "DjVuLibre homepage:",IDC_STATIC,40,45,72,8
-    LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,106,35,139,8
-    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,114,45,131,8
-    LTEXT           "License",IDC_STATIC_LICENSE,40,62,204,34
-    LTEXT           "You can support further development of this program by donating through PayPal",IDC_STATIC,40,103,137,17
-    CONTROL         "Donate",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | WS_TABSTOP,181,102,63,21
+    LTEXT           "Project homepage:",IDC_STATIC,40,45,64,8
+    LTEXT           "DjVuLibre homepage:",IDC_STATIC,40,55,72,8
+    LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,106,45,139,8
+    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,114,55,131,8
+    LTEXT           "License",IDC_STATIC_LICENSE,40,72,204,34
+    LTEXT           "You can support further development of this program by donating through PayPal",IDC_STATIC,40,113,137,17
+    CONTROL         "Donate",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | WS_TABSTOP,181,112,63,21
 END
 
 IDD_PRINT DIALOGEX 0, 0, 432, 316
@@ -637,9 +642,11 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,79,108,10
     CONTROL         "&High quality (but slow) rendering of color pages",IDC_HQ_COLOR_SCALING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,93,168,10
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,111,208,1
-    LTEXT           "&Units:",IDC_STATIC,7,120,23,10
-    COMBOBOX        IDC_COMBO_UNITS,32,118,87,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "&Subpixel rescaling (looks better on some LCD monitors)",IDC_SUBPIXEL_SCALING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,107,208,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,125,208,1
+    LTEXT           "&Units:",IDC_STATIC,7,134,23,10
+    COMBOBOX        IDC_COMBO_UNITS,32,132,87,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_ANNOTATION DIALOGEX 0, 0, 210, 290
@@ -785,8 +792,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,3,0
- PRODUCTVERSION 1,0,3,0
+ FILEVERSION 2,0,0,0
+ PRODUCTVERSION 2,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -803,12 +810,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Andrew Zhezherun"
             VALUE "FileDescription", "WinDjView"
-            VALUE "FileVersion", "1.0.3"
+            VALUE "FileVersion", "2.0"
             VALUE "InternalName", "WinDjView.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2009 Andrew Zhezherun. All rights reserved."
+            VALUE "LegalCopyright", "Copyright (C) 2004-2012 Andrew Zhezherun. All rights reserved."
             VALUE "OriginalFilename", "WinDjView.exe"
             VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "1.0.3"
+            VALUE "ProductVersion", "2.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -831,7 +838,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 244
         TOPMARGIN, 7
-        BOTTOMMARGIN, 123
+        BOTTOMMARGIN, 133
     END
 
     IDD_PRINT, DIALOG
@@ -1013,7 +1020,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_DICTIONARIES_BAR    "Di&ctionary Bar"
+    IDR_DICT_BAR            "Di&ctionary Bar"
 END
 
 STRINGTABLE 
@@ -1172,7 +1179,7 @@ BEGIN
     IDS_PAPER_SIZE          "%s x %s %s"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "1.0.3"
+    IDS_CURRENT_VERSION     "2.0"
     IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
     IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure\nyou want to proceed?"
     IDS_OPENFILE            "Open"

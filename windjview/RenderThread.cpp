@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -50,8 +48,9 @@ CRenderThread::CRenderThread(DjVuSource* pSource, Observer* pOwner)
 
 CRenderThread::~CRenderThread()
 {
-	m_pSource->Release();
 	::CloseHandle(m_hThread);
+	m_pSource->Release();
+	theApp.ThreadTerminated();
 }
 
 void CRenderThread::Stop()
@@ -158,7 +157,6 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 		pThread->m_pSource->RemoveFromCache(nPage, pThread->m_pOwner);
 
 	delete pThread;
-	theApp.ThreadTerminated();
 
 	return 0;
 }
@@ -232,6 +230,7 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 	GRect rect(0, 0, szScaled.cx, szScaled.cy);
 
 	bool bScalePnmFixed = true;
+	bool bScaleSubpix = false;
 
 	// Use fast scaling for thumbnails.
 	if (bThumbnail)
@@ -267,6 +266,9 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 	if (!displaySettings.bScaleColorPnm && (bg44 != NULL || bgpm != NULL || fgpm != NULL)
 			&& nDisplayMode != CDjVuView::BlackAndWhite)
 		bScalePnmFixed = false;
+
+	if (bScalePnmFixed && displaySettings.bScaleSubpix)
+		bScaleSubpix = true;
 
 	if (bScalePnmFixed)
 		rect = GRect(0, 0, szImage.cx, szImage.cy);
@@ -320,7 +322,12 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 			pGPixmap = pGPixmap->rotate(nTotalRotate);
 
 		if (bScalePnmFixed)
-			pGPixmap = RescalePnm(pGPixmap, size.cx, size.cy);
+		{
+			if (bScaleSubpix)
+				pGPixmap = RescalePnm_subpix(pGPixmap, size.cx, size.cy);
+			else
+				pGPixmap = RescalePnm(pGPixmap, size.cx, size.cy);
+		}
 
 		pBitmap = RenderPixmap(*pGPixmap, displaySettings);
 	}
@@ -330,9 +337,17 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 			pGBitmap = pGBitmap->rotate(nTotalRotate);
 
 		if (bScalePnmFixed)
-			pGBitmap = RescalePnm(pGBitmap, size.cx, size.cy);
+		{
+			if (bScaleSubpix)
+				pGPixmap = RescalePnm_subpix(pGBitmap, size.cx, size.cy);
+			else
+				pGBitmap = RescalePnm(pGBitmap, size.cx, size.cy);
+		}
 
-		pBitmap = RenderBitmap(*pGBitmap, displaySettings);
+		if (pGPixmap)
+			pBitmap = RenderPixmap(*pGPixmap, displaySettings);
+		else
+			pBitmap = RenderBitmap(*pGBitmap, displaySettings);
 	}
 	else
 	{

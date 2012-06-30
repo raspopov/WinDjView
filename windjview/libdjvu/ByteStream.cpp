@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id$
-// $Name$
 
 // From: Leon Bottou, 1/31/2002
 // This file has very little to do with my initial implementation.
@@ -76,6 +73,7 @@
 #include "GOS.h"
 #include "GURL.h"
 #include "DjVuMessage.h"
+#include <stddef.h>
 #include <fcntl.h>
 #if defined(WIN32) || defined(__CYGWIN32__)
 # include <io.h>

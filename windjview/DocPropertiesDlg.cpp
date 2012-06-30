@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -250,7 +248,7 @@ void CDocPropertiesDlg::PopulateFiles()
 		lvc.fmt |= LVCFMT_RIGHT;
 		m_listFiles.SetColumn(3, &lvc);
 
-		for (size_t i = 0; i < m_files.size(); ++i)
+		for (int i = 0; i < (int)m_files.size(); ++i)
 		{
 			int nIndex = m_listFiles.InsertItem(i, FormatString(_T("%d"), i + 1));
 			m_listFiles.SetItemText(nIndex, 1, m_files[i].strName);
@@ -318,7 +316,7 @@ void CDocPropertiesDlg::OnSortFiles(NMHDR* pNMHDR, LRESULT* pResult)
 	HDITEM hdi;
 	hdi.mask = HDI_LPARAM;
 	m_listFiles.GetHeaderCtrl()->GetItem(nColumn, &hdi);
-	int nSortBy = hdi.lParam;
+	int nSortBy = (int)hdi.lParam;
 
 	if (nSortBy == m_nSortBy)
 	{

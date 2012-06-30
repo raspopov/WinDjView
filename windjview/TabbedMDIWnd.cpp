@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -91,7 +89,7 @@ void CTabbedMDIWnd::OnPaint()
 	CPaintDC dc(this); // device context for painting
 
 	COLORREF clrBtnface = ::GetSysColor(COLOR_BTNFACE);
-	COLORREF clrBackground = ChangeBrightness(clrBtnface, 0.88);
+	COLORREF clrBackground = ChangeBrightness(clrBtnface, 0.85);
 	COLORREF clrBtnshadow = ::GetSysColor(COLOR_BTNSHADOW);
 
 	if (m_tabs.empty())
@@ -149,7 +147,7 @@ void CTabbedMDIWnd::OnPaint()
 		pDC->FillSolidRect(rcLeftLine, clrBtnshadow);
 	}
 
-	for (size_t nTab = 0; nTab < m_tabs.size(); ++nTab)
+	for (int nTab = 0; nTab < (int)m_tabs.size(); ++nTab)
 		DrawTab(pDC, nTab);
 
 	if (!m_bShowArrows)
@@ -220,7 +218,7 @@ void CTabbedMDIWnd::DrawActiveTabRect(CDC* pDC, const CRect& rect, bool bHover)
 	COLORREF clrBtnface = ::GetSysColor(COLOR_BTNFACE);
 	COLORREF clrTabStripBg = ChangeBrightness(clrBtnface, 0.88);
 	COLORREF clrBtnshadow = ::GetSysColor(COLOR_BTNSHADOW);
-	COLORREF clrActiveTabTopBg = ChangeBrightness(clrBtnface, 1.05);
+	COLORREF clrActiveTabTopBg = ChangeBrightness(clrBtnface, 1.04);
 	COLORREF clrHoverTabTopBg = ChangeBrightness(clrBtnface, 0.97);
 	COLORREF clrHoverTabBottomBg = ChangeBrightness(clrBtnface, 0.94);
 	COLORREF clrActiveShadow = ChangeBrightness(clrBtnshadow, 1.12);
@@ -434,7 +432,7 @@ int CTabbedMDIWnd::AddTab(CWnd* pWnd, const CString& strName)
 
 	InvalidateTabs();
 
-	return m_tabs.size() - 1;
+	return (int)m_tabs.size() - 1;
 }
 
 void CTabbedMDIWnd::CloseTab(CWnd* pWnd)
@@ -504,7 +502,7 @@ void CTabbedMDIWnd::UpdateTabRects()
 	int nBottom = nTop + m_nTabHeight;
 
 	int nTabArea = m_szTabBar.cx - 2*s_nSideMargin;
-	int nTabWidth = max(s_nMinTabWidth, min(s_nMaxTabWidth, nTabArea / m_tabs.size()));
+	int nTabWidth = max(s_nMinTabWidth, min(s_nMaxTabWidth, nTabArea / (int)m_tabs.size()));
 
 	if (nTabWidth * static_cast<int>(m_tabs.size()) > nTabArea)
 	{
@@ -787,7 +785,7 @@ void CTabbedMDIWnd::OnContextMenu(CWnd* pWnd, CPoint pos)
 		if (nTab != m_nActiveTab)
 			ActivateTab(nTab, false);
 
-		for (int i = m_tabs.size() - 1; i >= 0; --i)
+		for (int i = (int)m_tabs.size() - 1; i >= 0; --i)
 		{
 			if (i != nTab)
 			{
@@ -871,7 +869,7 @@ bool CTabbedMDIWnd::PtInTab(int nTab, const CPoint& point)
 
 int CTabbedMDIWnd::TabFromPoint(const CPoint& point)
 {
-	for (size_t nTab = 0; nTab < m_tabs.size(); ++nTab)
+	for (int nTab = 0; nTab < (int)m_tabs.size(); ++nTab)
 		if (PtInTab(nTab, point))
 			return nTab;
 
@@ -926,7 +924,7 @@ void CTabbedMDIWnd::ActivateNextTab()
 	if (m_tabs.size() < 2)
 		return;
 
-	int nTab = (m_nActiveTab == -1 ? 0 : (m_nActiveTab + 1) % m_tabs.size());
+	int nTab = (m_nActiveTab == -1 ? 0 : (m_nActiveTab + 1) % (int)m_tabs.size());
 	ActivateTab(nTab);
 }
 
@@ -935,13 +933,14 @@ void CTabbedMDIWnd::ActivatePrevTab()
 	if (m_tabs.size() < 2)
 		return;
 
-	int nTab = (m_nActiveTab == -1 ? m_tabs.size() - 1 : (m_nActiveTab - 1 + m_tabs.size()) % m_tabs.size());
+	int nTabs = (int)m_tabs.size();
+	int nTab = (m_nActiveTab == -1 ? nTabs - 1 : (m_nActiveTab - 1 + nTabs) % nTabs);
 	ActivateTab(nTab);
 }
 
 int CTabbedMDIWnd::TabFromFrame(CWnd* pWnd)
 {
-	for (size_t nTab = 0; nTab < m_tabs.size(); ++nTab)
+	for (int nTab = 0; nTab < (int)m_tabs.size(); ++nTab)
 		if (m_tabs[nTab].pWnd == pWnd)
 			return nTab;
 

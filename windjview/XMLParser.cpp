@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "XMLParser.h"
@@ -42,7 +40,7 @@ inline bool IsNameChar(int c)
 
 inline bool IsValidChar(int c)
 {
-	return c == 0x9 || 0xA || c == 0xD || c >= 0x20 && c <= 0xD7FF
+	return c == 0x9 || c == 0xA || c == 0xD || c >= 0x20 && c <= 0xD7FF
 			|| c >= 0xE000 && c <= 0xFFFD || c >= 0x10000 && c <= 0x10FFFF;
 }
 

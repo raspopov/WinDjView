@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id$
-// $Name$
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -69,9 +66,10 @@
 #include "GString.h"
 #include "GThreads.h"
 #include "GException.h"
+#include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 
-// File "$Id$"
 // - Author: Leon Bottou, 05/1997
 
 
@@ -207,6 +205,10 @@ GBitmap::GBitmap(const GBitmap &ref, const GRect &rect, int border)
 void 
 GBitmap::init(int arows, int acolumns, int aborder)
 {
+  if (arows != (unsigned short) arows ||
+      acolumns != (unsigned short) acolumns ||
+      acolumns + aborder != (unsigned short)(acolumns + aborder))
+    G_THROW("Illegal arguments");
   GMonitorLock lock(monitor());
   destroy();
   grays = 2;

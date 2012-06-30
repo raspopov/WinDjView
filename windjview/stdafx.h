@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 // stdafx.h : include file for standard system include files,
 // or project specific include files that are used frequently,
@@ -42,6 +40,12 @@
 
 #if (_MSC_VER < 1200)
 #pragma warning(disable: 4200 4786)
+#endif
+
+// Only support UNICODE builds
+#ifndef UNICODE
+#define UNICODE
+#define _UNICODE
 #endif
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit

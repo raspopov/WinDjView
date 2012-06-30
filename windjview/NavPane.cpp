@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -82,7 +80,7 @@ void CNavPaneWnd::OnPaint()
 	CRect rcClient = ::GetClientRect(this);
 
 	COLORREF clrBtnface = ::GetSysColor(COLOR_BTNFACE);
-	COLORREF clrTabBg = ChangeBrightness(clrBtnface, 0.87);
+	COLORREF clrTabBg = ChangeBrightness(clrBtnface, 0.85);
 	COLORREF clrHilight = ::GetSysColor(COLOR_BTNHILIGHT);
 	COLORREF clrShadow = ::GetSysColor(COLOR_BTNSHADOW);
 	COLORREF clrFrame = ::GetSysColor(COLOR_WINDOWFRAME);
@@ -94,7 +92,7 @@ void CNavPaneWnd::OnPaint()
 	}
 
 	// Draw tabs offscreen
-	CSize szTabs(s_nTabsWidth + 2, rcClient.Height());
+	CSize szTabs(s_nTabsWidth + 1, rcClient.Height());
 	m_offscreenDC.Create(&dc, szTabs);
 	CDC* pDC = &m_offscreenDC;
 
@@ -104,11 +102,9 @@ void CNavPaneWnd::OnPaint()
 
 	// Vertical line
 	CRect rcLine(rcTabs.right, rcClient.top, rcTabs.right + 1, rcClient.bottom);
-	pDC->FillSolidRect(rcLine, clrFrame);
-	rcLine.OffsetRect(1, 0);
-	pDC->FillSolidRect(rcLine, clrHilight);
+	pDC->FillSolidRect(rcLine, clrShadow);
 
-	for (int nDiff = m_tabs.size(); nDiff > 0; --nDiff)
+	for (int nDiff = (int)m_tabs.size(); nDiff > 0; --nDiff)
 	{
 		if (m_nActiveTab - nDiff >= 0)
 			DrawTab(pDC, m_nActiveTab - nDiff, false);
@@ -122,7 +118,7 @@ void CNavPaneWnd::OnPaint()
 	m_offscreenDC.Release();
 
 	// Left space
-	rcTabs.left = rcTabs.right + 2;
+	rcTabs.left = rcTabs.right + 1;
 	rcTabs.right = rcTabs.left + s_nLeftMargin;
 	dc.FillSolidRect(rcTabs, clrBtnface);
 
@@ -211,7 +207,7 @@ void CNavPaneWnd::DrawTab(CDC* pDC, int nTab, bool bActive)
 
 	CBrush brushBtnface(clrBtnface);
 	CPen penBtnface(PS_SOLID, 1, clrBtnface);
-	CPen penFrame(PS_SOLID, 1, clrFrame);
+	CPen penShadow(PS_SOLID, 1, clrShadow);
 	CPen penHilight(PS_SOLID, 1, clrHilight);
 
 	CRect rcTab = tab.rcTab;
@@ -220,11 +216,11 @@ void CNavPaneWnd::DrawTab(CDC* pDC, int nTab, bool bActive)
 
 	// Vertical line
 	CRect rcLine(rcTab.left, rcTab.top, rcTab.left + 1, rcTab.bottom);
-	pDC->FillSolidRect(rcLine, clrFrame);
+	pDC->FillSolidRect(rcLine, clrShadow);
 
 	// Horizontal line
 	CRect rcHorzLine(rcTab.left, rcTab.bottom, rcTab.right, rcTab.bottom + 1);
-	pDC->FillSolidRect(rcHorzLine, clrFrame);
+	pDC->FillSolidRect(rcHorzLine, clrShadow);
 
 	CPoint points[] = {
 			CPoint(rcTab.left, rcTab.top - 1),
@@ -242,30 +238,15 @@ void CNavPaneWnd::DrawTab(CDC* pDC, int nTab, bool bActive)
 			CPoint(rcTab.left, rcTab.top - 1),
 			CPoint(rcTab.right + 1, rcTab.top - s_nTabSize - 1) };
 
-	pOldPen = pDC->SelectObject(&penFrame);
+	pOldPen = pDC->SelectObject(&penShadow);
 	pDC->Polyline(points2, 2);
 	pDC->SelectObject(pOldPen);
 
 	if (bActive)
 	{
-		rcLine.OffsetRect(1, 0);
-		pDC->FillSolidRect(rcLine, clrHilight);
-
-		rcLine.OffsetRect(s_nTabSize - 2, 0);
+		rcLine.OffsetRect(s_nTabSize - 1, 0);
 		rcLine.top -= s_nTabSize - 1;
 		pDC->FillSolidRect(rcLine, clrBtnface);
-		rcLine.OffsetRect(1, 0);
-		pDC->FillSolidRect(rcLine, clrBtnface);
-
-		points2[0].Offset(1, 0);
-		points2[1].Offset(0, 1);
-		pOldPen = pDC->SelectObject(&penHilight);
-		pDC->Polyline(points2, 2);
-		pDC->SelectObject(pOldPen);
-
-		rcHorzLine.OffsetRect(0, -1);
-		rcHorzLine.left += 1;
-		pDC->FillSolidRect(rcHorzLine, clrTabBg);
 	}
 
 	CFont* pOldFont = pDC->SelectObject(bActive ? &m_fontActive : &m_font);
@@ -287,7 +268,7 @@ void CNavPaneWnd::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 void CNavPaneWnd::UpdateTabContents()
 {
 	CRect rcContents = ::GetClientRect(this);
-	rcContents.DeflateRect(s_nTabsWidth + s_nLeftMargin + 2, s_nTopMargin, 0, 0);
+	rcContents.DeflateRect(s_nTabsWidth + s_nLeftMargin + 1, s_nTopMargin, 0, 0);
 
 	CRect rcBordered(rcContents);
 	rcBordered.DeflateRect(1, 1, 0, 0);
@@ -346,7 +327,7 @@ int CNavPaneWnd::AddTab(const CString& strName, CWnd* pWnd)
 	pWnd->ModifyStyleEx(WS_EX_CLIENTEDGE, 0);
 
 	if (m_nActiveTab == -1)
-		m_nActiveTab = m_tabs.size() - 1;
+		m_nActiveTab = (int)m_tabs.size() - 1;
 
 	if (::IsWindow(m_hWnd))
 	{
@@ -354,7 +335,7 @@ int CNavPaneWnd::AddTab(const CString& strName, CWnd* pWnd)
 		Invalidate();
 	}
 
-	return m_tabs.size() - 1;
+	return (int)m_tabs.size() - 1;
 }
 
 BOOL CNavPaneWnd::OnEraseBkgnd(CDC* pDC)
@@ -591,7 +572,7 @@ bool CNavPaneWnd::PtInTab(int nTab, CPoint point)
 int CNavPaneWnd::GetTabFromPoint(CPoint point)
 {
 	int nTabClicked = -1;
-	for (int nDiff = m_tabs.size(); nDiff > 0; --nDiff)
+	for (int nDiff = (int)m_tabs.size(); nDiff > 0; --nDiff)
 	{
 		if (m_nActiveTab - nDiff >= 0)
 		{

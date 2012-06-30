@@ -1,6 +1,18 @@
 WinDjView version history
-Copyright (C) 2004-2009 Andrew Zhezherun
+Copyright (C) 2004-2012 Andrew Zhezherun
 ----------------------------------------
+
+Changes in version 2.0 (2012-06-30):
+! New toolbar icons and interface tweaks (contributed by
+  Leonid Zhezherun).
+! Native 64-bit executable for Windows 7/Vista 64-bit.
+  Windows 2000 or later is now required. Windows 98/ME users
+  should continue to use version 1.0.3.
++ Optional subpixel page scaling for better looking results
+  on some LCD monitors (contributed by Larry Davis).
++ Smoother mouse wheel panning and autoscrolling.
+* Fixed a crash when adding bookmarks in fullscreen mode.
+* Several minor fixes.
 
 Changes in version 1.0.3 (2009-08-15):
 * Fixed a problem with exiting fullscreen mode introduced in 1.0.2.
@@ -16,13 +28,13 @@ Changes in version 1.0.2 (2009-08-14):
 
 Changes in version 1.0.1 (2009-03-20):
 + Tabs can be closed with wheel click or middle click.
-+ Use new style file dialogs on Vista.
++ Use new style file dialogs on Windows 7/Vista.
 + File open and save dialogs can be resized.
 * Fixed a problem with bookmarks not working immediately after import.
 * Several minor fixes.
 
 Changes in version 1.0 (2009-02-19):
-# Finally, version number starts with one! This means that the program
+! Finally, version number starts with one! This means that the program
   is officially considered stable after years of development.
 ! Added multiple top-level documents mode.
 ! Added a tab bar to the single-window mode.

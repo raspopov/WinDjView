@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -470,7 +468,7 @@ void CMyTreeView::RecalcLayout()
 			TreeNode* pNode = s.top().first;
 			if (pNode != m_pRoot && s.top().second)
 			{
-				pNode->nIndex = m_items.size();
+				pNode->nIndex = (int)m_items.size();
 				m_items.push_back(pNode);
 
 				pNode->rcNode.left = s_nOffsetLeft + (nLevel - 1)*nChildOffset;

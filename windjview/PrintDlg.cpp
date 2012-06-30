@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -47,11 +45,7 @@ PrinterAPI::PrinterAPI()
 	hWinSpool = ::LoadLibrary(_T("winspool.drv"));
 	if (hWinSpool != NULL)
 	{
-#ifdef UNICODE
 		pGetDefaultPrinter = (pfnGetDefaultPrinter) ::GetProcAddress(hWinSpool, "GetDefaultPrinterW");
-#else
-		pGetDefaultPrinter = (pfnGetDefaultPrinter) ::GetProcAddress(hWinSpool, "GetDefaultPrinterA");
-#endif
 	}
 }
 
@@ -1005,7 +999,7 @@ LPDEVMODE CPrintDlg::GetCachedDevMode(const CString& strPrinter)
 	return NULL;
 }
 
-void CPrintDlg::UpdateDevModeCache(const CString& strPrinter, LPDEVMODE pDevMode, UINT nSize)
+void CPrintDlg::UpdateDevModeCache(const CString& strPrinter, LPDEVMODE pDevMode, size_t nSize)
 {
 	map<CString, vector<byte> >::iterator it = s_devModes.find(strPrinter);
 	if (it == s_devModes.end())

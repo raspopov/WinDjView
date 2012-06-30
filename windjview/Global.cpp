@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -85,8 +85,6 @@
 //	http://www.opensource.org/licenses/bsd-license.php
 //	***************************************************************************
 //	End copyright notice for stringencoders
-
-// $Id$
 
 #include "stdafx.h"
 #include "Global.h"
@@ -175,7 +173,7 @@ bool IsWinVistaOrLater()
 
 bool MoveToTrash(LPCTSTR lpszFileName)
 {
-	int nLength = _tcslen(lpszFileName);
+	size_t nLength = _tcslen(lpszFileName);
 	if (nLength >= _MAX_PATH)
 		return false;
 
@@ -199,27 +197,10 @@ bool MoveToTrash(LPCTSTR lpszFileName)
 
 GUTF8String MakeUTF8String(const CString& strText)
 {
-	int nSize;
-
-#ifdef _UNICODE
 	LPCWSTR pszUnicodeText = strText;
-#else
-	nSize = ::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)strText, -1, NULL, 0);
+	int nSize = ::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, NULL, 0, NULL, NULL);
 	if (nSize == 0)
 		return "";
-
-	LPWSTR pszUnicodeText = new WCHAR[nSize];
-	::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)strText, -1, pszUnicodeText, nSize);
-#endif
-
-	nSize = ::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, NULL, 0, NULL, NULL);
-	if (nSize == 0)
-	{
-#ifndef _UNICODE
-		delete[] pszUnicodeText;
-#endif
-		return "";
-	}
 
 	LPSTR pszTextUTF8 = new CHAR[nSize];
 	::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, pszTextUTF8, nSize, NULL, NULL);
@@ -227,9 +208,21 @@ GUTF8String MakeUTF8String(const CString& strText)
 	GUTF8String utf8String(pszTextUTF8);
 	delete[] pszTextUTF8;
 
-#ifndef _UNICODE
-	delete[] pszUnicodeText;
-#endif
+	return utf8String;
+}
+
+GUTF8String MakeUTF8String(const wstring& strText)
+{
+	LPCWSTR pszUnicodeText = (LPCWSTR)strText.c_str();
+	int nSize = ::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, NULL, 0, NULL, NULL);
+	if (nSize == 0)
+		return "";
+
+	LPSTR pszTextUTF8 = new CHAR[nSize];
+	::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, pszTextUTF8, nSize, NULL, NULL);
+
+	GUTF8String utf8String(pszTextUTF8);
+	delete[] pszTextUTF8;
 
 	return utf8String;
 }
@@ -291,23 +284,6 @@ bool IsValidUTF8(const char* pszText)
 	return true;
 }
 
-GUTF8String MakeUTF8String(const wstring& strText)
-{
-	LPCWSTR pszUnicodeText = (LPCWSTR)strText.c_str();
-
-	int nSize = ::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, NULL, 0, NULL, NULL);
-	if (nSize == 0)
-		return "";
-
-	LPSTR pszTextUTF8 = new CHAR[nSize];
-	::WideCharToMultiByte(CP_UTF8, 0, pszUnicodeText, -1, pszTextUTF8, nSize, NULL, NULL);
-
-	GUTF8String utf8String(pszTextUTF8);
-	delete[] pszTextUTF8;
-
-	return utf8String;
-}
-
 CString MakeCString(const GUTF8String& text)
 {
 	CString strResult;
@@ -343,73 +319,23 @@ CString MakeCString(const GUTF8String& text)
 	}
 
 	if (nResult != 0)
-	{
-#ifdef _UNICODE
 		strResult = pszUnicodeText;
-#else
-		// Prepare ANSI text
-		nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-			pszUnicodeText, -1, NULL, 0, NULL, NULL);
-		if (nSize == 0)
-		{
-			delete[] pszUnicodeText;
-			return "";
-		}
-
-		::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-			pszUnicodeText, -1, strResult.GetBuffer(nSize), nSize, NULL, NULL);
-		strResult.ReleaseBuffer();
-#endif
-	}
 	else
-	{
 		strResult = (LPCSTR)text;
-	}
 
 	delete[] pszUnicodeText;
-
 	return strResult;
 }
 
 CString MakeCString(const wstring& text)
 {
-	CString strResult;
-	LPCWSTR pszUnicodeText = (LPCWSTR)text.c_str();
-
-#ifdef _UNICODE
-	strResult = pszUnicodeText;
-#else
-	// Prepare ANSI text
-	int nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-		pszUnicodeText, -1, NULL, 0, NULL, NULL);
-	if (nSize == 0)
-		return "";
-
-	::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
-		pszUnicodeText, -1, strResult.GetBuffer(nSize), nSize, NULL, NULL);
-	strResult.ReleaseBuffer();
-#endif
-
-	return strResult;
+	return CString((LPCWSTR)text.c_str());
 }
 
 void MakeWString(const CString& strText, wstring& result)
 {
 	LPCTSTR pszText = (LPCTSTR)strText;
-
-#ifdef _UNICODE
 	result = (const wchar_t*)pszText;
-#else
-	int nSize = ::MultiByteToWideChar(CP_ACP, 0, pszText, -1, NULL, 0);
-	if (nSize > 0)
-	{
-		result.resize(nSize - 1);
-		if (nSize > 1)
-			::MultiByteToWideChar(CP_ACP, 0, pszText, -1, (LPWSTR)result.data(), nSize);
-	}
-	else
-		result.erase();
-#endif
 }
 
 bool MakeWString(const GUTF8String& text, wstring& result)
@@ -462,15 +388,11 @@ void MakeANSIString(const wstring& text, string& result)
 
 void MakeANSIString(const CString& strText, string& result)
 {
-#ifdef _UNICODE
 	int nSize = ::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
 		(LPCWSTR)strText, -1, NULL, 0, NULL, NULL);
 	result.resize(nSize - 1);
 	::WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK | WC_DISCARDNS,
 		(LPCWSTR)strText, -1, (LPSTR)result.data(), nSize, NULL, NULL);
-#else
-	result = (LPCSTR)strText;
-#endif
 }
 
 
@@ -505,12 +427,7 @@ void CreateSystemIconFont(CFont& font)
 		HRESULT hr = XPGetThemeSysFont(NULL, TMT_ICONTITLEFONT, &lfw);
 		if (SUCCEEDED(hr))
 		{
-#ifdef UNICODE
 			memcpy(&lf, &lfw, sizeof(LOGFONT));
-#else
-			memcpy(&lf, &lfw, (char*)&lfw.lfFaceName - (char*)&lfw);
-			_tcscpy(lf.lfFaceName, CString(lfw.lfFaceName));
-#endif
 			font.CreateFontIndirect(&lf);
 			return;
 		}
@@ -538,12 +455,7 @@ void CreateSystemMenuFont(CFont& font)
 		HRESULT hr = XPGetThemeSysFont(NULL, TMT_MENUFONT, &lfw);
 		if (SUCCEEDED(hr))
 		{
-#ifdef UNICODE
 			memcpy(&lf, &lfw, sizeof(LOGFONT));
-#else
-			memcpy(&lf, &lfw, (char*)&lfw.lfFaceName - (char*)&lfw);
-			_tcscpy(lf.lfFaceName, CString(lfw.lfFaceName));
-#endif
 			font.CreateFontIndirect(&lf);
 			return;
 		}
@@ -688,49 +600,12 @@ CRect GetMonitorRect(CWnd* pWnd)
 
 UINT GetMouseScrollLines()
 {
-	static UINT uCachedScrollLines;
-	static bool bGotScrollLines = false;
-
-	// If we've already got it and we're not refreshing,
-	// return what we've already got
-
-	if (bGotScrollLines)
-		return uCachedScrollLines;
-
-	// see if we can find the mouse window
-
-	bGotScrollLines = true;
-
-	static UINT msgGetScrollLines;
-	static WORD nRegisteredMessage;
-
-	if (afxData.bWin95)
-	{
-		if (nRegisteredMessage == 0)
-		{
-			msgGetScrollLines = ::RegisterWindowMessage(MSH_SCROLL_LINES);
-			if (msgGetScrollLines == 0)
-				nRegisteredMessage = 1;     // couldn't register!  never try again
-			else
-				nRegisteredMessage = 2;     // it worked: use it
-		}
-
-		if (nRegisteredMessage == 2)
-		{
-			HWND hwMouseWheel = NULL;
-			hwMouseWheel = FindWindow(MSH_WHEELMODULE_CLASS, MSH_WHEELMODULE_TITLE);
-			if (hwMouseWheel && msgGetScrollLines)
-			{
-				uCachedScrollLines = (UINT)::SendMessage(hwMouseWheel, msgGetScrollLines, 0, 0);
-			}
-		}
-	}
-
+	static UINT uCachedScrollLines = 0;
 	if (uCachedScrollLines == 0)
 	{
 		::SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &uCachedScrollLines, false);
 		if (uCachedScrollLines == 0)
-			uCachedScrollLines = 3; // reasonable default
+			uCachedScrollLines = 3;  // reasonable default
 	}
 
 	return uCachedScrollLines;
@@ -1324,7 +1199,7 @@ int modp_b64_encode(char* dest, const char* str, int len)
 	}
 
 	*p = '\0';
-	return p - (BYTE*) dest;
+	return (int)(p - (BYTE*) dest);
 }
 
 int modp_b64_decode(char* dest, const char* src, int len)
@@ -1416,7 +1291,7 @@ int modp_b64_decode(char* dest, const char* src, int len)
 string& Base64Encode(string& s)
 {
 	string x(modp_b64_encode_len(s.size()), '\0');
-	int d = modp_b64_encode(const_cast<char*>(x.data()), s.data(), s.size());
+	int d = modp_b64_encode(const_cast<char*>(x.data()), s.data(), (int)s.size());
 	x.erase(d, std::string::npos);
 	s.swap(x);
 	return s;
@@ -1425,7 +1300,7 @@ string& Base64Encode(string& s)
 string& Base64Decode(string& s)
 {
 	string x(modp_b64_decode_len(s.size()), '\0');
-	int d = modp_b64_decode(const_cast<char*>(x.data()), s.data(), s.size());
+	int d = modp_b64_decode(const_cast<char*>(x.data()), s.data(), (int)s.size());
 	if (d < 0)
 		x.erase();
 	else

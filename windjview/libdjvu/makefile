@@ -4,27 +4,27 @@ OUTOTHER =
 
 NEWCL = 1
 
+!IFDEF X64
+MACHINE = X64
+WINTYPE = /D"WIN32" /D"WIN64"
+SUFFIX = 64
+!ELSE
+MACHINE = X86
+WINTYPE = /D"WIN32"
+SUFFIX =
+!ENDIF
+
 #MAKEDLL = 1
 #dumpbin /linkermember:1 libdjvud.lib > libdjvud.map
 
 !IFDEF DEBUG
 
-!IFDEF UNICODE
-INTDIR = .\ObjsU.dbg
-!ELSE
-INTDIR = .\Objs.dbg
-!ENDIF
-
+INTDIR = .\Objs$(SUFFIX).dbg
 OPTS = /MDd /GX /Zi
 
 !ELSE
 
-!IFDEF UNICODE
-INTDIR = .\ObjsU
-!ELSE
-INTDIR = .\Objs
-!ENDIF
-
+INTDIR = .\Objs$(SUFFIX)
 OPTS = /MT /GX /Ox /Og /Ot /Oi /Ob2
 
 !ENDIF
@@ -35,11 +35,11 @@ GENLIB = cl
 
 !IFDEF DEBUG
 OUTOPT = /nologo /LDd /Fe
-OUT = libdjvud.dll
+OUT = libdjvud$(SUFFIX).dll
 OUTOTHER = libcpmtd.lib gdi32.lib /link /def:libdjvud.def
 !ELSE
 OUTOPT = /nologo /LD /Fe
-OUT = libdjvu.dll
+OUT = libdjvu$(SUFFIX).dll
 OUTOTHER = libcpmt.lib gdi32.lib /link /def:libdjvu.def
 !ENDIF
 
@@ -47,21 +47,13 @@ OUTOTHER = libcpmt.lib gdi32.lib /link /def:libdjvu.def
 
 !IFDEF DEBUG
 
-OUTOPT = /nologo /subsystem:windows /machine:x86 /nodefaultlib:"msvcrtd.lib" /out:
-!IFDEF UNICODE
-OUT = libdjvudu.lib
-!ELSE
-OUT = libdjvud.lib
-!ENDIF
+OUTOPT = /nologo /subsystem:windows /machine:$(MACHINE) /nodefaultlib:"msvcrtd.lib" /out:
+OUT = libdjvud$(SUFFIX).lib
 
 !ELSE
 
-OUTOPT = /nologo /subsystem:windows /machine:x86 /nodefaultlib:"msvcrt.lib" /out:
-!IFDEF UNICODE
-OUT = libdjvuu.lib
-!ELSE
-OUT = libdjvu.lib
-!ENDIF
+OUTOPT = /nologo /subsystem:windows /machine:$(MACHINE) /nodefaultlib:"msvcrt.lib" /out:
+OUT = libdjvu$(SUFFIX).lib
 
 !ENDIF
 
@@ -76,14 +68,10 @@ OUTOPT = /ltcg $(OUTOPT)
 !ENDIF
 !ENDIF
 
-COMPOPT = /nologo /c /W3 /Fo"$(INTDIR)\\" /D"WIN32" /D"_WINDOWS" /D"_CONSOLE" /D"NDEBUG" \
+COMPOPT = /nologo /c /W3 /Fo"$(INTDIR)\\" $(WINTYPE) /D"_WINDOWS" /D"_CONSOLE" /D"NDEBUG" \
 			/D"HAS_WCTYPE=1" /D"THREADMODEL=0" /D"DO_CHANGELOCALE=0" /D"WIN32_MONITOR" \
 			/D"NEED_JPEG_DECODER" /D"WIN32_JPEG" /D"_CRT_SECURE_NO_DEPRECATE" \
-			/D"_CRT_NONSTDC_NO_DEPRECATE" /D"_SECURE_SCL=0"
-
-!IFDEF UNICODE
-COMPOPT = $(COMPOPT) /D"_UNICODE" /D"UNICODE"
-!ENDIF
+			/D"_CRT_NONSTDC_NO_DEPRECATE" /D"_SECURE_SCL=0" /D"_UNICODE" /D"UNICODE"
 
 !IFNDEF MAKEDLL
 COMPOPT = $(COMPOPT) /D"LIBDJVU_STATIC"

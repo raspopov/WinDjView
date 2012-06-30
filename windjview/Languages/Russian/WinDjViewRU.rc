@@ -107,6 +107,8 @@ IDR_DjVuTYPE            ICON                    "..\\..\\res\\DjVuDoc.ico"
 //
 
 IDR_MAINFRAME           BITMAP                  "..\\..\\res\\Toolbar.bmp"
+IDR_TOOLBAR_GRAYED      BITMAP                  "..\\..\\res\\Toolbar_grayed.bmp"
+IDR_TOOLBAR_LEGACY      BITMAP                  "..\\..\\res\\Toolbar_legacy.bmp"
 IDB_CLOSE               BITMAP                  "..\\..\\res\\close.bmp"
 IDB_CLOSE_TAB           BITMAP                  "..\\..\\res\\close_tab.bmp"
 IDB_SETTINGS            BITMAP                  "..\\..\\res\\settings.bmp"
@@ -114,7 +116,9 @@ IDB_BOOKMARKS           BITMAP                  "..\\..\\res\\bookmarks.bmp"
 IDB_DONATE              BITMAP                  "..\\..\\res\\donate.bmp"
 IDB_PAN_ANCHOR          BITMAP                  "..\\..\\res\\pan_anchor.bmp"
 IDB_HOURGLASS           BITMAP                  "..\\..\\res\\hourglass.bmp"
-IDR_DICTIONARIES_BAR    BITMAP                  "..\\..\\res\\dictbar.bmp"
+IDR_DICT_BAR            BITMAP                  "..\\..\\res\\dictbar.bmp"
+IDR_DICT_BAR_GRAYED     BITMAP                  "..\\..\\res\\dictbar_grayed.bmp"
+IDR_DICT_BAR_LEGACY     BITMAP                  "..\\..\\res\\dictbar_legacy.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -158,7 +162,7 @@ BEGIN
     BUTTON      ID_ROTATE_RIGHT
 END
 
-IDR_DICTIONARIES_BAR TOOLBAR  16, 15
+IDR_DICT_BAR TOOLBAR  16, 15
 BEGIN
     BUTTON      ID_DICTIONARY_LOOKUP
     BUTTON      ID_DICTIONARY_PREV
@@ -449,22 +453,23 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 287, 137
+IDD_ABOUTBOX DIALOGEX 0, 0, 287, 147
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "О программе WinDjView"
 FONT 8, "MS Shell Dlg", 0, 0, 0xCC
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,9,9,21,20
+    ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2004-2009 Андрей Жежерун",IDC_STATIC,40,17,171,8
+    LTEXT           "Copyright (C) 2004-2012 Андрей Жежерун",IDC_STATIC,40,17,171,8
+    LTEXT           "Copyright (C) 2012 Леонид Жежерун",IDC_STATIC,40,27,171,8
     DEFPUSHBUTTON   "Закрыть",IDOK,230,7,50,14,WS_GROUP
-    LTEXT           "Страница проекта:",IDC_STATIC,40,35,69,8
-    LTEXT           "Страница DjVuLibre:",IDC_STATIC,40,45,72,8
-    LTEXT           "http://windjview.sourceforge.net/ru/",IDC_STATIC_LINK,111,35,139,8
-    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,113,45,131,8
-    LTEXT           "License",IDC_STATIC_LICENSE,40,62,240,42
-    LTEXT           "Вы можете оказать финансовую поддержку проекту, сделав перевод через PayPal.",IDC_STATIC,40,110,174,17
-    CONTROL         "Donate",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | WS_TABSTOP,217,109,63,21
+    LTEXT           "Страница проекта:",IDC_STATIC,40,45,69,8
+    LTEXT           "Страница DjVuLibre:",IDC_STATIC,40,55,72,8
+    LTEXT           "http://windjview.sourceforge.net/ru/",IDC_STATIC_LINK,111,45,139,8
+    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,113,55,131,8
+    LTEXT           "Лицензия",IDC_STATIC_LICENSE,40,72,240,42
+    LTEXT           "Вы можете оказать финансовую поддержку проекту, сделав перевод через PayPal.",IDC_STATIC,40,120,174,17
+    CONTROL         "Donate",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | WS_TABSTOP,217,119,63,21
 END
 
 IDD_PRINT DIALOGEX 0, 0, 456, 316
@@ -637,11 +642,13 @@ BEGIN
     CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,65,63,183,12
     CONTROL         "Применять коррекцию при пе&чати",IDC_ADJUST_PRINTING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,79,133,9
-    CONTROL         "Более качественная (но медленная) прорисовка цветных страниц",IDC_HQ_COLOR_SCALING,
+    CONTROL         "&Более качественная (но медленная) прорисовка цветных страниц",IDC_HQ_COLOR_SCALING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,93,241,10
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,111,241,1
-    LTEXT           "&Единицы измерения:",IDC_STATIC,7,120,73,10
-    COMBOBOX        IDC_COMBO_UNITS,83,118,87,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,125,241,1
+    LTEXT           "&Единицы измерения:",IDC_STATIC,7,134,73,10
+    COMBOBOX        IDC_COMBO_UNITS,83,132,87,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "&Субпиксельное сглаживание (лучше для некоторых мониторов)",IDC_SUBPIXEL_SCALING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,107,241,10
 END
 
 IDD_ANNOTATION DIALOGEX 0, 0, 210, 290
@@ -788,8 +795,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,3,0
- PRODUCTVERSION 1,0,3,0
+ FILEVERSION 2,0,0,0
+ PRODUCTVERSION 2,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -807,12 +814,12 @@ BEGIN
             VALUE "Comments", "Русский"
             VALUE "CompanyName", "Andrew Zhezherun"
             VALUE "FileDescription", "WinDjView Localized Resources"
-            VALUE "FileVersion", "1.0.3"
+            VALUE "FileVersion", "2.0"
             VALUE "InternalName", "WinDjViewRU.dll"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2009 Andrew Zhezherun. All rights reserved."
+            VALUE "LegalCopyright", "Copyright (C) 2004-2012 Andrew Zhezherun. All rights reserved."
             VALUE "OriginalFilename", "WinDjViewRU.dll"
             VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "1.0.3"
+            VALUE "ProductVersion", "2.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -835,7 +842,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 280
         TOPMARGIN, 7
-        BOTTOMMARGIN, 130
+        BOTTOMMARGIN, 140
     END
 
     IDD_PRINT, DIALOG
@@ -1017,7 +1024,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_DICTIONARIES_BAR    "Панель словарей"
+    IDR_DICT_BAR            "Панель словарей"
 END
 
 STRINGTABLE 
@@ -1175,7 +1182,7 @@ BEGIN
     IDS_PAPER_SIZE          "%s x %s %s"
     IDS_VERSION_INFO        "WinDjView %s\n(C) Андрей Жежерун"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "1.0.3"
+    IDS_CURRENT_VERSION     "2.0"
     IDS_FATAL_ERROR         "Произошла серьёзная ошибка.\n\nОна могла быть вызвана повреждённым документом. После этой ошибки программа может работать\nнекорректно. Вам настоятельно рекомендуется перезапустить программу.\n\nНажмите OK, чтобы выйти из программы, или Cancel, чтобы вернуться к открытым документам."
     IDS_WARN_CLOSE_MULTIPLE "Выход из программы приведёт к закрытию %d документов. Продолжить?"
     IDS_OPENFILE            "Открыть"

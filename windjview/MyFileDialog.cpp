@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02111-1307 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -96,7 +94,7 @@ BEGIN_MESSAGE_MAP(CMyFileDialog, CCommonDialog)
 END_MESSAGE_MAP()
 
 
-int CMyFileDialog::DoModal()
+INT_PTR CMyFileDialog::DoModal()
 {
 	// From MFC:  CFileDialog::DoModal
 	// Uses the OpenFileNameEx structure on Win2k+

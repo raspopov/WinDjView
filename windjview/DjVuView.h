@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #pragma once
 
@@ -175,7 +173,6 @@ protected:
 	bool m_bShiftDown, m_bControlDown;
 	bool m_bNeedUpdate;
 	bool m_bUpdateBitmaps;
-	UINT m_nTimerID;
 
 	COffscreenDC m_offscreenDC;
 	int m_nScreenDPI;
@@ -457,7 +454,7 @@ protected:
 	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg void OnViewGotoPage();
-	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnFirstPageAlone();
 	afx_msg void OnRightToLeftOrder();
 	afx_msg void OnUpdateFirstPageAlone(CCmdUI* pCmdUI);

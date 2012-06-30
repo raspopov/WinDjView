@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -167,7 +165,7 @@ void CDjVuDoc::OnSaveCopyAs()
 	strTitle.LoadString(IDS_SAVE_COPY_AS);
 	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
 
-	UINT nResult = dlg.DoModal();
+	UINT_PTR nResult = dlg.DoModal();
 	GetDjVuView()->SetFocus();
 	if (nResult != IDOK)
 		return;
@@ -225,7 +223,7 @@ void CDjVuDoc::OnFileExportText()
 	string text;
 	MakeANSIString(wtext, text);
 
-	file.Write(text.c_str(), text.length());
+	file.Write(text.c_str(), (UINT)text.length());
 	file.Close();
 }
 

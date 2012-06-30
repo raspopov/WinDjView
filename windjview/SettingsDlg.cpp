@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02111-1307 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -123,12 +121,12 @@ void CSettingsDlg::OnKickIdle()
 	theApp.GetAppSettings()->nActiveSettingsTab = GetActiveIndex();
 }
 
-int CSettingsDlg::DoModal()
+INT_PTR CSettingsDlg::DoModal()
 {
 	set<CWnd*> disabled;
 	theApp.DisableTopLevelWindows(disabled);
 
-	int nResult = CPropertySheet::DoModal();
+	INT_PTR nResult = CPropertySheet::DoModal();
 
 	theApp.EnableWindows(disabled);
 	return nResult;

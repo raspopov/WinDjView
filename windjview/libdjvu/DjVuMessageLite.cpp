@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id$
-// $Name$
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -76,8 +73,8 @@
 #include "debug.h"
 #include <ctype.h>
 #include <string.h>
+#include <stddef.h>
 #include <stdlib.h>
-// #include <stdio.h>
 #ifdef WIN32
 #include <tchar.h>
 #include <windows.h>

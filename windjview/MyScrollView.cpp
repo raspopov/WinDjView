@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -62,7 +60,7 @@ protected:
 	HMODULE m_hUser32;
 
 	afx_msg void OnPaint();
-	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	virtual void PostNcDestroy();
 	DECLARE_MESSAGE_MAP()
 };
@@ -771,7 +769,7 @@ void CMyAnchorWnd::InitCursors()
 	s_anchorCursors[10] = AfxGetApp()->LoadCursor(IDC_CURSOR_PAN_LR);
 }
 
-void CMyAnchorWnd::OnTimer(UINT nIDEvent)
+void CMyAnchorWnd::OnTimer(UINT_PTR nIDEvent)
 {
 	if (nIDEvent != 1)
 	{
@@ -852,15 +850,13 @@ void CMyAnchorWnd::OnTimer(UINT nIDEvent)
 		int nSignY = szDistance.cy > 0 ? 1 : szDistance.cy < 0 ? -1 : 0;
 
 		int nScrollX, nScrollY;
-		if (fabs(1.0*szDistance.cx) < 160)
-			nScrollX = static_cast<int>(fabs(1.0*szDistance.cx) / 8);
-		else
-			nScrollX = 20 + static_cast<int>(pow(fabs(1.0*szDistance.cx) - 160, 2) / 16);
+		nScrollX = static_cast<int>(fabs(1.0*szDistance.cx) / 15) + 1;
+		if (fabs(1.0*szDistance.cx) >= 150)
+			nScrollX += static_cast<int>(pow(fabs(1.0*szDistance.cx) - 150, 2) / 40);
 
-		if (fabs(1.0*szDistance.cy) < 160)
-			nScrollY = static_cast<int>(fabs(1.0*szDistance.cy) / 8);
-		else
-			nScrollY = 20 + static_cast<int>(pow(fabs(1.0*szDistance.cy) - 160, 2) / 16);
+		nScrollY = static_cast<int>(fabs(1.0*szDistance.cy) / 15) + 1;
+		if (fabs(1.0*szDistance.cy) >= 150)
+			nScrollY += static_cast<int>(pow(fabs(1.0*szDistance.cy) - 150, 2) / 40);
 
 		CSize szScroll(nSignX * nScrollX, nSignY * nScrollY);
 		m_pView->OnPan(szScroll);
@@ -958,7 +954,7 @@ void CMyAnchorWnd::Show(const CPoint& ptAnchor, bool bHorzScroll, bool bVertScro
 
 	m_bQuitTracking = false;
 	SetCapture();
-	SetTimer(1, 50, NULL);
+	SetTimer(1, 20, NULL);
 
 	InitCursors();
 	SetCursor(s_anchorCursors[m_nDefaultCursor]);

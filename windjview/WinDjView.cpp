@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02111-1307 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -71,6 +69,7 @@ const TCHAR* s_pszGamma = _T("gamma");
 const TCHAR* s_pszBrightness = _T("brightness");
 const TCHAR* s_pszContrast = _T("contrast");
 const TCHAR* s_pszScaleMethod = _T("hq-render-color");
+const TCHAR* s_pszScaleSubpix = _T("subpix-scale");
 const TCHAR* s_pszInvertColors = _T("invert");
 const TCHAR* s_pszUnits = _T("units");
 const TCHAR* s_pszThumbnailSize = _T("thumbnail-size");
@@ -136,6 +135,9 @@ const TCHAR* s_pszPageIndex = _T("page-index");
 const TCHAR* s_pszTitle = _T("title");
 const TCHAR* s_pszLangFrom = _T("lang-from");
 const TCHAR* s_pszLangTo = _T("lang-to");
+
+const TCHAR* s_pszTabsSection = _T("Tabs");
+const TCHAR* s_pszTabPrefix = _T("File");
 
 
 // CDjViewApp
@@ -221,6 +223,7 @@ BOOL CDjViewApp::InitInstance()
 
 	LoadStdProfileSettings(10);  // Load recently open documents
 	LoadSettings();
+	//LoadOpenTabs();
 	LoadDictionaries();
 	LoadLanguages();
 	SetStartupLanguage();
@@ -677,6 +680,7 @@ void CDjViewApp::LoadSettings()
 		m_appSettings.strFind = m_appSettings.searchHistory.front();
 
 	m_displaySettings.bScaleColorPnm = !!GetProfileInt(s_pszDisplaySection, s_pszScaleMethod, m_displaySettings.bScaleColorPnm);
+	m_displaySettings.bScaleSubpix = !!GetProfileInt(s_pszDisplaySection, s_pszScaleSubpix, m_displaySettings.bScaleSubpix);
 	m_displaySettings.bInvertColors = !!GetProfileInt(s_pszDisplaySection, s_pszInvertColors, m_displaySettings.bInvertColors);
 	m_displaySettings.bAdjustDisplay = !!GetProfileInt(s_pszDisplaySection, s_pszAdjustDisplay, m_displaySettings.bAdjustDisplay);
 	m_displaySettings.fGamma = GetProfileDouble(s_pszDisplaySection, s_pszGamma, m_displaySettings.fGamma);
@@ -854,6 +858,7 @@ void CDjViewApp::SaveSettings()
 	}
 
 	WriteProfileInt(s_pszDisplaySection, s_pszScaleMethod, m_displaySettings.bScaleColorPnm);
+	WriteProfileInt(s_pszDisplaySection, s_pszScaleSubpix, m_displaySettings.bScaleSubpix);
 	WriteProfileInt(s_pszDisplaySection, s_pszInvertColors, m_displaySettings.bInvertColors);
 	WriteProfileInt(s_pszDisplaySection, s_pszAdjustDisplay, m_displaySettings.bAdjustDisplay);
 	WriteProfileDouble(s_pszDisplaySection, s_pszGamma, m_displaySettings.fGamma);
@@ -941,7 +946,7 @@ BOOL CDjViewApp::GetProfileCompressed(LPCTSTR pszSection, LPCTSTR pszEntry, GUTF
 
 		char szTemp[1024];
 		string text;
-		int nRead;
+		size_t nRead;
 		while ((nRead = compressed->read(szTemp, 1024)) != 0)
 		{
 			if (text.length() + nRead > text.capacity())
@@ -1073,7 +1078,7 @@ LRESULT CALLBACK CDjViewApp::KeyboardProc(int nCode, WPARAM wParam, LPARAM lPara
 	return ::CallNextHookEx(theApp.m_hHook, nCode, wParam, lParam);
 }
 
-void CALLBACK CDjViewApp::TimerProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dwTime)
+void CALLBACK CDjViewApp::TimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
 	bool bShiftPressed = (::GetKeyState(VK_SHIFT) & 0x8000) != 0;
 	bool bControlPressed = (::GetKeyState(VK_CONTROL) & 0x8000) != 0;
@@ -1674,7 +1679,7 @@ void CDjViewApp::OnUpdateLanguage(CCmdUI* pCmdUI)
 
 void CDjViewApp::SetStartupLanguage()
 {
-	for (size_t i = 0; i < m_languages.size(); ++i)
+	for (int i = 0; i < (int)m_languages.size(); ++i)
 	{
 		if (m_appSettings.nLanguage == m_languages[i].nLanguage)
 		{
@@ -1753,24 +1758,15 @@ ShellAPI::ShellAPI()
 	hShell32 = ::LoadLibrary(_T("shell32.dll"));
 	if (hShell32 != NULL)
 	{
-#ifdef UNICODE
 		pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hShell32, "SHGetFolderPathW");
 		pSHGetSpecialFolderPath = (pfnSHGetSpecialFolderPath) ::GetProcAddress(hShell32, "SHGetSpecialFolderPathW");
-#else
-		pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hShell32, "SHGetFolderPathA");
-		pSHGetSpecialFolderPath = (pfnSHGetSpecialFolderPath) ::GetProcAddress(hShell32, "SHGetSpecialFolderPathA");
-#endif
 
 		if (pSHGetFolderPath == NULL)
 		{
 			hSHFolder = ::LoadLibrary(_T("shfolder.dll"));
 			if (hSHFolder != NULL)
 			{
-#ifdef UNICODE
 				pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hSHFolder, "SHGetFolderPathW");
-#else
-				pSHGetFolderPath = (pfnSHGetFolderPath) ::GetProcAddress(hSHFolder, "SHGetFolderPathA");
-#endif
 			}
 		}
 	}
@@ -2353,8 +2349,8 @@ void CDjViewApp::OnAppExit()
 		return;
 
 	// Close every main frame. This will work in both MDI and top-level mode.
-	int nWindows = m_frames.size();
-	for (int i = 0; i < nWindows; ++i)
+	size_t nWindows = m_frames.size();
+	for (size_t i = 0; i < nWindows; ++i)
 		m_frames.front()->SendMessage(WM_CLOSE);
 }
 
@@ -2442,7 +2438,8 @@ int CDjViewApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDHelp, const
 		// sane maximum width of a message box than earlier versions)
 		for (int i = 0; i < m_strMBPrompt.GetLength(); ++i)
 		{
-			if (m_strMBPrompt[i] == '\n' && m_strMBPrompt[i + 1] != '\n')
+			if (m_strMBPrompt[i] == '\n' && m_strMBPrompt[i + 1] != '\n' &&
+					(i == 0 || m_strMBPrompt[i - 1] != '\n'))
 			{
 				m_strMBPrompt.SetAt(i, ' ');
 				++i;

@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "DjVuSource.h"
@@ -1237,9 +1235,9 @@ void DjVuSource::ReadAnnotations(GP<ByteStream> pInclStream,
 	// Look for shared annotations
 	GUTF8String strInclude;
 	char buf[1024];
-	int nLength;
+	size_t nLength;
 	while ((nLength = pInclStream->read(buf, 1024)))
-		strInclude += GUTF8String(buf, nLength);
+		strInclude += GUTF8String(buf, (UINT)nLength);
 
 	// Eat '\n' in the beginning and at the end
 	while (strInclude.length() > 0 && strInclude[0] == '\n')

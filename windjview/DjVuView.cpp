@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -137,11 +135,11 @@ HCURSOR CDjVuView::hCursorCross = NULL;
 HCURSOR CDjVuView::hCursorZoomRect = NULL;
 
 const int c_nDefaultMargin = 4;
-const int c_nDefaultShadowMargin = 3;
+const int c_nDefaultShadowMargin = 4;  // 3
 const int c_nDefaultPageGap = 4;
 const int c_nDefaultFacingGap = 4;
-const int c_nDefaultPageBorder = 1;
-const int c_nDefaultPageShadow = 3;
+const int c_nDefaultPageBorder = 0;  // 1
+const int c_nDefaultPageShadow = 0;  // 3
 
 const int c_nFullscreenMargin = 0;
 const int c_nFullscreenShadowMargin = 0;
@@ -487,9 +485,9 @@ void CDjVuView::DrawAnnotation(CDC* pDC, const Annotation& anno, int nPage, bool
 				points.back() = points.front();
 				if (anno.nBorderType == Annotation::BorderXOR
 						|| bShowAll && anno.nBorderType == Annotation::BorderNone)
-					InvertPolyFrame(pDC, &points[0], points.size());
+					InvertPolyFrame(pDC, &points[0], (int)points.size());
 				else if (anno.nBorderType == Annotation::BorderSolid)
-					FramePoly(pDC, &points[0], points.size(), anno.crBorder);
+					FramePoly(pDC, &points[0], (int)points.size(), anno.crBorder);
 			}
 		}
 		else if (anno.bOvalShape)
@@ -654,7 +652,8 @@ void CDjVuView::DrawPage(CDC* pDC, int nPage)
 		clrWindow = InvertColor(clrWindow);
 
 	COLORREF clrShadow = ChangeBrightness(clrBtnshadow, 0.75);
-	COLORREF clrBackground = ChangeBrightness(clrBtnshadow, 1.2);
+	//COLORREF clrBackground = ChangeBrightness(clrBtnshadow, 1.2);
+	COLORREF clrBackground = RGB(64, 64, 64);
 	if (m_nType == Fullscreen || m_nType == Magnify && GetMainFrame()->IsFullscreenMode())
 		clrBackground = RGB(0, 0, 0);
 
@@ -876,6 +875,9 @@ void CDjVuView::OnInitialUpdate()
 {
 	CMyScrollView::OnInitialUpdate();
 
+	SetTimer(1, 100, NULL);
+	SetTimer(2, 50, NULL);
+
 	m_pSource = GetDocument()->GetSource();
 	m_pSource->AddRef();
 
@@ -897,8 +899,6 @@ void CDjVuView::OnInitialUpdate()
 	m_displaySettings = *theApp.GetDisplaySettings();
 
 	m_pRenderThread = new CRenderThread(m_pSource, this);
-
-	m_nTimerID = SetTimer(1, 100, NULL);
 	ShowCursor();
 
 	theApp.AddObserver(this);
@@ -1804,7 +1804,7 @@ void CDjVuView::UpdatePagesCacheContinuous(bool bUpdateImages,
 
 void CDjVuView::UpdateVisiblePages()
 {
-	if (m_nPageCount == 0 || m_pRenderThread->IsPaused())
+	if (m_nPageCount == 0 || m_pRenderThread == NULL || m_pRenderThread->IsPaused())
 		return;
 
 	m_pRenderThread->PauseJobs();
@@ -3918,7 +3918,15 @@ void CDjVuView::OnDestroy()
 		m_pSource->ChangeObservedPages(this, add, remove);
 	}
 
-	KillTimer(m_nTimerID);
+	if (GetMDIChild()->GetContentsTree() != NULL)
+		GetMDIChild()->GetContentsTree()->RemoveObserver(this);
+	if (GetMDIChild()->GetPageIndex() != NULL)
+		GetMDIChild()->GetPageIndex()->RemoveObserver(this);
+	if (GetMDIChild()->HasBookmarksTree())
+		GetMDIChild()->GetBookmarksTree(false)->RemoveObserver(this);
+
+	KillTimer(1);
+	KillTimer(2);
 	ShowCursor();
 
 	CMyScrollView::OnDestroy();
@@ -3937,7 +3945,7 @@ LRESULT CDjVuView::OnPageDecoded(WPARAM wParam, LPARAM lParam)
 
 	if (!bHadInfo)
 	{
-		if ((lParam || m_nTimerID == 0) && (m_nLayout == Continuous || m_nLayout == ContinuousFacing))
+		if (lParam && (m_nLayout == Continuous || m_nLayout == ContinuousFacing))
 			UpdateLayout();
 		else
 			m_bNeedUpdate = true;
@@ -4360,7 +4368,7 @@ void CDjVuView::DoExportPage(int nPage, bool bCrop, GRect rect)
 	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
 	dlg.m_ofn.nFilterIndex = (Gdip::IsLoaded() ? theApp.GetAppSettings()->nImageFormat : 1);
 
-	UINT nResult = dlg.DoModal();
+	UINT_PTR nResult = dlg.DoModal();
 	SetFocus();
 	if (nResult != IDOK)
 		return;
@@ -4443,7 +4451,7 @@ int ParseFileTemplate(CString strPathName, CString& strPrefix, CString& strSuffi
 		*pszSuffix++ = '\0';
 		while (pszSuffix < pszExt && *pszSuffix == '#')
 			++pszSuffix;
-		nFormatWidth = pszSuffix - pszBlock;
+		nFormatWidth = (int)(pszSuffix - pszBlock);
 	}
 
 	strPrefix = pszPathName;
@@ -4496,7 +4504,7 @@ unsigned int __stdcall CDjVuView::ExportThreadProc(void* pvData)
 	ExportData& data = *reinterpret_cast<ExportData*>(pProgress->GetUserData());
 	CDjVuView* pView = data.pView;
 
-	pProgress->SetRange(0, data.pages.size());
+	pProgress->SetRange(0, (int)data.pages.size());
 
 	bool bSuccess = true;
 	int i = 0;
@@ -4544,7 +4552,7 @@ unsigned int __stdcall CDjVuView::ExportThreadProc(void* pvData)
 		delete pBitmap;
 	}
 
-	pProgress->SetPos(data.pages.size());
+	pProgress->SetPos((int)data.pages.size());
 	pProgress->StopProgress(bSuccess ? 0 : 1);
 
 	::CoUninitialize();
@@ -4574,7 +4582,7 @@ void CDjVuView::ExportPages(const set<int>& pages)
 	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
 	dlg.m_ofn.nFilterIndex = (Gdip::IsLoaded() ? theApp.GetAppSettings()->nImageFormat : 1);
 
-	UINT nResult = dlg.DoModal();
+	UINT_PTR nResult = dlg.DoModal();
 	SetFocus();
 	if (nResult != IDOK)
 		return;
@@ -5532,7 +5540,7 @@ void CDjVuView::OnViewZoomOut()
 	sort(zoomLevels.begin(), zoomLevels.end());
 
 	int nZoom;
-	for (nZoom = zoomLevels.size() - 1; nZoom > 0; --nZoom)
+	for (nZoom = (int)zoomLevels.size() - 1; nZoom > 0; --nZoom)
 	{
 		if (zoomLevels[nZoom] <= fCurrentZoom - 1e-2)
 			break;
@@ -5631,7 +5639,7 @@ void CDjVuView::OnEditCopy()
 	{
 		wstring text;
 		GetNormalizedText(text, true);
-		int nLength = text.length();
+		size_t nLength = text.length();
 
 		HGLOBAL hText = NULL, hUnicodeText = NULL;
 
@@ -5774,19 +5782,19 @@ void CDjVuView::GetNormalizedText(wstring& text, bool bSelected, int nMaxLength,
 		// to keep the extracted text clean.
 
 		bAgain = false;
-		int nHyphen = text.find(L'-', nLastHyphen + 1);
+		size_t nHyphen = text.find(L'-', nLastHyphen + 1);
 		while (nHyphen != string::npos)
 		{
-			int nPos = nHyphen;
-			for (nPos = nHyphen - 1; nPos >= 0 && text[nPos] > 0x20 && (nHyphen - nPos < 50); --nPos)
+			int nPos;
+			for (nPos = (int)nHyphen - 1; nPos >= 0 && text[nPos] > 0x20 && (nHyphen - nPos < 50); --nPos)
 				;
 
 			wstring strPrev = text.substr(nPos + 1, nHyphen - nPos - 1);
 
 			bool bFoundEOL = false;
-			int nWordPos;
+			size_t nWordPos;
 			for (nWordPos = nHyphen + 1;
-				 nWordPos < static_cast<int>(text.length()) && text[nWordPos] <= 0x20;
+				 nWordPos < text.length() && text[nWordPos] <= 0x20;
 				 ++nWordPos)
 			{
 				if (wcschr(L"\n\r\013\035\038", text[nWordPos]) != NULL)
@@ -5797,7 +5805,7 @@ void CDjVuView::GetNormalizedText(wstring& text, bool bSelected, int nMaxLength,
 			{
 				if (text.length() - nWordPos < strPrev.length())
 				{
-					nLastHyphen = nHyphen - 1;
+					nLastHyphen = (int)nHyphen - 1;
 					bAgain = true;
 					break;
 				}
@@ -5822,7 +5830,7 @@ void CDjVuView::GetNormalizedText(wstring& text, bool bSelected, int nMaxLength,
 		}
 
 		if (!bAgain)
-			nLastHyphen = text.length() - 1;
+			nLastHyphen = (int)text.length() - 1;
 
 		if (nMaxLength >= 0 && static_cast<int>(text.length()) >= nMaxLength)
 			break;
@@ -6136,55 +6144,62 @@ void CDjVuView::OnViewGotoPage()
 		GoToPage(dlg.m_nPage - 1);
 }
 
-void CDjVuView::OnTimer(UINT nIDEvent)
+void CDjVuView::OnTimer(UINT_PTR nIDEvent)
 {
-	if (nIDEvent != 1)
+	switch (nIDEvent)
 	{
-		CMyScrollView::OnTimer(nIDEvent);
-		return;
-	}
+	case 1:
+		if (m_bNeedUpdate)
+			UpdateLayout();
 
-	if (m_bNeedUpdate)
-		UpdateLayout();
-
-	if (m_nType == Fullscreen && !m_bCursorHidden)
-	{
-		if (GetFocus() == this && !m_bDragging && !m_bPanning && !m_bPopupMenu)
+		if (m_nType == Fullscreen && !m_bCursorHidden)
 		{
-			int nTickCount = ::GetTickCount();
-			if (nTickCount - m_nCursorTime > s_nCursorHideDelay)
+			if (GetFocus() == this && !m_bDragging && !m_bPanning && !m_bPopupMenu)
 			{
-				m_bCursorHidden = true;
-				::ShowCursor(false);
+				int nTickCount = ::GetTickCount();
+				if (nTickCount - m_nCursorTime > s_nCursorHideDelay)
+				{
+					m_bCursorHidden = true;
+					::ShowCursor(false);
+				}
+			}
+			else
+			{
+				m_nCursorTime = ::GetTickCount();
 			}
 		}
-		else
+		break;
+
+	case 2:
+		if (m_bDraggingText || m_bDraggingRect)
 		{
-			m_nCursorTime = ::GetTickCount();
+			// Autoscroll
+			const int nDelta = 25;
+
+			CPoint ptCursor;
+			::GetCursorPos(&ptCursor);
+
+			CRect rcViewport(CPoint(0, 0), GetViewportSize());
+			ClientToScreen(rcViewport);
+
+			CSize szOffset(0, 0);
+			if (ptCursor.x < rcViewport.left)
+				szOffset.cx = -nDelta;
+			if (ptCursor.x >= rcViewport.right)
+				szOffset.cx = nDelta;
+
+			if (ptCursor.y < rcViewport.top)
+				szOffset.cy = -nDelta;
+			if (ptCursor.y >= rcViewport.bottom)
+				szOffset.cy = nDelta;
+
+			OnScrollBy(szOffset);
 		}
-	}
+		break;
 
-	if (m_bDraggingText || m_bDraggingRect)
-	{
-		// Autoscroll
-		CPoint ptCursor;
-		::GetCursorPos(&ptCursor);
-
-		CRect rcViewport(CPoint(0, 0), GetViewportSize());
-		ClientToScreen(rcViewport);
-
-		CSize szOffset(0, 0);
-		if (ptCursor.x < rcViewport.left)
-			szOffset.cx = -50;
-		if (ptCursor.x >= rcViewport.right)
-			szOffset.cx = 50;
-
-		if (ptCursor.y < rcViewport.top)
-			szOffset.cy = -50;
-		if (ptCursor.y >= rcViewport.bottom)
-			szOffset.cy = 50;
-
-		OnScrollBy(szOffset);
+	default:
+		CMyScrollView::OnTimer(nIDEvent);
+		break;
 	}
 }
 
@@ -6789,7 +6804,9 @@ void CDjVuView::OnAddBookmark()
 		Bookmark& bmNew = m_pSource->GetSettings()->bookmarks.back();
 
 		CBookmarksView* pBookmarks = GetMDIChild()->GetBookmarksTree();
-		pBookmarks->AddObserver(this);
+		if (m_nType == Normal) {
+			pBookmarks->AddObserver(this);
+		}
 		pBookmarks->AddBookmark(bmNew);
 	}
 }

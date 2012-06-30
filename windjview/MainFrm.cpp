@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id$
 
 #include "stdafx.h"
 #include "WinDjView.h"
@@ -104,6 +102,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_NCACTIVATE()
 	ON_MESSAGE_VOID(WM_NOTIFY_NEW_VERSION, OnNewVersion)
 	ON_WM_NCDESTROY()
+	ON_UPDATE_COMMAND_UI_RANGE(ID_LAYOUT_CONTINUOUS, ID_LAYOUT_FACING, OnUpdateDisable)
+	ON_UPDATE_COMMAND_UI_RANGE(ID_MODE_DRAG, ID_MODE_ZOOM_RECT, OnUpdateDisable)
+	ON_UPDATE_COMMAND_UI_RANGE(ID_ZOOM_50, ID_ZOOM_CUSTOM, OnUpdateDisable)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -149,7 +150,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (!m_wndDictBar.CreateEx(this, TBSTYLE_FLAT | TBSTYLE_TRANSPARENT,
 			WS_CHILD | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_SIZE_DYNAMIC,
 			CRect(0, 0, 0, 0), IDW_DICTIONARIES_BAR) ||
-		!m_wndDictBar.GetToolBar().LoadToolBar(IDR_DICTIONARIES_BAR))
+		!m_wndDictBar.GetToolBar().LoadToolBar(IDR_DICT_BAR))
 	{
 		TRACE(_T("Failed to create dictionaries bar\n"));
 		return -1;      // fail to create
@@ -211,6 +212,33 @@ void CMainFrame::InitToolBar()
 	m_wndToolBar.GetToolBar().SetWindowText(LoadString(IDS_TOOLBAR_TITLE));
 	m_wndToolBar.SetWindowText(LoadString(IDS_TOOLBAR_TITLE));
 
+	if (IsWinXPOrLater())
+	{
+		HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(),
+				MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_BITMAP,
+				0, 0, LR_CREATEDIBSECTION);
+		CBitmap bm;
+		bm.Attach(hbm);
+
+		m_imageListBar.Create(16, 16, ILC_COLOR32, 0, 1);
+		m_imageListBar.Add(&bm, RGB(192, 192, 192));
+		m_wndToolBar.GetToolBar().GetToolBarCtrl().SetImageList(&m_imageListBar);
+
+		HBITMAP hbm2 = (HBITMAP)::LoadImage(AfxGetInstanceHandle(),
+				MAKEINTRESOURCE(IDR_TOOLBAR_GRAYED), IMAGE_BITMAP,
+				0, 0, LR_CREATEDIBSECTION);
+		CBitmap bm2;
+		bm2.Attach(hbm2);
+
+		m_imageListGrayed.Create(16, 16, ILC_COLOR32, 0, 1);
+		m_imageListGrayed.Add(&bm2, RGB(192, 192, 192));
+		m_wndToolBar.GetToolBar().GetToolBarCtrl().SetDisabledImageList(&m_imageListGrayed);
+	}
+	else
+	{
+		m_wndToolBar.GetToolBar().LoadBitmap(IDR_TOOLBAR_LEGACY);
+	}
+
 	int nComboPage = m_wndToolBar.GetToolBar().CommandToIndex(ID_VIEW_NEXTPAGE) - 1;
 	m_wndToolBar.SetControl(nComboPage, IDC_PAGENUM, 65);
 
@@ -246,14 +274,37 @@ void CMainFrame::InitDictBar()
 	m_wndDictBar.GetToolBar().SetWindowText(LoadString(IDS_DICTBAR_TITLE));
 	m_wndDictBar.SetWindowText(LoadString(IDS_DICTBAR_TITLE));
 
-	HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_DICTIONARIES_BAR),
-			IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-	CBitmap bm;
-	bm.Attach(hbm);
+	if (IsWinXPOrLater())
+	{
+		HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_DICT_BAR),
+				IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+		CBitmap bm;
+		bm.Attach(hbm);
 
-	m_imageListDict.Create(16, 15, ILC_COLOR24 | ILC_MASK, 0, 1);
-	m_imageListDict.Add(&bm, RGB(192, 192, 192));
-	m_wndDictBar.GetToolBar().GetToolBarCtrl().SetImageList(&m_imageListDict);
+		m_imageListDict.Create(16, 16, ILC_COLOR32, 0, 1);
+		m_imageListDict.Add(&bm, RGB(192, 192, 192));
+		m_wndDictBar.GetToolBar().GetToolBarCtrl().SetImageList(&m_imageListDict);
+
+		HBITMAP hbm2 = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_DICT_BAR_GRAYED),
+				IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+		CBitmap bm2;
+		bm2.Attach(hbm2);
+
+		m_imageListDictGrayed.Create(16, 16, ILC_COLOR32, 0, 1);
+		m_imageListDictGrayed.Add(&bm2, RGB(192, 192, 192));
+		m_wndDictBar.GetToolBar().GetToolBarCtrl().SetDisabledImageList(&m_imageListDictGrayed);
+	}
+	else
+	{
+		HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_DICT_BAR_LEGACY),
+				IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+		CBitmap bm;
+		bm.Attach(hbm);
+
+		m_imageListDict.Create(16, 15, ILC_COLOR24 | ILC_MASK, 0, 1);
+		m_imageListDict.Add(&bm, RGB(192, 192, 192));
+		m_wndDictBar.GetToolBar().GetToolBarCtrl().SetImageList(&m_imageListDict);
+	}
 
 	m_wndDictBar.InsertLabel(0, IDC_LOOKUP_LABEL, &m_font);
 
@@ -447,7 +498,7 @@ void CMainFrame::OnUpdateViewStatusBar(CCmdUI* pCmdUI)
 			&& pCmdUI->m_pMenu->GetMenuItemID(pCmdUI->m_nIndex + 1) != ID_VIEW_DICTBAR)
 	{
 		pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex + 1, MF_BYPOSITION | MF_STRING,
-				ID_VIEW_DICTBAR, LoadString(IDR_DICTIONARIES_BAR));
+				ID_VIEW_DICTBAR, LoadString(IDR_DICT_BAR));
 		pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
 		pCmdUI->m_bEnableChanged = true;
 	}
@@ -885,10 +936,10 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 	// From CFrameWnd::OnDDEExecute
 
 	// unpack the DDE message
-	unsigned int unused;
+	UINT_PTR unused;
 	HGLOBAL hData;
 	//IA64: Assume DDE LPARAMs are still 32-bit
-	VERIFY(UnpackDDElParam(WM_DDE_EXECUTE, lParam, &unused, (unsigned int*)&hData));
+	VERIFY(UnpackDDElParam(WM_DDE_EXECUTE, lParam, &unused, (PUINT_PTR)&hData));
 
 	// get the command string
 	TCHAR szCommand[_MAX_PATH * 2];
@@ -1265,6 +1316,11 @@ void CMainFrame::OnDestroy()
 
 	theApp.RemoveObserver(this);
 	m_tabbedMDI.RemoveObserver(this);
+
+	m_wndDictBar.GetToolBar().GetToolBarCtrl().SetImageList(NULL);
+	m_wndDictBar.GetToolBar().GetToolBarCtrl().SetDisabledImageList(NULL);
+	m_wndToolBar.GetToolBar().GetToolBarCtrl().SetImageList(NULL);
+	m_wndToolBar.GetToolBar().GetToolBarCtrl().SetDisabledImageList(NULL);
 
 	CFrameWnd::OnDestroy();
 }
@@ -1839,4 +1895,13 @@ void CMainFrame::OnNcDestroy()
 
 	// call special post-cleanup routine
 	PostNcDestroy();
+}
+
+void CMainFrame::OnUpdateDisable(CCmdUI* pCmdUI)
+{
+	// Default handler for view-handled commands. If no view is active
+	// (i.e. to tabs open), we need to make sure that toolbar buttons
+	// are unchecked so that they are drawn properly (see KB231893).
+	pCmdUI->SetCheck(false);
+	pCmdUI->Enable(false);
 }

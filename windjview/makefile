@@ -4,21 +4,28 @@ RSC = rc
 
 CPP_FLAGS = 
 LINK_FLAGS =
+RSC_FLAGS =
 
-!IFDEF UNICODE
+!IFDEF X64
+DIR_SUFFIX = _x64
+LIB_SUFFIX = 64
+MACHINE = X64
+WIN64 = /D "WIN64"
+RSC_WIN64 = /d "WIN64"
+!ELSE
+DIR_SUFFIX =
+LIB_SUFFIX =
+MACHINE = X86
+WIN64 =
+RSC_WIN64 =
+!ENDIF
 
-INTDIR = .\Release_Unicode
-LIBDJVU = libdjvuu.lib
+INTDIR = .\Release$(DIR_SUFFIX)
+LIBDJVU = libdjvu$(LIB_SUFFIX).lib
 
 CPP_FLAGS = $(CPP_FLAGS) /D "_UNICODE" /D "UNICODE"
 LINK_FLAGS = $(LINK_FLAGS) /entry:"wWinMainCRTStartup"
-
-!ELSE
-
-INTDIR=.\Release
-LIBDJVU = libdjvu.lib
-
-!ENDIF
+RSC_FLAGS = $(RSC_FLAGS) /d "_UNICODE" /d "UNICODE"
 
 OUT = "$(INTDIR)\WinDjView.exe"
 
@@ -27,13 +34,13 @@ CPP_PCH = /Yu"stdafx.h"
 CPP_PCH_CREATE = /Yc"stdafx.h"
 
 CPP_FLAGS = $(CPP_FLAGS) /nologo /c /MT /W3 /EHsc /O2 /GL /GR- \
-            /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Fp$(PCH) /Fo"$(INTDIR)/"
+            /D "WIN32" $(WIN64) /D "NDEBUG" /D "_WINDOWS" /Fp$(PCH) /Fo"$(INTDIR)/"
 
 LINK_FLAGS = $(LINK_FLAGS) "libdjvu\$(LIBDJVU)" msimg32.lib version.lib shlwapi.lib \
-             /nologo /subsystem:windows /incremental:no /machine:x86 \
+             /nologo /subsystem:windows /incremental:no /machine:$(MACHINE) \
              /nodefaultlib:"msvcrt.lib" /ltcg /out:$(OUT)
 
-RSC_FLAGS = /l 0x409 /fo"$(INTDIR)\WinDjView.res" /d "NDEBUG"
+RSC_FLAGS = /l 0x409 /fo"$(INTDIR)\WinDjView.res" $(RSC_FLAGS) /d "NDEBUG" /d "WIN32" $(RSC_WIN64)
 
 all: $(OUT)
 
