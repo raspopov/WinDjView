@@ -1058,9 +1058,15 @@ CMDIChild* CDjVuView::GetMDIChild() const
 {
 	const CDjVuView* pView = this;
 	if (m_nType == Fullscreen)
+	{
 		pView = ((CFullscreenWnd*) GetTopLevelParent())->GetOwner();
+	}
 	else if (m_nType == Magnify)
+	{
 		pView = ((CMagnifyWnd*) GetTopLevelParent())->GetOwner();
+		if (pView->m_nType == Fullscreen)
+			pView = ((CFullscreenWnd*) pView->GetTopLevelParent())->GetOwner();
+	}
 
 	ASSERT(pView != NULL);
 	CWnd* pMDIChild = pView->GetParent();
@@ -3918,12 +3924,15 @@ void CDjVuView::OnDestroy()
 		m_pSource->ChangeObservedPages(this, add, remove);
 	}
 
-	if (GetMDIChild()->GetContentsTree() != NULL)
-		GetMDIChild()->GetContentsTree()->RemoveObserver(this);
-	if (GetMDIChild()->GetPageIndex() != NULL)
-		GetMDIChild()->GetPageIndex()->RemoveObserver(this);
-	if (GetMDIChild()->HasBookmarksTree())
-		GetMDIChild()->GetBookmarksTree(false)->RemoveObserver(this);
+	if (m_nType == Normal)
+	{
+		if (GetMDIChild()->GetContentsTree() != NULL)
+			GetMDIChild()->GetContentsTree()->RemoveObserver(this);
+		if (GetMDIChild()->GetPageIndex() != NULL)
+			GetMDIChild()->GetPageIndex()->RemoveObserver(this);
+		if (GetMDIChild()->HasBookmarksTree())
+			GetMDIChild()->GetBookmarksTree(false)->RemoveObserver(this);
+	}
 
 	KillTimer(1);
 	KillTimer(2);

@@ -2,7 +2,7 @@ WinDjView version history
 Copyright (C) 2004-2012 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 2.0 (2012-06-30):
+Changes in version 2.0.1 (2012-07-01):
 ! New toolbar icons and interface tweaks (contributed by
   Leonid Zhezherun).
 ! Native 64-bit executable for Windows 7/Vista 64-bit.
