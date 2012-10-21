@@ -795,8 +795,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,0,1,0
- PRODUCTVERSION 2,0,1,0
+ FILEVERSION 2,0,2,0
+ PRODUCTVERSION 2,0,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -814,12 +814,12 @@ BEGIN
             VALUE "Comments", "Русский"
             VALUE "CompanyName", "Andrew Zhezherun"
             VALUE "FileDescription", "WinDjView Localized Resources"
-            VALUE "FileVersion", "2.0.1"
+            VALUE "FileVersion", "2.0.2"
             VALUE "InternalName", "WinDjViewRU.dll"
             VALUE "LegalCopyright", "Copyright (C) 2004-2012 Andrew Zhezherun. All rights reserved."
             VALUE "OriginalFilename", "WinDjViewRU.dll"
             VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "2.0.1"
+            VALUE "ProductVersion", "2.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -1182,7 +1182,7 @@ BEGIN
     IDS_PAPER_SIZE          "%s x %s %s"
     IDS_VERSION_INFO        "WinDjView %s\n(C) Андрей Жежерун"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "2.0.1"
+    IDS_CURRENT_VERSION     "2.0.2"
     IDS_FATAL_ERROR         "Произошла серьёзная ошибка.\n\nОна могла быть вызвана повреждённым документом. После этой ошибки программа может работать\nнекорректно. Вам настоятельно рекомендуется перезапустить программу.\n\nНажмите OK, чтобы выйти из программы, или Cancel, чтобы вернуться к открытым документам."
     IDS_WARN_CLOSE_MULTIPLE "Выход из программы приведёт к закрытию %d документов. Продолжить?"
     IDS_OPENFILE            "Открыть"

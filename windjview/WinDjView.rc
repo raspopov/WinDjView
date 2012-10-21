@@ -792,8 +792,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,0,1,0
- PRODUCTVERSION 2,0,1,0
+ FILEVERSION 2,0,2,0
+ PRODUCTVERSION 2,0,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -810,12 +810,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Andrew Zhezherun"
             VALUE "FileDescription", "WinDjView"
-            VALUE "FileVersion", "2.0.1"
+            VALUE "FileVersion", "2.0.2"
             VALUE "InternalName", "WinDjView.exe"
             VALUE "LegalCopyright", "Copyright (C) 2004-2012 Andrew Zhezherun. All rights reserved."
             VALUE "OriginalFilename", "WinDjView.exe"
             VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "2.0.1"
+            VALUE "ProductVersion", "2.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -1179,7 +1179,7 @@ BEGIN
     IDS_PAPER_SIZE          "%s x %s %s"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "2.0.1"
+    IDS_CURRENT_VERSION     "2.0.2"
     IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
     IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure\nyou want to proceed?"
     IDS_OPENFILE            "Open"
