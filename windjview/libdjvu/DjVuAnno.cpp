@@ -426,8 +426,16 @@ GLParser::get_token(const char * & start)
      }
    else if (c=='-' || (c>='0' && c<='9'))
      {
-       return GLToken(GLToken::OBJECT,
-                      new GLObject(strtol(start, (char **) &start, 10)));
+//< Changed for WinDjView project
+//       return GLToken(GLToken::OBJECT,
+//				  new GLObject(strtol(start, (char **) &start, 10)));
+	   const char* prev_start = start;
+	   int number = strtol(start, (char **) &start, 10);
+	   if (start != prev_start)
+	     return GLToken(GLToken::OBJECT, new GLObject(number));
+
+	   // If could not parse the number, fall back to a string token
+//>
      }
    else if (c=='"')
      {
@@ -494,8 +502,10 @@ GLParser::get_token(const char * & start)
        return GLToken(GLToken::OBJECT, 
                       new GLObject(GLObject::STRING, str));
      }
-   else
-     {
+//< Changed for WinDjView project
+//   else
+//     {
+//>
        GUTF8String str;
        while(1)
 	 {
@@ -507,7 +517,9 @@ GLParser::get_token(const char * & start)
            str+=ch;
 	 }
        return GLToken(GLToken::OBJECT, new GLObject(GLObject::SYMBOL, str));
-     }
+//< Changed for WinDjView project
+//     }
+//>
 } 
 
 void
