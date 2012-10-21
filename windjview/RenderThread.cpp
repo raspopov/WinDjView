@@ -236,26 +236,37 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 	if (bThumbnail)
 		bScalePnmFixed = false;
 
-	// Results from PnmScaleFixed are comparable to libdjvu scaling,
-	// when zoom factor is greater than 0.5, so use default faster scaling
-	// in this case. Additionally, use the default scaling when requested
-	// image size is small, since quality does not matter at this
-	// scale. NOTE: this also deals with the special case of size (1, 1),
-	// which can force PnmScaleFixed into an infinite loop.
-	if ((szScaled.cx < 150 || szScaled.cy < 150)
-			|| (szScaled.cx >= szImage.cx / 2 || szScaled.cy >= szImage.cy / 2))
-		bScalePnmFixed = false;
-
-	// Disable PnmFixed scaling if we perform an integer reduction of the image.
-	for (int nReduction = 1; nReduction <= 15; ++nReduction)
+	if (displaySettings.bScaleSubpix)
 	{
-		if (szScaled.cx*nReduction > szImage.cx - nReduction
-				&& szScaled.cx*nReduction < szImage.cx + nReduction
-				&& szScaled.cy*nReduction > szImage.cy - nReduction
-				&& szScaled.cy*nReduction < szImage.cy + nReduction)
-		{
+		// Use subpixel scaling in most cases, unless scaled image size
+		// is too small or if we are upscaling.
+		if ((szScaled.cx < 100 || szScaled.cy < 100)
+				|| (szScaled.cx >= szImage.cx || szScaled.cy >= szImage.cy))
 			bScalePnmFixed = false;
-			break;
+	}
+	else
+	{
+		// Results from PnmScaleFixed are comparable to libdjvu scaling,
+		// when zoom factor is greater than 0.5, so use default faster scaling
+		// in this case. Additionally, use the default scaling when requested
+		// image size is small, since quality does not matter at this
+		// scale. NOTE: this also deals with the special case of size (1, 1),
+		// which can force PnmScaleFixed into an infinite loop.
+		if ((szScaled.cx < 100 || szScaled.cy < 100)
+				|| (szScaled.cx >= szImage.cx / 2 || szScaled.cy >= szImage.cy / 2))
+			bScalePnmFixed = false;
+
+		// Disable PnmFixed scaling if we perform an integer reduction of the image.
+		for (int nReduction = 1; nReduction <= 15; ++nReduction)
+		{
+			if (szScaled.cx*nReduction > szImage.cx - nReduction
+					&& szScaled.cx*nReduction < szImage.cx + nReduction
+					&& szScaled.cy*nReduction > szImage.cy - nReduction
+					&& szScaled.cy*nReduction < szImage.cy + nReduction)
+			{
+				bScalePnmFixed = false;
+				break;
+			}
 		}
 	}
 
