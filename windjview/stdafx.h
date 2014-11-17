@@ -26,20 +26,13 @@
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 #endif
 
-#define WINVER			0x0500
-#define _WIN32_WINNT	0x0400
-#define _WIN32_IE		0x0400
-
-#if (_MFC_VER > 0x0600)
-#define _WIN32_WINDOWS	0x0500
-#endif
+#define WINVER			0x0501
+#define _WIN32_WINNT	0x0501
+#define _WIN32_IE		0x0600
+#define _WIN32_WINDOWS	0x0501
 
 #ifdef NDEBUG
 #define NO_DEBUG
-#endif
-
-#if (_MSC_VER < 1200)
-#pragma warning(disable: 4200 4786)
 #endif
 
 // Only support UNICODE builds
@@ -50,10 +43,10 @@
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
 
-// Turn off warnings in VC++ 2005
+// Turn off warnings
 #define _CRT_SECURE_NO_DEPRECATE
 #define _CRT_NONSTDC_NO_DEPRECATE
-// Don's use secure standard library from VC++ 2005
+// Don's use secure standard library
 #define _SECURE_SCL 0
 
 #define _WIN32_DCOM
@@ -74,11 +67,7 @@
 #include <afxpriv.h>
 #include <shlwapi.h>
 
-#if (_MFC_VER > 0x0600)
 #include <../src/mfc/afximpl.h>
-#else
-#include <../src/afximpl.h>
-#endif
 
 #pragma warning(pop)
 
@@ -127,69 +116,7 @@ using namespace std;
 #define WM_SHOWPARENT (WM_APP + 10)
 #define WM_NOTIFY_NEW_VERSION (WM_APP + 11)
 
-#ifndef DWORD_PTR
-#define DWORD_PTR UINT_PTR
-#endif
-
-#ifndef IDC_HAND
-#define IDC_HAND MAKEINTRESOURCE(32649)
-#endif
-
-#ifndef COLOR_HOTLIGHT
-#define COLOR_HOTLIGHT 26
-#endif
-
-#ifndef BIF_USENEWUI
-#define BIF_USENEWUI 0x00000050
-#endif
-
-#ifndef BS_TYPEMASK
-#define BS_TYPEMASK 0x0000000F
-#endif
-
-#ifndef CSIDL_COMMON_APPDATA
-#define CSIDL_COMMON_APPDATA 0x00000023
-#define CSIDL_FLAG_CREATE 0x00008000
-#endif
-
-#ifndef WM_APPCOMMAND
-#define WM_APPCOMMAND                0x0319
-#define APPCOMMAND_BROWSER_BACKWARD       1
-#define APPCOMMAND_BROWSER_FORWARD        2
-#define FAPPCOMMAND_MASK             0xF000
-#define GET_APPCOMMAND_LPARAM(lParam) ((short)(HIWORD(lParam) & ~FAPPCOMMAND_MASK))
-#endif
-
-#ifndef BCM_FIRST
-#define BCM_FIRST 0x1600
-#endif
-
 #ifndef BCM_SETSHIELD
 #define BCM_SETSHIELD (BCM_FIRST + 0x000C)
 #endif
 
-#ifndef LVS_EX_DOUBLEBUFFER
-#define LVS_EX_DOUBLEBUFFER 0x00010000
-#endif
-
-#ifndef LVS_EX_LABELTIP
-#define LVS_EX_LABELTIP 0x00004000
-#endif
-
-#ifndef HDF_SORTUP
-#define HDF_SORTUP 0x0400
-#define HDF_SORTDOWN 0x0200
-#endif
-
-#ifndef WS_EX_LAYERED
-#define WS_EX_LAYERED 0x00080000
-#define LWA_COLORKEY 0x00000001
-#define LWA_ALPHA 0x00000002
-#define ULW_COLORKEY 0x00000001
-#define ULW_ALPHA 0x00000002
-#define ULW_OPAQUE 0x00000004
-#endif
-
-#ifndef TBSTYLE_EX_DOUBLEBUFFER
-#define TBSTYLE_EX_DOUBLEBUFFER 0x00000080
-#endif

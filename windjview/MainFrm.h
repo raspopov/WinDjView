@@ -51,6 +51,11 @@ public:
 	void ActivateDocument(CDocument* pDocument);
 	void UpdateToolbars();
 
+	int GetTabCount();
+	void RestoreOpenTabs();
+	void SaveOpenTabs();
+	void LoadActiveTab();
+
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
 	bool m_bDontActivate;
@@ -168,6 +173,8 @@ protected:
 	afx_msg void OnNewVersion();
 	afx_msg void OnNcDestroy();
 	afx_msg void OnUpdateDisable(CCmdUI* pCmdUI);
+	afx_msg void OnFileClose();
+	afx_msg void OnUpdateFileClose(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 };
 

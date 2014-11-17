@@ -232,34 +232,17 @@ BOOL CPrintDlg::OnInitDialog()
 	// Quick enum all printers
 	DWORD cbNeeded = 0, nPrinters = 0;
 
-	if (IsWinNT())
-	{
-		// use PRINTER_INFO_4
-		::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
-					NULL, 4, NULL, 0, &cbNeeded, &nPrinters);
+	// use PRINTER_INFO_4
+	::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
+				NULL, 4, NULL, 0, &cbNeeded, &nPrinters);
 
-		vector<BYTE> buf(cbNeeded + 1);
-		::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
-			NULL, 4, &buf[0], cbNeeded, &cbNeeded, &nPrinters);
+	vector<BYTE> buf(cbNeeded + 1);
+	::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
+		NULL, 4, &buf[0], cbNeeded, &cbNeeded, &nPrinters);
 
-		PRINTER_INFO_4* pPrinter = reinterpret_cast<PRINTER_INFO_4*>(&buf[0]);
-		for (size_t i = 0; i < nPrinters; ++i, ++pPrinter)
-			m_cboPrinter.AddString(pPrinter->pPrinterName);
-	}
-	else
-	{
-		// use PRINTER_INFO_5
-		::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
-				NULL, 5, NULL, 0, &cbNeeded, &nPrinters);
-
-		vector<BYTE> buf(cbNeeded + 1);
-		::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
-			NULL, 5, &buf[0], cbNeeded, &cbNeeded, &nPrinters);
-
-		PRINTER_INFO_5* pPrinter = reinterpret_cast<PRINTER_INFO_5*>(&buf[0]);
-		for (size_t i = 0; i < nPrinters; ++i, ++pPrinter)
-			m_cboPrinter.AddString(pPrinter->pPrinterName);
-	}
+	PRINTER_INFO_4* pPrinter = reinterpret_cast<PRINTER_INFO_4*>(&buf[0]);
+	for (size_t i = 0; i < nPrinters; ++i, ++pPrinter)
+		m_cboPrinter.AddString(pPrinter->pPrinterName);
 
 	for (int i = 0; i < m_cboPrinter.GetCount(); ++i)
 	{

@@ -18,13 +18,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -125,7 +123,7 @@ IDR_DICT_BAR_LEGACY     BITMAP                  "res\\dictbar_legacy.bmp"
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR  16, 16
+IDR_MAINFRAME TOOLBAR 16, 16
 BEGIN
     BUTTON      ID_FILE_OPEN
     SEPARATOR
@@ -162,7 +160,7 @@ BEGIN
     BUTTON      ID_ROTATE_RIGHT
 END
 
-IDR_DICT_BAR TOOLBAR  16, 15
+IDR_DICT_BAR TOOLBAR 16, 15
 BEGIN
     BUTTON      ID_DICTIONARY_LOOKUP
     BUTTON      ID_DICTIONARY_PREV
@@ -176,11 +174,13 @@ END
 // Menu
 //
 
-IDR_MAINFRAME MENU 
+IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Close\tCtrl+W",              ID_FILE_CLOSE
+        MENUITEM SEPARATOR
         MENUITEM "&Settings...\tCtrl+,",        ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
@@ -197,6 +197,12 @@ BEGIN
             MENUITEM "&English",                    ID_LANGUAGE_FIRST
         END
     END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&Fullscreen\tCtrl+L",         ID_VIEW_FULLSCREEN
+        MENUITEM SEPARATOR
+        MENUITEM "Activate this document",      ID_WINDOW_ACTIVATE_FIRST
+    END
     POPUP "&Help"
     BEGIN
         MENUITEM "&Check for updates...",       ID_CHECK_FOR_UPDATE
@@ -204,7 +210,7 @@ BEGIN
     END
 END
 
-IDR_DjVuTYPE MENU 
+IDR_DjVuTYPE MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -220,7 +226,7 @@ BEGIN
         MENUITEM "&Document Properties...",     ID_FILE_DOC_PROPERTIES
         MENUITEM "&Settings...\tCtrl+,",        ID_FILE_SETTINGS
         MENUITEM SEPARATOR
-        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1
         MENUITEM SEPARATOR
         MENUITEM "E&xit\tCtrl+Q",               ID_APP_EXIT
     END
@@ -325,7 +331,7 @@ BEGIN
     END
 END
 
-IDR_POPUP MENU 
+IDR_POPUP MENU
 BEGIN
     POPUP "Page"
     BEGIN
@@ -378,7 +384,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS 
+IDR_MAINFRAME ACCELERATORS
 BEGIN
     VK_F1,          ID_APP_ABOUT,           VIRTKEY, NOINVERT
     "Q",            ID_APP_EXIT,            VIRTKEY, CONTROL, NOINVERT
@@ -460,8 +466,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2004-2012 Andrew Zhezherun",IDC_STATIC,40,17,149,8
-    LTEXT           "Copyright (C) 2012 Leonid Zhezherun",IDC_STATIC,40,27,149,8
+    LTEXT           "Copyright (C) 2004-2014 Andrew Zhezherun",IDC_STATIC,40,17,149,8
+    LTEXT           "Copyright (C) 2012-2014 Leonid Zhezherun",IDC_STATIC,40,27,149,8
     DEFPUSHBUTTON   "Close",IDOK,194,7,50,14,WS_GROUP
     LTEXT           "Project homepage:",IDC_STATIC,40,45,64,8
     LTEXT           "DjVuLibre homepage:",IDC_STATIC,40,55,72,8
@@ -569,8 +575,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     CONTROL         "&Open each document in its own top-level window",IDC_TOP_LEVEL_DOCUMENTS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,175,10
-    CONTROL         "&Warn when closing multiple documents",IDC_WARN_CLOSE_MULTIPLE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,139,10
+    CONTROL         "&Restore last open tabs on startup",IDC_RESTORE_TABS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,124,10
     CONTROL         "Hi&de tabs if only one document is open",IDC_HIDE_SINGLE_TAB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,139,10
     CONTROL         "Generate &thumbnails for all pages in background",IDC_GEN_ALL_THUMBNAILS,
@@ -792,8 +798,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,0,2,0
- PRODUCTVERSION 2,0,2,0
+ FILEVERSION 2,1,0,0
+ PRODUCTVERSION 2,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -810,12 +816,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Andrew Zhezherun"
             VALUE "FileDescription", "WinDjView"
-            VALUE "FileVersion", "2.0.2"
+            VALUE "FileVersion", "2.1"
             VALUE "InternalName", "WinDjView.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2012 Andrew Zhezherun. All rights reserved."
+            VALUE "LegalCopyright", "Copyright (C) 2004-2014 Andrew Zhezherun. All rights reserved."
             VALUE "OriginalFilename", "WinDjView.exe"
             VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "2.0.2"
+            VALUE "ProductVersion", "2.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -831,7 +837,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -969,13 +975,13 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "WinDjView"
     IDR_DjVuTYPE            "\nDjVu\nDjVu\nDjVu Documents (*.djvu;*.djv)\n.djvu;.djv\nDjVu.Document\nDjVu Document"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_BOOKMARK_MORE       "Book&mark >>"
     IDS_BOOKMARK_LESS       "Book&mark <<"
@@ -998,7 +1004,7 @@ BEGIN
     IDS_INSTALLATION_SUCCEEDED "Dictionary was installed successfully."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_ERROR_PARSING_RANGE "Printing range is invalid."
     IDS_PATH_TOO_LONG       "Failed to open document: the path is too long.\n%s"
@@ -1018,12 +1024,12 @@ BEGIN
     IDS_DOC_FILES_COLUMNS   "Page\nFile\nName\nType\nSize"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_DICT_BAR            "Di&ctionary Bar"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_CONTENTS_TAB        "Contents"
     IDS_MAKE_DEFAULT_FAILED "An error occurred while trying to make WinDjView the default viewer.\nYour user account may not have the required permissions."
@@ -1034,7 +1040,7 @@ BEGIN
     IDS_DJVU_FILTER         "DjVu Documents (*.djvu)|*.djvu|All Files (*.*)|*.*||"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_CANNOT_SAVE_TO_ORIG "Cannot save the document to its original location"
     IDS_SAVE_ERROR          "An error occurred while saving the document"
@@ -1056,13 +1062,13 @@ BEGIN
     IDS_SEARCHING_PAGE      "Searching page %d of %d"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_APP_TITLE       "WinDjView"
     AFX_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing document\nOpen"
@@ -1076,13 +1082,13 @@ BEGIN
     ID_FILE_SAVE_COPY_AS    "Save a copy of the active document with a new name\nSave Copy As"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quit the application\nExit"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_MRU_FILE1       "Open this document"
     ID_FILE_MRU_FILE2       "Open this document"
@@ -1102,13 +1108,13 @@ BEGIN
     ID_FILE_MRU_FILE16      "Open this document"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
     ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
     ID_WINDOW_CASCADE       "Arrange windows so they overlap\nCascade Windows"
@@ -1117,7 +1123,7 @@ BEGIN
     ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_CLEAR           "Erase the selection\nErase"
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
@@ -1132,13 +1138,13 @@ BEGIN
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle Toolbar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle Status Bar"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCSIZE          "Change the window size"
     AFX_IDS_SCMOVE          "Change the window position"
@@ -1149,14 +1155,14 @@ BEGIN
     AFX_IDS_SCCLOSE         "Close the active window"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCRESTORE       "Restore the window to normal size"
     AFX_IDS_SCTASKLIST      "Activate Task List"
     AFX_IDS_MDICHILD        "Activate this window"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_LAYOUT_CONTINUOUS    "Toggle continuous page layout\nContinuous Layout"
     ID_LAYOUT_FACING        "Show facing pages side-by-side\nFacing Pages"
@@ -1172,16 +1178,15 @@ BEGIN
     ID_INDICATOR_MODE       "  Display Mode  "
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_NOT_VALID_DOCUMENT  "\n\nThis is not a valid DjVu document."
     IDS_PRINTING_FAILED     "Failed to print the document. There could be a problem\nwith the printer or with the printer driver."
     IDS_PAPER_SIZE          "%s x %s %s"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "2.0.2"
+    IDS_CURRENT_VERSION     "2.1"
     IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
-    IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure\nyou want to proceed?"
     IDS_OPENFILE            "Open"
     IDS_ALLFILTER           "All Files (*.*)"
     IDS_SETTINGS            "Settings"
@@ -1191,7 +1196,7 @@ BEGIN
     IDS_BOOKMARKS_TAB       "Bookmarks"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_ZOOM_STRETCH         "Stretch page to the window"
     ID_ZOOM_CUSTOM          "Specify custom zoom"
@@ -1208,7 +1213,7 @@ BEGIN
     ID_VIEW_BACK            "Go to previous view\nPrevious View"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_FORWARD         "Go to next view\nNext View"
     ID_WINDOW_ACTIVATE_FIRST "Activate this document"
@@ -1226,7 +1231,7 @@ BEGIN
     ID_WINDOW_ACTIVATE_12   "Activate this document"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_WINDOW_ACTIVATE_13   "Activate this document"
     ID_WINDOW_ACTIVATE_14   "Activate this document"
@@ -1246,12 +1251,12 @@ BEGIN
     ID_DISPLAY_FOREGROUND   "Display document foreground"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_NEXTPAGE        "Go to next page\nNext Page"
     ID_VIEW_PREVIOUSPAGE    "Go to previous page\nPrevious Page"
@@ -1266,13 +1271,13 @@ BEGIN
     ID_ZOOM_ACTUALSIZE      "Display page in actual size"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDC_PAGENUM             "Select page number\nPage"
     IDC_ZOOM                "Select zoom level\nZoom"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDC_LOOKUP              "Lookup the word in currently selected dictionary\nLookup Text"
     IDC_LOOKUP_LABEL        "Lookup:"
@@ -1282,7 +1287,7 @@ BEGIN
     IDC_LANGUAGE_LIST_LABEL "Language:"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_NUM_OCCURRENCES     "%d occurrences found"
     IDS_EXPORT_TEXT         "Export Text"
@@ -1302,7 +1307,7 @@ BEGIN
     IDS_STATUS_FOREGROUND   "  Foreground  "
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STATUS_BACKGROUND   "  Background  "
     IDS_PRINT_ALL_PAGES     "All Pages In Range"
@@ -1322,13 +1327,13 @@ BEGIN
     IDS_TOOLTIP_HIDE        "Hide"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_FULLSCREEN      "Open the document in fullscreen mode\nFullscreen"
     ID_VIEW_GOTO_PAGE       "Specify page number"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_BOOKMARK_DELETE      "Delete the selected bookmark"
     ID_BOOKMARK_RENAME      "Rename the selected bookmark"
@@ -1346,7 +1351,7 @@ BEGIN
     ID_BOOKMARK_MOVEDOWN    "Move the selected bookmark down"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_THUMBNAILS_ENLARGE   "Increase the size of thumbnails"
     ID_THUMBNAILS_REDUCE    "Decrease the size of thumbnails"
@@ -1364,7 +1369,7 @@ BEGIN
     ID_THUMBNAILS_EXPORT    "Export selected pages to image files"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_BOOKMARKS_FILTER    "WinDjView Bookmarks (*.bookmarks)|*.bookmarks|All Files (*.*)|*.*||"
     IDS_EXPORT_BOOKMARKS    "Export Bookmarks"
@@ -1386,7 +1391,7 @@ BEGIN
     IDS_CHECK_CLOSE_MULTIPLE "Always warn when closing multiple documents"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_CANNOT_WRITE_TO_FILE "Could not write to file ""%s""."
     IDS_REGISTRY_FILTER     "Registration Files (*.reg)|*.reg|All Files (*.*)|*.*||"
@@ -1402,7 +1407,7 @@ BEGIN
     IDS_EXPORT_ERRORS       "One or more pages could not be exported"
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

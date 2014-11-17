@@ -57,7 +57,6 @@ CAppSettings::CAppSettings()
 
 	bWarnNotDefaultViewer = true;
 	bTopLevelDocs = false;
-	bWarnCloseMultiple = true;
 	bHideSingleTab = false;
 	bGenAllThumbnails = true;
 	bFullscreenClicks = true;
@@ -67,6 +66,8 @@ CAppSettings::CAppSettings()
 	bCloseOnEsc = false;
 	bWrapLongBookmarks = true;
 	bRestoreView = true;
+	nStartupTab = 0;
+	bRestoreTabs = true;
 
 	bCheckUpdates = true;
 	nLastUpdateTime = 0;

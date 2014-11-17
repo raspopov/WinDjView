@@ -43,6 +43,9 @@ public:
 	CNavPaneWnd* GetNavPane();
 	CWnd* GetContent();
 
+	bool IsPlaceholder();
+	void SetError(const CString& strPathName);
+
 	void HideNavPane(bool bHide = true);
 	bool IsNavPaneHidden() const { return m_bNavHidden; }
 	void CollapseNavPane(bool bCollapse = true);
@@ -62,6 +65,8 @@ protected:
 	CNavPaneWnd m_navPane;
 	CWnd* m_pContentWnd;
 	CDjVuDoc* m_pDocument;
+	bool m_bError;
+	CString m_strPathName;
 
 	CThumbnailsView* m_pThumbnailsView;
 	CBookmarksView* m_pContentsTree;
@@ -69,6 +74,7 @@ protected:
 	CSearchResultsView* m_pResultsView;
 	CPageIndexWnd* m_pPageIndexWnd;
 
+	CFont m_font;
 	CRect m_rcNavPane;
 	CRect m_rcContent;
 	CRect m_rcSplitter;
@@ -82,6 +88,7 @@ protected:
 
 	void RecalcLayout();
 	void StopDragging();
+	void UpdateMetrics();
 
 	virtual void PostNcDestroy();
 
@@ -100,5 +107,6 @@ protected:
 	afx_msg void OnCollapseNav();
 	afx_msg LRESULT OnClickedNavTab(WPARAM wparam, LPARAM lParam);
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
 	DECLARE_MESSAGE_MAP()
 };

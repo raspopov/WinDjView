@@ -48,18 +48,7 @@ CMyFileDialog::CMyFileDialog(bool bOpenFileDialog, LPCTSTR lpszDefExt,
 	ZeroMemory(m_szFileName, sizeof(m_szFileName));
 	ZeroMemory(m_szFileTitle, sizeof(m_szFileTitle));
 
-	if (IsWin2kOrLater())
-	{
-		m_ofn.lStructSize = sizeof(m_ofn);
-	}
-	else
-	{
-#if defined(OPENFILENAME_SIZE_VERSION_400)
-		m_ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-#else
-		m_ofn.lStructSize = sizeof(OPENFILENAME);
-#endif
-	}
+	m_ofn.lStructSize = sizeof(m_ofn);
 
 	m_bOpenFileDialog = bOpenFileDialog;
 	m_nIDHelp = bOpenFileDialog ? AFX_IDD_FILEOPEN : AFX_IDD_FILESAVE;

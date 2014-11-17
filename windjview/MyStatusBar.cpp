@@ -37,20 +37,20 @@ CMyStatusBar::~CMyStatusBar()
 
 
 BEGIN_MESSAGE_MAP(CMyStatusBar, CStatusBar)
-	ON_MESSAGE(WM_SETTEXT, OnSetText)
+	ON_WM_SETTEXT()
 END_MESSAGE_MAP()
 
 
 // CMyStatusBar message handlers
 
-LRESULT CMyStatusBar::OnSetText(WPARAM wParam, LPARAM lParam)
+int CMyStatusBar::OnSetText(LPCTSTR lpszText)
 {
 	ASSERT_VALID(this);
 	ASSERT(::IsWindow(m_hWnd));
 
 	m_strHilightMsg = _T("");
-	LRESULT result = CStatusBar::OnSetText(wParam, lParam);
-	GetStatusBarCtrl().SetText((LPCTSTR)lParam, 0, SBT_NOBORDERS);
+	int result = CStatusBar::OnSetText(lpszText);
+	GetStatusBarCtrl().SetText(lpszText, 0, SBT_NOBORDERS);
 
 	return result;
 }

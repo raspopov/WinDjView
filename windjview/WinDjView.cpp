@@ -77,7 +77,6 @@ const TCHAR* s_pszThumbnailSize = _T("thumbnail-size");
 const TCHAR* s_pszGlobalSection = _T("Settings");
 const TCHAR* s_pszWarnNotDefaultViewer = _T("warn-not-default-viewer");
 const TCHAR* s_pszTopLevelDocs = _T("top-level-docs");
-const TCHAR* s_pszWarnCloseMultiple = _T("warn-close-multiple");
 const TCHAR* s_pszHideSingleTab = _T("hide-single-tab");
 const TCHAR* s_pszGenAllThumbnails = _T("gen-all-thumbs");
 const TCHAR* s_pszFullscreenClicks = _T("fullscreen-clicks");
@@ -97,6 +96,12 @@ const TCHAR* s_pszDictChoice = _T("dict-choice");
 const TCHAR* s_pszCheckUpdates = _T("check-updates");
 const TCHAR* s_pszLastUpdateLow = _T("last-update-l");
 const TCHAR* s_pszLastUpdateHigh = _T("last-update-h");
+
+const TCHAR* s_pszTabsSection = _T("Tabs");
+const TCHAR* s_pszRestoreTabs = _T("restore-tabs");
+const TCHAR* s_pszStartupTab = _T("startup-tab");
+const TCHAR* s_pszTabCount = _T("tab-count");
+const TCHAR* s_pszTabPrefix = _T("tab");
 
 const TCHAR* s_pszAnnotationsSection = _T("Annotations");
 const TCHAR* s_pszHideInactiveBorder = _T("hide-inactive");
@@ -136,9 +141,6 @@ const TCHAR* s_pszTitle = _T("title");
 const TCHAR* s_pszLangFrom = _T("lang-from");
 const TCHAR* s_pszLangTo = _T("lang-to");
 
-const TCHAR* s_pszTabsSection = _T("Tabs");
-const TCHAR* s_pszTabPrefix = _T("File");
-
 
 // CDjViewApp
 
@@ -158,7 +160,8 @@ END_MESSAGE_MAP()
 // CDjViewApp construction
 
 CDjViewApp::CDjViewApp()
-	: m_bInitialized(false), m_bTopLevelDocs(false), m_pDjVuTemplate(NULL), m_pFindDlg(NULL),
+	: m_bInitialized(false), m_bClosing(false), m_bTopLevelDocs(false),
+	  m_pDjVuTemplate(NULL), m_pFindDlg(NULL),
 	  m_nThreadCount(0), m_hHook(NULL), m_pPendingSource(NULL), m_bShiftPressed(false),
 	  m_bControlPressed(false), m_nLangIndex(0), m_nTimerID(0),
 	  m_bOnlyRegisterTypes(false), m_nExitCode(0), m_hUpdateThread(NULL)
@@ -333,6 +336,9 @@ CMainFrame* CDjViewApp::CreateMainFrame(bool bAppStartup, int nCmdShow)
 	// Parse command line for standard shell commands, DDE, file open
 	if (bAppStartup)
 	{
+		if (!m_appSettings.bTopLevelDocs && m_appSettings.bRestoreTabs)
+			pMainFrame->RestoreOpenTabs();
+
 		CCommandLineInfo cmdInfo;
 		ParseCommandLine(cmdInfo);
 		if (cmdInfo.m_nShellCommand == CCommandLineInfo::FileNew)
@@ -346,11 +352,11 @@ CMainFrame* CDjViewApp::CreateMainFrame(bool bAppStartup, int nCmdShow)
 			delete pMainFrame;
 			return NULL;
 		}
-	}
 
-	// The main window has been initialized, so show and update it
-	if (bAppStartup)
-	{
+		// The main window has been initialized, so show and update it
+		if (!m_appSettings.bTopLevelDocs && m_appSettings.bRestoreTabs)
+			pMainFrame->LoadActiveTab();
+
 		if (m_appSettings.bWindowMaximized && (nCmdShow == -1 || nCmdShow == SW_SHOWNORMAL || nCmdShow == SW_SHOW))
 			nCmdShow = SW_SHOWMAXIMIZED;
 
@@ -421,6 +427,11 @@ void CDjViewApp::ThreadTerminated()
 {
 	if (InterlockedDecrement(&m_nThreadCount) <= 0)
 		m_terminated.SetEvent();
+}
+
+CMyDocTemplate* CDjViewApp::GetDocumentTemplate()
+{
+	return m_pDjVuTemplate;
 }
 
 // CAboutDlg dialog used for App About
@@ -637,7 +648,6 @@ void CDjViewApp::LoadSettings()
 
 	m_appSettings.bWarnNotDefaultViewer = !!GetProfileInt(s_pszGlobalSection, s_pszWarnNotDefaultViewer, m_appSettings.bWarnNotDefaultViewer);
 	m_appSettings.bTopLevelDocs = !!GetProfileInt(s_pszGlobalSection, s_pszTopLevelDocs, m_appSettings.bTopLevelDocs);
-	m_appSettings.bWarnCloseMultiple = !!GetProfileInt(s_pszGlobalSection, s_pszWarnCloseMultiple, m_appSettings.bWarnCloseMultiple);
 	m_appSettings.bHideSingleTab = !!GetProfileInt(s_pszGlobalSection, s_pszHideSingleTab, m_appSettings.bHideSingleTab);
 	m_appSettings.bGenAllThumbnails = !!GetProfileInt(s_pszGlobalSection, s_pszGenAllThumbnails, m_appSettings.bGenAllThumbnails);
 	m_appSettings.bFullscreenClicks = !!GetProfileInt(s_pszGlobalSection, s_pszFullscreenClicks, m_appSettings.bFullscreenClicks);
@@ -659,6 +669,18 @@ void CDjViewApp::LoadSettings()
 	UINT nLow = GetProfileInt(s_pszGlobalSection, s_pszLastUpdateLow, static_cast<int>(m_appSettings.nLastUpdateTime & 0xFFFFFFFF));
 	UINT nHigh = GetProfileInt(s_pszGlobalSection, s_pszLastUpdateHigh, static_cast<int>(m_appSettings.nLastUpdateTime >> 32));
 	m_appSettings.nLastUpdateTime = (static_cast<__int64>(nHigh) << 32) | static_cast<__int64>(nLow);
+
+	m_appSettings.bRestoreTabs = !!GetProfileInt(s_pszTabsSection, s_pszRestoreTabs, m_appSettings.bRestoreTabs);
+	m_appSettings.nStartupTab = GetProfileInt(s_pszTabsSection, s_pszStartupTab, 0);
+	int nTabCount = GetProfileInt(s_pszTabsSection, s_pszTabCount, 0);
+	m_appSettings.openTabs.clear();
+	for (int nTab = 0; nTab < nTabCount; ++nTab)
+	{
+		CString strPathName = GetProfileString(s_pszTabsSection,
+			s_pszTabPrefix + FormatString(_T("%d"), nTab), _T(""));
+		if (!strPathName.IsEmpty())
+			m_appSettings.openTabs.push_back(strPathName);
+	}
 
 	m_annoTemplate.bHideInactiveBorder = !!GetProfileInt(s_pszAnnotationsSection, s_pszHideInactiveBorder, m_annoTemplate.bHideInactiveBorder);
 	m_annoTemplate.nBorderType = GetProfileInt(s_pszAnnotationsSection, s_pszBorderType, m_annoTemplate.nBorderType);
@@ -810,7 +832,6 @@ void CDjViewApp::SaveSettings()
 
 	WriteProfileInt(s_pszGlobalSection, s_pszWarnNotDefaultViewer, m_appSettings.bWarnNotDefaultViewer);
 	WriteProfileInt(s_pszGlobalSection, s_pszTopLevelDocs, m_appSettings.bTopLevelDocs);
-	WriteProfileInt(s_pszGlobalSection, s_pszWarnCloseMultiple, m_appSettings.bWarnCloseMultiple);
 	WriteProfileInt(s_pszGlobalSection, s_pszHideSingleTab, m_appSettings.bHideSingleTab);
 	WriteProfileInt(s_pszGlobalSection, s_pszGenAllThumbnails, m_appSettings.bGenAllThumbnails);
 	WriteProfileInt(s_pszGlobalSection, s_pszFullscreenClicks, m_appSettings.bFullscreenClicks);
@@ -831,6 +852,15 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszGlobalSection, s_pszCheckUpdates, m_appSettings.bCheckUpdates);
 	WriteProfileInt(s_pszGlobalSection, s_pszLastUpdateLow, static_cast<int>(m_appSettings.nLastUpdateTime & 0xFFFFFFFF));
 	WriteProfileInt(s_pszGlobalSection, s_pszLastUpdateHigh, static_cast<int>(m_appSettings.nLastUpdateTime >> 32));
+
+	WriteProfileInt(s_pszTabsSection, s_pszRestoreTabs, m_appSettings.bRestoreTabs);
+	WriteProfileInt(s_pszTabsSection, s_pszStartupTab, m_appSettings.nStartupTab);
+	WriteProfileInt(s_pszTabsSection, s_pszTabCount, (int)m_appSettings.openTabs.size());
+	for (int nTab = 0; nTab < (int)m_appSettings.openTabs.size(); ++nTab)
+	{
+		WriteProfileString(s_pszTabsSection,
+			s_pszTabPrefix + FormatString(_T("%d"), nTab), m_appSettings.openTabs[nTab]);
+	}
 
 	WriteProfileInt(s_pszAnnotationsSection, s_pszHideInactiveBorder, m_annoTemplate.bHideInactiveBorder);
 	WriteProfileInt(s_pszAnnotationsSection, s_pszBorderType, m_annoTemplate.nBorderType);
@@ -1162,9 +1192,11 @@ bool CDjViewApp::RegisterShellFileTypes(bool bCheckOnly)
 {
 	bool bSuccess = true;
 	bool bChanged = false;
-	CString strPathName, strTemp;
+	CString strPathName, strRawPathName, strTemp;
 
-	GetModuleFileName(m_hInstance, strPathName.GetBuffer(MAX_PATH), MAX_PATH);
+	GetModuleFileName(m_hInstance, strRawPathName.GetBuffer(MAX_PATH), MAX_PATH);
+	strRawPathName.ReleaseBuffer();
+	PathCanonicalize(strPathName.GetBuffer(MAX_PATH), strRawPathName);
 	strPathName.ReleaseBuffer();
 
 	POSITION pos = GetFirstDocTemplatePosition();
@@ -1458,7 +1490,7 @@ void CDjViewApp::OnFileSettings()
 		m_appSettings.bCheckUpdates = !!dlg.m_pageAdvanced.m_bCheckUpdates;
 
 		m_appSettings.bTopLevelDocs = !!dlg.m_pageGeneral.m_bTopLevelDocs;
-		m_appSettings.bWarnCloseMultiple = !!dlg.m_pageGeneral.m_bWarnCloseMultiple;
+		m_appSettings.bRestoreTabs = !!dlg.m_pageGeneral.m_bRestoreTabs;
 		m_appSettings.bHideSingleTab = !!dlg.m_pageGeneral.m_bHideSingleTab;
 		m_appSettings.bGenAllThumbnails = !!dlg.m_pageGeneral.m_bGenAllThumbnails;
 		m_appSettings.bInvertWheelZoom = !!dlg.m_pageGeneral.m_bInvertWheelZoom;
@@ -2345,13 +2377,8 @@ void CDjViewApp::Lookup(const CString& strLookup, DictionaryInfo* pInfo)
 
 void CDjViewApp::OnAppExit()
 {
-	if (m_bTopLevelDocs && !SaveAllModified())
-		return;
-
-	// Close every main frame. This will work in both MDI and top-level mode.
-	size_t nWindows = m_frames.size();
-	for (size_t i = 0; i < nWindows; ++i)
-		m_frames.front()->SendMessage(WM_CLOSE);
+	// Close current main frame. This will work in both MDI and top-level mode.
+	m_pMainWnd->SendMessage(WM_CLOSE);
 }
 
 int CDjViewApp::GetDocumentCount()
@@ -2365,18 +2392,10 @@ int CDjViewApp::GetDocumentCount()
 
 BOOL CDjViewApp::SaveAllModified()
 {
-	if (m_appSettings.bWarnCloseMultiple)
+	if (!m_appSettings.bTopLevelDocs && m_appSettings.bRestoreTabs)
 	{
-		int nOpenDocuments = GetDocumentCount();
-		if (nOpenDocuments > 1)
-		{
-			CDjViewApp::MessageBoxOptions mbo;
-			mbo.strCheckBox = LoadString(IDS_CHECK_CLOSE_MULTIPLE);
-			mbo.pCheckValue = &m_appSettings.bWarnCloseMultiple;
-			if (DoMessageBox(FormatString(IDS_WARN_CLOSE_MULTIPLE, nOpenDocuments),
-					MB_ICONEXCLAMATION | MB_YESNO, 0, mbo) != IDYES)
-				return false;
-		}
+		CMainFrame* pMainFrame = (CMainFrame*)m_pMainWnd;
+		pMainFrame->SaveOpenTabs();
 	}
 
 	return true;

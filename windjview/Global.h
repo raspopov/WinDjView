@@ -71,9 +71,6 @@ protected:
 	set<Observer*> m_observers;
 };
 
-bool IsWinNT();
-bool IsWin2kOrLater();
-bool IsWinXPOrLater();
 bool IsWinVistaOrLater();
 
 void MakeWString(const CString& strText, wstring& result);
@@ -230,10 +227,11 @@ struct KeyStateChanged : public Message
 
 struct TabMsg : public Message
 {
-	TabMsg(int msg, CWnd* pWnd_)
-		: Message(msg), pWnd(pWnd_) {}
+	TabMsg(int msg, CWnd* pWnd_, int nTab_)
+		: Message(msg), pWnd(pWnd_), nTab(nTab_) {}
 
 	CWnd* pWnd;
+	int nTab;
 };
 
 struct PageRangeMsg : public Message

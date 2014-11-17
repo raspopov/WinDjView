@@ -115,6 +115,11 @@ void CMyDocTemplate::InitialUpdateMDIChild(CWnd* pMDIChild, CDocument* pDoc, BOO
 	pMainFrame->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_UPDATENOW | RDW_ALLCHILDREN);
 }
 
+CWnd* CMyDocTemplate::CreateEmptyMDIChild()
+{
+	return CreateNewMDIChild(NULL);
+}
+
 CWnd* CMyDocTemplate::CreateNewMDIChild(CDocument* pDoc)
 {
 	CMainFrame* pMainFrame = (CMainFrame*) theApp.m_pMainWnd;

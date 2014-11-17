@@ -222,6 +222,7 @@
 #define IDC_GEN_ALL_THUMBNAILS          1038
 #define IDC_STATIC_LINK                 1039
 #define IDC_WARN_CLOSE_MULTIPLE         1040
+#define IDC_RESTORE_TABS                1040
 #define IDC_STATIC_LIB_LINK             1041
 #define IDC_FULLSCREEN_HIDESCROLL       1042
 #define IDC_MAKE_DEFAULT                1043

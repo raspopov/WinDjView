@@ -413,12 +413,25 @@ void CTabbedMDIWnd::UpdateScrollState()
 	}
 }
 
-int CTabbedMDIWnd::AddTab(CWnd* pWnd, const CString& strName)
+int CTabbedMDIWnd::AddTab(CWnd* pWnd, const CString& strName, const CString& strPathName)
 {
-	Tab tab;
-	tab.pWnd = pWnd;
-	tab.strName = strName;
-	m_tabs.push_back(tab);
+	int nTab = FindTab(strPathName);
+	if (nTab != -1)
+	{
+		CWnd* pWnd = m_tabs[nTab].pWnd;
+		pWnd->DestroyWindow();
+		m_tabs[nTab].bReactivate = true;
+	}
+	else
+	{
+		m_tabs.push_back(Tab());
+		nTab = (int)m_tabs.size() - 1;
+		m_tabs[nTab].bReactivate = false;
+	}
+
+	m_tabs[nTab].pWnd = pWnd;
+	m_tabs[nTab].strName = strName;
+	m_tabs[nTab].strPathName = strPathName;
 
 	UpdateTabRects();
 	UpdateScrollState();
@@ -432,7 +445,7 @@ int CTabbedMDIWnd::AddTab(CWnd* pWnd, const CString& strName)
 
 	InvalidateTabs();
 
-	return (int)m_tabs.size() - 1;
+	return nTab;
 }
 
 void CTabbedMDIWnd::CloseTab(CWnd* pWnd)
@@ -444,6 +457,32 @@ void CTabbedMDIWnd::CloseTab(CWnd* pWnd)
 	CloseTab(nTab);
 }
 
+int CTabbedMDIWnd::FindTab(const CString& strPathName)
+{
+	for (int nTab = 0; nTab < (int)m_tabs.size(); ++nTab)
+	{
+		if (AfxComparePath(strPathName, m_tabs[nTab].strPathName))
+			return nTab;
+	}
+	return -1;
+}
+
+CString CTabbedMDIWnd::GetTabName(int nTab) const
+{
+	if (nTab < 0 || nTab >= GetTabCount())
+		return _T("");
+
+	return m_tabs[nTab].strName;
+}
+
+CString CTabbedMDIWnd::GetTabPathName(int nTab) const
+{
+	if (nTab < 0 || nTab >= GetTabCount())
+		return _T("");
+
+	return m_tabs[nTab].strPathName;
+}
+
 void CTabbedMDIWnd::CloseTab(int nTab, bool bRedraw)
 {
 	bool bWasActive = false;
@@ -451,7 +490,7 @@ void CTabbedMDIWnd::CloseTab(int nTab, bool bRedraw)
 	{
 		bWasActive = true;
 		int nNewActive = (m_nActiveTab == m_tabs.size() - 1 ? m_nActiveTab - 1 : m_nActiveTab + 1);
-		ActivateTab(nNewActive, false);
+		ActivateTabImpl(nNewActive, false);
 	}
 
 	CWnd* pWnd = m_tabs[nTab].pWnd;
@@ -482,7 +521,7 @@ void CTabbedMDIWnd::CloseTab(int nTab, bool bRedraw)
 	else if (m_nMButtonPressedTab > nTab)
 		--m_nMButtonPressedTab;
 
-	UpdateObservers(TabMsg(TAB_CLOSED, pWnd));
+	UpdateObservers(TabMsg(TAB_CLOSED, pWnd, -1));
 	pWnd->DestroyWindow();
 
 	if (bRedraw)
@@ -601,7 +640,7 @@ void CTabbedMDIWnd::OnLButtonDown(UINT nFlags, CPoint point)
 	}
 
 	if (nTabClicked != -1)
-		ActivateTab(nTabClicked);
+		ActivateTabImpl(nTabClicked);
 
 	if (m_bShowArrows)
 	{
@@ -783,7 +822,7 @@ void CTabbedMDIWnd::OnContextMenu(CWnd* pWnd, CPoint pos)
 	else if (nID == ID_TAB_CLOSE_OTHER && m_tabs.size() > 1)
 	{
 		if (nTab != m_nActiveTab)
-			ActivateTab(nTab, false);
+			ActivateTabImpl(nTab, false);
 
 		for (int i = (int)m_tabs.size() - 1; i >= 0; --i)
 		{
@@ -879,12 +918,18 @@ int CTabbedMDIWnd::TabFromPoint(const CPoint& point)
 void CTabbedMDIWnd::ActivateTab(CWnd* pWnd)
 {
 	int nTab = TabFromFrame(pWnd);
-	ActivateTab(nTab);
+	ActivateTabImpl(nTab);
 }
 
-void CTabbedMDIWnd::ActivateTab(int nTab, bool bRedraw)
+void CTabbedMDIWnd::ActivateTab(int nTab)
 {
-	if (m_nActiveTab == nTab)
+	if (nTab >= 0 && nTab < GetTabCount())
+		ActivateTabImpl(nTab);
+}
+
+void CTabbedMDIWnd::ActivateTabImpl(int nTab, bool bRedraw)
+{
+	if (m_nActiveTab == nTab && (nTab == -1 || !m_tabs[nTab].bReactivate))
 		return;
 
 	if (nTab != -1)
@@ -895,7 +940,7 @@ void CTabbedMDIWnd::ActivateTab(int nTab, bool bRedraw)
 		m_tabs[nTab].pWnd->SendMessage(WM_MDI_ACTIVATE, true);
 		m_tabs[nTab].pWnd->SendMessageToDescendants(WM_MDI_ACTIVATE, true, 0, true, true);
 	}
-	if (m_nActiveTab != -1)
+	if (m_nActiveTab != -1 && m_nActiveTab != nTab)
 	{
 		m_tabs[m_nActiveTab].pWnd->ShowWindow(SW_HIDE);
 		m_tabs[m_nActiveTab].pWnd->SendMessage(WM_MDI_ACTIVATE, false);
@@ -904,7 +949,10 @@ void CTabbedMDIWnd::ActivateTab(int nTab, bool bRedraw)
 
 	m_nActiveTab = nTab;
 	if (nTab != -1)
+	{
+		m_tabs[nTab].bReactivate = false;
 		EnsureVisible(nTab);
+	}
 
 	if (m_nActiveTab == -1)
 		Invalidate();
@@ -916,7 +964,7 @@ void CTabbedMDIWnd::ActivateTab(int nTab, bool bRedraw)
 	if (bRedraw)
 		UpdateWindow();
 
-	UpdateObservers(TabMsg(TAB_ACTIVATED, nTab != -1 ? m_tabs[nTab].pWnd : NULL));
+	UpdateObservers(TabMsg(TAB_ACTIVATED, nTab != -1 ? m_tabs[nTab].pWnd : NULL, nTab));
 }
 
 void CTabbedMDIWnd::ActivateNextTab()
@@ -925,7 +973,7 @@ void CTabbedMDIWnd::ActivateNextTab()
 		return;
 
 	int nTab = (m_nActiveTab == -1 ? 0 : (m_nActiveTab + 1) % (int)m_tabs.size());
-	ActivateTab(nTab);
+	ActivateTabImpl(nTab);
 }
 
 void CTabbedMDIWnd::ActivatePrevTab()
@@ -935,7 +983,7 @@ void CTabbedMDIWnd::ActivatePrevTab()
 
 	int nTabs = (int)m_tabs.size();
 	int nTab = (m_nActiveTab == -1 ? nTabs - 1 : (m_nActiveTab - 1 + nTabs) % nTabs);
-	ActivateTab(nTab);
+	ActivateTabImpl(nTab);
 }
 
 int CTabbedMDIWnd::TabFromFrame(CWnd* pWnd)
@@ -1009,6 +1057,11 @@ CWnd* CTabbedMDIWnd::GetActiveTab() const
 		return m_tabs[m_nActiveTab].pWnd;
 
 	return NULL;
+}
+
+int CTabbedMDIWnd::GetActiveTabIndex() const
+{
+	return m_nActiveTab;
 }
 
 void CTabbedMDIWnd::ShowTabBar(bool bShow)

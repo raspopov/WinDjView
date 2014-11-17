@@ -35,7 +35,7 @@ CSettingsGeneralPage::CSettingsGeneralPage()
 	const CAppSettings& appSettings = *theApp.GetAppSettings();
 
 	m_bTopLevelDocs = appSettings.bTopLevelDocs;
-	m_bWarnCloseMultiple = appSettings.bWarnCloseMultiple;
+	m_bRestoreTabs = appSettings.bRestoreTabs;
 	m_bHideSingleTab = appSettings.bHideSingleTab;
 	m_bGenAllThumbnails = appSettings.bGenAllThumbnails;
 	m_bInvertWheelZoom = appSettings.bInvertWheelZoom;
@@ -54,7 +54,7 @@ void CSettingsGeneralPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_TOP_LEVEL_DOCUMENTS, m_bTopLevelDocs);
-	DDX_Check(pDX, IDC_WARN_CLOSE_MULTIPLE, m_bWarnCloseMultiple);
+	DDX_Check(pDX, IDC_RESTORE_TABS, m_bRestoreTabs);
 	DDX_Check(pDX, IDC_HIDE_SINGLE_TAB, m_bHideSingleTab);
 	DDX_Check(pDX, IDC_GEN_ALL_THUMBNAILS, m_bGenAllThumbnails);
 	DDX_Check(pDX, IDC_INVERT_WHEEL_ZOOM, m_bInvertWheelZoom);
@@ -63,11 +63,18 @@ void CSettingsGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_FULLSCREEN_CLICKS, m_bFullscreenClicks);
 	DDX_Check(pDX, IDC_FULLSCREEN_HIDESCROLL, m_bFullscreenHideScroll);
 	DDX_Check(pDX, IDC_FULLSCREEN_CONTINUOUS, m_bFullscreenContinuousScroll);
+
+	GetDlgItem(IDC_RESTORE_TABS)->EnableWindow(!m_bTopLevelDocs);
 }
 
 
 BEGIN_MESSAGE_MAP(CSettingsGeneralPage, CPropertyPage)
+	ON_BN_CLICKED(IDC_TOP_LEVEL_DOCUMENTS, OnTopLevelDocs)
 END_MESSAGE_MAP()
 
 // CSettingsGeneralPage message handlers
 
+void CSettingsGeneralPage::OnTopLevelDocs()
+{
+	UpdateData();
+}

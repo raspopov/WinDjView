@@ -33,6 +33,16 @@ class CMyToolBar : public CControlBar, public Observer
 	DECLARE_DYNAMIC(CMyToolBar)
 
 public:
+	class CAuxToolBar : public CToolBar
+	{
+	public:
+		virtual BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
+		bool LoadToolBar(UINT nIDResource);
+		bool LoadToolBar(LPCTSTR lpszResourceName);
+		bool LoadBitmap(UINT nIDResource);
+		bool LoadBitmap(LPCTSTR lpszResourceName);
+	};
+
 	CMyToolBar();
 	virtual ~CMyToolBar();
 
@@ -44,7 +54,7 @@ public:
 		CRect rcBorders = CRect(0, 0, 0, 0),
 		UINT nID = AFX_IDW_TOOLBAR);
 
-	CToolBar& GetToolBar() { return m_toolBar; }
+	CAuxToolBar& GetToolBar() { return m_toolBar; }
 	CToolBarCtrl& GetToolBarCtrl() const { return m_toolBar.GetToolBarCtrl(); }
 
 	void InsertLabel(int nPos, UINT nID, CFont* pFont);
@@ -68,11 +78,6 @@ protected:
 	vector<Label> m_labels;
 	set<DWORD_PTR> m_controls;
 
-	class CAuxToolBar : public CToolBar
-	{
-	public:
-		virtual BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
-	};
 	CAuxToolBar m_toolBar;
 
 	afx_msg void OnDestroy();

@@ -64,6 +64,7 @@ public:
 	CDjVuDoc* OpenDocument(LPCTSTR lpszFileName, const GUTF8String& strPage, bool bAddHistoryPoint = true);
 	CDjVuDoc* FindOpenDocument(LPCTSTR lpszFileName);
 	int GetDocumentCount();
+	CMyDocTemplate* GetDocumentTemplate();
 
 	CMainFrame* CreateMainFrame(bool bAppStartup = false, int nCmdShow = -1);
 	void RemoveMainFrame(CMainFrame* pMainFrame);
@@ -172,6 +173,7 @@ public:
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
 	bool m_bInitialized;
+	bool m_bClosing;
 	bool m_bTopLevelDocs;
 	CString m_strNewVersion;
 

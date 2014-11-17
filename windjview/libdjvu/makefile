@@ -2,8 +2,6 @@ CPP = cl
 GENLIB = lib
 OUTOTHER =
 
-NEWCL = 1
-
 !IFDEF X64
 MACHINE = X64
 WINTYPE = /D"WIN32" /D"WIN64"
@@ -20,12 +18,12 @@ SUFFIX =
 !IFDEF DEBUG
 
 INTDIR = .\Objs$(SUFFIX).dbg
-OPTS = /MDd /GX /Zi
+OPTS = /MTd /EHsc /Zi /GR-
 
 !ELSE
 
 INTDIR = .\Objs$(SUFFIX)
-OPTS = /MT /GX /Ox /Og /Ot /Oi /Ob2
+OPTS = /MT /EHsc /GR- /O2 /GL
 
 !ENDIF
 
@@ -38,7 +36,7 @@ OUTOPT = /nologo /LDd /Fe
 OUT = libdjvud$(SUFFIX).dll
 OUTOTHER = libcpmtd.lib gdi32.lib /link /def:libdjvud.def
 !ELSE
-OUTOPT = /nologo /LD /Fe
+OUTOPT = /nologo /ltcg /LD /Fe
 OUT = libdjvu$(SUFFIX).dll
 OUTOTHER = libcpmt.lib gdi32.lib /link /def:libdjvu.def
 !ENDIF
@@ -52,20 +50,11 @@ OUT = libdjvud$(SUFFIX).lib
 
 !ELSE
 
-OUTOPT = /nologo /subsystem:windows /machine:$(MACHINE) /nodefaultlib:"msvcrt.lib" /out:
+OUTOPT = /nologo /ltcg /subsystem:windows /machine:$(MACHINE) /nodefaultlib:"msvcrt.lib" /out:
 OUT = libdjvu$(SUFFIX).lib
 
 !ENDIF
 
-!ENDIF
-
-!IFDEF NEWCL
-!IFDEF DEBUG
-OPTS = /MTd /EHsc /Zi /GR-
-!ELSE
-OPTS = /MT /EHsc /GR- /O2 /GL
-OUTOPT = /ltcg $(OUTOPT)
-!ENDIF
 !ENDIF
 
 COMPOPT = /nologo /c /W3 /Fo"$(INTDIR)\\" $(WINTYPE) /D"_WINDOWS" /D"_CONSOLE" /D"NDEBUG" \

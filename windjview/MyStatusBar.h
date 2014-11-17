@@ -43,5 +43,5 @@ protected:
 
 // Generated message map functions
 	DECLARE_MESSAGE_MAP()
-	afx_msg LRESULT OnSetText(WPARAM wParam, LPARAM lParam);
+	afx_msg int OnSetText(LPCTSTR lpszText);
 };

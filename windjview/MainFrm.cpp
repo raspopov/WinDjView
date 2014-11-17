@@ -105,6 +105,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_LAYOUT_CONTINUOUS, ID_LAYOUT_FACING, OnUpdateDisable)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_MODE_DRAG, ID_MODE_ZOOM_RECT, OnUpdateDisable)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_ZOOM_50, ID_ZOOM_CUSTOM, OnUpdateDisable)
+	ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
+	ON_UPDATE_COMMAND_UI(ID_FILE_CLOSE, OnUpdateFileClose)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -212,32 +214,25 @@ void CMainFrame::InitToolBar()
 	m_wndToolBar.GetToolBar().SetWindowText(LoadString(IDS_TOOLBAR_TITLE));
 	m_wndToolBar.SetWindowText(LoadString(IDS_TOOLBAR_TITLE));
 
-	if (IsWinXPOrLater())
-	{
-		HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(),
-				MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_BITMAP,
-				0, 0, LR_CREATEDIBSECTION);
-		CBitmap bm;
-		bm.Attach(hbm);
+	HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(),
+			MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_BITMAP,
+			0, 0, LR_CREATEDIBSECTION);
+	CBitmap bm;
+	bm.Attach(hbm);
 
-		m_imageListBar.Create(16, 16, ILC_COLOR32, 0, 1);
-		m_imageListBar.Add(&bm, RGB(192, 192, 192));
-		m_wndToolBar.GetToolBar().GetToolBarCtrl().SetImageList(&m_imageListBar);
+	m_imageListBar.Create(16, 16, ILC_COLOR32, 0, 1);
+	m_imageListBar.Add(&bm, RGB(192, 192, 192));
+	m_wndToolBar.GetToolBar().GetToolBarCtrl().SetImageList(&m_imageListBar);
 
-		HBITMAP hbm2 = (HBITMAP)::LoadImage(AfxGetInstanceHandle(),
-				MAKEINTRESOURCE(IDR_TOOLBAR_GRAYED), IMAGE_BITMAP,
-				0, 0, LR_CREATEDIBSECTION);
-		CBitmap bm2;
-		bm2.Attach(hbm2);
+	HBITMAP hbm2 = (HBITMAP)::LoadImage(AfxGetInstanceHandle(),
+			MAKEINTRESOURCE(IDR_TOOLBAR_GRAYED), IMAGE_BITMAP,
+			0, 0, LR_CREATEDIBSECTION);
+	CBitmap bm2;
+	bm2.Attach(hbm2);
 
-		m_imageListGrayed.Create(16, 16, ILC_COLOR32, 0, 1);
-		m_imageListGrayed.Add(&bm2, RGB(192, 192, 192));
-		m_wndToolBar.GetToolBar().GetToolBarCtrl().SetDisabledImageList(&m_imageListGrayed);
-	}
-	else
-	{
-		m_wndToolBar.GetToolBar().LoadBitmap(IDR_TOOLBAR_LEGACY);
-	}
+	m_imageListGrayed.Create(16, 16, ILC_COLOR32, 0, 1);
+	m_imageListGrayed.Add(&bm2, RGB(192, 192, 192));
+	m_wndToolBar.GetToolBar().GetToolBarCtrl().SetDisabledImageList(&m_imageListGrayed);
 
 	int nComboPage = m_wndToolBar.GetToolBar().CommandToIndex(ID_VIEW_NEXTPAGE) - 1;
 	m_wndToolBar.SetControl(nComboPage, IDC_PAGENUM, 65);
@@ -274,37 +269,23 @@ void CMainFrame::InitDictBar()
 	m_wndDictBar.GetToolBar().SetWindowText(LoadString(IDS_DICTBAR_TITLE));
 	m_wndDictBar.SetWindowText(LoadString(IDS_DICTBAR_TITLE));
 
-	if (IsWinXPOrLater())
-	{
-		HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_DICT_BAR),
-				IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-		CBitmap bm;
-		bm.Attach(hbm);
+	HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_DICT_BAR),
+			IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+	CBitmap bm;
+	bm.Attach(hbm);
 
-		m_imageListDict.Create(16, 16, ILC_COLOR32, 0, 1);
-		m_imageListDict.Add(&bm, RGB(192, 192, 192));
-		m_wndDictBar.GetToolBar().GetToolBarCtrl().SetImageList(&m_imageListDict);
+	m_imageListDict.Create(16, 16, ILC_COLOR32, 0, 1);
+	m_imageListDict.Add(&bm, RGB(192, 192, 192));
+	m_wndDictBar.GetToolBar().GetToolBarCtrl().SetImageList(&m_imageListDict);
 
-		HBITMAP hbm2 = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_DICT_BAR_GRAYED),
-				IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-		CBitmap bm2;
-		bm2.Attach(hbm2);
+	HBITMAP hbm2 = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_DICT_BAR_GRAYED),
+			IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+	CBitmap bm2;
+	bm2.Attach(hbm2);
 
-		m_imageListDictGrayed.Create(16, 16, ILC_COLOR32, 0, 1);
-		m_imageListDictGrayed.Add(&bm2, RGB(192, 192, 192));
-		m_wndDictBar.GetToolBar().GetToolBarCtrl().SetDisabledImageList(&m_imageListDictGrayed);
-	}
-	else
-	{
-		HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_DICT_BAR_LEGACY),
-				IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-		CBitmap bm;
-		bm.Attach(hbm);
-
-		m_imageListDict.Create(16, 15, ILC_COLOR24 | ILC_MASK, 0, 1);
-		m_imageListDict.Add(&bm, RGB(192, 192, 192));
-		m_wndDictBar.GetToolBar().GetToolBarCtrl().SetImageList(&m_imageListDict);
-	}
+	m_imageListDictGrayed.Create(16, 16, ILC_COLOR32, 0, 1);
+	m_imageListDictGrayed.Add(&bm2, RGB(192, 192, 192));
+	m_wndDictBar.GetToolBar().GetToolBarCtrl().SetDisabledImageList(&m_imageListDictGrayed);
 
 	m_wndDictBar.InsertLabel(0, IDC_LOOKUP_LABEL, &m_font);
 
@@ -1019,28 +1000,69 @@ void CMainFrame::OnUpdateWindowList(CCmdUI* pCmdUI)
 	for (int i = 0; i < nMaxWindows; ++i)
 		pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + i, MF_BYCOMMAND);
 
-	int nDoc = 0;
-	for (CDjViewApp::DocIterator it; it && nDoc < nMaxWindows; ++it, ++nDoc)
+	if (theApp.m_bTopLevelDocs)
 	{
-		CDocument* pDoc = *it;
+		int nDoc = 0;
+		for (CDjViewApp::DocIterator it; it && nDoc < nMaxWindows; ++it, ++nDoc)
+		{
+			CDocument* pDoc = *it;
 
-		CString strText;
-		if (nDoc >= 10)
-			strText.Format(_T("%d "), nDoc + 1);
-		else if (nDoc == 9)
-			strText = _T("1&0 ");
-		else
-			strText.Format(_T("&%d "), nDoc + 1);
+			CString strText;
+			if (nDoc >= 10)
+				strText.Format(_T("%d "), nDoc + 1);
+			else if (nDoc == 9)
+				strText = _T("1&0 ");
+			else
+				strText.Format(_T("&%d "), nDoc + 1);
 
-		CString strDocTitle = pDoc->GetTitle();
-		strDocTitle.Replace(_T("&"), _T("&&"));
-		strText += strDocTitle;
+			CString strDocTitle = pDoc->GetTitle();
+			strDocTitle.Replace(_T("&"), _T("&&"));
+			strText += strDocTitle;
 
-		int nFlags = MF_STRING;
-		if (pDoc == pActiveDoc)
-			nFlags |= MF_CHECKED;
+			int nFlags = MF_STRING;
+			if (pDoc == pActiveDoc)
+				nFlags |= MF_CHECKED;
 
-		pCmdUI->m_pMenu->AppendMenu(nFlags, pCmdUI->m_nID + nDoc, strText);
+			pCmdUI->m_pMenu->AppendMenu(nFlags, pCmdUI->m_nID + nDoc, strText);
+		}
+
+		if (nDoc == 0)
+		{
+			// Delete the separator
+			pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nIndex - 1, MF_BYPOSITION);
+		}
+	}
+	else
+	{
+		for (int nTab = 0; nTab < m_tabbedMDI.GetTabCount(); ++nTab)
+		{
+			CString strText;
+			if (nTab >= 10)
+				strText.Format(_T("%d "), nTab + 1);
+			else if (nTab == 9)
+				strText = _T("1&0 ");
+			else
+				strText.Format(_T("&%d "), nTab + 1);
+
+			CString strDocTitle = m_tabbedMDI.GetTabName(nTab);
+			strDocTitle.Replace(_T("&"), _T("&&"));
+			strText += strDocTitle;
+
+			int nFlags = MF_STRING;
+			if (m_tabbedMDI.GetActiveTabIndex() == nTab)
+				nFlags |= MF_CHECKED;
+
+			pCmdUI->m_pMenu->AppendMenu(nFlags, pCmdUI->m_nID + nTab, strText);
+		}
+
+		if (m_tabbedMDI.GetTabCount() == 0)
+		{
+			// Delete the separator. If there are no open documents, we are modifying
+			// the IDR_MAINFRAME menu here which can never be used to display a non-empty
+			// list of windows again. It can only be non-empty if some of the restored
+			// tabs failed to open.
+			pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nIndex - 1, MF_BYPOSITION);
+		}
 	}
 
 	// update end menu count
@@ -1053,15 +1075,22 @@ void CMainFrame::OnActivateWindow(UINT nID)
 {
 	int nActivateDoc = nID - ID_WINDOW_ACTIVATE_FIRST;
 
-	int nDoc = 0;
-	for (CDjViewApp::DocIterator it; it; ++it, ++nDoc)
+	if (theApp.m_bTopLevelDocs)
 	{
-		CDocument* pDoc = *it;
-		if (nDoc == nActivateDoc)
+		int nDoc = 0;
+		for (CDjViewApp::DocIterator it; it; ++it, ++nDoc)
 		{
-			ActivateDocument(pDoc);
-			return;
+			CDocument* pDoc = *it;
+			if (nDoc == nActivateDoc)
+			{
+				ActivateDocument(pDoc);
+				return;
+			}
 		}
+	}
+	else
+	{
+		m_tabbedMDI.ActivateTab(nActivateDoc);
 	}
 }
 
@@ -1071,7 +1100,7 @@ void CMainFrame::AddMDIChild(CWnd* pMDIChild, CDocument* pDocument)
 			|| theApp.GetAppSettings()->bHideSingleTab && m_tabbedMDI.GetTabCount() == 0)
 		m_tabbedMDI.ShowTabBar(false);
 
-	m_tabbedMDI.AddTab(pMDIChild, pDocument->GetTitle());
+	m_tabbedMDI.AddTab(pMDIChild, pDocument->GetTitle(), pDocument->GetPathName());
 
 	if (!theApp.m_bTopLevelDocs
 			&& (!theApp.GetAppSettings()->bHideSingleTab || m_tabbedMDI.GetTabCount() > 1))
@@ -1107,7 +1136,8 @@ void CMainFrame::ActivateDocument(CDocument* pDocument)
 			pMainFrame->GetFullscreenWnd()->Hide();
 
 		pMainFrame->m_tabbedMDI.ActivateTab(pView->GetMDIChild());
-		pMainFrame->ActivateFrame(m_bMaximized ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
+		if (theApp.m_bInitialized)
+			pMainFrame->ActivateFrame(m_bMaximized ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
 	}
 }
 
@@ -1372,6 +1402,8 @@ void CMainFrame::OnClose()
 		if (!theApp.SaveAllModified())
 			return;
 
+		theApp.m_bClosing = true;
+
 		// hide the application's windows before closing all the documents
 		theApp.HideApplication();
 
@@ -1496,13 +1528,25 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 	}
 	else if (message->code == TAB_ACTIVATED)
 	{
-		CMDIChild* pWnd = (CMDIChild*) static_cast<const TabMsg*>(message)->pWnd;
+		const TabMsg* tabMsg = static_cast<const TabMsg*>(message);
+		CMDIChild* pWnd = (CMDIChild*) tabMsg->pWnd;
 		if (pWnd != NULL)
 		{
 			CDjVuView* pView = (CDjVuView*) pWnd->GetContent();
+			if (pWnd->IsPlaceholder() && theApp.m_bInitialized && !theApp.m_bClosing)
+			{
+				CString strPathName = m_tabbedMDI.GetTabPathName(tabMsg->nTab);
+				CDocument* pDocument = theApp.OpenDocumentFile(strPathName);
+				if (pDocument)
+					pView = ((CDjVuDoc*)pDocument)->GetDjVuView();
+				else
+					pWnd->SetError(strPathName);
+			}
+
 			SetActiveView(pView);
 			OnViewActivated(pView);
-			pView->SetFocus();
+			if (pView)
+				pView->SetFocus();
 
 			OnUpdateFrameMenu(NULL);
 			OnUpdateFrameTitle(true);
@@ -1904,4 +1948,67 @@ void CMainFrame::OnUpdateDisable(CCmdUI* pCmdUI)
 	// are unchecked so that they are drawn properly (see KB231893).
 	pCmdUI->SetCheck(false);
 	pCmdUI->Enable(false);
+}
+
+int CMainFrame::GetTabCount()
+{
+	return m_tabbedMDI.GetTabCount();
+}
+
+void CMainFrame::RestoreOpenTabs()
+{
+	CAppSettings* pSettings = theApp.GetAppSettings();
+	for (int i = 0; i < (int)pSettings->openTabs.size(); ++i)
+	{
+		CWnd* pWnd = theApp.GetDocumentTemplate()->CreateEmptyMDIChild();
+		// Set the tab title based on path name
+		TCHAR szTitle[_MAX_FNAME] = { 0 };
+		if (AfxGetFileTitle(pSettings->openTabs[i], szTitle, _MAX_FNAME) == 0)
+			SetTitle(szTitle);
+		m_tabbedMDI.AddTab(pWnd, szTitle, pSettings->openTabs[i]);
+	}
+
+	if (pSettings->nStartupTab >= 0 && pSettings->nStartupTab < GetTabCount())
+	{
+		m_tabbedMDI.ActivateTab(pSettings->nStartupTab);
+	}
+}
+
+void CMainFrame::LoadActiveTab()
+{
+	if (GetTabCount() == 0)
+		return;
+
+	CMDIChild* pChild = (CMDIChild*)m_tabbedMDI.GetActiveTab();
+	if (pChild->IsPlaceholder()) {
+		int nTab = m_tabbedMDI.GetActiveTabIndex();
+		CString strPathName = m_tabbedMDI.GetTabPathName(nTab);
+		CDocument* pDocument = theApp.OpenDocumentFile(strPathName);
+		if (!pDocument)
+			pChild->SetError(strPathName);
+	}
+}
+
+void CMainFrame::SaveOpenTabs()
+{
+	CAppSettings* pSettings = theApp.GetAppSettings();
+	pSettings->openTabs.clear();
+	for (int i = 0; i < m_tabbedMDI.GetTabCount(); ++i)
+	{
+		const CString& strPathName = m_tabbedMDI.GetTabPathName(i);
+		pSettings->openTabs.push_back(strPathName);
+	}
+	pSettings->nStartupTab = m_tabbedMDI.GetActiveTabIndex();
+}
+
+void CMainFrame::OnFileClose()
+{
+	CWnd* pActiveTab = m_tabbedMDI.GetActiveTab();
+	if (pActiveTab)
+		m_tabbedMDI.CloseTab(pActiveTab);
+}
+
+void CMainFrame::OnUpdateFileClose(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(GetTabCount() > 0);
 }

@@ -221,7 +221,7 @@
 #define IDC_MATCH_CASE                  1037
 #define IDC_GEN_ALL_THUMBNAILS          1038
 #define IDC_STATIC_LINK                 1039
-#define IDC_WARN_CLOSE_MULTIPLE         1040
+#define IDC_RESTORE_TABS                1040
 #define IDC_STATIC_LIB_LINK             1041
 #define IDC_FULLSCREEN_HIDESCROLL       1042
 #define IDC_MAKE_DEFAULT                1043
@@ -409,7 +409,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        325
-#define _APS_NEXT_COMMAND_VALUE         33135
+#define _APS_NEXT_COMMAND_VALUE         33137
 #define _APS_NEXT_CONTROL_VALUE         1109
 #define _APS_NEXT_SYMED_VALUE           117
 #endif

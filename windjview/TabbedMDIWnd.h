@@ -33,13 +33,17 @@ public:
 
 // Operations
 public:
-	int AddTab(CWnd* pWnd, const CString& strName);
+	int AddTab(CWnd* pWnd, const CString& strName, const CString& strPathName);
 	void ActivateTab(CWnd* pWnd);
+	void ActivateTab(int nTab);
 	void ActivateNextTab();
 	void ActivatePrevTab();
 	void CloseTab(CWnd* pWnd);
 	CWnd* GetActiveTab() const;
+	int GetActiveTabIndex() const;
 	int GetTabCount() const { return static_cast<int>(m_tabs.size()); }
+	CString GetTabName(int nTab) const;
+	CString GetTabPathName(int nTab) const;
 
 	bool IsTabBarVisible() const { return !m_bTabBarHidden; }
 	void ShowTabBar(bool bShow);
@@ -52,6 +56,8 @@ protected:
 	{
 		CWnd* pWnd;
 		CString strName;
+		CString strPathName;
+		bool bReactivate;
 		CRect rcTab, rcClose;
 	};
 	vector<Tab> m_tabs;
@@ -90,7 +96,8 @@ protected:
 	bool PtInTab(int nTab, const CPoint& point);
 	void EnsureVisible(int nTab);
 	int TabFromFrame(CWnd* pWnd);
-	void ActivateTab(int nTab, bool bRedraw = true);
+	int FindTab(const CString& strPathName);
+	void ActivateTabImpl(int nTab, bool bRedraw = true);
 	void CloseTab(int nTab, bool bRedraw = true);
 	void InvalidateTabs();
 	void UpdateSize(int cx, int cy);

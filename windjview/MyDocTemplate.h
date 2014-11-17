@@ -31,6 +31,7 @@ public:
 	virtual ~CMyDocTemplate();
 
 	void UpdateTemplate();
+	CWnd* CreateEmptyMDIChild();
 
 // Overrides
 public:

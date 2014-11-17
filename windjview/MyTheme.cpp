@@ -413,9 +413,6 @@ HRESULT XPGetThemeMargins(HTHEME hTheme, HDC hdc, int iPartId,
 
 bool IsThemed()
 {
-	if (!IsWinXPOrLater())
-		return false;
-
 	if (!XPIsAppThemed() && !XPIsThemeActive())
 		return false;
 

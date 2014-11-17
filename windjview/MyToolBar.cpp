@@ -336,3 +336,195 @@ BOOL CMyToolBar::CAuxToolBar::OnWndMsg(UINT message, WPARAM wParam, LPARAM lPara
 
 	return CToolBar::OnWndMsg(message, wParam, lParam, pResult);
 }
+
+
+// Override MFC to allow loading full color bitmaps into the toolbar
+
+struct CToolBarData
+{
+	WORD wVersion;
+	WORD wWidth;
+	WORD wHeight;
+	WORD wItemCount;
+	//WORD aItems[wItemCount]
+
+	WORD* items()
+	{
+		return (WORD*)(this + 1);
+	}
+};
+
+bool CMyToolBar::CAuxToolBar::LoadToolBar(UINT nIDResource)
+{
+	return LoadToolBar(MAKEINTRESOURCE(nIDResource));
+}
+
+bool CMyToolBar::CAuxToolBar::LoadToolBar(LPCTSTR lpszResourceName)
+{
+	ASSERT_VALID(this);
+	ASSERT(lpszResourceName != NULL);
+
+	// determine location of the bitmap in resource fork
+	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_TOOLBAR);
+	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_TOOLBAR);
+	if (hRsrc == NULL)
+		return FALSE;
+
+	HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
+	if (hGlobal == NULL)
+		return FALSE;
+
+	CToolBarData* pData = (CToolBarData*)LockResource(hGlobal);
+	if (pData == NULL)
+		return FALSE;
+	ASSERT(pData->wVersion == 1);
+
+	UINT* pItems = new UINT[pData->wItemCount];
+	for (int i = 0; i < pData->wItemCount; i++)
+		pItems[i] = pData->items()[i];
+	bool bResult = !!SetButtons(pItems, pData->wItemCount);
+	delete[] pItems;
+
+	if (bResult)
+	{
+		// set new sizes of the buttons
+		CSize sizeImage(pData->wWidth, pData->wHeight);
+		CSize sizeButton(pData->wWidth + 7, pData->wHeight + 7);
+		SetSizes(sizeButton, sizeImage);
+
+		// load bitmap now that sizes are known by the toolbar control
+		bResult = LoadBitmap(lpszResourceName);
+	}
+
+	UnlockResource(hGlobal);
+	FreeResource(hGlobal);
+
+	return bResult;
+}
+
+#define AFX_RGB_TO_RGBQUAD(r,g,b)   (RGB(b,g,r))
+#define AFX_CLR_TO_RGBQUAD(clr)     (RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr)))
+
+struct AFX_COLORMAP
+{
+	// use DWORD instead of RGBQUAD so we can compare two RGBQUADs easily
+	DWORD rgbqFrom;
+	int iSysColorTo;
+};
+
+static const AFX_COLORMAP _afxSysColorMap[] =
+{
+	// mapping from color in DIB to system color
+	{ AFX_RGB_TO_RGBQUAD(0x00, 0x00, 0x00), COLOR_BTNTEXT },       // black
+	{ AFX_RGB_TO_RGBQUAD(0x80, 0x80, 0x80), COLOR_BTNSHADOW },     // dark gray
+	{ AFX_RGB_TO_RGBQUAD(0xC0, 0xC0, 0xC0), COLOR_BTNFACE },       // bright gray
+	{ AFX_RGB_TO_RGBQUAD(0xFF, 0xFF, 0xFF), COLOR_BTNHIGHLIGHT }   // white
+};
+
+static HBITMAP MyAfxLoadSysColorBitmap(HINSTANCE hInst, HRSRC hRsrc, BOOL bMono = false)
+{
+	HGLOBAL hglb;
+	if ((hglb = LoadResource(hInst, hRsrc)) == NULL)
+	{
+		return NULL;
+	}
+
+	LPBITMAPINFOHEADER lpBitmap = (LPBITMAPINFOHEADER)LockResource(hglb);
+	if ((lpBitmap == NULL)/* || (lpBitmap->biBitCount > 8)*/)
+	{
+		return NULL;
+	}
+
+	// make copy of BITMAPINFOHEADER so we can modify the color table
+	const int nColorTableSize = 16;
+	UINT nSize = lpBitmap->biSize + nColorTableSize * sizeof(RGBQUAD);
+	LPBITMAPINFOHEADER lpBitmapInfo = (LPBITMAPINFOHEADER)::malloc(nSize);
+	if (lpBitmapInfo == NULL)
+	{
+		return NULL;
+	}
+
+	Checked::memcpy_s(lpBitmapInfo, nSize, lpBitmap, nSize);
+
+	// color table is in RGBQUAD DIB format
+	DWORD* pColorTable =
+		(DWORD*)(((LPBYTE)lpBitmapInfo) + (UINT)lpBitmapInfo->biSize);
+
+	for (int iColor = 0; iColor < nColorTableSize; iColor++)
+	{
+		// look for matching RGBQUAD color in original
+		for (int i = 0; i < _countof(_afxSysColorMap); i++)
+		{
+			if (pColorTable[iColor] == _afxSysColorMap[i].rgbqFrom)
+			{
+				if (bMono)
+				{
+					// all colors except text become white
+					if (_afxSysColorMap[i].iSysColorTo != COLOR_BTNTEXT)
+						pColorTable[iColor] = AFX_RGB_TO_RGBQUAD(255, 255, 255);
+				}
+				else
+					pColorTable[iColor] =
+					AFX_CLR_TO_RGBQUAD(::GetSysColor(_afxSysColorMap[i].iSysColorTo));
+				break;
+			}
+		}
+	}
+
+	int nWidth = (int)lpBitmapInfo->biWidth;
+	int nHeight = (int)lpBitmapInfo->biHeight;
+	HDC hDCScreen = ::GetDC(NULL);
+	HBITMAP hbm = ::CreateCompatibleBitmap(hDCScreen, nWidth, nHeight);
+
+	if (hbm != NULL)
+	{
+		HDC hDCGlyphs = ::CreateCompatibleDC(hDCScreen);
+		HBITMAP hbmOld = (HBITMAP)::SelectObject(hDCGlyphs, hbm);
+
+		LPBYTE lpBits;
+		lpBits = (LPBYTE)(lpBitmap + 1);
+		lpBits += ((size_t)1 << (lpBitmapInfo->biBitCount)) * sizeof(RGBQUAD);
+
+		StretchDIBits(hDCGlyphs, 0, 0, nWidth, nHeight, 0, 0, nWidth, nHeight,
+			lpBits, (LPBITMAPINFO)lpBitmapInfo, DIB_RGB_COLORS, SRCCOPY);
+		SelectObject(hDCGlyphs, hbmOld);
+		::DeleteDC(hDCGlyphs);
+	}
+	::ReleaseDC(NULL, hDCScreen);
+
+	// free copy of bitmap info struct and resource itself
+	::free(lpBitmapInfo);
+	::FreeResource(hglb);
+
+	return hbm;
+}
+
+bool CMyToolBar::CAuxToolBar::LoadBitmap(UINT nIDResource)
+{
+	return LoadBitmap(MAKEINTRESOURCE(nIDResource));
+}
+
+bool CMyToolBar::CAuxToolBar::LoadBitmap(LPCTSTR lpszResourceName)
+{
+	ASSERT_VALID(this);
+	ASSERT(lpszResourceName != NULL);
+
+	// determine location of the bitmap in resource fork
+	HINSTANCE hInstImageWell = AfxFindResourceHandle(lpszResourceName, RT_BITMAP);
+	HRSRC hRsrcImageWell = ::FindResource(hInstImageWell, lpszResourceName, RT_BITMAP);
+	if (hRsrcImageWell == NULL)
+		return FALSE;
+
+	// load the bitmap
+	HBITMAP hbmImageWell;
+	hbmImageWell = MyAfxLoadSysColorBitmap(hInstImageWell, hRsrcImageWell);
+
+	// tell common control toolbar about the new bitmap
+	if (!AddReplaceBitmap(hbmImageWell))
+		return FALSE;
+
+	// remember the resource handles so the bitmap can be recolored if necessary
+	m_hInstImageWell = hInstImageWell;
+	m_hRsrcImageWell = hRsrcImageWell;
+	return TRUE;
+}

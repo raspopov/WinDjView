@@ -40,10 +40,12 @@ static HCURSOR s_hCursorSplitter = NULL;
 IMPLEMENT_DYNCREATE(CMDIChild, CWnd)
 
 CMDIChild::CMDIChild()
-	: m_pContentWnd(NULL), m_pDocument(NULL), m_pThumbnailsView(NULL),
+	: m_pContentWnd(NULL), m_pDocument(NULL), m_bError(false), m_pThumbnailsView(NULL),
 	  m_pContentsTree(NULL), m_pResultsView(NULL), m_pBookmarksTree(NULL),
 	  m_pPageIndexWnd(NULL), m_nSplitterPos(0), m_bDragging(false)
 {
+	UpdateMetrics();
+
 	m_nExpandedNavWidth = max(theApp.GetAppSettings()->nNavPaneWidth, CNavPaneWnd::s_nMinExpandedWidth);
 	m_bNavCollapsed = theApp.GetAppSettings()->bNavPaneCollapsed;
 	m_bNavHidden = theApp.GetAppSettings()->bNavPaneHidden;
@@ -69,6 +71,7 @@ BEGIN_MESSAGE_MAP(CMDIChild, CWnd)
 	ON_MESSAGE_VOID(WM_COLLAPSE_NAV, OnCollapseNav)
 	ON_MESSAGE(WM_CLICKED_NAV_TAB, OnClickedNavTab)
 	ON_WM_SHOWWINDOW()
+	ON_WM_SETTINGCHANGE()
 END_MESSAGE_MAP()
 
 
@@ -79,15 +82,21 @@ int CMDIChild::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	if (!m_navPane.Create(NULL, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+	CCreateContext* pContext = (CCreateContext*) lpCreateStruct->lpCreateParams;
+	if (pContext->m_pCurrentDoc == NULL)
+	{
+		// Creating an empty MDIChild without a document
+		m_bNavHidden = true;
+		return 0;
+	}
+
+	if (!m_navPane.Create(NULL, NULL, WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 			CRect(0, 0, 0, 0), this, 1))
 		return -1;
 
-	CCreateContext* pContext = (CCreateContext*) lpCreateStruct->lpCreateParams;
-	ASSERT(pContext != NULL && pContext->m_pNewViewClass != NULL);
-
 	// Note: can be a CWnd with PostNcDestroy self cleanup
-	m_pContentWnd = (CWnd*) pContext->m_pNewViewClass->CreateObject();
+	ASSERT(pContext != NULL && pContext->m_pNewViewClass != NULL);
+	m_pContentWnd = (CWnd*)pContext->m_pNewViewClass->CreateObject();
 	if (m_pContentWnd == NULL)
 	{
 		TRACE(_T("Warning: Dynamic create of content window %hs failed.\n"),
@@ -127,6 +136,9 @@ void CMDIChild::OnDestroy()
 
 void CMDIChild::OnInitialUpdate()
 {
+	if (m_pDocument == NULL)
+		return;
+
 	DjVuSource* pSource = m_pDocument->GetSource();
 	pSource->GetSettings()->AddObserver(this);
 
@@ -186,6 +198,8 @@ void CMDIChild::OnInitialUpdate()
 
 CSearchResultsView* CMDIChild::GetSearchResults(bool bActivate)
 {
+	VERIFY(m_pDocument != NULL);
+
 	if (m_pResultsView == NULL)
 	{
 		m_pResultsView = new CSearchResultsView();
@@ -207,6 +221,8 @@ CSearchResultsView* CMDIChild::GetSearchResults(bool bActivate)
 
 CBookmarksView* CMDIChild::GetBookmarksTree(bool bActivate)
 {
+	VERIFY(m_pDocument != NULL);
+
 	if (m_pBookmarksTree == NULL)
 	{
 		DjVuSource* pSource = m_pDocument->GetSource();
@@ -338,6 +354,24 @@ void CMDIChild::OnPaint()
 		paintDC.LineTo(rcClient.right, 0);
 	}
 
+	if (!m_pDocument)
+	{
+		CRect rcContent = rcClient;
+		rcContent.DeflateRect(0, 1, 0, 0);
+		paintDC.FillSolidRect(rcContent, ::GetSysColor(COLOR_BTNFACE));
+
+		if (m_bError)
+		{
+			CString strText = LoadString(IDS_FAILED_TO_OPEN) + m_strPathName;
+			CFont* pOldFont = paintDC.SelectObject(&m_font);
+			paintDC.SetTextColor(GetSysColor(COLOR_BTNTEXT));
+			paintDC.SetBkMode(TRANSPARENT);
+			rcContent.DeflateRect(0, 16, 0, 0);
+			paintDC.DrawText(strText, rcContent, DT_CENTER | DT_NOPREFIX | DT_WORDBREAK);
+			paintDC.SelectObject(pOldFont);
+		}
+	}
+
 	paintDC.SelectObject(pOldPen);
 }
 
@@ -354,6 +388,18 @@ CNavPaneWnd* CMDIChild::GetNavPane()
 CWnd* CMDIChild::GetContent()
 {
 	return m_pContentWnd;
+}
+
+bool CMDIChild::IsPlaceholder()
+{
+	return m_pDocument != NULL || !m_bError;
+}
+
+void CMDIChild::SetError(const CString& strPathName)
+{
+	m_bError = true;
+	m_strPathName = strPathName;
+	Invalidate();
 }
 
 void CMDIChild::CollapseNavPane(bool bCollapse)
@@ -522,4 +568,17 @@ void CMDIChild::OnShowWindow(BOOL bShow, UINT nStatus)
 	CWnd* pParent = GetParent();
 	if (pParent == NULL || pParent != NULL && pParent->IsWindowVisible())
 		SendMessageToVisibleDescendants(m_hWnd, WM_SHOWPARENT, bShow, nStatus);
+}
+
+void CMDIChild::UpdateMetrics()
+{
+	CreateSystemDialogFont(m_font);
+}
+
+void CMDIChild::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
+{
+	UpdateMetrics();
+
+	CSize szClient = ::GetClientSize(this);
+	OnSize(0, szClient.cx, szClient.cy);
 }

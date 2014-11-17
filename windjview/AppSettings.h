@@ -128,7 +128,6 @@ struct CAppSettings
 
 	bool bWarnNotDefaultViewer;
 	bool bTopLevelDocs;
-	bool bWarnCloseMultiple;
 	bool bHideSingleTab;
 	bool bGenAllThumbnails;
 	bool bInvertWheelZoom;
@@ -150,6 +149,10 @@ struct CAppSettings
 	list<CString> searchHistory;
 	CString strFind;
 	bool bMatchCase;
+
+	bool bRestoreTabs;
+	int nStartupTab;
+	vector<CString> openTabs;
 
 	enum UnitType
 	{

@@ -98,9 +98,15 @@ inline unsigned char
 umin(unsigned char a, unsigned char b) 
 { return (a>b) ? b : a; }
 
+//< Changed for WinDjView project
+#if _MSC_VER < 1800
+//>
 inline float 
 fmin(float a, float b) 
 { return (a>b) ? b : a; }
+//< Changed for WinDjView project
+#endif
+//>
 
 
 

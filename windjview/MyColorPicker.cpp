@@ -138,12 +138,9 @@ CMyColorPicker::CMyColorPicker()
 	  m_bPopupActive(false), m_bTrackSelection(false), m_bMouseOver(false),
 	  m_bFlatMenus(false), m_hThemeButton(NULL), m_bIsDefault(false)
 {
-	if (IsWinXPOrLater())
-	{
-		BOOL bFlatMenus = FALSE;
-		if (::SystemParametersInfo(SPI_GETFLATMENU, 0, &bFlatMenus, false))
-			m_bFlatMenus = !!bFlatMenus;
-	}
+	BOOL bFlatMenus = FALSE;
+	if (::SystemParametersInfo(SPI_GETFLATMENU, 0, &bFlatMenus, false))
+		m_bFlatMenus = !!bFlatMenus;
 }
 
 CMyColorPicker::~CMyColorPicker()
@@ -578,12 +575,9 @@ CMyColorPopup::CMyColorPopup()
 	if (m_nBoxSize - 2*m_nMargin - 2 < 5)
 		m_nBoxSize = 5 + 2*m_nMargin + 2;
 
-	if (IsWinXPOrLater())
-	{
-		BOOL bFlatMenus = FALSE;
-		if (::SystemParametersInfo(SPI_GETFLATMENU, 0, &bFlatMenus, false))
-			m_bFlatMenus = !!bFlatMenus;
-	}
+	BOOL bFlatMenus = FALSE;
+	if (::SystemParametersInfo(SPI_GETFLATMENU, 0, &bFlatMenus, false))
+		m_bFlatMenus = !!bFlatMenus;
 
 	InitColorTable();
 
@@ -610,13 +604,10 @@ bool CMyColorPopup::Create(CWnd* pParent)
 	ASSERT(pParent != NULL && ::IsWindow(pParent->m_hWnd));
 
 	UINT nClassStyle = CS_DBLCLKS;
-	if (IsWinXPOrLater())
-	{
-		BOOL bDropShadow = FALSE;
-		::SystemParametersInfo(SPI_GETDROPSHADOW, 0, &bDropShadow, false);
-		if (bDropShadow)
-			nClassStyle |= CS_DROPSHADOW;
-	}
+	BOOL bDropShadow = FALSE;
+	::SystemParametersInfo(SPI_GETDROPSHADOW, 0, &bDropShadow, false);
+	if (bDropShadow)
+		nClassStyle |= CS_DROPSHADOW;
 
 	static CString strWndClass = AfxRegisterWndClass(nClassStyle,
 			::LoadCursor(NULL, IDC_ARROW), (HBRUSH) (COLOR_MENU + 1));
@@ -1076,9 +1067,7 @@ void CMyColorPopup::DrawCell(CDC* pDC, int nIndex)
 	COLORREF clrMenuText = ::GetSysColor(COLOR_MENUTEXT);
 	COLORREF clrHighlightText = ::GetSysColor(COLOR_HIGHLIGHTTEXT);
 
-	COLORREF clrSelection = ::GetSysColor(COLOR_HIGHLIGHT);
-	if (IsWinXPOrLater())
-		clrSelection = ::GetSysColor(COLOR_MENUHILIGHT);
+	COLORREF clrSelection = ::GetSysColor(COLOR_MENUHILIGHT);
 
 	COLORREF clrOrigSelection = AlphaCombine(clrBackground, clrSelection, 50);
 	clrSelection = AlphaCombine(clrBackground, clrSelection, 200);
