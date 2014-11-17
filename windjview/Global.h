@@ -147,6 +147,7 @@ inline CSize GetClientSize(const CWnd& wnd)
 #define KEY_STATE_CHANGED 20
 #define DICT_LIST_CHANGED 21
 #define SIDEBAR_TAB_CHANGED 22
+#define TAB_ACTIVATING 23
 #define TAB_ACTIVATED 24
 #define TAB_CLOSED 25
 #define ANNOTATIONS_CHANGED 26

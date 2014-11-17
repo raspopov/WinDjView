@@ -110,6 +110,9 @@ protected:
 	void UpdateSettings();
 	void LanguageChanged();
 	void OnViewActivated(const CDjVuView* pView);
+	bool m_bTabActivating;
+	bool m_bHadActiveView;
+	HMENU m_hPrevMenu;
 
 	CFont m_font, m_boldFont;
 

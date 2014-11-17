@@ -125,7 +125,8 @@ const int s_nIndicatorPage = 3;
 
 CMainFrame::CMainFrame()
 	: m_bDontActivate(false), m_pFullscreenWnd(NULL),
-	  m_pMagnifyWnd(NULL), m_nCurLang(CB_ERR), m_nCurDict(CB_ERR)
+	  m_pMagnifyWnd(NULL), m_nCurLang(CB_ERR), m_nCurDict(CB_ERR),
+	  m_bTabActivating(false), m_bHadActiveView(false), m_hPrevMenu(NULL)
 {
 	m_appMenu.LoadMenu(IDR_MAINFRAME);
 	m_docMenu.LoadMenu(IDR_DjVuTYPE);
@@ -1526,6 +1527,23 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 		UpdateToolbars();
 		UpdateLangAndDict(NULL, true);
 	}
+	else if (message->code == TAB_ACTIVATING)
+	{
+		const TabMsg* tabMsg = static_cast<const TabMsg*>(message);
+		CMDIChild* pWnd = (CMDIChild*)tabMsg->pWnd;
+		if (!m_bTabActivating && pWnd != NULL)
+		{
+			m_bTabActivating = true;
+			if (pWnd->IsPlaceholder() && theApp.m_bInitialized && !theApp.m_bClosing)
+			{
+				CString strPathName = m_tabbedMDI.GetTabPathName(tabMsg->nTab);
+				CDocument* pDocument = theApp.OpenDocumentFile(strPathName);
+				if (!pDocument)
+					pWnd->SetError(strPathName);
+			}
+			m_bTabActivating = false;
+		}
+	}
 	else if (message->code == TAB_ACTIVATED)
 	{
 		const TabMsg* tabMsg = static_cast<const TabMsg*>(message);
@@ -1533,16 +1551,6 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 		if (pWnd != NULL)
 		{
 			CDjVuView* pView = (CDjVuView*) pWnd->GetContent();
-			if (pWnd->IsPlaceholder() && theApp.m_bInitialized && !theApp.m_bClosing)
-			{
-				CString strPathName = m_tabbedMDI.GetTabPathName(tabMsg->nTab);
-				CDocument* pDocument = theApp.OpenDocumentFile(strPathName);
-				if (pDocument)
-					pView = ((CDjVuDoc*)pDocument)->GetDjVuView();
-				else
-					pWnd->SetError(strPathName);
-			}
-
 			SetActiveView(pView);
 			OnViewActivated(pView);
 			if (pView)
@@ -1550,7 +1558,9 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 
 			OnUpdateFrameMenu(NULL);
 			OnUpdateFrameTitle(true);
-			DrawMenuBar();
+			if (!m_bHadActiveView)
+				DrawMenuBar();
+			m_bHadActiveView = true;
 		}
 		else
 		{
@@ -1559,7 +1569,9 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 
 			OnUpdateFrameMenu(NULL);
 			OnUpdateFrameTitle(true);
-			DrawMenuBar();
+			if (m_bHadActiveView)
+				DrawMenuBar();
+			m_bHadActiveView = false;
 		}
 	}
 	else if (message->code == TAB_CLOSED)
@@ -1577,6 +1589,7 @@ void CMainFrame::OnUpdate(const Observable* source, const Message* message)
 			OnUpdateFrameMenu(NULL);
 			OnUpdateFrameTitle(true);
 			DrawMenuBar();
+			m_bHadActiveView = false;
 		}
 	}
 	else if (message->code == APP_SETTINGS_CHANGED)
@@ -1804,7 +1817,9 @@ void CMainFrame::OnUpdateFrameMenu(HMENU hMenuAlt)
 			hMenuAlt = m_appMenu.m_hMenu;
 	}
 
-	::SetMenu(m_hWnd, hMenuAlt);
+	if (hMenuAlt != m_hPrevMenu)
+		::SetMenu(m_hWnd, hMenuAlt);
+	m_hPrevMenu = hMenuAlt;
 }
 
 BOOL CMainFrame::OnEraseBkgnd(CDC* pDC)
@@ -1963,8 +1978,7 @@ void CMainFrame::RestoreOpenTabs()
 		CWnd* pWnd = theApp.GetDocumentTemplate()->CreateEmptyMDIChild();
 		// Set the tab title based on path name
 		TCHAR szTitle[_MAX_FNAME] = { 0 };
-		if (AfxGetFileTitle(pSettings->openTabs[i], szTitle, _MAX_FNAME) == 0)
-			SetTitle(szTitle);
+		AfxGetFileTitle(pSettings->openTabs[i], szTitle, _MAX_FNAME);
 		m_tabbedMDI.AddTab(pWnd, szTitle, pSettings->openTabs[i]);
 	}
 

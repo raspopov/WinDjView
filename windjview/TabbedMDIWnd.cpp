@@ -932,6 +932,9 @@ void CTabbedMDIWnd::ActivateTabImpl(int nTab, bool bRedraw)
 	if (m_nActiveTab == nTab && (nTab == -1 || !m_tabs[nTab].bReactivate))
 		return;
 
+	// Give the main frame a chance to replace tab contents before it's activated
+	UpdateObservers(TabMsg(TAB_ACTIVATING, nTab != -1 ? m_tabs[nTab].pWnd : NULL, nTab));
+
 	if (nTab != -1)
 	{
 		m_tabs[nTab].pWnd->SetWindowPos(&wndTop, m_rcContent.left, m_rcContent.top,
