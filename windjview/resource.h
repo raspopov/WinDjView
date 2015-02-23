@@ -48,9 +48,7 @@
 #define IDB_CLOSE_TAB                   154
 #define IDR_DICT_BAR                    155
 #define IDR_DICT_BAR_GRAYED             156
-#define IDR_DICT_BAR_LEGACY             157
-#define IDR_TOOLBAR_GRAYED              158
-#define IDR_TOOLBAR_LEGACY              159
+#define IDR_TOOLBAR_GRAYED              157
 #define IDS_CONTENTS_TAB                200
 #define IDS_MAKE_DEFAULT_FAILED         202
 #define IDS_PAGE_INDEX_TAB              203
@@ -226,7 +224,6 @@
 #define IDC_FULLSCREEN_HIDESCROLL       1042
 #define IDC_MAKE_DEFAULT                1043
 #define IDC_TOP_LEVEL_DOCUMENTS         1044
-#define IDC_CREATE_BACKUP               1044
 #define IDC_FULLSCREEN_CLICKS           1045
 #define IDC_STATIC_ABOUT                1046
 #define IDC_FULLSCREEN_CONTINUOUS       1047
@@ -249,7 +246,6 @@
 #define IDC_WRAP_BOOKMARKS              1064
 #define IDC_RESTORE_VIEW                1065
 #define IDC_DONATE                      1066
-#define IDC_CHECK_UPDATES               1066
 #define IDC_STATIC_VERSION              1067
 #define IDC_SPIN_PAGE                   1068
 #define IDC_BORDER_TYPE                 1069
@@ -259,9 +255,7 @@
 #define IDC_FILL_TRANSPARENCY_TEXT      1073
 #define IDC_BORDER_COLOR                1074
 #define IDC_FILL_COLOR                  1075
-#define IDC_PROPERTIES                  1076
 #define IDC_HIDE_INACTIVE_FILL          1076
-#define IDC_FIND_ALL                    1077
 #define IDC_ALWAYS_SHOW_COMMENT         1077
 #define IDC_COMMENT                     1078
 #define IDC_PAGENUM                     1079
@@ -295,6 +289,10 @@
 #define IDC_DEFAULT_VIEWER_STATUS       1107
 #define IDC_STATIC_LICENSE              1108
 #define IDC_SUBPIXEL_SCALING            1109
+#define IDC_CREATE_BACKUP               1110
+#define IDC_CHECK_UPDATES               1111
+#define IDC_PROPERTIES                  1112
+#define IDC_FIND_ALL                    1113
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_VIEW_NEXTPAGE_SHORTCUT       32773
@@ -408,9 +406,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        325
-#define _APS_NEXT_COMMAND_VALUE         33137
-#define _APS_NEXT_CONTROL_VALUE         1109
+#define _APS_NEXT_RESOURCE_VALUE        331
+#define _APS_NEXT_COMMAND_VALUE         33135
+#define _APS_NEXT_CONTROL_VALUE         1114
 #define _APS_NEXT_SYMED_VALUE           117
 #endif
 #endif

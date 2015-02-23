@@ -106,7 +106,6 @@ IDR_DjVuTYPE            ICON                    "res\\DjVuDoc.ico"
 
 IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
 IDR_TOOLBAR_GRAYED      BITMAP                  "res\\Toolbar_grayed.bmp"
-IDR_TOOLBAR_LEGACY      BITMAP                  "res\\Toolbar_legacy.bmp"
 IDB_CLOSE               BITMAP                  "res\\close.bmp"
 IDB_CLOSE_TAB           BITMAP                  "res\\close_tab.bmp"
 IDB_SETTINGS            BITMAP                  "res\\settings.bmp"
@@ -116,7 +115,6 @@ IDB_PAN_ANCHOR          BITMAP                  "res\\pan_anchor.bmp"
 IDB_HOURGLASS           BITMAP                  "res\\hourglass.bmp"
 IDR_DICT_BAR            BITMAP                  "res\\dictbar.bmp"
 IDR_DICT_BAR_GRAYED     BITMAP                  "res\\dictbar_grayed.bmp"
-IDR_DICT_BAR_LEGACY     BITMAP                  "res\\dictbar_legacy.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -466,8 +464,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2004-2014 Andrew Zhezherun",IDC_STATIC,40,17,149,8
-    LTEXT           "Copyright (C) 2012-2014 Leonid Zhezherun",IDC_STATIC,40,27,149,8
+    LTEXT           "Copyright (C) 2004-2015 Andrew Zhezherun",IDC_STATIC,40,17,149,8
+    LTEXT           "Copyright (C) 2012-2015 Leonid Zhezherun",IDC_STATIC,40,27,149,8
     DEFPUSHBUTTON   "Close",IDOK,194,7,50,14,WS_GROUP
     LTEXT           "Project homepage:",IDC_STATIC,40,45,64,8
     LTEXT           "DjVuLibre homepage:",IDC_STATIC,40,55,72,8
@@ -818,7 +816,7 @@ BEGIN
             VALUE "FileDescription", "WinDjView"
             VALUE "FileVersion", "2.1"
             VALUE "InternalName", "WinDjView.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2014 Andrew Zhezherun. All rights reserved."
+            VALUE "LegalCopyright", "Copyright (C) 2004-2015 Andrew Zhezherun. All rights reserved."
             VALUE "OriginalFilename", "WinDjView.exe"
             VALUE "ProductName", "WinDjView"
             VALUE "ProductVersion", "2.1"

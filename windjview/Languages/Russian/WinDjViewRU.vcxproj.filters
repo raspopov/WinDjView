@@ -40,9 +40,6 @@
     <Image Include="..\..\res\dictbar_grayed.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\..\res\dictbar_legacy.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="..\..\res\DjVuDoc.ico">
       <Filter>Resource Files</Filter>
     </Image>
@@ -62,9 +59,6 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\..\res\Toolbar_grayed.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="..\..\res\Toolbar_legacy.bmp">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\..\res\WinDjView.ico">

@@ -1,10 +1,11 @@
 WinDjView version history
-Copyright (C) 2004-2014 Andrew Zhezherun
+Copyright (C) 2004-2015 Andrew Zhezherun
 ----------------------------------------
 
-Changes in version 2.1 (2014-11-17):
+Changes in version 2.1 (2015-02-23):
 + Restore last open tabs on startup.
 * Rebuilt with VS2013. Windows XP or later is now required.
+* Some minor bug fixes.
 
 Changes in version 2.0.2 (2012-10-21):
 * Fixed an infinite loop in libdjvu when parsing some annotations.

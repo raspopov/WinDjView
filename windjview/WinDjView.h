@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -176,6 +176,7 @@ public:
 	bool m_bClosing;
 	bool m_bTopLevelDocs;
 	CString m_strNewVersion;
+	bool m_bNoAboutOnStartup;
 
 // Implementation
 protected:

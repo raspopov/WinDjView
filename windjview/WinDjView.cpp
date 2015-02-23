@@ -1,5 +1,5 @@
-//	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+p//	WinDjView
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -96,6 +96,7 @@ const TCHAR* s_pszDictChoice = _T("dict-choice");
 const TCHAR* s_pszCheckUpdates = _T("check-updates");
 const TCHAR* s_pszLastUpdateLow = _T("last-update-l");
 const TCHAR* s_pszLastUpdateHigh = _T("last-update-h");
+const TCHAR* s_pszNoAboutOnStartup = _T("no-about-on-startup");
 
 const TCHAR* s_pszTabsSection = _T("Tabs");
 const TCHAR* s_pszRestoreTabs = _T("restore-tabs");
@@ -161,6 +162,7 @@ END_MESSAGE_MAP()
 
 CDjViewApp::CDjViewApp()
 	: m_bInitialized(false), m_bClosing(false), m_bTopLevelDocs(false),
+	  m_bNoAboutOnStartup(false),
 	  m_pDjVuTemplate(NULL), m_pFindDlg(NULL),
 	  m_nThreadCount(0), m_hHook(NULL), m_pPendingSource(NULL), m_bShiftPressed(false),
 	  m_bControlPressed(false), m_nLangIndex(0), m_nTimerID(0),
@@ -226,7 +228,6 @@ BOOL CDjViewApp::InitInstance()
 
 	LoadStdProfileSettings(10);  // Load recently open documents
 	LoadSettings();
-	//LoadOpenTabs();
 	LoadDictionaries();
 	LoadLanguages();
 	SetStartupLanguage();
@@ -266,7 +267,7 @@ BOOL CDjViewApp::InitInstance()
 		ThreadStarted();
 	}
 
-	if (m_appSettings.strVersion != CURRENT_VERSION)
+	if (m_appSettings.strVersion != CURRENT_VERSION && !m_bNoAboutOnStartup)
 		OnAppAbout();
 
 	ThreadStarted();
@@ -288,11 +289,12 @@ CMainFrame* CDjViewApp::CreateMainFrame(bool bAppStartup, int nCmdShow)
 	}
 
 	m_frames.push_front(pMainFrame);
-	CWnd* pPrevMainWnd = m_pMainWnd;
 
 	m_mainWndLock.Lock();
-	m_pMainWnd = pMainFrame;
+	CWnd* pPrevMainWnd = m_pMainWnd;
 	m_mainWndLock.Unlock();
+
+	ChangeMainWnd(pMainFrame);
 
 	pMainFrame->UpdateToolbars();
 
@@ -375,13 +377,19 @@ void CDjViewApp::RemoveMainFrame(CMainFrame* pMainFrame)
 	if (it != m_frames.end())
 		m_frames.erase(it);
 
-	if (m_pMainWnd == pMainFrame)
+	m_mainWndLock.Lock();
+	CWnd* pMainWnd = m_pMainWnd;
+	m_mainWndLock.Unlock();
+	if (pMainWnd == pMainFrame)
 		ChangeMainWnd(m_frames.front(), true);
 }
 
 void CDjViewApp::ChangeMainWnd(CMainFrame* pMainFrame, bool bActivate)
 {
-	if (m_pMainWnd == pMainFrame)
+	m_mainWndLock.Lock();
+	CWnd* pMainWnd = m_pMainWnd;
+	m_mainWndLock.Unlock();
+	if (pMainWnd == pMainFrame)
 		return;
 
 	list<CMainFrame*>::iterator it = find(m_frames.begin(), m_frames.end(), pMainFrame);
@@ -664,6 +672,8 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.nCurDict = GetProfileInt(s_pszGlobalSection, s_pszCurrentDict, m_appSettings.nCurDict);
 	m_appSettings.strDictLocation = GetProfileString(s_pszGlobalSection, s_pszDictLocation, m_appSettings.strDictLocation);
 	m_appSettings.nDictChoice = GetProfileInt(s_pszGlobalSection, s_pszDictChoice, m_appSettings.nDictChoice);
+	m_bNoAboutOnStartup = !!GetProfileInt(s_pszGlobalSection, s_pszNoAboutOnStartup, 0);
+
 
 	m_appSettings.bCheckUpdates = !!GetProfileInt(s_pszGlobalSection, s_pszCheckUpdates, m_appSettings.bCheckUpdates);
 	UINT nLow = GetProfileInt(s_pszGlobalSection, s_pszLastUpdateLow, static_cast<int>(m_appSettings.nLastUpdateTime & 0xFFFFFFFF));
@@ -854,12 +864,16 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszGlobalSection, s_pszLastUpdateHigh, static_cast<int>(m_appSettings.nLastUpdateTime >> 32));
 
 	WriteProfileInt(s_pszTabsSection, s_pszRestoreTabs, m_appSettings.bRestoreTabs);
-	WriteProfileInt(s_pszTabsSection, s_pszStartupTab, m_appSettings.nStartupTab);
-	WriteProfileInt(s_pszTabsSection, s_pszTabCount, (int)m_appSettings.openTabs.size());
-	for (int nTab = 0; nTab < (int)m_appSettings.openTabs.size(); ++nTab)
+	// Don't save open tabs if showing multiple top-level windows
+	if (!m_bTopLevelDocs)
 	{
-		WriteProfileString(s_pszTabsSection,
-			s_pszTabPrefix + FormatString(_T("%d"), nTab), m_appSettings.openTabs[nTab]);
+		WriteProfileInt(s_pszTabsSection, s_pszStartupTab, m_appSettings.nStartupTab);
+		WriteProfileInt(s_pszTabsSection, s_pszTabCount, (int)m_appSettings.openTabs.size());
+		for (int nTab = 0; nTab < (int)m_appSettings.openTabs.size(); ++nTab)
+		{
+			WriteProfileString(s_pszTabsSection,
+				s_pszTabPrefix + FormatString(_T("%d"), nTab), m_appSettings.openTabs[nTab]);
+		}
 	}
 
 	WriteProfileInt(s_pszAnnotationsSection, s_pszHideInactiveBorder, m_annoTemplate.bHideInactiveBorder);
@@ -2378,7 +2392,10 @@ void CDjViewApp::Lookup(const CString& strLookup, DictionaryInfo* pInfo)
 void CDjViewApp::OnAppExit()
 {
 	// Close current main frame. This will work in both MDI and top-level mode.
-	m_pMainWnd->SendMessage(WM_CLOSE);
+	m_mainWndLock.Lock();
+	CWnd* pMainWnd = m_pMainWnd;
+	m_mainWndLock.Unlock();
+	pMainWnd->SendMessage(WM_CLOSE);
 }
 
 int CDjViewApp::GetDocumentCount()
@@ -2392,9 +2409,13 @@ int CDjViewApp::GetDocumentCount()
 
 BOOL CDjViewApp::SaveAllModified()
 {
-	if (!m_appSettings.bTopLevelDocs && m_appSettings.bRestoreTabs)
+	if (!m_appSettings.bTopLevelDocs)
 	{
-		CMainFrame* pMainFrame = (CMainFrame*)m_pMainWnd;
+		m_mainWndLock.Lock();
+		CWnd* pMainWnd = m_pMainWnd;
+		m_mainWndLock.Unlock();
+
+		CMainFrame* pMainFrame = (CMainFrame*)pMainWnd;
 		pMainFrame->SaveOpenTabs();
 	}
 
@@ -2635,8 +2656,12 @@ CFindDlg* CDjViewApp::GetFindDlg(bool bCreate)
 {
 	if (m_pFindDlg == NULL && bCreate)
 	{
+		m_mainWndLock.Lock();
+		CWnd* pMainWnd = m_pMainWnd;
+		m_mainWndLock.Unlock();
+
 		m_pFindDlg = new CFindDlg();
-		m_pFindDlg->Create(IDD_FIND, m_pMainWnd);
+		m_pFindDlg->Create(IDD_FIND, pMainWnd);
 		m_pFindDlg->CenterWindow();
 	}
 
@@ -2657,9 +2682,13 @@ void CDjViewApp::UpdateFindDlg(CWnd* pNewParent)
 	CRect rcFindDlg;
 	m_pFindDlg->GetWindowRect(rcFindDlg);
 
-	CMainFrame* pOldFrame = (CMainFrame*) m_pFindDlg->GetParent();
+	m_mainWndLock.Lock();
+	CWnd* pMainWnd = m_pMainWnd;
+	m_mainWndLock.Unlock();
+
+	CMainFrame* pOldFrame = (CMainFrame*)m_pFindDlg->GetParent();
 	ASSERT(pOldFrame != NULL);
-	CMainFrame* pMainFrame = (CMainFrame*) m_pMainWnd;
+	CMainFrame* pMainFrame = (CMainFrame*)pMainWnd;
 
 	pOldFrame->m_bDontActivate = true;
 	pMainFrame->m_bDontActivate = true;
@@ -2667,7 +2696,7 @@ void CDjViewApp::UpdateFindDlg(CWnd* pNewParent)
 	CFindDlg* pOldFindDlg = m_pFindDlg;
 
 	m_pFindDlg = new CFindDlg;
-	m_pFindDlg->Create(IDD_FIND, pNewParent ? pNewParent : m_pMainWnd);
+	m_pFindDlg->Create(IDD_FIND, pNewParent ? pNewParent : pMainWnd);
 
 	CRect rcNewFindDlg;
 	m_pFindDlg->GetWindowRect(rcNewFindDlg);

@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -1190,7 +1190,7 @@ CRect FindContentRect(GP<DjVuImage> pImage)
 
 		if (pPixel < pEndPixel)
 		{
-			int nPixel = (pPixel - pBits - rcResult.top*nRowLength)/nPixelSize;
+			int nPixel = static_cast<int>(pPixel - pBits - rcResult.top*nRowLength)/nPixelSize;
 			rcResult.left = nPixel;
 			rcResult.right = nPixel + 1;
 			break;
@@ -1208,7 +1208,7 @@ CRect FindContentRect(GP<DjVuImage> pImage)
 
 		if (pPixel < pEndPixel)
 		{
-			int nPixel = (pPixel - pBits - (rcResult.bottom - 1)*nRowLength)/nPixelSize;
+			int nPixel = static_cast<int>(pPixel - pBits - (rcResult.bottom - 1)*nRowLength) / nPixelSize;
 			rcResult.left = min(rcResult.left, nPixel);
 			rcResult.right = max(rcResult.right, nPixel + 1);
 			break;
@@ -1225,7 +1225,7 @@ CRect FindContentRect(GP<DjVuImage> pImage)
 		while (pPixel < pEndPixel && *pPixel == nWhite)
 			++pPixel;
 
-		int nPixel = (pPixel - pBits - y*nRowLength)/nPixelSize;
+		int nPixel = static_cast<int>(pPixel - pBits - y*nRowLength) / nPixelSize;
 		rcResult.left = min(rcResult.left, nPixel);
 	}
 
@@ -1238,7 +1238,7 @@ CRect FindContentRect(GP<DjVuImage> pImage)
 		while (pPixel >= pEndPixel && *pPixel == nWhite)
 			--pPixel;
 
-		int nPixel = (pPixel - pBits - y*nRowLength)/nPixelSize;
+		int nPixel = static_cast<int>(pPixel - pBits - y*nRowLength) / nPixelSize;
 		rcResult.right = max(rcResult.right, nPixel + 1);
 	}
 

@@ -381,7 +381,6 @@
     <Image Include="res\close_tab.bmp" />
     <Image Include="res\dictbar.bmp" />
     <Image Include="res\dictbar_grayed.bmp" />
-    <Image Include="res\dictbar_legacy.bmp" />
     <Image Include="res\DjVuDoc.ico" />
     <Image Include="res\donate.bmp" />
     <Image Include="res\hourglass.bmp" />
@@ -389,7 +388,6 @@
     <Image Include="res\settings.bmp" />
     <Image Include="res\Toolbar.bmp" />
     <Image Include="res\Toolbar_grayed.bmp" />
-    <Image Include="res\Toolbar_legacy.bmp" />
     <Image Include="res\WinDjView.ico" />
   </ItemGroup>
   <ItemGroup>
