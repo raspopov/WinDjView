@@ -1,8 +1,11 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjView", "WinDjView.vcxproj", "{0352355C-CC2D-4190-8BF8-F280F7382B8C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8668341F-226E-430C-8BAC-1C18AA000BB4} = {8668341F-226E-430C-8BAC-1C18AA000BB4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjViewFR", "Languages\French\WinDjViewFR.vcxproj", "{ECF00175-3826-4B35-9C4B-560277505CE5}"
 EndProject
@@ -23,6 +26,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjViewES", "Languages\Spanish\WinDjViewES.vcxproj", "{28ACA736-474E-4A39-B075-E20187327CEF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjView_wuu", "Languages\Chinese_Wu\WinDjView_wuu.vcxproj", "{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libdjvu", "libdjvu\libdjvu.vcxproj", "{8668341F-226E-430C-8BAC-1C18AA000BB4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -120,6 +125,14 @@ Global
 		{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}.Release|Win32.Build.0 = Release|Win32
 		{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}.Release|x64.ActiveCfg = Release|x64
 		{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}.Release|x64.Build.0 = Release|x64
+		{8668341F-226E-430C-8BAC-1C18AA000BB4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8668341F-226E-430C-8BAC-1C18AA000BB4}.Debug|Win32.Build.0 = Debug|Win32
+		{8668341F-226E-430C-8BAC-1C18AA000BB4}.Debug|x64.ActiveCfg = Debug|x64
+		{8668341F-226E-430C-8BAC-1C18AA000BB4}.Debug|x64.Build.0 = Debug|x64
+		{8668341F-226E-430C-8BAC-1C18AA000BB4}.Release|Win32.ActiveCfg = Release|Win32
+		{8668341F-226E-430C-8BAC-1C18AA000BB4}.Release|Win32.Build.0 = Release|Win32
+		{8668341F-226E-430C-8BAC-1C18AA000BB4}.Release|x64.ActiveCfg = Release|x64
+		{8668341F-226E-430C-8BAC-1C18AA000BB4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

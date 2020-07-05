@@ -1,0 +1,293 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Arrays.cpp" />
+    <ClCompile Include="atomic.cpp" />
+    <ClCompile Include="BSByteStream.cpp" />
+    <ClCompile Include="BSEncodeByteStream.cpp" />
+    <ClCompile Include="ByteStream.cpp" />
+    <ClCompile Include="DataPool.cpp" />
+    <ClCompile Include="debug.cpp" />
+    <ClCompile Include="DjVmDir.cpp" />
+    <ClCompile Include="DjVmDir0.cpp" />
+    <ClCompile Include="DjVmDoc.cpp" />
+    <ClCompile Include="DjVmNav.cpp" />
+    <ClCompile Include="DjVuAnno.cpp" />
+    <ClCompile Include="DjVuDocEditor.cpp" />
+    <ClCompile Include="DjVuDocument.cpp" />
+    <ClCompile Include="DjVuDumpHelper.cpp" />
+    <ClCompile Include="DjVuErrorList.cpp" />
+    <ClCompile Include="DjVuFile.cpp" />
+    <ClCompile Include="DjVuFileCache.cpp" />
+    <ClCompile Include="DjVuGlobal.cpp" />
+    <ClCompile Include="DjVuGlobalMemory.cpp" />
+    <ClCompile Include="DjVuImage.cpp" />
+    <ClCompile Include="DjVuInfo.cpp" />
+    <ClCompile Include="DjVuMessage.cpp" />
+    <ClCompile Include="DjVuMessageLite.cpp" />
+    <ClCompile Include="DjVuNavDir.cpp" />
+    <ClCompile Include="DjVuPalette.cpp" />
+    <ClCompile Include="DjVuPort.cpp" />
+    <ClCompile Include="DjVuText.cpp" />
+    <ClCompile Include="DjVuToPS.cpp" />
+    <ClCompile Include="GBitmap.cpp" />
+    <ClCompile Include="GContainer.cpp" />
+    <ClCompile Include="GException.cpp" />
+    <ClCompile Include="GIFFManager.cpp" />
+    <ClCompile Include="GMapAreas.cpp" />
+    <ClCompile Include="GOS.cpp" />
+    <ClCompile Include="GPixmap.cpp" />
+    <ClCompile Include="GRect.cpp" />
+    <ClCompile Include="GScaler.cpp" />
+    <ClCompile Include="GSmartPointer.cpp" />
+    <ClCompile Include="GString.cpp" />
+    <ClCompile Include="GThreads.cpp" />
+    <ClCompile Include="GUnicode.cpp" />
+    <ClCompile Include="GURL.cpp" />
+    <ClCompile Include="IFFByteStream.cpp" />
+    <ClCompile Include="IW44EncodeCodec.cpp" />
+    <ClCompile Include="IW44Image.cpp" />
+    <ClCompile Include="JB2EncodeCodec.cpp" />
+    <ClCompile Include="JB2Image.cpp" />
+    <ClCompile Include="JPEGDecoder.cpp" />
+    <ClCompile Include="MMRDecoder.cpp" />
+    <ClCompile Include="MMX.cpp" />
+    <ClCompile Include="UnicodeByteStream.cpp" />
+    <ClCompile Include="XMLParser.cpp" />
+    <ClCompile Include="XMLTags.cpp" />
+    <ClCompile Include="ZPCodec.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Arrays.h" />
+    <ClInclude Include="atomic.h" />
+    <ClInclude Include="BSByteStream.h" />
+    <ClInclude Include="ByteStream.h" />
+    <ClInclude Include="DataPool.h" />
+    <ClInclude Include="debug.h" />
+    <ClInclude Include="DjVmDir.h" />
+    <ClInclude Include="DjVmDir0.h" />
+    <ClInclude Include="DjVmDoc.h" />
+    <ClInclude Include="DjVmNav.h" />
+    <ClInclude Include="DjVuAnno.h" />
+    <ClInclude Include="DjVuDocEditor.h" />
+    <ClInclude Include="DjVuDocument.h" />
+    <ClInclude Include="DjVuDumpHelper.h" />
+    <ClInclude Include="DjVuErrorList.h" />
+    <ClInclude Include="DjVuFile.h" />
+    <ClInclude Include="DjVuFileCache.h" />
+    <ClInclude Include="DjVuGlobal.h" />
+    <ClInclude Include="DjVuImage.h" />
+    <ClInclude Include="DjVuInfo.h" />
+    <ClInclude Include="DjVuMessage.h" />
+    <ClInclude Include="DjVuMessageLite.h" />
+    <ClInclude Include="DjVuNavDir.h" />
+    <ClInclude Include="DjVuPalette.h" />
+    <ClInclude Include="DjVuPort.h" />
+    <ClInclude Include="DjVuText.h" />
+    <ClInclude Include="DjVuToPS.h" />
+    <ClInclude Include="GBitmap.h" />
+    <ClInclude Include="GContainer.h" />
+    <ClInclude Include="GException.h" />
+    <ClInclude Include="GIFFManager.h" />
+    <ClInclude Include="GMapAreas.h" />
+    <ClInclude Include="GOS.h" />
+    <ClInclude Include="GPixmap.h" />
+    <ClInclude Include="GRect.h" />
+    <ClInclude Include="GScaler.h" />
+    <ClInclude Include="GSmartPointer.h" />
+    <ClInclude Include="GString.h" />
+    <ClInclude Include="GThreads.h" />
+    <ClInclude Include="GURL.h" />
+    <ClInclude Include="IFFByteStream.h" />
+    <ClInclude Include="IW44Image.h" />
+    <ClInclude Include="JB2Image.h" />
+    <ClInclude Include="JPEGDecoder.h" />
+    <ClInclude Include="MMRDecoder.h" />
+    <ClInclude Include="MMX.h" />
+    <ClInclude Include="UnicodeByteStream.h" />
+    <ClInclude Include="XMLParser.h" />
+    <ClInclude Include="XMLTags.h" />
+    <ClInclude Include="ZPCodec.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8668341F-226E-430C-8BAC-1C18AA000BB4}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>libdjvu</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(ProjectDir)</OutDir>
+    <IntDir>.\Debug\</IntDir>
+    <TargetName>$(ProjectName)d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(ProjectDir)</OutDir>
+    <IntDir>.\Debug_x64\</IntDir>
+    <TargetName>$(ProjectName)d64</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(ProjectDir)</OutDir>
+    <IntDir>.\Release_x64\</IntDir>
+    <TargetName>$(ProjectName)64</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(ProjectDir)</OutDir>
+    <IntDir>.\Release\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CONSOLE;HAS_WCTYPE=1;THREADMODEL=0;DO_CHANGELOCALE=0;WIN32_MONITOR;NEED_JPEG_DECODER;WIN32_JPEG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_SECURE_SCL=0;_USING_V110_SDK71_;LIBDJVU_STATIC;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <StringPooling>false</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <OutputFile>libdjvud.lib</OutputFile>
+      <TargetMachine>MachineX86</TargetMachine>
+      <SubSystem>Windows</SubSystem>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CONSOLE;HAS_WCTYPE=1;THREADMODEL=0;DO_CHANGELOCALE=0;WIN32_MONITOR;NEED_JPEG_DECODER;WIN32_JPEG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_SECURE_SCL=0;_USING_V110_SDK71_;LIBDJVU_STATIC;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <StringPooling>false</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <OutputFile>libdjvud64.lib</OutputFile>
+      <SubSystem>Windows</SubSystem>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CONSOLE;HAS_WCTYPE=1;THREADMODEL=0;DO_CHANGELOCALE=0;WIN32_MONITOR;NEED_JPEG_DECODER;WIN32_JPEG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_SECURE_SCL=0;_USING_V110_SDK71_;LIBDJVU_STATIC;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <OutputFile>libdjvu.lib</OutputFile>
+      <TargetMachine>MachineX86</TargetMachine>
+      <SubSystem>Windows</SubSystem>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CONSOLE;HAS_WCTYPE=1;THREADMODEL=0;DO_CHANGELOCALE=0;WIN32_MONITOR;NEED_JPEG_DECODER;WIN32_JPEG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_SECURE_SCL=0;_USING_V110_SDK71_;LIBDJVU_STATIC;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <OutputFile>libdjvu64.lib</OutputFile>
+      <SubSystem>Windows</SubSystem>
+    </Lib>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

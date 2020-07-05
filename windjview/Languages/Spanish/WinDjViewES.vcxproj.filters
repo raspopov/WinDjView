@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{9b1ae81f-c372-441b-94a4-9fd83d6ec3e4}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{ccb09dc6-0474-42e8-a468-9d50c91dde78}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{dd045e6f-ab2d-44e1-aee3-2809fd6c269d}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="WinDjViewES.rc">
+      <Filter>Source Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\res\bookmarks.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\close.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\close_tab.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\dictbar.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\DjVuDoc.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\donate.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\hourglass.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\pan_anchor.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\settings.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\Toolbar.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\WinDjView.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\res\drag.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\hand.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\link.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\magnify.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_all.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_d.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_dl.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_dr.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_l.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_lr.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_r.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_u.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_ud.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_ul.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_ur.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\split_h.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\WinDjView.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\zoom_rect.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

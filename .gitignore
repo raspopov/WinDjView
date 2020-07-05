@@ -1,0 +1,15 @@
+.vs
+Debug
+Debug_x64
+Release
+Release_x64
+ipch
+*.VC.db
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.suo
+*.user
+*.lib
