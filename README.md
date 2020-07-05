@@ -1,4 +1,7 @@
 # WinDjView
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7ec65881031945409b45d7239a9ac189)](https://app.codacy.com/manual/raspopov/WinDjView?utm_source=github.com&utm_medium=referral&utm_content=raspopov/WinDjView&utm_campaign=Badge_Grade_Settings)
+
 *A fast, compact, and powerful DjVu viewer.*
 
 Brought to you by: [Andrew Zhezherun](https://sourceforge.net/u/zhezherun/profile/)
