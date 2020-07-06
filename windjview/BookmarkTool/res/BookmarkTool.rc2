@@ -4,17 +4,3 @@
 #ifdef APSTUDIO_INVOKED
 #error this file is not editable by Microsoft Visual C++
 #endif
-
-
-#define IDR_MANIFEST 1
-
-#ifndef RT_MANIFEST
-#define RT_MANIFEST 24
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// RT_MANIFEST
-//
-
-IDR_MANIFEST   RT_MANIFEST   MOVEABLE PURE   "res\\BookmarkTool.manifest"

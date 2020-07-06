@@ -91,8 +91,6 @@
 #include "stdafx.h"
 #include "Global.h"
 
-#include "MyTheme.h"
-
 
 // RefCount
 
@@ -458,75 +456,6 @@ void CreateSystemDialogFont(CFont& font)
 	font.CreateFontIndirect(&lf);
 }
 
-void CreateSystemIconFont(CFont& font)
-{
-	if (font.m_hObject != NULL)
-		font.DeleteObject();
-
-	LOGFONT lf;
-
-	if (IsThemed())
-	{
-		LOGFONTW lfw;
-		HRESULT hr = XPGetThemeSysFont(NULL, TMT_ICONTITLEFONT, &lfw);
-		if (SUCCEEDED(hr))
-		{
-#ifdef UNICODE
-			memcpy(&lf, &lfw, sizeof(LOGFONT));
-#else
-			memcpy(&lf, &lfw, (char*)&lfw.lfFaceName - (char*)&lfw);
-			_tcscpy(lf.lfFaceName, CString(lfw.lfFaceName));
-#endif
-			font.CreateFontIndirect(&lf);
-			return;
-		}
-	}
-
-	if (!SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &lf, 0))
-	{
-		CreateSystemDialogFont(font);
-		return;
-	}
-
-	font.CreateFontIndirect(&lf);
-}
-
-void CreateSystemMenuFont(CFont& font)
-{
-	if (font.m_hObject != NULL)
-		font.DeleteObject();
-
-	LOGFONT lf;
-
-	if (IsThemed())
-	{
-		LOGFONTW lfw;
-		HRESULT hr = XPGetThemeSysFont(NULL, TMT_MENUFONT, &lfw);
-		if (SUCCEEDED(hr))
-		{
-#ifdef UNICODE
-			memcpy(&lf, &lfw, sizeof(LOGFONT));
-#else
-			memcpy(&lf, &lfw, (char*)&lfw.lfFaceName - (char*)&lfw);
-			_tcscpy(lf.lfFaceName, CString(lfw.lfFaceName));
-#endif
-			font.CreateFontIndirect(&lf);
-			return;
-		}
-	}
-
-	NONCLIENTMETRICS ncm;
-	ncm.cbSize = sizeof(NONCLIENTMETRICS);
-	if (!SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0))
-	{
-		CreateSystemDialogFont(font);
-		return;
-	}
-
-	font.CreateFontIndirect(&ncm.lfMenuFont);
-}
-
-
 // MonitorAPI
 
 struct MonitorAPI
@@ -670,7 +599,7 @@ UINT GetMouseScrollLines()
 	static UINT msgGetScrollLines;
 	static WORD nRegisteredMessage;
 
-	if (afxData.bWin95)
+	//if (afxData.bWin95)
 	{
 		if (nRegisteredMessage == 0)
 		{

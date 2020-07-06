@@ -19,28 +19,11 @@
 
 #pragma once
 
+#define _SECURE_ATL 1
+#define STRICT
+
 #ifndef VC_EXTRALEAN
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
-#endif
-
-#define _WIN32_WINNT	0x0400
-
-#if (_MSC_VER >= 1300)
-#define WINVER			0x0500
-#define _WIN32_IE		0x0400
-#endif
-
-#if (_MFC_VER > 0x0600)
-#define _WIN32_WINDOWS	0x0410
-#endif
-
-#ifndef _DEBUG
-// Don's use secure standard library from VC++ 2005
-#define _SECURE_SCL 0
-#endif
-
-#if (_MSC_VER < 1300)
-#pragma warning(disable: 4200 4786)
 #endif
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
@@ -51,8 +34,8 @@
 
 // turns off MFC's hiding of some common and often safely ignored warning messages
 #define _AFX_ALL_WARNINGS
-#pragma warning(push)
-#pragma warning(disable: 4244 4812)
+
+#include <sdkddkver.h>
 
 #include <afxwin.h>
 #include <afxext.h>
@@ -69,8 +52,6 @@
 #else
 #include <../src/afximpl.h>
 #endif
-
-#pragma warning(pop)
 
 #include <locale.h>
 #include <locale>
@@ -103,3 +84,15 @@ using namespace std;
 #include "../libdjvu/DataPool.h"
 #include "../libdjvu/ByteStream.h"
 #include "../libdjvu/IFFByteStream.h"
+
+#ifdef _UNICODE
+#if defined _M_IX86
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_IA64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='ia64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_X64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#else
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#endif
+#endif
