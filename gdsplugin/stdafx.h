@@ -25,11 +25,6 @@
 
 #define STRICT
 
-#define WINVER			0x0400
-#define _WIN32_WINNT	0x0400
-#define _WIN32_WINDOWS	0x0410
-#define _WIN32_IE		0x0400
-
 #define _ATL_APARTMENT_THREADED
 #define _ATL_NO_AUTOMATIC_NAMESPACE
 
@@ -38,6 +33,8 @@
 // turns off ATL's hiding of some common and often safely ignored warning messages
 #define _ATL_ALL_WARNINGS
 
+#include <sdkddkver.h>
+
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlwin.h>
@@ -45,24 +42,42 @@
 #include <atlctl.h>
 #include <atlhost.h>
 #include <atlsafe.h>
+#include <comutil.h>
 
 using namespace ATL;
 
 #import "C:\Program Files\Google\Google Desktop Search\GoogleDesktopAPI2.dll" auto_rename
 using namespace GoogleDesktopSearchAPILib;
 
-#define HAS_WCTYPE
-#define DJVUREFAPI
+#define HAS_WCTYPE 1
+#define THREADMODEL 0
+#define DO_CHANGELOCALE 0
+#define WIN32_MONITOR
+#define NEED_JPEG_DECODER
+#define WIN32_JPEG
+#define LIBDJVU_STATIC
 
-#include "../libdjvu/DjVuDocument.h"
-#include "../libdjvu/DjVuFile.h"
-#include "../libdjvu/DjVuImage.h"
-#include "../libdjvu/IFFByteStream.h"
-#include "../libdjvu/BSByteStream.h"
-#include "../libdjvu/DataPool.h"
-#include "../libdjvu/DjVuText.h"
-#include "../libdjvu/GPixmap.h"
-#include "../libdjvu/GBitmap.h"
+#include "DjVuDocument.h"
+#include "DjVuFile.h"
+#include "DjVuImage.h"
+#include "IFFByteStream.h"
+#include "BSByteStream.h"
+#include "DataPool.h"
+#include "DjVuText.h"
+#include "GPixmap.h"
+#include "GBitmap.h"
 
 #define FREEIMAGE_LIB
 #include "FreeImage.h"
+
+#ifdef _UNICODE
+#if defined _M_IX86
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_IA64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='ia64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_X64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#else
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#endif
+#endif
