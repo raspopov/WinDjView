@@ -409,7 +409,7 @@ void CDjVuView::OnDraw(CDC* pDC)
 	{
 		// All selection corner points are inside m_rcSelection, so it
 		// needs to be adjusted so that the drawn selection precisely
-		// follows the mouse on screen. 
+		// follows the mouse on screen.
 		GRect rcDeflated(m_rcSelection.xmin, m_rcSelection.ymin + 1,
 				m_rcSelection.width() - 1, m_rcSelection.height() - 1);
 		CRect rcSel = TranslatePageRect(m_nSelectionPage, rcDeflated);
@@ -5484,8 +5484,8 @@ void CDjVuView::GoToURL(const GUTF8String& url, bool bAddHistoryPoint)
 	}
 
 	// Open a web link
-	DWORD dwResult = (DWORD)::ShellExecute(NULL, _T("open"), MakeCString(url), NULL, NULL, SW_SHOW);
-	if (dwResult <= 32) // Failure
+	HINSTANCE dwResult = ::ShellExecute(NULL, _T("open"), MakeCString(url), NULL, NULL, SW_SHOW);
+	if (dwResult <= (HINSTANCE)32) // Failure
 	{
 		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + MakeCString(url));
 	}

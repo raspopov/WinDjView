@@ -82,7 +82,7 @@ BOOL CSettingsDictPage::OnInitDialog()
 		{
 			DictionaryInfo* pInfo = theApp.GetDictionaryInfo(nLang, nDict);
 			int nItem = m_list.InsertItem(m_list.GetItemCount(), pInfo->strTitle);
-			m_list.SetItemData(nItem, reinterpret_cast<DWORD>(pInfo));
+			m_list.SetItemData(nItem, reinterpret_cast<DWORD_PTR>(pInfo));
 		}
 	}
 

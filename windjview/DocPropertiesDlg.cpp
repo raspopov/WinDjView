@@ -184,7 +184,7 @@ END_MESSAGE_MAP()
 BOOL CDocPropertiesDlg::OnInitDialog()
 {
 	CMyDialog::OnInitDialog();
-	
+
 	if (m_bHideShowAll)
 		GetDlgItem(IDC_SHOW_ALL_FILES)->ShowWindow(SW_HIDE);
 
@@ -254,7 +254,7 @@ void CDocPropertiesDlg::PopulateFiles()
 			m_listFiles.SetItemText(nIndex, 1, m_files[i].strName);
 			m_listFiles.SetItemText(nIndex, 2, m_files[i].strType);
 			m_listFiles.SetItemText(nIndex, 3, FormatString(_T("%d"), m_files[i].nSize));
-			m_listFiles.SetItemData(nIndex, (DWORD) &m_files[i]);
+			m_listFiles.SetItemData(nIndex, reinterpret_cast<DWORD_PTR>(&m_files[i]));
 		}
 
 		if (m_nSortBy == -1 || m_nSortBy == 0)
@@ -292,7 +292,7 @@ void CDocPropertiesDlg::PopulateFiles()
 			int nIndex = m_listFiles.InsertItem(m_files[i].nPageIndex, FormatString(_T("%d"), m_files[i].nPageIndex + 1));
 			m_listFiles.SetItemText(nIndex, 1, m_files[i].strName);
 			m_listFiles.SetItemText(nIndex, 2, FormatString(_T("%d"), m_files[i].nSize));
-			m_listFiles.SetItemData(nIndex, (DWORD) &m_files[i]);
+			m_listFiles.SetItemData(nIndex, reinterpret_cast<DWORD_PTR>(&m_files[i]));
 		}
 
 		if (m_nSortBy == -1 || m_nSortBy == 1 || m_nSortBy == 3)
