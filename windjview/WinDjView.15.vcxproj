@@ -1,0 +1,477 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{0352355C-CC2D-4190-8BF8-F280F7382B8C}</ProjectGuid>
+    <Keyword>MFCProj</Keyword>
+    <RootNamespace>WinDjView</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <ProjectName>WinDjView</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>.\Release_x64\</OutDir>
+    <IntDir>.\Release_x64\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+    <EmbedManifest>false</EmbedManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+    <EmbedManifest>false</EmbedManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>.\Debug_x64\</OutDir>
+    <IntDir>.\Debug_x64\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+    <EmbedManifest>false</EmbedManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\Debug\</OutDir>
+    <IntDir>.\Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+    <EmbedManifest>false</EmbedManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <TypeLibraryName>.\Release/WinDjView.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <StringPooling>true</StringPooling>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <OmitFramePointers>true</OmitFramePointers>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>libdjvu/libdjvu64.lib;msimg32.lib;version.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <SubSystem>Windows</SubSystem>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(IntDir)WinDjView.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Release_Unicode/WinDjView.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <StringPooling>true</StringPooling>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <OmitFramePointers>true</OmitFramePointers>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>libdjvu/libdjvu.lib;msimg32.lib;version.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <SubSystem>Windows</SubSystem>
+      <EntryPointSymbol>wWinMainCRTStartup</EntryPointSymbol>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(IntDir)WinDjView.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <TypeLibraryName>.\Debug/WinDjView.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN64;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN64;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>libdjvu/libdjvud64.lib;msimg32.lib;version.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(IntDir)WinDjView.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Debug_Unicode/WinDjView.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>libdjvu/libdjvud.lib;msimg32.lib;version.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <EntryPointSymbol>wWinMainCRTStartup</EntryPointSymbol>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(IntDir)WinDjView.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="AnnotationDlg.cpp" />
+    <ClCompile Include="AppSettings.cpp" />
+    <ClCompile Include="BookmarkDlg.cpp" />
+    <ClCompile Include="BookmarksView.cpp" />
+    <ClCompile Include="DjVuDoc.cpp" />
+    <ClCompile Include="DjVuSource.cpp" />
+    <ClCompile Include="DjVuView.cpp" />
+    <ClCompile Include="DocPropertiesDlg.cpp" />
+    <ClCompile Include="Drawing.cpp" />
+    <ClCompile Include="FindDlg.cpp" />
+    <ClCompile Include="FullscreenWnd.cpp" />
+    <ClCompile Include="Global.cpp" />
+    <ClCompile Include="GotoPageDlg.cpp" />
+    <ClCompile Include="InstallDicDlg.cpp" />
+    <ClCompile Include="MagnifyWnd.cpp" />
+    <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="MDIChild.cpp" />
+    <ClCompile Include="MyBitmapButton.cpp" />
+    <ClCompile Include="MyColorPicker.cpp" />
+    <ClCompile Include="MyComboBox.cpp" />
+    <ClCompile Include="MyDialog.cpp" />
+    <ClCompile Include="MyDocManager.cpp" />
+    <ClCompile Include="MyDocTemplate.cpp" />
+    <ClCompile Include="MyEdit.cpp" />
+    <ClCompile Include="MyFileDialog.cpp" />
+    <ClCompile Include="MyGdiPlus.cpp" />
+    <ClCompile Include="MyScrollView.cpp" />
+    <ClCompile Include="MyStatusBar.cpp" />
+    <ClCompile Include="MyTheme.cpp" />
+    <ClCompile Include="MyToolBar.cpp" />
+    <ClCompile Include="MyTreeView.cpp" />
+    <ClCompile Include="NavPane.cpp" />
+    <ClCompile Include="PageIndexWnd.cpp" />
+    <ClCompile Include="PrintDlg.cpp" />
+    <ClCompile Include="ProgressDlg.cpp" />
+    <ClCompile Include="RenderThread.cpp" />
+    <ClCompile Include="Scaling.cpp" />
+    <ClCompile Include="SearchResultsView.cpp" />
+    <ClCompile Include="SettingsAdvancedPage.cpp" />
+    <ClCompile Include="SettingsDictPage.cpp" />
+    <ClCompile Include="SettingsDisplayPage.cpp" />
+    <ClCompile Include="SettingsDlg.cpp" />
+    <ClCompile Include="SettingsGeneralPage.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="TabbedMDIWnd.cpp" />
+    <ClCompile Include="ThumbnailsThread.cpp" />
+    <ClCompile Include="ThumbnailsView.cpp" />
+    <ClCompile Include="UpdateDlg.cpp" />
+    <ClCompile Include="WinDjView.cpp" />
+    <ClCompile Include="XMLParser.cpp" />
+    <ClCompile Include="ZoomDlg.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AnnotationDlg.h" />
+    <ClInclude Include="AppSettings.h" />
+    <ClInclude Include="BookmarkDlg.h" />
+    <ClInclude Include="BookmarksView.h" />
+    <ClInclude Include="DjVuDoc.h" />
+    <ClInclude Include="DjVuSource.h" />
+    <ClInclude Include="DjVuView.h" />
+    <ClInclude Include="DocPropertiesDlg.h" />
+    <ClInclude Include="Drawing.h" />
+    <ClInclude Include="FindDlg.h" />
+    <ClInclude Include="FullscreenWnd.h" />
+    <ClInclude Include="Global.h" />
+    <ClInclude Include="GotoPageDlg.h" />
+    <ClInclude Include="InstallDicDlg.h" />
+    <ClInclude Include="MagnifyWnd.h" />
+    <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="MDIChild.h" />
+    <ClInclude Include="MyBitmapButton.h" />
+    <ClInclude Include="MyColorPicker.h" />
+    <ClInclude Include="MyComboBox.h" />
+    <ClInclude Include="MyDialog.h" />
+    <ClInclude Include="MyDocManager.h" />
+    <ClInclude Include="MyDocTemplate.h" />
+    <ClInclude Include="MyEdit.h" />
+    <ClInclude Include="MyFileDialog.h" />
+    <ClInclude Include="MyGdiPlus.h" />
+    <ClInclude Include="MyScrollView.h" />
+    <ClInclude Include="MyStatusBar.h" />
+    <ClInclude Include="MyToolBar.h" />
+    <ClInclude Include="MyTreeView.h" />
+    <ClInclude Include="NavPane.h" />
+    <ClInclude Include="PageIndexWnd.h" />
+    <ClInclude Include="PrintDlg.h" />
+    <ClInclude Include="ProgressDlg.h" />
+    <ClInclude Include="RenderThread.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Scaling.h" />
+    <ClInclude Include="SearchResultsView.h" />
+    <ClInclude Include="SettingsAdvancedPage.h" />
+    <ClInclude Include="SettingsDictPage.h" />
+    <ClInclude Include="SettingsDisplayPage.h" />
+    <ClInclude Include="SettingsDlg.h" />
+    <ClInclude Include="SettingsGeneralPage.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="TabbedMDIWnd.h" />
+    <ClInclude Include="ThumbnailsThread.h" />
+    <ClInclude Include="ThumbnailsView.h" />
+    <ClInclude Include="UpdateDlg.h" />
+    <ClInclude Include="WinDjView.h" />
+    <ClInclude Include="XMLParser.h" />
+    <ClInclude Include="ZoomDlg.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\bookmarks.bmp" />
+    <Image Include="res\close.bmp" />
+    <Image Include="res\close_tab.bmp" />
+    <Image Include="res\dictbar.bmp" />
+    <Image Include="res\dictbar_grayed.bmp" />
+    <Image Include="res\DjVuDoc.ico" />
+    <Image Include="res\donate.bmp" />
+    <Image Include="res\hourglass.bmp" />
+    <Image Include="res\pan_anchor.bmp" />
+    <Image Include="res\settings.bmp" />
+    <Image Include="res\Toolbar.bmp" />
+    <Image Include="res\Toolbar_grayed.bmp" />
+    <Image Include="res\WinDjView.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\drag.cur" />
+    <None Include="res\hand.cur" />
+    <None Include="res\link.cur" />
+    <None Include="res\magnify.cur" />
+    <None Include="res\pan_all.cur" />
+    <None Include="res\pan_d.cur" />
+    <None Include="res\pan_dl.cur" />
+    <None Include="res\pan_dr.cur" />
+    <None Include="res\pan_l.cur" />
+    <None Include="res\pan_lr.cur" />
+    <None Include="res\pan_r.cur" />
+    <None Include="res\pan_u.cur" />
+    <None Include="res\pan_ud.cur" />
+    <None Include="res\pan_ul.cur" />
+    <None Include="res\pan_ur.cur" />
+    <None Include="res\split_h.cur" />
+    <None Include="res\WinDjView.rc2" />
+    <None Include="res\zoom_rect.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="res\WinDjView.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="WinDjView.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Languages\Chinese_Simplified\WinDjViewZH_CN.vcxproj">
+      <Project>{11c256bd-3ca8-4de4-9f93-46b02d628e21}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="Languages\Chinese_Wu\WinDjView_wuu.vcxproj">
+      <Project>{d3db682c-8a2e-4d5f-8c0a-427ad13ecc44}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="Languages\French\WinDjViewFR.vcxproj">
+      <Project>{ecf00175-3826-4b35-9c4b-560277505ce5}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="Languages\Greek\WinDjViewGR.vcxproj">
+      <Project>{db2f394c-cac3-4962-9a9d-948fe9943bec}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="Languages\Hungarian\WinDjViewHU.vcxproj">
+      <Project>{91141f17-ee60-45fe-b106-c458c00a9945}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="Languages\Portuguese\WinDjViewPT.vcxproj">
+      <Project>{cdf44b0e-d5b9-4b74-9005-d6ea19420b83}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="Languages\Russian\WinDjViewRU.vcxproj">
+      <Project>{1dd07eca-099c-49c4-9e1c-33c6de1d8fe0}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="Languages\Spanish\WinDjViewES.vcxproj">
+      <Project>{28aca736-474e-4a39-b075-e20187327cef}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="Languages\Tatarish\WinDjViewTT.vcxproj">
+      <Project>{cb04c5f9-bce5-40b8-8ca5-35ca2f6690ca}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="Languages\Ukrainian\WinDjViewUA.vcxproj">
+      <Project>{ba75e1e4-9272-481b-af04-712fa08f9942}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="WinDjView.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

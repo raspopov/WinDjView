@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6cbec8b2-274b-4676-ad12-bc5c6782a12f}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{07c775ff-5bcc-4b70-ba3c-ad435e25b4db}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{ed7d075c-5a92-407c-9222-463f3abcd166}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="WinDjViewRU.rc">
+      <Filter>Source Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\res\bookmarks.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\close.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\close_tab.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\dictbar.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\dictbar_grayed.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\DjVuDoc.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\donate.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\hourglass.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\pan_anchor.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\settings.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\Toolbar.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\Toolbar_grayed.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\res\WinDjView.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\res\drag.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\hand.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\link.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\magnify.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_all.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_d.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_dl.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_dr.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_l.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_lr.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_r.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_u.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_ud.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_ul.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\pan_ur.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\split_h.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\WinDjView.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\res\zoom_rect.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

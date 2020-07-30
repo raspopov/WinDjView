@@ -79,7 +79,7 @@ protected:
 // on systems where there is a limit on the number
 // of bitmap handles open (e.g., Windows 98).
 // Thus, CLightweightDIBs are used to store thumbnails.
-class CLightweightDIB : protected CDIB
+class CLightweightDIB : public CDIB
 {
 public:
 	~CLightweightDIB();

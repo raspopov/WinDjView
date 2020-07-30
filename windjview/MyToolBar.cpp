@@ -62,7 +62,7 @@ BOOL CMyToolBar::Create(CWnd* pParentWnd, DWORD dwStyle, UINT nID)
 	// Save the style
 	m_dwStyle = (dwNewStyle & CBRS_ALL);
 
-	if (!CControlBar::Create(_afxWndControlBar, NULL,
+	if (!CControlBar::Create(AFX_WNDCONTROLBAR, NULL,
 			dwNewStyle, CRect(0, 0, 0, 0), pParentWnd, nID))
 		return false;
 
@@ -85,7 +85,7 @@ BOOL CMyToolBar::CreateEx(CWnd* pParentWnd, DWORD dwCtrlStyle,
 	// Save the style
 	m_dwStyle = (dwNewStyle & CBRS_ALL);
 
-	if (!CControlBar::Create(_afxWndControlBar, NULL,
+	if (!CControlBar::Create(AFX_WNDCONTROLBAR, NULL,
 			dwNewStyle, CRect(0, 0, 0, 0), pParentWnd, nID))
 		return false;
 
